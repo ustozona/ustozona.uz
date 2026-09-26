@@ -22,6 +22,7 @@
     "assignments": "Assignments",
     "resources": "Library",
     "baholash": "Baholash",
+    "games": "Games",
     "blog": "Blog"
   },
   "Header": {
@@ -3062,6 +3063,7 @@
       "draft": "Draft"
     },
     "rail": {
+      "plan": "Plan wizard",
       "details": "Details",
       "materials": "Materials",
       "goals": "Goals",
@@ -3070,6 +3072,7 @@
       "soon": "Coming soon"
     },
     "toast": {
+      "reflectionSaved": "Reflection saved",
       "saved": "Saved",
       "duplicated": "Lesson duplicated",
       "deleted": "Lesson deleted",
@@ -3081,6 +3084,7 @@
     "copySuffix": "copy",
     "more": "More",
     "menu": {
+      "present": "Presentation mode",
       "saveNow": "Save now",
       "downloadPdf": "Download (PDF)",
       "duplicate": "Duplicate",
@@ -4172,6 +4176,7 @@
       "doska": "Board",
       "jurnal": "Gradebook",
       "baholash": "Assessment",
+      "games": "Games",
       "enterCode": "Enter code",
       "enterCodeShort": "Code"
     },
@@ -4339,6 +4344,7 @@
       "statusSoon": "Coming soon",
       "taglines": {
         "blog": "Articles written by teachers: experience, methods, lesson ideas. You can write too.",
+        "games": "Tug of war, Race, Live game and more — turn a test into a game and run a class competition.",
         "baholash": "Online quizzes, a paper test scanner and QR cards — results go into the gradebook.",
         "doska": "Classroom screen: timer, traffic light and live presentations. The timer and traffic light work even without signing in.",
         "shogird": "Telegram app for parents: their child's grades, attendance and behaviour.",
@@ -4946,5 +4952,83 @@
       "hideGuide": "Hide: {guide}",
       "deleteSelection": "Delete"
     }
+  },
+  "LessonPlanWizard": {
+    "title": "Plan wizard",
+    "close": "Close",
+    "untitled": "Untitled lesson",
+    "minutes": "min",
+    "duration": "Duration",
+    "teacherChoice": "model chosen by the teacher",
+    "previous": {
+      "title": "Previous lesson",
+      "empty": "No reflection yet"
+    },
+    "model": {
+      "label": "Lesson model",
+      "recommended": "recommended",
+      "bestFor": "Best for",
+      "why": "Why"
+    },
+    "ways": {
+      "label": "How do we build the plan?",
+      "quick": {
+        "title": "Quick plan (AI)",
+        "desc": "AI builds a full plan for the topic, model and your class"
+      },
+      "goal": {
+        "title": "Start from the goal (AI)",
+        "desc": "First write what students will be able to do — the plan is built backwards from it"
+      },
+      "self": {
+        "title": "I'll write it myself",
+        "desc": "Template without AI: model stages, timing and purpose — you write the content"
+      }
+    },
+    "goal": {
+      "label": "By the end of the lesson students can…",
+      "placeholder": "e.g. explain how to add fractions and solve 5 problems on their own"
+    },
+    "env": {
+      "label": "Classroom",
+      "hint": "Set it once — AI adapts plans to this class.",
+      "smartboard": "Smartboard",
+      "projector": "Projector",
+      "movement": "Space to move around",
+      "phones": "Students have phones/tablets",
+      "count": "Number of students",
+      "level": "Class level",
+      "levels": {
+        "none": "Not set",
+        "strong": "Strong",
+        "mixed": "Mixed",
+        "weak": "Struggling"
+      }
+    },
+    "resources": {
+      "label": "In class",
+      "present": "Presentation mode (show on screen)",
+      "games": "Reinforce with Ustozona-Games"
+    },
+    "reflect": {
+      "label": "After the lesson",
+      "placeholder": "What went well, who struggled, what to revisit…",
+      "hint": "This note shows up as “Previous lesson” next time and is added to the AI request."
+    },
+    "run": {
+      "ai": "Build plan with AI",
+      "self": "Add template to lesson"
+    },
+    "toast": {
+      "skeleton": "Template added — now fill in the content",
+      "goalRequired": "Write the lesson goal first"
+    }
+  },
+  "LessonPresenter": {
+    "title": "Presentation mode",
+    "theme": "Light/dark",
+    "close": "Exit (Esc)",
+    "prev": "Previous",
+    "next": "Next"
   }
 }

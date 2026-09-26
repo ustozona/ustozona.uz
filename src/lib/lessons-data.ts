@@ -39,6 +39,12 @@ export type Lesson = {
    *  vidjetida tayyor turadi. Toʻplamning oʻzi emas, faqat havola:
    *  `lessons.data` JSONB ichida, migratsiyasiz. */
   setIds?: string[];
+  /** «Dars oʻtgach» — oʻqituvchining 1–2 jumlalik mulohazasi (nima yaxshi
+   *  oʻtdi, kim qiynaldi, nimani takrorlash kerak). Keyingi darsning Reja
+   *  ustasida «Oldingi dars» boʻlib chiqadi va AI soʻroviga qoʻshiladi.
+   *  LessonLab Planner'dan koʻchirilgan; `lessons.data` JSONB ichida,
+   *  migratsiyasiz. */
+  reflection?: string;
   /** ── Koʻp-sinf (Model A: bitta dars, koʻp sinf) ──
    *  Dars biriktirilgan barcha sinflar. Boʻsh/aniqlanmagan boʻlsa `classId` (legacy)
    *  yagona aʼzolik sifatida ishlatiladi. Manba: shu maydon (mavjud boʻlsa). */

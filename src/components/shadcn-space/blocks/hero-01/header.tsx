@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetClose } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { Menu, X, Send } from "lucide-react";
-import { IconChartSquare, IconClipboard, IconNotebook, PRODUCT_ICONS } from "./product-icons";
+import { IconClipboard, IconGamepad, IconNotebook, PRODUCT_ICONS } from "./product-icons";
 import Logo from "@/assets/logo/logo";
 import { Button } from "@/components/ui/button";
 import ButtonWithIcon from "@/components/shadcn-space/button/button-01";
@@ -22,7 +22,7 @@ import { LANDING_TONES } from "@/components/landing/landing-tones";
  */
 const NAV_ICONS: Record<HeaderNavItem["key"], typeof IconClipboard> = {
   jurnal: IconClipboard,
-  baholash: IconChartSquare,
+  games: IconGamepad,
   blog: IconNotebook,
 };
 

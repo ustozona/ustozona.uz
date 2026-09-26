@@ -16,7 +16,7 @@
  * qoʻshiladi. Yorliq — `Landing.nav.<key>`.
  */
 export type HeaderNavItem = {
-  key: "jurnal" | "baholash" | "blog";
+  key: "jurnal" | "games" | "blog";
   href: string;
 };
 
@@ -24,7 +24,10 @@ export const HEADER_NAV: HeaderNavItem[] = [
   // Jurnal — asosiy Ustozona; alohida sahifasi yoʻq, landing boʻlimiga
   // olib boradi. `/#jurnal`, `#jurnal` emas: boshqa sahifadan ham ishlasin.
   { key: "jurnal", href: "/#jurnal" },
-  { key: "baholash", href: "/baholash" },
+  // Games — LessonLab oʻyinlari Ustozona brendida (2026-09-26). Header'da
+  // «Baholash» oʻrnida turadi; oʻqituvchining test/OMR ish maydoni
+  // `/baholash` da oʻzgarishsiz qoladi va «Mahsulotlar» boʻlimida bor.
+  { key: "games", href: "/games" },
   { key: "blog", href: "/blog" },
 ];
 
@@ -80,7 +83,7 @@ export const TELEGRAM_HANDLE = "@ustozona_tms";
 export type ProductStatus = "live" | "soon";
 
 export type Product = {
-  slug: "blog" | "baholash" | "doska" | "shogird" | "boshqaruv";
+  slug: "blog" | "games" | "baholash" | "doska" | "shogird" | "boshqaruv";
   name: string;
   tagline: string;
   /** Odatda `/${slug}`, lekin Blog kabi alohida sahifasi bor boʻlsa boshqacha. */
@@ -95,6 +98,14 @@ export const PRODUCTS: Product[] = [
     name: "Ustozona blog",
     tagline: "Oʻqituvchilarning maqolalari — tajriba, uslub va yangiliklar bir joyda.",
     href: "/blog",
+    status: "live",
+    statusLabel: "Mavjud",
+  },
+  {
+    slug: "games",
+    name: "Ustozona-Games",
+    tagline: "Arqon tortish, Poyga, Jonli oʻyin va boshqalar — testdan oʻyin, sinfda musobaqa.",
+    href: "/games",
     status: "live",
     statusLabel: "Mavjud",
   },

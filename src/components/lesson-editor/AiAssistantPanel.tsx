@@ -325,7 +325,7 @@ type Msg = { role: "user" | "assistant"; content: string };
 type AttachedDoc = { uri: string; mimeType: string; name: string };
 
 export default function AiAssistantPanel({
-  lessonContext, classIds = [], lessonId, onClose, onInsert,
+  lessonContext, classIds = [], lessonId, onClose, onInsert, pendingPrompt, onPendingPromptSent,
 }: {
   lessonContext: { title?: string; classes?: string; unit?: string; content?: string; standards?: { id: string; desc: string }[]; durationMin?: number };
   /** Dars biriktirilgan sinf id'lari — anonim sinf-statistika konteksti uchun. */
@@ -334,6 +334,12 @@ export default function AiAssistantPanel({
   lessonId?: string;
   onClose: () => void;
   onInsert: (html: string) => void;
+  /** Tashqaridan (Reja ustasi) tayyorlangan soʻrov — `id` oʻzgarganda
+      bir marta yuboriladi. Panel yopilib-ochilsa qayta yuborilmaydi. */
+  pendingPrompt?: { id: number; text: string } | null;
+  /** Soʻrov yuborilgach chaqiriladi — ota uni tozalaydi (panel qayta
+      ochilganda ikkinchi marta ketmasin). */
+  onPendingPromptSent?: () => void;
 }) {
   const t = useTranslations("LessonAiAssistantPanel");
   const [messages, setMessages] = useState<Msg[]>([]);
@@ -348,6 +354,11 @@ export default function AiAssistantPanel({
 
   // Chat tarixi: ochilganda serverdan yuklash (dars boʻyicha)
   const loadedRef = useRef(false);
+  /* Tarix yuklanib boʻldimi — tashqi soʻrov (`pendingPrompt`) shundan
+     KEYIN yuboriladi. Aks holda yangi xabar boʻsh roʻyxatga tushib,
+     `persist()` serverdagi eski suhbatni shu qisqa roʻyxat bilan
+     almashtirib yuborardi. */
+  const [historyReady, setHistoryReady] = useState(!lessonId);
   useEffect(() => {
     if (!lessonId || loadedRef.current) return;
     loadedRef.current = true;
@@ -359,7 +370,8 @@ export default function AiAssistantPanel({
           setMessages((cur) => (cur.length ? cur : d.messages!));
         }
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => { if (on) setHistoryReady(true); });
     return () => { on = false; };
   }, [lessonId]);
 
@@ -372,8 +384,8 @@ export default function AiAssistantPanel({
     }).catch(() => {});
   };
 
-  const send = async () => {
-    const text = input.trim();
+  const send = async (override?: string) => {
+    const text = (override ?? input).trim();
     if (!text || streaming) return;
     const next: Msg[] = [...messages, { role: "user", content: text }, { role: "assistant", content: "" }];
     setMessages(next);
@@ -444,6 +456,18 @@ export default function AiAssistantPanel({
 
   const stop = () => abortRef.current?.abort();
   const reset = () => { stop(); setMessages([]); persist([]); };
+  // Reja ustasidan kelgan soʻrov — har `id` uchun BIR marta.
+  const sentPromptRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (!pendingPrompt || !historyReady || streaming) return;
+    if (sentPromptRef.current === pendingPrompt.id) return;
+    sentPromptRef.current = pendingPrompt.id;
+    onPendingPromptSent?.();
+    void send(pendingPrompt.text);
+    // `send` har renderda yangi — faqat soʻrov va tayyorlik kuzatiladi.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingPrompt, historyReady, streaming]);
+
   const copy = (i: number, text: string) => { navigator.clipboard.writeText(latexToPlain(text)); setCopiedIdx(i); toast.success(t("toast.copied")); setTimeout(() => setCopiedIdx(null), 1500); };
   const addToLesson = (text: string) => { onInsert(mdEditor(text)); toast.success(t("toast.added")); };
 
@@ -580,7 +604,7 @@ export default function AiAssistantPanel({
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
+            onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void send(); } }}
             placeholder={t("composerPlaceholder")}
             rows={2}
             className="block w-full resize-none field-sizing-content max-h-[40vh] min-h-[3.5rem] bg-transparent px-4 pt-3 pb-12 text-sm leading-relaxed outline-none placeholder:text-muted-foreground"
@@ -591,7 +615,7 @@ export default function AiAssistantPanel({
                 <Square className="size-4 fill-current" />
               </button>
             ) : (
-              <button onClick={send} disabled={!input.trim()} title={t("send")}
+              <button onClick={() => void send()} disabled={!input.trim()} title={t("send")}
                 className="size-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-40 hover:opacity-90 transition-opacity">
                 <SendHorizontal className="size-4" />
               </button>

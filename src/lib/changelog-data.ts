@@ -36,6 +36,23 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "ustozona-games",
+    date: "2026-09-26",
+    type: "yangi",
+    title: "Ustozona-Games — sinf oʻyinlari endi Ustozonada",
+    body: "Arqon tortish, Poyga, Jonli oʻyin (PIN bilan), Xotira va Krossvord — testingizni oʻyinga aylantirib, sinfda musobaqa oʻtkazing. Yon paneldagi «Games» boʻlimida.",
+    cta: "Oʻyinlarni ochish",
+    href: "/games",
+  },
+  {
+    id: "reja-ustasi",
+    date: "2026-09-26",
+    type: "yangi",
+    title: "Reja ustasi — dars rejasini uch yoʻl bilan tuzing",
+    body: "13 ta jahon dars modelidan fan va mavzuga mosi tavsiya qilinadi. AI bilan tez, maqsaddan boshlab yoki shablon asosida oʻzingiz yozasiz; sinf jihozlarini bir marta belgilasangiz, reja shunga moslanadi. Darsni «Taqdimot rejimi»da ekranga chiqarish va «Dars oʻtgach» mulohazasi ham shu yerda.",
+    href: "/dashboard/lessons",
+  },
+  {
     id: "doska-qolyozma-3",
     date: "2026-09-26",
     type: "yangi",
