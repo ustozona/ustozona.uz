@@ -690,8 +690,15 @@ foydalanuvchi uchun alohida** hisoblanishi shart — global bayroq emas.
 
 ## 10. Oʻzgarish qanday prodga yetadi — DIQQAT
 
-Ish `roziyevbehroz-tech/ustozona.uz` da olib borilishi mumkin, lekin
-haqiqiy Vercel deploy `ustozona/ustozona.uz` dan ketadi.
+> ⚠️ **2026-09-26 dan boshlab tarixiy.** Claude GitHub App endi
+> `ustozona/ustozona.uz` ga bevosita ulangan — pastdagi upstream/fork
+> workaround endi shart emas, ish va PR bevosita shu repoda ochiladi.
+> Bo'lim shu PR (`baholash-integratsiya`) qanday amalga oshirilganini
+> hujjatlashtirish uchun saqlanadi.
+
+Bu yozilgan paytda ish `roziyevbehroz-tech/ustozona.uz` da olib
+borilardi, lekin haqiqiy Vercel deploy `ustozona/ustozona.uz` dan
+ketardi.
 
 `roziyevbehroz-tech/ustozona.uz` GitHub maʼnosida **fork emas** —
 klon push qilib yaratilgan mustaqil repo. Shuning uchun cross-repo PR
