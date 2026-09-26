@@ -8,6 +8,7 @@ import { useDoskaStore } from "@/lib/doska/store";
 import { widgetMeta } from "@/lib/doska/registry";
 import { SHAPES, SHAPE_ORDER, toPixels, type ShapeId } from "@/lib/doska/shapes";
 import { BarButton } from "./BarButton";
+import { useDockLayout } from "./dock";
 import { IconShape } from "./icons";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -23,8 +24,9 @@ import { IconShape } from "./icons";
    haqiqatan ekranga chiqadigan figuraga teng boʻladi.
    ════════════════════════════════════════════════════════════════════ */
 
-export function ShapePicker() {
+export function ShapePicker({ active = false }: { active?: boolean }) {
   const addWidget = useDoskaStore((s) => s.addWidget);
+  const { side } = useDockLayout();
   const t = useTranslations("Doska.widgets");
   const tShape = useTranslations("Doska.shapes");
   const meta = widgetMeta("shape.v1");
@@ -33,13 +35,15 @@ export function ShapePicker() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <BarButton label={t(meta.labelKey)} Icon={IconShape} tint={meta.tint} />
+        <BarButton label={t(meta.labelKey)} Icon={IconShape} tint={meta.tint} active={active} />
       </PopoverTrigger>
 
       <PopoverContent
+        side={side}
         align="center"
         sideOffset={12}
-        className="doska-bar w-72 p-2"
+        collisionPadding={12}
+        className="doska-bar doska-sheet w-72 p-2"
         style={{ zIndex: "var(--z-doska-context)" }}
       >
         <div className="grid grid-cols-3 gap-2">

@@ -34,14 +34,7 @@ export function TrafficLightWidget({ widget }: { widget: DoskaWidget }) {
   const showLabel = widget.state.labels !== false;
 
   return (
-    <div
-      className="flex size-full flex-col items-center rounded-[var(--radius)] px-[8cqw] py-[6cqw]"
-      style={{
-        background: "var(--doska-slate-bg)",
-        color: "var(--doska-slate-fg)",
-        boxShadow: "0 4px 0 var(--doska-slate-edge)",
-      }}
-    >
+    <div className="doska-card flex size-full flex-col items-center px-[8cqw] py-[6cqw]" data-card="slate">
       <div className="flex min-h-0 w-full flex-1 flex-col items-center justify-around">
         {LIGHTS.map((light) => {
           const on = active.id === light.id;

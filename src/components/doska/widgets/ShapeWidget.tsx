@@ -55,8 +55,7 @@ export function ShapeWidget({ widget }: { widget: DoskaWidget }) {
   return (
     <svg
       viewBox={`0 0 ${w} ${h}`}
-      className="block size-full overflow-visible"
-      style={{ color: "var(--doska-ink)" }}
+      className="doska-ink block size-full overflow-visible"
       aria-label={t(def.id)}
     >
       {def.points ? (

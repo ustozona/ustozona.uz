@@ -12,9 +12,9 @@ import { EditableText } from "./EditableText";
  * matnni «stiker» qilib qoʻyadi va yonidagi haqiqiy vidjetlar bilan
  * raqobatlashadi.
  *
- * Shuning uchun uning rangi ham bitta: `--doska-ink`. Toʻq fonda u
- * bo'r rangiga oʻtadi (globals.css), yaʼni yashil doskada matn
- * bo'r bilan yozilgandek koʻrinadi.
+ * Shuning uchun uning rangi ham bitta: `--doska-ink` (`.doska-ink`).
+ * Toʻq fonda u boʻr rangiga oʻtadi (src/styles/doska.css), yaʼni yashil
+ * doskada matn boʻr bilan yozilgandek koʻrinadi.
  *
  * Boʻsh vidjet koʻrinmay qolmaydi: tanlanganida chegara `SelectionOverlay`
  * dan keladi, boʻshligida esa placeholder turadi.
@@ -25,8 +25,8 @@ export function TextWidget({ widget }: { widget: DoskaWidget }) {
       <EditableText
         widget={widget}
         placeholder="Matn yozing…"
-        className="font-medium"
-        style={{ color: "var(--doska-ink)" }}
+        // Siyoh / boʻr rangi va qalinlik — uslubdan (`.doska-ink`).
+        className="doska-ink"
         // Yuqori chegara — qisqa sarlavha butun kenglikni egallasin.
         // Uzun jumla yozilsa `useFitText` uni oʻzi pasaytiradi.
         widthRatio={0.11}

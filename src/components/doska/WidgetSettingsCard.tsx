@@ -130,8 +130,9 @@ export function WidgetSettingsCard({ widget }: { widget: DoskaWidget }) {
         close();
       }}
       className={cn(
-        "doska-bar bg-popover text-popover-foreground pointer-events-auto absolute flex max-h-[calc(100vh-1rem)] w-80 flex-col overflow-y-auto overscroll-contain rounded-[var(--radius)] border shadow-lg",
-        "data-[sheet]:max-h-[60vh] data-[sheet]:rounded-b-none",
+        // Idish (fon, chegara, radius, soya) — uslubdan: `.doska-sheet`.
+        "doska-bar doska-sheet pointer-events-auto absolute flex max-h-[calc(100vh-1rem)] w-80 flex-col overflow-y-auto overscroll-contain",
+        "data-[sheet]:max-h-[60vh]",
       )}
       style={{ left: 0, top: 0, zIndex: "var(--z-doska-context)" }}
     >

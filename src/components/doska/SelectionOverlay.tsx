@@ -68,7 +68,9 @@ export function SelectionOverlay() {
           // Dispatcher tutqichdan vidjetni shu atribut orqali topadi —
           // tutqich endi ramkaning ichida emas.
           data-doska-widget={widget.id}
-          className="ring-primary/70 absolute rounded-[var(--radius)] ring-2 ring-offset-2 ring-offset-transparent"
+          // Chegara koʻrinishi uslubdan (`.doska-selection`): Sokinda
+          // yaxlit, Oʻyinchoq va Doskada uzuq chiziq.
+          className="doska-selection absolute"
           style={{ left: widget.x, top: widget.y, width: widget.w, height: widget.h }}
         >
           {locked && (
@@ -92,7 +94,7 @@ export function SelectionOverlay() {
               // Psevdo-element tutqichning oʻzi hisoblanadi, shuning
               // uchun dispatcher `data-doska-handle` ni topaveradi.
               className={cn(
-                "border-primary bg-background pointer-events-auto absolute size-4 touch-none rounded-full border-2",
+                "doska-handle pointer-events-auto absolute size-4 touch-none",
                 "before:absolute before:-inset-3.5 before:rounded-full before:content-['']",
                 h.className,
               )}

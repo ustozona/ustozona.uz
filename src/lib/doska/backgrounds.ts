@@ -10,9 +10,9 @@ import type { CSSProperties } from "react";
    bilan ogʻirlashmaydi.
 
    ⚠️ `tone` — shunchaki yorliq emas, RENDER QAROR: toʻq fon ustida
-   vidjetlar «bo'r rejimi»ga oʻtadi (kanvasdagi `data-bg-tone`, tuslar
-   globals.css da qayta belgilanadi). Vidjet komponentlari bundan
-   bexabar — ular baribir `var(--doska-*-bg)` ni oʻqiydi.
+   idishsiz matn (matn vidjeti, shakl) siyohdan boʻrga oʻtadi (kanvasdagi
+   `data-bg-tone`, src/styles/doska.css). Vidjet komponentlari bundan
+   bexabar — ular baribir `var(--doska-ink)` ni oʻqiydi.
    ════════════════════════════════════════════════════════════════════ */
 
 export type BackgroundTone = "light" | "dark";

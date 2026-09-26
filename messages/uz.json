@@ -2068,6 +2068,10 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "doska-uslublar": {
+        "title": "Doskaga oʻzingizga yoqqan uslubni tanlang va panelni oʻzingiz tuzing",
+        "body": "Menyudagi «Koʻrinish»da uchta uslubdan birini tanlang: «Sokin» — proyektorda eng aniq, «Oʻyinchoq» — kichik sinflar uchun quvnoq va rangli, «Doska» — yashil doskadagi qogʻoz va magnitlar. Panelni pastda, chap yoki oʻng chetda qoldirish mumkin — interaktiv doska yonida turib ishlasangiz qulay. Kerakli vositalarni «Hammasi» oynasidan panelga qadab qoʻying, qolganlari oʻsha oynada turadi."
+      },
       "doska-qulay-boshqaruv": {
         "title": "Doska qulaylashdi: taymerga istalgan vaqt, har amal qaytariladi, boshqaruv qoʻl ostida",
         "body": "Taymerni qoʻyganingizda vaqtni darhol tanlaysiz (1–15 daqiqa yoki ± tugmalari), uni bosib boshlaysiz, tugaganda qoʻngʻiroq chalinadi; har vidjetning sozlamasi uning yonida, «Sozlash» tugmasida ochiladi. Tasodifan oʻchirilgan vidjet yoki ekran «Qaytarish» bilan joyiga qaytadi, kerakli vidjetni qulflab qoʻyish yoki «Markazga» bilan butun ekranga chiqarish mumkin. Butun boshqaruv endi pastda — interaktiv doskada qoʻl choʻzmasdan yetasiz; menyuda esa sinf eʼtiborini olish uchun «Ekranni yopish» va «Qoʻngʻiroq chalish» bor."
@@ -4658,7 +4662,55 @@
       "removeScreenLocked": "Ekranda qulflangan vidjet bor — avval qulfni oching",
       "promoTitle": "Ishingizni saqlab qoʻying",
       "promoBody": "Ekranlaringiz hisobingizda saqlanadi, sinf roʻyxatingiz ulanadi va soʻralgan oʻquvchi jurnalga tushadi.",
-      "promoCta": "Imkoniyatlarni koʻrish"
+      "promoCta": "Imkoniyatlarni koʻrish",
+      "appearance": "Koʻrinish"
+    },
+    "catalog": {
+      "open": "Hammasi",
+      "title": "Barcha vositalar",
+      "hint": "Bosing — ekranga qoʻyiladi. Qadash belgisi vositani panelga chiqaradi.",
+      "full": "Panel toʻla ({max} ta). Yangisini qadash uchun avval bittasini olib tashlang.",
+      "pin": "{tool} — panelga qadash",
+      "unpin": "{tool} — paneldan olish",
+      "categories": {
+        "time": "Vaqt",
+        "class": "Sinf",
+        "writing": "Yozuv",
+        "media": "Media"
+      },
+      "descriptions": {
+        "clock": "Joriy vaqt",
+        "timer": "Orqaga sanash, ovoz bilan",
+        "trafficLight": "Shovqin darajasi",
+        "text": "Sarlavha yoki topshiriq",
+        "stickyNote": "Rangli eslatma qogʻoz",
+        "shape": "Geometrik figuralar",
+        "presentation": "Savollar va javoblar",
+        "wheel": "Tasodifiy ism tanlash"
+      }
+    },
+    "appearance": {
+      "title": "Koʻrinish",
+      "back": "Orqaga",
+      "style": "Uslub",
+      "styles": {
+        "sokin": {
+          "name": "Sokin",
+          "note": "Tinch va aniq — proyektorda yaxshi koʻrinadi"
+        },
+        "oyinchoq": {
+          "name": "Oʻyinchoq",
+          "note": "Quvnoq va rangli — kichik sinflar uchun"
+        },
+        "doska": {
+          "name": "Doska",
+          "note": "Qogʻoz va magnit — yashil doskaga mos"
+        }
+      },
+      "dock": "Panel joyi",
+      "dockLeft": "Chapda",
+      "dockBottom": "Pastda",
+      "dockRight": "Oʻngda"
     },
     "backgrounds": {
       "chalkboard-green": "Yashil doska",

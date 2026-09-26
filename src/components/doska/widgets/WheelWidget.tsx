@@ -3,7 +3,6 @@
 import * as React from "react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { ArrowLeft, Users, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -34,6 +33,7 @@ import { wheelAccessAction, wheelRosterAction } from "@/server/actions/doska-whe
 import { SpinWheel, type SpinRequest } from "@/components/stage/SpinWheel";
 import { playSpinTick, playSpinWinner, unlockSpinSound } from "@/components/stage/spin-sound";
 import { ClassList } from "../ClassList";
+import { IconArrowLeft, IconClose, IconUsers } from "../icons";
 import { ProBadge } from "../ProBadge";
 import { WidgetButton } from "./WidgetButton";
 
@@ -82,13 +82,6 @@ type ActiveSpin = SpinRequest & {
  * boshqa massiv boʻladi va eski boʻlaklar oʻz-oʻzidan tushib qoladi.
  */
 type Landed = { source: string[]; keys: string[] };
-
-/** Vidjet kartasi — reyestrdagi `tint: "teal"`. */
-const CARD: React.CSSProperties = {
-  background: "var(--doska-teal-bg)",
-  color: "var(--doska-teal-fg)",
-  boxShadow: "0 4px 0 var(--doska-teal-edge)",
-};
 
 /** Gʻolib va aylanma oxiri kartochkasi — gʻildirak kabi jismoniy, oq. */
 const RESULT_CARD: React.CSSProperties = {
@@ -242,7 +235,8 @@ export function WheelWidget({ widget }: { widget: DoskaWidget }) {
       : null;
 
   return (
-    <div className="relative size-full rounded-[var(--radius)] p-[5cqw]" style={CARD}>
+    // Karta — reyestrdagi `tint: "teal"`; koʻrinishi uslubdan (`.doska-card`).
+    <div className="doska-card relative size-full p-[5cqw]" data-card="teal">
       <button
         type="button"
         // Aylantirish — ASOSIY AMAL: bosish vidjetni tanlamaydi va
@@ -514,13 +508,9 @@ function WheelList({
   );
 
   return (
-    // Radius vidjet doirasidan olinadi — `doska-bar` uni ichkarida
-    // panel radiusiga almashtiradi, tashqi burchak esa ramka bilan mos
-    // qolishi kerak.
-    <div
-      className="bg-popover text-popover-foreground size-full overflow-hidden rounded-[var(--radius)] border"
-      style={{ boxShadow: "0 4px 0 var(--border)" }}
-    >
+    // Roʻyxat tomoni — varaq materiali (`.doska-sheet`), lekin radius
+    // vidjet kartasiniki: tanlov chegarasi va ramka bilan mos qolsin.
+    <div className="doska-sheet size-full overflow-hidden" style={{ borderRadius: "var(--doska-card-radius)" }}>
       <div className="doska-bar flex size-full flex-col text-sm">
         <div className="flex items-center gap-2 border-b px-2 py-1.5">
           <Button
@@ -531,7 +521,7 @@ function WheelList({
             aria-label={t("backToWheel")}
             onClick={onBack}
           >
-            <ArrowLeft />
+            <IconArrowLeft className="size-5" />
           </Button>
           <span className="font-medium">{t("listTitle")}</span>
           {count > 0 && (
@@ -646,7 +636,7 @@ function WheelList({
                     className="bg-muted hover:bg-muted/70 inline-flex items-center gap-1 rounded-full py-0.5 pr-2 pl-3 text-xs transition-colors"
                   >
                     {labelOf(key)}
-                    <X className="size-3.5 opacity-60" />
+                    <IconClose className="size-4 opacity-60" />
                   </button>
                 ))}
               </div>
@@ -717,7 +707,7 @@ function ConnectClass({
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
       >
-        <Users />
+        <IconUsers className="size-4" />
         {t("connectClass")}
         {/* Faqat kirish turi MAʼLUM boʻlganda: yuklanish paytida Pro
             foydalanuvchiga ham «pullik» yulduzchasi lip etib koʻrinardi. */}
@@ -787,7 +777,7 @@ function RosterNames({
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center gap-2">
-        <Users className="text-muted-foreground size-4" />
+        <IconUsers className="text-muted-foreground size-4" />
         <span className="font-medium">{t("fromClass", { className: roster.className })}</span>
         <Button type="button" variant="ghost" size="sm" className="ml-auto" onClick={onDisconnect}>
           {t("disconnect")}
@@ -865,12 +855,12 @@ function ResultOverlay({
     <div
       data-doska-no-drag=""
       onClick={onDismiss}
-      className="absolute inset-0 grid place-items-center rounded-[var(--radius)] p-[6cqw]"
+      className="absolute inset-0 grid place-items-center rounded-[var(--doska-card-radius)] p-[6cqw]"
       style={{ background: "var(--doska-wheel-scrim)" }}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="animate-in fade-in zoom-in-90 relative flex w-full flex-col items-center gap-[3cqw] rounded-[var(--radius)] px-[6cqw] py-[6cqw] text-center duration-300"
+        className="animate-in fade-in zoom-in-90 relative flex w-full flex-col items-center gap-[3cqw] rounded-[var(--doska-card-radius)] px-[6cqw] py-[6cqw] text-center duration-300"
         style={RESULT_CARD}
       >
         {onDismiss && closeLabel && (
@@ -880,7 +870,7 @@ function ResultOverlay({
             onClick={onDismiss}
             className="absolute top-[2cqw] right-[2cqw] size-[clamp(1.75rem,7cqw,2.25rem)]"
           >
-            <X />
+            <IconClose />
           </WidgetButton>
         )}
         {children}

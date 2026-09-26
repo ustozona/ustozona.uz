@@ -48,14 +48,14 @@ export function DoskaNotice() {
   return (
     <div
       role="status"
-      className="doska-bar bg-background pointer-events-auto flex items-center gap-2 rounded-[var(--radius)] border py-1 pr-1 pl-4 text-sm shadow-md"
+      className="doska-bar doska-ctl pointer-events-auto flex items-center gap-2 py-1 pr-1 pl-4 text-sm"
       style={{ zIndex: "var(--z-doska-context)" }}
     >
       <span>{text}</span>
       <button
         type="button"
         onClick={undo}
-        className="text-primary hover:bg-muted focus-visible:ring-ring h-10 shrink-0 rounded-[calc(var(--radius)-2px)] px-3 font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none"
+        className="text-primary hover:bg-muted focus-visible:ring-ring h-11 shrink-0 rounded-lg px-3 font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none"
       >
         {t("undo")}
       </button>

@@ -10,6 +10,7 @@ import type { DoskaWidget } from "@/lib/doska/types";
 import { IconPause, IconPlay, IconRestart } from "../icons";
 import { SettingsChoices, SettingsSection, SettingsStepper, SettingsSwitch } from "../SettingsFields";
 import { playTimerEnd, unlockDoskaSound } from "../sounds";
+import { Digits } from "./Digits";
 import { WidgetButton } from "./WidgetButton";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -118,14 +119,9 @@ export function TimerWidget({ widget }: { widget: DoskaWidget }) {
   const primaryLabel = finished ? t("reset") : running ? t("pause") : t("start");
 
   return (
-    <div
-      className="relative size-full rounded-[var(--radius)]"
-      style={{
-        background: finished ? "var(--doska-light-red)" : "var(--doska-amber-bg)",
-        color: finished ? "oklch(0.99 0 0)" : "var(--doska-amber-fg)",
-        boxShadow: `0 4px 0 ${finished ? "oklch(0.45 0.18 27)" : "var(--doska-amber-edge)"}`,
-      }}
-    >
+    // Tugaganda karta «done» tusiga oʻtadi (qizil + oq matn) — lekin
+    // yolgʻiz rang emas, pastda «Vaqt tugadi» soʻzi ham chiqadi (R326).
+    <div className="doska-card relative size-full" data-card={finished ? "done" : "amber"}>
       <div className="flex size-full flex-col items-center justify-center gap-[2.5cqw] p-[4cqw]">
         <span
           role="timer"
@@ -134,12 +130,10 @@ export function TimerWidget({ widget }: { widget: DoskaWidget }) {
         >
           {showDisk && <TimerDisk fraction={fraction} large={!showDigits} />}
           {showDigits && (
-            <span
-              className="font-mono leading-none font-medium tabular-nums"
+            <Digits
+              text={format(remainingSec)}
               style={{ fontSize: showDisk ? "clamp(1.5rem, 15cqw, 30rem)" : "clamp(2rem, 24cqw, 30rem)" }}
-            >
-              {format(remainingSec)}
-            </span>
+            />
           )}
         </span>
 
@@ -196,8 +190,8 @@ export function TimerWidget({ widget }: { widget: DoskaWidget }) {
 
 /**
  * Disk — qolgan vaqt sektori, soat mili yoʻnalishida kamayadi.
- * Rang kartaning oʻz rangidan (`currentColor`), shuning uchun toʻq
- * fondagi «boʻr rejimi» va tugagan holat avtomatik ishlaydi.
+ * Rang kartaning urgʻu rangidan (`--card-accent`): Sokinda oq, Oʻyinchoqda
+ * siyoh, Doskada magnit tusi. Tugagan holat ham avtomatik ishlaydi.
  */
 function TimerDisk({ fraction, large }: { fraction: number; large: boolean }) {
   const r = 46;
@@ -214,9 +208,9 @@ function TimerDisk({ fraction, large }: { fraction: number; large: boolean }) {
     >
       <circle cx="50" cy="50" r="48" fill="currentColor" opacity=".14" />
       {fraction >= 0.999 ? (
-        <circle cx="50" cy="50" r={r} fill="currentColor" />
+        <circle cx="50" cy="50" r={r} fill="var(--card-accent, currentColor)" />
       ) : fraction > 0 ? (
-        <path d={`M50 50 L50 ${50 - r} A${r} ${r} 0 ${largeArc} 1 ${x} ${y} Z`} fill="currentColor" />
+        <path d={`M50 50 L50 ${50 - r} A${r} ${r} 0 ${largeArc} 1 ${x} ${y} Z`} fill="var(--card-accent, currentColor)" />
       ) : null}
     </svg>
   );

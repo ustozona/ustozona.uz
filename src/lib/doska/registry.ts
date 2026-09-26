@@ -31,19 +31,28 @@ export type WidgetLabelKey =
   | "presentation"
   | "wheel";
 
+/**
+ * «Hammasi» oynasidagi toifa (docs/doska-ux-tadqiqot.md §3 «Topish»).
+ * Tarjima kaliti — `Doska.catalog.categories.*`. Boʻsh toifa (masalan
+ * «Oʻyin») oynada chiqmaydi — vositasi qoʻshilganda oʻzi paydo boʻladi.
+ */
+export type WidgetCategory = "time" | "class" | "writing" | "media";
+
+export const CATEGORY_ORDER: WidgetCategory[] = ["time", "class", "writing", "media"];
+
 export type WidgetMeta = {
   kind: WidgetKind;
+  category: WidgetCategory;
   /**
    * Panelda koʻrinadigan nom — tarjima KALITI, matn emas. Reyestr
    * Reactʼsiz qoladi, matnni esa komponent `useTranslations("Doska.widgets")`
    * orqali oladi.
    *
-   * ⚠️ Panel tugmasi 52px va yorligʻi `truncate` (11px, DM Sans). Chegara
-   * HARF SONI EMAS, piksel: «Gʻildirak» 9 harf, lekin ~39px — sigʻadi;
-   * «Yopishqoq» ham 9 harf, lekin 54.6px — «Yopishq…» boʻlib kesilgan.
-   * Yangi nomni har tilda oʻlchab koʻring. DM Sansʼda kirill yoʻq —
-   * ru/kk/ky/uz-Cyrl nomlari tizim shriftida chiqadi, ularni oʻsha
-   * shrift bilan oʻlchang (docs/doska-gildirak-spec.md R308).
+   * ⚠️ Panel tugmasi 64 px, yorligʻi `truncate` (12 px, uslub shrifti —
+   * Onest / Nunito / Rubik). Chegara HARF SONI EMAS, piksel: «Gʻildirak»
+   * 9 harf va sigʻadi, «Yopishqoq» ham 9 harf, lekin kengroq — shuning
+   * uchun «Eslatma». Yangi nomni har tilda va eng keng uslubda (Oʻyinchoq,
+   * Nunito 800) oʻlchab koʻring (docs/doska-gildirak-spec.md R308).
    */
   labelKey: WidgetLabelKey;
   /**
@@ -92,6 +101,7 @@ export type WidgetMeta = {
 export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
   "clock.v1": {
     kind: "clock.v1",
+    category: "time",
     labelKey: "clock",
     tint: "blue",
     defaultSize: { w: 320, h: 160 },
@@ -100,6 +110,7 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
   },
   "timer.v1": {
     kind: "timer.v1",
+    category: "time",
     labelKey: "timer",
     tint: "amber",
     defaultSize: { w: 340, h: 220 },
@@ -111,6 +122,7 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
   },
   "traffic-light.v1": {
     kind: "traffic-light.v1",
+    category: "class",
     labelKey: "trafficLight",
     tint: "red",
     // 2-bosqichda kengaydi (160→180): pastda holat soʻzi turadi va
@@ -121,6 +133,7 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
   },
   "text.v1": {
     kind: "text.v1",
+    category: "writing",
     labelKey: "text",
     // ⚠️ `violet` EMAS — u `BackgroundPicker` («Fon») da band. Panelda
     // ikkita binafsha ikona boʻlsa ular bir vidjetdek koʻrinadi.
@@ -135,6 +148,7 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
   },
   "sticky-note.v1": {
     kind: "sticky-note.v1",
+    category: "writing",
     // «Yopishqoq» emas — u 54.6px va panelda «Yopishq…» boʻlib
     // kesilgan edi (`labelKey` izohi).
     labelKey: "stickyNote",
@@ -147,6 +161,7 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
   },
   "shape.v1": {
     kind: "shape.v1",
+    category: "writing",
     labelKey: "shape",
     // Qoʻshnilari: «Eslatma» (pushti) va ajratgichdan keyin «Fon»
     // (binafsha) — moviy ikkalasidan ham uzoq.
@@ -161,6 +176,7 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
   },
   "presentation.v1": {
     kind: "presentation.v1",
+    category: "media",
     labelKey: "presentation",
     // Material turlaridagi taqdimot rangi (`material-kinds.ts`) bilan
     // bir xil — oʻqituvchi jurnalda koʻrgan belgini shu yerda taniydi.
@@ -172,6 +188,7 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
   },
   "wheel.v1": {
     kind: "wheel.v1",
+    category: "class",
     // «Ruletka» emas — kazino maʼnosi; Doska vidjetlari obyekt nomi
     // bilan ataladi (docs/doska-gildirak-spec.md R307).
     labelKey: "wheel",
@@ -197,14 +214,17 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
 };
 
 /**
- * Panel tartibi — hozircha hammasi koʻrinadi.
+ * Vositalar tartibi — panelda ham, «Hammasi» oynasida ham shu tartib.
  *
- * ⚠️ `shape.v1` bu yerda ATAYLAB YOʻQ. Oddiy tugma bitta vidjet
- * qoʻshadi, shakl esa toʻqqiz xil — unga tanlash paneli kerak.
- * Shuning uchun u `WidgetBar` da `ShapePicker` sifatida alohida
- * chiziladi, xuddi `BackgroundPicker` kabi.
+ * Qaysi biri panelda turishini oʻqituvchi tanlaydi (`lib/doska/prefs.ts`,
+ * R132); tartib esa hammada bir xil — qoʻshilgan vosita oxiriga emas,
+ * oʻz joyiga tushadi.
+ *
+ * `shape.v1` panelda oddiy tugma emas, `ShapePicker`: u bitta emas,
+ * toʻqqiz figura qoʻyadi va oʻz tanlash paneliga ega. «Fon» esa bu
+ * roʻyxatda yoʻq — u vosita emas, ekran sozlamasi va panelda doim turadi.
  */
-export const WIDGET_BAR_ORDER: WidgetKind[] = [
+export const TOOL_ORDER: WidgetKind[] = [
   "clock.v1",
   "timer.v1",
   "traffic-light.v1",
@@ -213,6 +233,7 @@ export const WIDGET_BAR_ORDER: WidgetKind[] = [
   "wheel.v1",
   "text.v1",
   "sticky-note.v1",
+  "shape.v1",
   "presentation.v1",
 ];
 

@@ -68,7 +68,7 @@ export function WidgetFrame({
       */}
       <div
         className={cn(
-          "@container size-full rounded-[var(--radius)]",
+          "@container size-full rounded-[var(--doska-card-radius)]",
           // Qulflangan va markazdagi vidjet sudralmaydi — kursor ham shuni aytsin.
           spotlight || widget.locked ? "cursor-default" : "cursor-move",
         )}
