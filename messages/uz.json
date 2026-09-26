@@ -55,7 +55,18 @@
     "adminSchools": "Maktablar",
     "adminFeedback": "Fikrlar",
     "adminAudit": "Audit jurnali",
-    "adminAi": "Ustozona AI"
+    "adminAi": "Ustozona AI",
+    "games": "Oʻyinlar",
+    "gameArqon": "Arqon tortish",
+    "gamePoyga": "Poyga",
+    "gamePiyodaPoyga": "Poyga",
+    "gameLiveHost": "Jonli oʻyin",
+    "gameLivePlay": "PIN bilan qoʻshilish",
+    "gameHost": "Testdan oʻyin",
+    "gameXotira": "Xotira",
+    "gameQaysiKatta": "Qaysi katta?",
+    "gameSozTopish": "Soʻz topish",
+    "gameKrossvord": "Krossvord"
   },
   "GlobalCommandPalette": {
     "search": "Qidirish",
@@ -4921,5 +4932,35 @@
     "close": "Chiqish (Esc)",
     "prev": "Oldingi",
     "next": "Keyingi"
+  },
+  "GamesPage": {
+    "catalog": "Oʻyinlar katalogi",
+    "fullscreen": "Toʻliq ekran",
+    "openNewTab": "Yangi oynada ochish",
+    "linkHint": "Telegram'ni bogʻlang — oʻyinlarga avtomatik kirasiz va shaxsiy testlaringiz darhol ochiladi.",
+    "linkAction": "Bogʻlash",
+    "later": "Keyinroq",
+    "frameTitle": "Ustozona-Games"
+  },
+  "TelegramLink": {
+    "title": "Telegramni ulash",
+    "description": "@uzlessonlabbot orqali — bir marta, bir necha soniyada",
+    "starting": "Havola tayyorlanmoqda…",
+    "codeLabel": "Tasdiq kodi",
+    "codeHint": "Botda START bosing va shu kodni tugmalar bilan tering.",
+    "qrHint": "Yoki telefon kamerasi bilan QR kodni skanerlang.",
+    "openTelegram": "Telegramni ochish",
+    "safety": "Bot qaysi Ustozona akkaunti bogʻlanayotganini koʻrsatadi. Akkaunt sizniki boʻlmasa — «Bu men emasman» ni bosing.",
+    "waiting": "Botda tasdiqlashingiz kutilmoqda…",
+    "linked": "Telegram ulandi! Endi oʻyinlarga avtomatik kirasiz.",
+    "expired": "Havolaning muddati tugadi. Qaytadan urinib koʻring.",
+    "failed": "Havolani tayyorlab boʻlmadi. Birozdan keyin qayta urinib koʻring.",
+    "retry": "Qaytadan",
+    "cancel": "Bekor qilish",
+    "close": "Yopish",
+    "connect": "Ulash",
+    "change": "Oʻzgartirish",
+    "linkedLabel": "Ulangan",
+    "notLinkedLabel": "Ulanmagan"
   }
 }

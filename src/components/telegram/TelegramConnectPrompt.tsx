@@ -13,7 +13,7 @@ import {
   getTgPromptAction,
 } from "@/server/actions/tg-auth";
 import type { TgConnection, TgDigestPreview } from "@/lib/tg-auth-types";
-import { TelegramAuthDialog } from "./TelegramAuthDialog";
+import { TelegramLinkDialog } from "./TelegramLinkDialog";
 
 /* Bosh sahifadagi yumshoq taklif — Telegram ulanmagan, bot ochilmagan
    yoki telefon qoʻshilmagan ustozga.
@@ -29,7 +29,10 @@ import { TelegramAuthDialog } from "./TelegramAuthDialog";
    Telegram har doim ochiq.
 
    «Namuna» — ustozning OʻZ darslari bilan bot yuboradigan kechki
-   xabarning aynan oʻzi (`getTgDigestPreview`). */
+   xabarning aynan oʻzi (`getTgDigestPreview`).
+
+   Ulash — @uzlessonlabbot orqali (`TelegramLinkDialog`), Sozlamalar →
+   Telegram bilan bir xil yoʻl (yaratuvchi qarori, 2026-09-26). */
 
 export function TelegramConnectPrompt() {
   const t = useTranslations("TelegramPrompt");
@@ -80,8 +83,7 @@ export function TelegramConnectPrompt() {
           )}
         </div>
       </InlineBanner>
-      <TelegramAuthDialog
-        kind="link"
+      <TelegramLinkDialog
         open={dialogOpen}
         onOpenChange={(o) => {
           setDialogOpen(o);

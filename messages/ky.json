@@ -55,7 +55,18 @@
     "adminSchools": "Мектептер",
     "adminFeedback": "Пикирлер",
     "adminAudit": "Аудит журналы",
-    "adminAi": "Ustozona AI"
+    "adminAi": "Ustozona AI",
+    "games": "Оюндар",
+    "gameArqon": "Аркан тартыш",
+    "gamePoyga": "Жарыш",
+    "gamePiyodaPoyga": "Жарыш",
+    "gameLiveHost": "Түз оюн",
+    "gameLivePlay": "PIN менен кошулуу",
+    "gameHost": "Тесттен оюн",
+    "gameXotira": "Эс тутум",
+    "gameQaysiKatta": "Кайсысы чоң?",
+    "gameSozTopish": "Сөз табуу",
+    "gameKrossvord": "Кроссворд"
   },
   "GlobalCommandPalette": {
     "search": "Издөө",
@@ -4953,5 +4964,35 @@
       "hideGuide": "Жашыруу: {guide}",
       "deleteSelection": "Өчүрүү"
     }
+  },
+  "GamesPage": {
+    "catalog": "Оюндар каталогу",
+    "fullscreen": "Толук экран",
+    "openNewTab": "Жаңы өтмөктө ачуу",
+    "linkHint": "Telegram'ды байланыштырыңыз — оюндарга автоматтык түрдө киресиз жана жеке тесттериңиз дароо ачылат.",
+    "linkAction": "Байланыштыруу",
+    "later": "Кийинчерээк",
+    "frameTitle": "Ustozona-Games"
+  },
+  "TelegramLink": {
+    "title": "Telegram'ды туташтыруу",
+    "description": "@uzlessonlabbot аркылуу — бир жолу, бир нече секундда",
+    "starting": "Шилтеме даярдалууда…",
+    "codeLabel": "Ырастоо коду",
+    "codeHint": "Ботто START басып, ушул кодду баскычтар менен териңиз.",
+    "qrHint": "Же QR кодду телефондун камерасы менен сканерлеңиз.",
+    "openTelegram": "Telegram'ды ачуу",
+    "safety": "Бот кайсы Ustozona аккаунту туташтырылып жатканын көрсөтөт. Аккаунт сиздики болбосо — «Bu men emasman» («Бул мен эмесмин») баскычын басыңыз.",
+    "waiting": "Ботто ырастооңуз күтүлүүдө…",
+    "linked": "Telegram туташты! Эми оюндарга автоматтык түрдө киресиз.",
+    "expired": "Шилтеменин мөөнөтү бүттү. Кайра аракет кылыңыз.",
+    "failed": "Шилтемени даярдоо мүмкүн болбоду. Бир аздан кийин кайра аракет кылыңыз.",
+    "retry": "Кайра",
+    "cancel": "Жокко чыгаруу",
+    "close": "Жабуу",
+    "connect": "Туташтыруу",
+    "change": "Өзгөртүү",
+    "linkedLabel": "Туташкан",
+    "notLinkedLabel": "Туташкан эмес"
   }
 }

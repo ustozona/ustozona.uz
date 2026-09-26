@@ -40,17 +40,59 @@ export function isGameFile(value: unknown): value is GameFile {
 /** Standart manzil — `.env` da `LESSONLAB_GAMES_BASE` boʻlmasa. */
 export const DEFAULT_GAMES_BASE = "https://lessonlab.uz/edugames";
 
-/** `/games` yoki `/games/<oʻyin>` — Ustozona tomonidagi manzil. */
-export function gamePath(game: GameFile | null): string {
-  return game ? `/games/${game}` : "/games";
+/** `LESSONLAB_GAMES_BASE` ni tekshirib qaytaradi. Faqat https (yoki lokal
+    ishlab chiqishda http) — `javascript:` kabi sxema env xatosi bilan
+    iframe'ga tushmasin. Server ham (sahifa), test ham chaqiradi. */
+export function resolveGamesBase(raw: string | undefined): string {
+  try {
+    const url = new URL((raw ?? "").trim() || DEFAULT_GAMES_BASE);
+    if (url.protocol !== "https:" && url.protocol !== "http:") throw new Error("scheme");
+    return url.toString().replace(/\/+$/, "");
+  } catch {
+    return DEFAULT_GAMES_BASE;
+  }
 }
 
-/** iframe manzili: katalog uchun `<base>/`, oʻyin uchun `<base>/<nom>.html`. */
-export function gameFrameUrl(base: string, game: GameFile | null, pin?: string | null): string {
+/** Oʻyinlar ikki joyda ochiladi:
+      · `/dashboard/games` — oʻqituvchi, Ustozona'ning oʻz yon paneli va
+        sarlavhasi ichida (bitta brend — bitta panel);
+      · `/games` — mehmon va oʻquvchi (PIN bilan qoʻshilish), kirishsiz. */
+export type GamesRoot = "/games" | "/dashboard/games";
+
+/** `<root>` yoki `<root>/<oʻyin>` — Ustozona tomonidagi manzil. */
+export function gamePath(game: GameFile | null, root: GamesRoot = "/games"): string {
+  return game ? `${root}/${game}` : root;
+}
+
+/** Oʻyin nomlari — `messages/*.json` → `RouteLabels` kalitlari
+    (breadcrumb, panel sarlavhasi). Tartib — `GAME_FILES` bilan bir xil. */
+export const GAME_LABEL_KEYS: Record<GameFile, string> = {
+  arqon: "gameArqon",
+  poyga: "gamePoyga",
+  "piyoda-poyga": "gamePiyodaPoyga",
+  "live-host": "gameLiveHost",
+  "live-play": "gameLivePlay",
+  host: "gameHost",
+  xotira: "gameXotira",
+  "qaysi-katta": "gameQaysiKatta",
+  "so-z-topish": "gameSozTopish",
+  krossvord: "gameKrossvord",
+};
+
+/** iframe manzili: katalog uchun `<base>/`, oʻyin uchun `<base>/<nom>.html`.
+    `lang` — Ustozona tili (oʻyinlar oʻz matnlarini shu tilda koʻrsatadi,
+    `edugames/eg-i18n.js`). */
+export function gameFrameUrl(
+  base: string,
+  game: GameFile | null,
+  pin?: string | null,
+  lang?: string | null
+): string {
   const root = base.replace(/\/+$/, "");
-  const url = game ? `${root}/${game}.html` : `${root}/`;
+  const url = new URL(game ? `${root}/${game}.html` : `${root}/`);
+  if (lang && /^[a-zA-Z-]{2,8}$/.test(lang)) url.searchParams.set("lang", lang);
   // Jonli oʻyin PIN'i (QR kod `/games/live-play?pin=123456` ga olib keladi).
   // Faqat 6 raqam — boshqa hech narsa iframe manziliga oʻtmaydi.
-  if (game === "live-play" && pin && /^\d{6}$/.test(pin)) return `${url}?pin=${pin}`;
-  return url;
+  if (game === "live-play" && pin && /^\d{6}$/.test(pin)) url.searchParams.set("pin", pin);
+  return url.toString();
 }

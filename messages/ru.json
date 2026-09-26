@@ -55,7 +55,18 @@
     "adminSchools": "Школы",
     "adminFeedback": "Отзывы",
     "adminAudit": "Журнал аудита",
-    "adminAi": "Ustozona AI"
+    "adminAi": "Ustozona AI",
+    "games": "Игры",
+    "gameArqon": "Перетягивание каната",
+    "gamePoyga": "Гонка",
+    "gamePiyodaPoyga": "Гонка",
+    "gameLiveHost": "Живая игра",
+    "gameLivePlay": "Вход по PIN",
+    "gameHost": "Игра из теста",
+    "gameXotira": "Память",
+    "gameQaysiKatta": "Что больше?",
+    "gameSozTopish": "Найди слово",
+    "gameKrossvord": "Кроссворд"
   },
   "GlobalCommandPalette": {
     "search": "Поиск",
@@ -5097,5 +5108,35 @@
     "close": "Выход (Esc)",
     "prev": "Назад",
     "next": "Далее"
+  },
+  "GamesPage": {
+    "catalog": "Каталог игр",
+    "fullscreen": "Во весь экран",
+    "openNewTab": "Открыть в новой вкладке",
+    "linkHint": "Подключите Telegram — вы будете входить в игры автоматически, и ваши личные тесты откроются сразу.",
+    "linkAction": "Подключить",
+    "later": "Позже",
+    "frameTitle": "Ustozona-Games"
+  },
+  "TelegramLink": {
+    "title": "Подключение Telegram",
+    "description": "Через @uzlessonlabbot — один раз, за несколько секунд",
+    "starting": "Готовим ссылку…",
+    "codeLabel": "Код подтверждения",
+    "codeHint": "Нажмите START в боте и наберите этот код кнопками.",
+    "qrHint": "Или отсканируйте QR-код камерой телефона.",
+    "openTelegram": "Открыть Telegram",
+    "safety": "Бот покажет, какой аккаунт Ustozona подключается. Если он не ваш — нажмите «Bu men emasman» («Это не я»).",
+    "waiting": "Ждём подтверждения в боте…",
+    "linked": "Telegram подключён! Теперь вы входите в игры автоматически.",
+    "expired": "Срок ссылки истёк. Попробуйте ещё раз.",
+    "failed": "Не удалось подготовить ссылку. Попробуйте чуть позже.",
+    "retry": "Ещё раз",
+    "cancel": "Отмена",
+    "close": "Закрыть",
+    "connect": "Подключить",
+    "change": "Изменить",
+    "linkedLabel": "Подключён",
+    "notLinkedLabel": "Не подключён"
   }
 }

@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { getLocale } from "next-intl/server";
 import { getSession } from "@/server/session";
 import { isTeacher } from "@/lib/auth-roles";
-import { DEFAULT_GAMES_BASE, gameFrameUrl, isGameFile, type GameFile } from "@/lib/games";
+import { gameFrameUrl, gamePath, isGameFile, resolveGamesBase, type GameFile } from "@/lib/games";
 import GamesFrame from "../_components/GamesFrame";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -19,8 +20,14 @@ import GamesFrame from "../_components/GamesFrame";
    manzil orqali iframe'ga ixtiyoriy yoʻl yuborib boʻlmaydi.
 
    Sahifa OCHIQ (kirish shart emas): oʻquvchi PIN bilan qoʻshiladi,
-   oʻqituvchi Telegram bot orqali kiradi — xuddi LessonLab'dagidek.
-   Oʻqituvchining test/OMR ish maydoni `/baholash` da oʻzgarishsiz qoladi.
+   mehmon katalogni koʻradi. Oʻqituvchining test/OMR ish maydoni
+   `/baholash` da oʻzgarishsiz qoladi.
+
+   KIRGAN OʻQITUVCHI esa `/dashboard/games` ga yoʻnaltiriladi: u yerda
+   oʻyinlar Ustozona'ning oʻz yon paneli va sarlavhasi ichida ochiladi
+   va Telegram bogʻlangan boʻlsa avtomatik kiradi. Eski havolalar
+   (landing, xatlar, LessonLab yon paneli — `ustozona.uz/games`)
+   shu tufayli oʻzgartirishsiz ishlayveradi.
    ════════════════════════════════════════════════════════════════════ */
 
 export const metadata: Metadata = {
@@ -30,19 +37,6 @@ export const metadata: Metadata = {
   alternates: { canonical: "/games" },
   icons: { icon: "/ustozona-games.svg" },
 };
-
-function gamesBase(): string {
-  const raw = (process.env.LESSONLAB_GAMES_BASE ?? "").trim();
-  try {
-    // Faqat https (yoki lokal ishlab chiqishda http) — `javascript:` kabi
-    // sxema env xatosi bilan iframe'ga tushmasin.
-    const url = new URL(raw || DEFAULT_GAMES_BASE);
-    if (url.protocol !== "https:" && url.protocol !== "http:") throw new Error("scheme");
-    return url.toString().replace(/\/+$/, "");
-  } catch {
-    return DEFAULT_GAMES_BASE;
-  }
-}
 
 export default async function GamesPage({
   params,
@@ -60,16 +54,19 @@ export default async function GamesPage({
     game = segments[0];
   }
 
-  const base = gamesBase();
-  const pin = typeof query?.pin === "string" ? query.pin : null;
+  const pin = typeof query?.pin === "string" && /^\d{6}$/.test(query.pin) ? query.pin : null;
   const session = await getSession();
+  if (session && isTeacher(session.user)) {
+    redirect(gamePath(game, "/dashboard/games") + (pin ? `?pin=${pin}` : ""));
+  }
 
+  const base = resolveGamesBase(process.env.LESSONLAB_GAMES_BASE);
   return (
     <GamesFrame
       base={base}
       initialGame={game}
-      src={gameFrameUrl(base, game, pin)}
-      homeHref={session && isTeacher(session.user) ? "/dashboard" : "/"}
+      src={gameFrameUrl(base, game, pin, await getLocale())}
+      homeHref="/"
       signedIn={!!session}
     />
   );

@@ -21,7 +21,7 @@ import { SectionIcon } from "@/components/ui/section-icon";
 import { cn } from "@/lib/utils";
 import { panelCardClass } from "@/components/DashboardPage";
 import { useDraftRegistry } from "./_components/SettingsShared";
-import { SECTION_GROUPS, SECTIONS } from "./sections";
+import { SECTION_ALIASES, SECTION_GROUPS, SECTIONS } from "./sections";
 
 export default function SettingsPage() {
   return (
@@ -40,7 +40,8 @@ function SettingsPageInner() {
   // dropdownidan yoki deep-linkdan (davomat gear, ?bell=1) kelgan har qanday
   // oʻzgarish sahifa allaqachon ochiq boʻlsa ham darhol qayta render qiladi.
   // Param yoʻqligi mobilda "roʻyxat" holati, desktopda esa default "profil".
-  const param = searchParams.get("section");
+  const rawParam = searchParams.get("section");
+  const param = rawParam ? SECTION_ALIASES[rawParam] ?? rawParam : null;
   const selected = param && SECTIONS.some((s) => s.id === param) ? param : null;
 
   // Saqlanmagan draft'lar — Save/Cancel ENDI kartada emas, sahifa headeridagi

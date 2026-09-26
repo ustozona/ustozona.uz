@@ -1,13 +1,16 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ClipboardCheck, ExternalLink, Maximize2, Send } from "lucide-react";
+import { useTheme } from "next-themes";
+import { ArrowLeft, ExternalLink, Maximize2, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { gamePath, isGameFile, type GameFile } from "@/lib/games";
 
 /* ════════════════════════════════════════════════════════════════════
-   USTOZONA-GAMES QOBIGʻI — yupqa sarlavha + toʻliq ekranli iframe.
+   USTOZONA-GAMES QOBIGʻI (ochiq `/games`) — yupqa sarlavha + toʻliq
+   ekranli iframe. Mehmon va oʻquvchi uchun; kirgan oʻqituvchi
+   `/dashboard/games` ga yoʻnaltiriladi (Ustozona'ning oʻz paneli ichida).
 
    Oʻyin ichida sahifa almashsa (katalog → Arqon), iframe ota sahifaga
    `postMessage` bilan faqat oʻyin NOMINI yuboradi (LessonLab
@@ -63,6 +66,15 @@ export default function GamesFrame({
 
   const currentSrc = game === initialGame ? src : `${base}/${game ? `${game}.html` : ""}`;
 
+  // Mavzu (yorugʻ/qora) — Ustozona'dagi bilan bir xil boʻlsin
+  // (`edugames/eg-embed.js`: `ustozona-games:ctx`).
+  const { resolvedTheme } = useTheme();
+  const sendCtx = useCallback(() => {
+    const theme = resolvedTheme === "dark" ? "dark" : "light";
+    frameRef.current?.contentWindow?.postMessage({ type: "ustozona-games:ctx", theme }, frameOrigin);
+  }, [frameOrigin, resolvedTheme]);
+  useEffect(sendCtx, [sendCtx]);
+
   function fullscreen() {
     frameRef.current?.requestFullscreen?.().catch(() => {
       /* brauzer ruxsat bermadi — oʻyinning oʻz tugmasi bor */
@@ -85,14 +97,8 @@ export default function GamesFrame({
         </Link>
 
         <nav className="ml-auto flex items-center gap-1" aria-label="Ustozona-Games">
-          {signedIn && (
-            <Button asChild variant="ghost" size="sm" className="max-sm:hidden">
-              <Link href="/baholash">
-                <ClipboardCheck />
-                Baholash
-              </Link>
-            </Button>
-          )}
+          {/* Kirgan oʻqituvchi bu yerga kelmaydi (dashboard'ga yoʻnaltiriladi),
+              ya'ni `signedIn` — Shogird (oʻquvchi/ota-ona) akkaunti. */}
           {!signedIn && (
             <Button asChild variant="ghost" size="sm" className="max-sm:hidden">
               <a href={TELEGRAM_BOT_URL} target="_blank" rel="noopener noreferrer">
@@ -120,6 +126,7 @@ export default function GamesFrame({
         allow="fullscreen; camera; autoplay; clipboard-read; clipboard-write; screen-wake-lock"
         allowFullScreen
         referrerPolicy="strict-origin-when-cross-origin"
+        onLoad={sendCtx}
       />
     </div>
   );

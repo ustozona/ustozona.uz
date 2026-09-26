@@ -55,7 +55,18 @@
     "adminSchools": "Мактаблар",
     "adminFeedback": "Фикрлар",
     "adminAudit": "Аудит журнали",
-    "adminAi": "Ustozona AI"
+    "adminAi": "Ustozona AI",
+    "games": "Ўйинлар",
+    "gameArqon": "Арқон тортиш",
+    "gamePoyga": "Пойга",
+    "gamePiyodaPoyga": "Пойга",
+    "gameLiveHost": "Жонли ўйин",
+    "gameLivePlay": "PIN билан қўшилиш",
+    "gameHost": "Тестдан ўйин",
+    "gameXotira": "Хотира",
+    "gameQaysiKatta": "Қайси катта?",
+    "gameSozTopish": "Сўз топиш",
+    "gameKrossvord": "Кроссворд"
   },
   "GlobalCommandPalette": {
     "search": "Қидириш",
@@ -4782,5 +4793,35 @@
       "hideGuide": "Ёпиш: {guide}",
       "deleteSelection": "Ўчириш"
     }
+  },
+  "GamesPage": {
+    "catalog": "Ўйинлар каталоги",
+    "fullscreen": "Тўлиқ экран",
+    "openNewTab": "Янги ойнада очиш",
+    "linkHint": "Telegram'ни боғланг — ўйинларга автоматик кирасиз ва шахсий тестларингиз дарҳол очилади.",
+    "linkAction": "Боғлаш",
+    "later": "Кейинроқ",
+    "frameTitle": "Ustozona-Games"
+  },
+  "TelegramLink": {
+    "title": "Telegramни улаш",
+    "description": "@uzlessonlabbot орқали — бир марта, бир неча сонияда",
+    "starting": "Ҳавола тайёрланмоқда…",
+    "codeLabel": "Тасдиқ коди",
+    "codeHint": "Ботда START босинг ва шу кодни тугмалар билан теринг.",
+    "qrHint": "Ёки телефон камераси билан QR кодни сканерланг.",
+    "openTelegram": "Telegramни очиш",
+    "safety": "Бот қайси Ustozona аккаунти боғланаётганини кўрсатади. Аккаунт сизники бўлмаса — «Bu men emasman» тугмасини босинг.",
+    "waiting": "Ботда тасдиқлашингиз кутилмоқда…",
+    "linked": "Telegram уланди! Энди ўйинларга автоматик кирасиз.",
+    "expired": "Ҳаволанинг муддати тугади. Қайтадан уриниб кўринг.",
+    "failed": "Ҳаволани тайёрлаб бўлмади. Бироздан кейин қайта уриниб кўринг.",
+    "retry": "Қайтадан",
+    "cancel": "Бекор қилиш",
+    "close": "Ёпиш",
+    "connect": "Улаш",
+    "change": "Ўзгартириш",
+    "linkedLabel": "Уланган",
+    "notLinkedLabel": "Уланмаган"
   }
 }

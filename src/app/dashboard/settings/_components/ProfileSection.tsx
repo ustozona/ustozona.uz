@@ -195,13 +195,14 @@ export default function ProfileSection() {
           </div>
         </div>
 
-        {/* LessonLab (Telegram) — sinf/o'quvchi ma'lumotini ikkala
-            tizimda bir xil ko'rish uchun. To'liq boshqaruv (uzish,
-            oqibat tasdig'i): Sozlamalar > LessonLab. Bu yerda va u
-            yerda BIR XIL mantiq (`useLessonLabLink`). */}
+        {/* Telegram (@uzlessonlabbot) — sinf/o'quvchi ma'lumotini ikkala
+            tizimda bir xil ko'rish va o'yinlarga avtomatik kirish uchun.
+            To'liq boshqaruv (uzish, oqibat tasdig'i, eslatmalar):
+            Sozlamalar > Telegram. Bu yerda va u yerda BIR XIL mantiq
+            (`useLessonLabLink`). */}
         <div className="space-y-1.5 border-t border-border pt-4">
           <Label className="flex items-center gap-1.5">
-            Telegram (LessonLab)
+            Telegram
             <WhyLinkInfo />
           </Label>
           <LessonLabLinkPanel variant="compact" />

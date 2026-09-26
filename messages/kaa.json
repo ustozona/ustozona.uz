@@ -55,7 +55,18 @@
     "adminSchools": "Mektepler",
     "adminFeedback": "Pikirler",
     "adminAudit": "Audit jurnalı",
-    "adminAi": "Ustozona AI"
+    "adminAi": "Ustozona AI",
+    "games": "Oyınlar",
+    "gameArqon": "Arqan tartıs",
+    "gamePoyga": "Jarıs",
+    "gamePiyodaPoyga": "Jarıs",
+    "gameLiveHost": "Janlı oyın",
+    "gameLivePlay": "PIN menen qosılıw",
+    "gameHost": "Testten oyın",
+    "gameXotira": "Yad",
+    "gameQaysiKatta": "Qaysısı úlken?",
+    "gameSozTopish": "Sóz tabıw",
+    "gameKrossvord": "Krossvord"
   },
   "GlobalCommandPalette": {
     "search": "Izlew",
@@ -4953,5 +4964,35 @@
       "hideGuide": "Jabıw: {guide}",
       "deleteSelection": "Óshiriw"
     }
+  },
+  "GamesPage": {
+    "catalog": "Oyınlar katalogı",
+    "fullscreen": "Tolıq ekran",
+    "openNewTab": "Jańa aynada ashıw",
+    "linkHint": "Telegram'dı baylanıstırıń — oyınlarǵa avtomat túrde kiresiz hám jeke testlerińiz birden ashıladı.",
+    "linkAction": "Baylanıstırıw",
+    "later": "Keyinirek",
+    "frameTitle": "Ustozona-Games"
+  },
+  "TelegramLink": {
+    "title": "Telegramdı jalǵaw",
+    "description": "@uzlessonlabbot arqalı — bir ret, bir neshe sekundta",
+    "starting": "Siltew tayarlanbaqta…",
+    "codeLabel": "Tastıyıqlaw kodı",
+    "codeHint": "Botta START basıń hám usı kodtı túymeler menen teriń.",
+    "qrHint": "Yamasa telefon kamerası menen QR kodtı skanerleń.",
+    "openTelegram": "Telegramdı ashıw",
+    "safety": "Bot qaysı Ustozona akkauntı jalǵanıp atırǵanın kórsetedi. Akkaunt siziki bolmasa — «Bu men emasman» túymesin basıń.",
+    "waiting": "Botta tastıyıqlawıńız kútilmekte…",
+    "linked": "Telegram jalǵandı! Endi oyınlarǵa avtomat túrde kiresiz.",
+    "expired": "Siltewdiń múddeti tawsıldı. Qaytadan urınıp kóriń.",
+    "failed": "Siltewdi tayarlap bolmadı. Birazdan keyin qayta urınıp kóriń.",
+    "retry": "Qaytadan",
+    "cancel": "Biykarlaw",
+    "close": "Jabıw",
+    "connect": "Jalǵaw",
+    "change": "Ózgertiw",
+    "linkedLabel": "Jalǵanǵan",
+    "notLinkedLabel": "Jalǵanbaǵan"
   }
 }

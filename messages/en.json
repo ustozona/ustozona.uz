@@ -55,7 +55,18 @@
     "adminSchools": "Schools",
     "adminFeedback": "Feedback",
     "adminAudit": "Audit log",
-    "adminAi": "Ustozona AI"
+    "adminAi": "Ustozona AI",
+    "games": "Games",
+    "gameArqon": "Tug of war",
+    "gamePoyga": "Race",
+    "gamePiyodaPoyga": "Race",
+    "gameLiveHost": "Live game",
+    "gameLivePlay": "Join with PIN",
+    "gameHost": "Game from a test",
+    "gameXotira": "Memory",
+    "gameQaysiKatta": "Which is bigger?",
+    "gameSozTopish": "Word finder",
+    "gameKrossvord": "Crossword"
   },
   "GlobalCommandPalette": {
     "search": "Search",
@@ -5030,5 +5041,35 @@
     "close": "Exit (Esc)",
     "prev": "Previous",
     "next": "Next"
+  },
+  "GamesPage": {
+    "catalog": "Game catalog",
+    "fullscreen": "Full screen",
+    "openNewTab": "Open in a new tab",
+    "linkHint": "Connect Telegram to sign in to games automatically and open your own tests right away.",
+    "linkAction": "Connect",
+    "later": "Later",
+    "frameTitle": "Ustozona-Games"
+  },
+  "TelegramLink": {
+    "title": "Connect Telegram",
+    "description": "Via @uzlessonlabbot — once, in a few seconds",
+    "starting": "Preparing the link…",
+    "codeLabel": "Confirmation code",
+    "codeHint": "Press START in the bot and type this code on its keypad.",
+    "qrHint": "Or scan the QR code with your phone camera.",
+    "openTelegram": "Open Telegram",
+    "safety": "The bot shows which Ustozona account is being connected. If it isn’t yours, tap “Bu men emasman” (“This isn’t me”).",
+    "waiting": "Waiting for you to confirm in the bot…",
+    "linked": "Telegram is connected! You now sign in to games automatically.",
+    "expired": "The link has expired. Please try again.",
+    "failed": "Couldn’t prepare the link. Please try again shortly.",
+    "retry": "Try again",
+    "cancel": "Cancel",
+    "close": "Close",
+    "connect": "Connect",
+    "change": "Change",
+    "linkedLabel": "Connected",
+    "notLinkedLabel": "Not connected"
   }
 }

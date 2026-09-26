@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { TelegramAuthDialog } from "@/components/telegram/TelegramAuthDialog";
+import { LessonLabLinkPanel } from "@/components/lessonlab/LessonLabLinkPanel";
 import {
   getTgConnectionAction,
   getTgNotifyPrefsAction,
@@ -19,16 +19,19 @@ import {
 import { notifyTimeOptions, type TgConnection, type TgNotifyPrefs } from "@/lib/tg-auth-types";
 import { SettingsCard, SettingsList } from "./SettingsShared";
 
-/* Sozlamalar → Telegram. Ustozona botiga ulanish, Telegram tasdiqlagan
-   telefon, marketing roziligi va kunlik xabarlar vaqti.
+/* Sozlamalar → Telegram. YAGONA joy: Telegramni ulash/almashtirish,
+   Telegram tasdiqlagan telefon, marketing roziligi va kunlik xabarlar.
 
-   LessonLab bogʻlanishi bilan BIR XIL kimlik (`user_telegram`) — biri
-   ulansa ikkinchisi ham ulangan boʻladi. Uzish hozircha LessonLab
-   boʻlimida (u yerda maʼlumotlarga taʼsiri koʻrsatiladi). */
+   Ulash — TOʻLIQ @uzlessonlabbot orqali (yaratuvchi qarori, 2026-09-26):
+   `LessonLabLinkPanel` → `TelegramLinkDialog`. Ilgari bu yerda Ustozona
+   botining alohida ulash oynasi, «LessonLab» boʻlimida esa ikkinchi yoʻl
+   bor edi — bitta kimlik (`user_telegram`) uchun ikki tugma. Endi bitta.
+   Keyingi bosqichda Ustozona boti funksiyalari (telefon, eslatmalar,
+   kirish) ham shu botga koʻchadi; ungacha pastdagi qatorlar Ustozona
+   botiga tegishli (`conn.botActive` — u bot ishga tushirilganmi). */
 export default function TelegramSection() {
   const t = useTranslations("TelegramSection");
   const [conn, setConn] = React.useState<TgConnection | null | undefined>(undefined);
-  const [dialogOpen, setDialogOpen] = React.useState(false);
   const [savingMarketing, setSavingMarketing] = React.useState(false);
 
   const load = React.useCallback(() => {
@@ -40,14 +43,8 @@ export default function TelegramSection() {
   React.useEffect(load, [load]);
 
   // `?ulash=1` — xatdagi «Telegramni ulash» tugmasi: ustoz shu yerga
-  // kelib yana bir tugma qidirmasin, oyna oʻzi ochiladi. Bir marta.
+  // kelib yana bir tugma qidirmasin, oyna oʻzi ochiladi (bir marta).
   const autoLink = useSearchParams().get("ulash") === "1";
-  const autoOpened = React.useRef(false);
-  React.useEffect(() => {
-    if (!autoLink || autoOpened.current || !conn?.enabled || conn.linked) return;
-    autoOpened.current = true;
-    setDialogOpen(true);
-  }, [autoLink, conn]);
 
   // Botda raqam yuborilgach sahifaga qaytganda — yangi holat.
   React.useEffect(() => {
@@ -64,18 +61,27 @@ export default function TelegramSection() {
     setConn((c) => (c ? { ...c, marketing: next ? "yes" : "no" } : c));
   };
 
+  const linkPanel = (
+    <div className="rounded-xl border border-border bg-card px-4 py-4">
+      <LessonLabLinkPanel variant="full" autoOpen={autoLink} onChange={load} />
+    </div>
+  );
+
   if (conn === undefined) {
     return (
       <SettingsCard title={t("title")} description={t("description")}>
-        <Skeleton className="h-40 w-full rounded-xl" />
+        {linkPanel}
+        <Skeleton className="h-24 w-full rounded-xl" />
       </SettingsCard>
     );
   }
 
-  if (!conn || !conn.enabled) {
+  // Ustozona boti sozlanmagan yoki Telegram hali ulanmagan — faqat ulash.
+  // Telefon, marketing va eslatmalar ulangandan keyin maʼno kasb etadi.
+  if (!conn || !conn.enabled || !conn.linked) {
     return (
       <SettingsCard title={t("title")} description={t("description")}>
-        <p className="text-body text-muted-foreground">{t("disabled")}</p>
+        {linkPanel}
       </SettingsCard>
     );
   }
@@ -93,30 +99,21 @@ export default function TelegramSection() {
       key: "telegram",
       leading: <Send className="size-4 text-muted-foreground" aria-hidden />,
       title: t("telegramLabel"),
-      description: !conn.linked
-        ? t("notLinked")
-        : !conn.botActive
-          ? t("botInactive")
-          : conn.username
-            ? t("linkedAs", { username: `@${conn.username}` })
-            : t("linked"),
+      description: !conn.botActive
+        ? t("botInactive")
+        : conn.username
+          ? t("linkedAs", { username: `@${conn.username}` })
+          : t("linked"),
       multiline: true,
-      trailing: !conn.linked ? (
-        <Button size="sm" onClick={() => setDialogOpen(true)}>
-          {t("connect")}
-        </Button>
-      ) : (
-        !conn.botActive && openBot
-      ),
+      trailing: !conn.botActive && openBot,
     },
     {
       key: "phone",
       leading: <Phone className="size-4 text-muted-foreground" aria-hidden />,
       title: t("phoneLabel"),
-      description: conn.phone ?? (conn.linked ? t("phoneMissing") : t("phoneNeedsLink")),
+      description: conn.phone ?? t("phoneMissing"),
       multiline: true,
-      dimmed: !conn.linked,
-      trailing: conn.linked && !conn.phone && conn.botActive ? openBot : undefined,
+      trailing: !conn.phone && conn.botActive ? openBot : undefined,
     },
     {
       key: "marketing",
@@ -139,18 +136,10 @@ export default function TelegramSection() {
   return (
     <>
       <SettingsCard title={t("title")} description={t("description")}>
+        {linkPanel}
         <SettingsList items={items} />
       </SettingsCard>
-      {conn.linked && <DigestPrefsCard />}
-      <TelegramAuthDialog
-        kind="link"
-        open={dialogOpen}
-        onOpenChange={(o) => {
-          setDialogOpen(o);
-          if (!o) load();
-        }}
-        onLinked={load}
-      />
+      <DigestPrefsCard />
     </>
   );
 }

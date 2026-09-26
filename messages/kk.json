@@ -55,7 +55,18 @@
     "adminSchools": "Мектептер",
     "adminFeedback": "Пікірлер",
     "adminAudit": "Аудит журналы",
-    "adminAi": "Ustozona AI"
+    "adminAi": "Ustozona AI",
+    "games": "Ойындар",
+    "gameArqon": "Арқан тартыс",
+    "gamePoyga": "Жарыс",
+    "gamePiyodaPoyga": "Жарыс",
+    "gameLiveHost": "Тікелей ойын",
+    "gameLivePlay": "PIN арқылы қосылу",
+    "gameHost": "Тесттен ойын",
+    "gameXotira": "Жады",
+    "gameQaysiKatta": "Қайсысы үлкен?",
+    "gameSozTopish": "Сөз табу",
+    "gameKrossvord": "Кроссворд"
   },
   "GlobalCommandPalette": {
     "search": "Іздеу",
@@ -4953,5 +4964,35 @@
       "hideGuide": "Жасыру: {guide}",
       "deleteSelection": "Жою"
     }
+  },
+  "GamesPage": {
+    "catalog": "Ойындар каталогы",
+    "fullscreen": "Толық экран",
+    "openNewTab": "Жаңа бетте ашу",
+    "linkHint": "Telegram-ды байланыстырыңыз — ойындарға автоматты түрде кіресіз және жеке тесттеріңіз бірден ашылады.",
+    "linkAction": "Байланыстыру",
+    "later": "Кейінірек",
+    "frameTitle": "Ustozona-Games"
+  },
+  "TelegramLink": {
+    "title": "Telegram-ды қосу",
+    "description": "@uzlessonlabbot арқылы — бір рет, бірнеше секундта",
+    "starting": "Сілтеме дайындалуда…",
+    "codeLabel": "Растау коды",
+    "codeHint": "Ботта START басып, осы кодты батырмалармен теріңіз.",
+    "qrHint": "Немесе QR кодты телефон камерасымен сканерлеңіз.",
+    "openTelegram": "Telegram-ды ашу",
+    "safety": "Бот қай Ustozona аккаунты қосылып жатқанын көрсетеді. Аккаунт сіздікі болмаса — «Bu men emasman» («Бұл мен емеспін») батырмасын басыңыз.",
+    "waiting": "Ботта растауыңыз күтілуде…",
+    "linked": "Telegram қосылды! Енді ойындарға автоматты түрде кіресіз.",
+    "expired": "Сілтеменің мерзімі өтті. Қайталап көріңіз.",
+    "failed": "Сілтемені дайындау мүмкін болмады. Сәлден соң қайталап көріңіз.",
+    "retry": "Қайталау",
+    "cancel": "Бас тарту",
+    "close": "Жабу",
+    "connect": "Қосу",
+    "change": "Өзгерту",
+    "linkedLabel": "Қосылған",
+    "notLinkedLabel": "Қосылмаған"
   }
 }

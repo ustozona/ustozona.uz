@@ -10,7 +10,6 @@ import {
   CreditCard,
   ShieldCheck,
   ListTodo,
-  Link2,
   Users,
   Send,
   type LucideIcon,
@@ -140,15 +139,16 @@ export const SECTIONS: SectionDef[] = [
     icon: ShieldCheck,
     Component: dynamic(() => import("./_components/DataSection")),
   },
-  {
-    id: "lessonlab",
-    group: "hisob",
-    label: "LessonLab",
-    subtitle: "Telegram bilan bogʻlanish",
-    icon: Link2,
-    Component: dynamic(() => import("./_components/LessonLabSection")),
-  },
+  /* «LessonLab» boʻlimi OLIB TASHLANDI (2026-09-26): Telegram bogʻlanishi
+     endi faqat «Telegram» boʻlimida (@uzlessonlabbot orqali). Eski
+     `?section=lessonlab` havolalari oʻsha yerga yoʻnaltiriladi —
+     `SECTION_ALIASES`. */
 ];
+
+/** Eski boʻlim id → yangisi (xatlar, eski havolalar sinmasin). */
+export const SECTION_ALIASES: Record<string, string> = {
+  lessonlab: "telegram",
+};
 
 export const SECTION_IDS = Object.fromEntries(
   SECTIONS.map((s) => [s.id, s.id])
