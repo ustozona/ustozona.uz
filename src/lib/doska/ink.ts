@@ -860,6 +860,121 @@ export function eraseAlong(
     }));
 }
 
+/* ── Lasso: belgilash va surish (3-bosqich) ──────────────────────────
+
+   Oʻqituvchi yozuv atrofini halqa bilan oʻraydi — ichidagi chiziqlar
+   belgilanadi, keyin ular suriladi, rangi yoki qalinligi almashadi,
+   oʻchiriladi. Qisqa bosish (halqa chizilmadi) — ostidagi bitta chiziq.
+
+   Chiziq halqa ichida deb hisoblanadi, agar uning nuqtalarining
+   `LASSO_SHARE` qismi ichida boʻlsa: qoʻlda chizilgan halqa harfning
+   dumini kesib oʻtsa ham harf belgilansin, lekin halqaga tegib oʻtgan
+   qoʻshni soʻz belgilanmasin.
+   ──────────────────────────────────────────────────────────────────── */
+
+const LASSO_SHARE = 0.6;
+/** Shundan kichik halqa (px) — halqa emas, bosish. */
+export const LASSO_TAP_PX = 10;
+
+export type InkBounds = Bounds;
+
+/** Nuqta koʻpburchak (`[x, y, …]`) ichidami — nur usuli. */
+function insidePolygon(x: number, y: number, poly: readonly number[]): boolean {
+  let inside = false;
+  for (let i = 0, j = poly.length - 2; i + 1 < poly.length; j = i, i += 2) {
+    const [xi, yi, xj, yj] = [poly[i], poly[i + 1], poly[j], poly[j + 1]];
+    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+}
+
+/** Ulush shu qadamda (px, ekran) olingan nuqtalar boʻyicha oʻlchanadi. */
+const LASSO_SAMPLE_PX = 4;
+
+/**
+ * Halqa (`[x, y, …]`, ekran) ichidagi chiziqlar.
+ *
+ * ⚠️ Ulush NUQTALAR SONI boʻyicha emas, UZUNLIK boʻyicha: saqlangan
+ * chiziq soddalashtirilgan (RDP) — toʻgʻri boʻlak atigi ikki nuqta,
+ * egilgan joyda esa nuqta zich. Nuqta sanalsa, uzun toʻgʻri chiziqning
+ * yarmini oʻragan halqa uni butunlay «olgan» boʻlib chiqardi.
+ */
+export function lassoPick(placed: readonly PlacedStroke[], polygon: readonly number[]): string[] {
+  if (polygon.length < 6) return [];
+  const out: string[] = [];
+  for (const { stroke, place } of placed) {
+    const p = strokePolyline(stroke);
+    const at = (i: number): [number, number] => [place.x + p[i] * place.scale, place.y + p[i + 1] * place.scale];
+    let inside = 0;
+    let total = 0;
+    for (let i = 0; i + 5 < p.length; i += 3) {
+      const [ax, ay] = at(i);
+      const [bx, by] = at(i + 3);
+      const length = Math.hypot(bx - ax, by - ay);
+      const steps = Math.max(1, Math.ceil(length / LASSO_SAMPLE_PX));
+      for (let k = 0; k < steps; k++) {
+        const t = (k + 0.5) / steps;
+        total += length / steps;
+        if (insidePolygon(ax + (bx - ax) * t, ay + (by - ay) * t, polygon)) inside += length / steps;
+      }
+    }
+    // Nuqta (bosib qoʻyilgan dogʻ) — uzunligi yoʻq, oʻzi ichidami.
+    if (total === 0) {
+      total = 1;
+      inside = insidePolygon(...at(0), polygon) ? 1 : 0;
+    }
+    if (inside / total >= LASSO_SHARE) out.push(stroke.id);
+  }
+  return out;
+}
+
+/** `(x, y)` ostidagi eng ustki chiziq; yoʻq boʻlsa `null`. */
+export function strokeAt(placed: readonly PlacedStroke[], x: number, y: number, radius: number): string | null {
+  for (let i = placed.length - 1; i >= 0; i--) {
+    if (strokeHit(placed[i], [x, y], radius)) return placed[i].stroke.id;
+  }
+  return null;
+}
+
+/** Belgilangan chiziqlarning ekrandagi chegarasi — qalinligi bilan; boʻlmasa `null`. */
+export function selectionBounds(placed: readonly PlacedStroke[], ids: ReadonlySet<string>): InkBounds | null {
+  let out: InkBounds | null = null;
+  for (const { stroke, place } of placed) {
+    if (!ids.has(stroke.id)) continue;
+    const b = strokeBounds(stroke);
+    const pad = (strokeWidthPx(stroke.tool, stroke.size) / 2) * place.scale;
+    const minX = place.x + b.minX * place.scale - pad;
+    const minY = place.y + b.minY * place.scale - pad;
+    const maxX = place.x + b.maxX * place.scale + pad;
+    const maxY = place.y + b.maxY * place.scale + pad;
+    out = out
+      ? {
+          minX: Math.min(out.minX, minX),
+          minY: Math.min(out.minY, minY),
+          maxX: Math.max(out.maxX, maxX),
+          maxY: Math.max(out.maxY, maxY),
+        }
+      : { minX, minY, maxX, maxY };
+  }
+  return out;
+}
+
+/**
+ * Ekranda `dx, dy` ga surilgan chiziq. Bogʻlangan chiziq oʻz
+ * koordinatasida suriladi (vidjet masshtabiga boʻlinib) va bogʻlanishi
+ * saqlanadi — slayddagi belgi surilsa ham oʻsha slaydniki.
+ */
+export function movedStroke({ stroke, place }: PlacedStroke, dx: number, dy: number): InkStroke {
+  const lx = dx / place.scale;
+  const ly = dy / place.scale;
+  const points = stroke.points.slice();
+  for (let i = 0; i + 1 < points.length; i += 3) {
+    points[i] = Math.round(points[i] + lx);
+    points[i + 1] = Math.round(points[i + 1] + ly);
+  }
+  return { ...stroke, points };
+}
+
 /* ── Lazer koʻrsatkich (R335) ────────────────────────────────────────
 
    Siyoh emas: SAQLANMAYDI, tarixga yozilmaydi. Iz «kometa» kabi —

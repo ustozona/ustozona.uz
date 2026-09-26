@@ -1,9 +1,11 @@
 # Doska — qoʻlda yozish (qalam) tadqiqoti
 
 > **Holat (2026-09-26):** tadqiqot tugadi, §6 dagi savollar tavsiya
-> boʻyicha hal qilindi; **0-qadam, 1-bosqich va 2-bosqich qurildi**
-> (§7, §8). Kaft oʻchirgichi haqiqiy panel natijasini kutmoqda.
-> Branch: `maxdum/doska-qolyozma`, `maxdum/doska-qolyozma-2`.
+> boʻyicha hal qilindi; **0-qadam va 1–3-bosqichlar qurildi** (§7–§9).
+> Kaft oʻchirgichi haqiqiy panel natijasini, server sinxroni esa
+> ekranlarning serverga koʻchishini kutmoqda.
+> Branch: `maxdum/doska-qolyozma`, `maxdum/doska-qolyozma-2`,
+> `maxdum/doska-qolyozma-3`.
 >
 > Referens topilmalari **R330–R341** (oldingi raqamlar
 > [doska-ux-tadqiqot.md](./doska-ux-tadqiqot.md) da, R310–R329).
@@ -412,6 +414,73 @@ yoʻl boʻylab oʻtsa — butunlay.
 qurilmaydi: koʻp infraqizil panel kontakt oʻlchamini 1×1 yuboradi
 (R332) va taxminiy chegara kaftni emas, qalin barmoqni oʻchirgʻichga
 aylantirib qoʻyardi.
+
+---
+
+## 9. Qurilgani (3-bosqich)
+
+| Joy | Nima |
+|---|---|
+| `lib/doska/guides.ts` | chizgʻich (720×88 px, 40 px birlik, oʻndan boʻlingan) va transportir (radius 220 px) geometriyasi: toʻgʻri chetlar va tashqi normal, `snapToGuide` (chetdan 32 px gacha tashqarida yoki asbob ustida), `isAlongEdge` (birinchi 14 px harakat chetga ±25° parallelmi), `alongEdge` (chetga proyeksiya, chet uzunligi ichida), `clampGuidePose` (markaz kanvas ichida), `snapGuideAngle` (15° ga ±2°), `guideAngleLabel` (0–179°, soat miliga teskari) |
+| `lib/doska/ink.ts` | `lassoPick` (chiziq uzunligining 60 % i halqa ichida), `strokeAt` (bosishda ustki chiziq), `selectionBounds`, `movedStroke` (bogʻlangan chiziq oʻz koordinatasida suriladi, bogʻlanishi qoladi) |
+| `lib/doska/ink-tool.ts` | `lasso` rejimi, `selection`, `ruler` / `protractor` holati; `recolorSelection`, `resizeSelection`, `deleteSelection` — har biri bitta qadam va faqat oʻzgargan chiziqqa |
+| `components/doska/InkLayer.tsx` | halqa va belgilash chegarasi hoʻl qatlamda (uzuq chiziq, chegara keshda); belgilangan yozuv sudralganda quruq qatlamdan olinib hoʻlda siljish bilan chiziladi; asbob cheti yonida boshlangan va chetga parallel yurgan chiziq toʻgʻri chiziqqa aylanadi |
+| `components/doska/InkGuides.tsx` | asboblarning oʻzi: bir barmoq — surish, ikki barmoq — surish va burish, tutqich — burish; yopish tugmasi (chizgʻichda — tanasi ichida); SVG yuzlar `memo` — sudrashda faqat `transform` oʻzgaradi |
+| `components/doska/InkBar.tsx` | «Belgilash» (lasso), belgilanganda rang · qalinlik · «Oʻchirish» (belgilashsiz — joyini saqlab yashirin / nofaol); «Chizgʻich» · «Transportir» |
+| `lib/doska/export.ts`, `DoskaMenu.tsx` | «Rasm qilib saqlash» — joriy ekran PNG (fon, vidjetlar, yozuv), Blob havola orqali |
+| `useDoskaShortcuts.ts` | `Delete` belgilangan yozuvni oʻchiradi, `Esc` avval belgilashni bekor qiladi — ikkalasi ham faqat KOʻRINIB turgan belgilashga |
+
+Qarorlar:
+
+- **Lasso ulushi uzunlik boʻyicha**, nuqtalar soni boʻyicha emas:
+  saqlangan chiziq soddalashtirilgan, toʻgʻri boʻlak atigi ikki nuqta —
+  nuqta sanalsa, uzun chiziqning yarmini oʻragan halqa uni butunlay
+  olardi.
+- **Belgilangan yozuvga rang qoʻllanganda palitra asbobi saqlanadi.**
+  Qalam va marker birga belgilansa «qizil» faqat qalamga tushadi —
+  markerda qizil yoʻq. Hammasi marker boʻlsa marker palitrasi chiqadi.
+- **Lassoda panel asbobni emas, belgilangan yozuvni boshqaradi.**
+  Belgilash yoʻq paytda rang va qalinlik yashirin — aks holda rang
+  bosilishi rejimni jimgina qalamga almashtirib yuborardi.
+- **Asbob ustida barmoq SURADI, qalam YOZADI.** Qalami yoʻq panelda
+  barmoq asbob chetining tashqarisidan boshlab yozadi. Tutqich va yopish
+  tugmasi — hamma uchun tugma; qalam ularni bossa «Faqat qalam» yoqilmaydi
+  (bu yozish emas).
+- **Chetga yopishish — joy VA yoʻnalish boʻyicha.** Faqat masofa
+  boʻlsa, chizgʻich yonidagi yozuv («AB = 5 sm») harf-harf toʻgʻri
+  chiziqqa aylanardi. Qaror qalam 14 px yurgach qabul qilinadi: chetga
+  ±25° parallel boʻlsa — chet boʻylab, aks holda qoʻlyozma.
+- **Chizgʻich tugmalari tanasining ichida**, pastki burchaklarda:
+  tashqarida boʻlsa 720 px chizgʻich tor ekranda tugmalarini kanvasdan
+  chiqarib yuborardi. Asbob markazi kanvasdan chiqmaydi, yangi asbob
+  kanvas (oyna emas) oʻrtasida ochiladi.
+- **Transportir yoy boʻylab chizmaydi** — faqat toʻgʻri chet. U
+  oʻlchash uchun: markazni burchak uchiga qoʻyib, darajani oʻqish.
+- **Asboblar saqlanmaydi va rasmga chiqmaydi** (sessiya holati, lazer
+  kabi). Rejimdan chiqilsa yashirinadi, qaytilsa oʻsha joyida.
+- **Rasm butun kanvas ildizidan** olinadi, boshqaruv izlari
+  (`data-doska-no-export`) — tanlov ramkasi, hoʻl qatlam, asboblar —
+  tashlanadi. Kutubxona faqat bosilganda yuklanadi. Qurilma zichligi
+  2× dan oshmaydi. Fayl `data:` URL emas, Blob havola bilan yuklanadi —
+  katta rasm (5–15 MB) `data:` havolada rad etiladi.
+
+Oʻlchov (sinov skripti): chet topish (gorizontal, 90° burilgan,
+transportir; uchidan narida va uzoqda — yoʻq), proyeksiya va chet
+uchida toʻxtash, yoʻnalish (parallel, teskari — ha; harf, 45° — yoʻq),
+kanvasga qisish, burchak yopishishi va yorligʻi, lasso (toʻliq, yarim —
+yoʻq, 85 % — ha, nuqta), bosishda topish, chegara (qalinlik bilan,
+bogʻlanganda masshtablangan) va surish (bogʻlanganda oʻz koordinatasida).
+
+**Keyinga qoldi:**
+
+- **Oʻquvchilarga yuborish** — Doskada sinf bilan aloqa kanali yoʻq;
+  sinf roʻyxati ulanganda (Pro) koʻriladi. Hozircha rasm faylini
+  oʻqituvchi oʻzi yuboradi.
+- **Server sinxroni** — ekranlar hali faqat brauzerda; ular serverga
+  koʻchgach siyoh ham shu yoʻl bilan ketadi (maydon ixtiyoriy, alohida
+  sxema kerak emas).
+- **Qoʻlyozmani matnga aylantirish** — alohida tadqiqot (tanish
+  qurilmada yoki serverda, oʻzbek lotin/kirill yozuvi).
 
 ---
 

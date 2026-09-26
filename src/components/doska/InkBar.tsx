@@ -6,23 +6,52 @@ import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { useActiveScreen, useDoskaStore } from "@/lib/doska/store";
 import { backgroundById } from "@/lib/doska/backgrounds";
-import { currentSize, useInkTool, type InkMode } from "@/lib/doska/ink-tool";
+import {
+  currentSize,
+  deleteSelection,
+  recolorSelection,
+  resizeSelection,
+  selectedInk,
+  useInkTool,
+  type InkMode,
+} from "@/lib/doska/ink-tool";
+import type { GuideKind } from "@/lib/doska/guides";
 import { INK_SIZES, MARKER_COLORS, PEN_COLORS, inkColorVar, visibleInk, type InkSize } from "@/lib/doska/ink";
 import { BarButton } from "./BarButton";
 import { BarGroup, BarSeparator, BarTextButton } from "./BarGroup";
 import { useDockLayout } from "./dock";
-import { IconCheck, IconCursor, IconEraser, IconLaser, IconMarker, IconPen, IconTrash } from "./icons";
+import {
+  IconCheck,
+  IconCursor,
+  IconEraser,
+  IconLaser,
+  IconLasso,
+  IconMarker,
+  IconPen,
+  IconProtractor,
+  IconRuler,
+  IconTrash,
+} from "./icons";
 
 /* ════════════════════════════════════════════════════════════════════
    QOʻLYOZMA PANELI — yozish rejimida vidjet paneli OʻRNIDA turadi.
 
-   Tuzilma: Tanlash │ Qalam · Marker · Oʻchirgʻich · Lazer │ ranglar │
-   qalinlik [· Qisman] │ Tozalash [│ Faqat qalam].
+   Tuzilma: Tanlash │ Qalam · Marker · Oʻchirgʻich · Lazer · Lasso │
+   ranglar │ qalinlik [· Qisman | · Oʻchirish] │ Chizgʻich · Transportir │
+   Tozalash [│ Faqat qalam].
 
    «Faqat qalam» faqat qalam yozgandan keyin chiqadi (`penSeen`,
    lib/doska/ink-tool.ts): qalami yoʻq qurilmada u keraksiz shovqin.
    «Qisman» — faqat oʻchirgʻichda: tekkan joyni kesadi, butun chiziqni
    emas (R334). Lazerda rang va qalinlik yoʻq — u bitta, yorqin qizil.
+
+   LASSODA rang va qalinlik BELGILANGAN yozuvga qoʻllanadi (asbobga
+   emas) va faqat belgilash boʻlsa bosiladi. Belgilash yoʻq paytda ular
+   JOYINI SAQLAB yashirinadi (`invisible`), «Oʻchirish» esa nofaol turadi:
+   belgilash paydo boʻlganda panel eni oʻzgarib, «Tozalash» barmoq ostidan
+   siljib ketmasin. Hammasi marker boʻlsa marker
+   palitrasi, aks holda qalamniki; tanlangan namuna — hammasida bir xil
+   boʻlsa. Yozuvni oʻchirish — «Oʻchirish» yoki `Delete`.
 
    ⚠️ Vidjet paneli bilan BIR JOYDA, yonida emas: ikkalasi birga 75″
    doskada ham bir qatorga sigʻmaydi, oʻqituvchi esa bir vaqtda yo yozadi,
@@ -60,20 +89,41 @@ export function InkBar() {
   const eraserPartial = useInkTool((s) => s.eraserPartial);
   const toggleEraserPartial = useInkTool((s) => s.toggleEraserPartial);
 
+  const selection = useInkTool((s) => s.selection);
+  const ruler = useInkTool((s) => s.ruler !== null);
+  const protractor = useInkTool((s) => s.protractor !== null);
+  const toggleGuide = useInkTool((s) => s.toggleGuide);
+
   const clearInk = useDoskaStore((s) => s.clearInk);
   const screen = useActiveScreen();
   // Koʻrinib turgan yozuv: taqdimotning boshqa slaydidagi belgi «Tozalash» ga kirmaydi.
-  const hasInk = React.useMemo(() => visibleInk(screen).length > 0, [screen]);
+  const placed = React.useMemo(() => visibleInk(screen), [screen]);
+  const hasInk = placed.length > 0;
   const tone = backgroundById(screen?.background).tone;
+
+  const lasso = mode === "lasso";
+  const picked = React.useMemo(() => (lasso ? selectedInk(placed, selection) : []), [lasso, placed, selection]);
+  const hasSelection = picked.length > 0;
 
   // Oʻchirgichda ham oxirgi asbobning palitrasi koʻrinadi: rang bosilsa
   // oʻsha asbobga qaytiladi (`setColor`) — panel eni sakramaydi.
-  const tool = mode === "pen" || mode === "marker" ? mode : lastTool;
+  const tool = lasso
+    ? hasSelection && picked.every((p) => p.stroke.tool === "marker")
+      ? "marker"
+      : "pen"
+    : mode === "pen" || mode === "marker"
+      ? mode
+      : lastTool;
   const palette = tool === "marker" ? MARKER_COLORS : PEN_COLORS;
-  const color = tool === "marker" ? markerColor : penColor;
+  const color = lasso ? common(picked.map((p) => p.stroke.color)) : tool === "marker" ? markerColor : penColor;
+  const shownSize = lasso ? common(picked.map((p) => p.stroke.size)) : size;
   const erasing = mode === "eraser";
-  // Lazerda rang va qalinlik yoʻq — guruhlar yashiriladi.
+  // Lazerda rang va qalinlik yoʻq — guruhlar yashiriladi. Belgilashsiz
+  // lassoda esa ular joyini saqlab koʻrinmaydi (yuqoridagi izoh).
   const laser = mode === "laser";
+  const idleLasso = lasso && !hasSelection;
+  const pickColor = lasso ? recolorSelection : setColor;
+  const pickSize = lasso ? resizeSelection : setSize;
 
   const colorLabel = (key: string) =>
     key === "auto" ? t(tone === "dark" ? "colors.autoDark" : "colors.autoLight") : t(`colors.${key}`);
@@ -87,6 +137,22 @@ export function InkBar() {
       active={mode === m}
       aria-pressed={mode === m}
       onClick={() => setMode(m)}
+      className="aria-pressed:bg-muted w-20"
+    />
+  );
+
+  const guideButton = (
+    kind: GuideKind,
+    label: string,
+    Icon: React.ComponentType<{ className?: string }>,
+    shown: boolean,
+  ) => (
+    <BarButton
+      label={label}
+      Icon={Icon}
+      active={shown}
+      aria-pressed={shown}
+      onClick={() => toggleGuide(kind)}
       className="aria-pressed:bg-muted w-20"
     />
   );
@@ -114,6 +180,7 @@ export function InkBar() {
       {toolButton("marker", t("marker"), IconMarker)}
       {toolButton("eraser", t("eraser"), IconEraser)}
       {toolButton("laser", t("laser"), IconLaser)}
+      {toolButton("lasso", t("lasso"), IconLasso)}
 
       {!laser && divider}
 
@@ -121,7 +188,13 @@ export function InkBar() {
         role="group"
         aria-label={t("color")}
         data-bg-tone={tone}
-        className={cn("grid shrink-0", vertical ? "grid-cols-2" : "grid-flow-col", laser && "hidden")}
+        aria-hidden={idleLasso || undefined}
+        className={cn(
+          "grid shrink-0",
+          vertical ? "grid-cols-2" : "grid-flow-col",
+          laser && "hidden",
+          idleLasso && "invisible",
+        )}
       >
         {palette.map((key) => {
           const selected = !erasing && key === color;
@@ -131,7 +204,7 @@ export function InkBar() {
               type="button"
               aria-label={colorLabel(key)}
               aria-pressed={selected}
-              onClick={() => setColor(key)}
+              onClick={() => pickColor(key)}
               className="hover:bg-muted focus-visible:ring-ring grid size-11 place-items-center rounded-xl transition-colors focus-visible:ring-2 focus-visible:outline-none"
             >
               <span
@@ -156,15 +229,16 @@ export function InkBar() {
         role="group"
         aria-label={t("size")}
         data-bg-tone={tone}
-        className={cn("flex shrink-0", vertical && "flex-col", laser && "hidden")}
+        aria-hidden={idleLasso || undefined}
+        className={cn("flex shrink-0", vertical && "flex-col", laser && "hidden", idleLasso && "invisible")}
       >
         {INK_SIZES.map((s: InkSize) => (
           <button
             key={s}
             type="button"
             aria-label={t(`sizes.${SIZE_KEYS[s]}`)}
-            aria-pressed={size === s}
-            onClick={() => setSize(s)}
+            aria-pressed={shownSize === s}
+            onClick={() => pickSize(s)}
             className="hover:bg-muted aria-pressed:bg-muted focus-visible:ring-ring grid size-11 place-items-center rounded-xl transition-colors focus-visible:ring-2 focus-visible:outline-none"
           >
             <span
@@ -173,7 +247,7 @@ export function InkBar() {
               style={{
                 width: SIZE_DOTS[s],
                 height: SIZE_DOTS[s],
-                background: erasing ? undefined : `var(${inkColorVar(tool, color)})`,
+                background: erasing ? undefined : `var(${inkColorVar(tool, color ?? "")})`,
               }}
             />
           </button>
@@ -191,6 +265,21 @@ export function InkBar() {
           }
         />
       )}
+
+      {lasso && (
+        <BarButton
+          label={t("deleteSelection")}
+          Icon={IconTrash}
+          disabled={!hasSelection}
+          onClick={deleteSelection}
+          className="disabled:pointer-events-none disabled:opacity-30"
+        />
+      )}
+
+      {divider}
+
+      {guideButton("ruler", t("ruler"), IconRuler, ruler)}
+      {guideButton("protractor", t("protractor"), IconProtractor, protractor)}
 
       {divider}
 
@@ -219,4 +308,9 @@ export function InkBar() {
       )}
     </BarGroup>
   );
+}
+
+/** Hammasida bir xil qiymat — aks holda `undefined` (panelda hech biri tanlanmagan). */
+function common<T>(values: readonly T[]): T | undefined {
+  return values.length && values.every((v) => v === values[0]) ? values[0] : undefined;
 }

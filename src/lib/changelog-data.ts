@@ -36,6 +36,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "doska-qolyozma-3",
+    date: "2026-09-26",
+    type: "yangi",
+    title: "Doskada chizgʻich, transportir va yozuvni surish",
+    body:
+      "Qalam panelidagi «Chizgʻich» va «Transportir» doskaga shaffof asbob qoʻyadi: barmoq bilan surasiz, ikki barmoq yoki tutqich bilan burasiz, qalamni uning cheti boʻylab yurgizsangiz chiziq aniq toʻgʻri tushadi. «Belgilash» bilan yozuvni halqa ichiga oling — keyin uni boshqa joyga suring, rangini yoki qalinligini almashtiring yoki oʻchiring. Dars oxirida menyudagi «Rasm qilib saqlash» doskani rasm qilib yuklab beradi — oʻquvchilarga yuborish yoki keyingi darsda ochish uchun.",
+    href: "/doska",
+  },
+  {
     id: "doska-qolyozma-2",
     date: "2026-09-26",
     type: "yangi",
