@@ -2,20 +2,23 @@ import { LegalPage } from "@/components/landing/LegalPage";
 import { TELEGRAM_HANDLE, TELEGRAM_URL } from "@/lib/landing-nav";
 
 export const metadata = {
-  title: "Maxfiylik siyosati — Ustozona",
+  title: "Maxfiylik siyosati — Ustozona va LessonLab",
   description:
-    "Ustozona qanday maʼlumot yigʻadi, uni qayerda saqlaydi va foydalanuvchi qanday nazorat qiladi.",
+    "Ustozona qanday maʼlumot yigʻadi, uni qayerda saqlaydi, LessonLab (Ustozona-Games, Telegram bot) bilan nimani almashadi va foydalanuvchi qanday nazorat qiladi.",
 };
 
 export default function PrivacyPage() {
   return (
-    <LegalPage title="Maxfiylik siyosati" updatedAt="2026-yil 14-iyul">
+    <LegalPage title="Maxfiylik siyosati" updatedAt="2026-yil 26-sentabr">
       <p>
         Ustozona — oʻqituvchilar uchun elektron jurnal, davomat va dars
-        rejalashtirish platformasi. Bu hujjat qanday maʼlumot yigʻilishini,
-        u qayerda saqlanishini va siz uni qanday nazorat qilishingizni
-        tushuntiradi. Qisqa qilib: <strong>maʼlumotlaringiz sizniki</strong>,
-        biz ularni sotmaymiz va reklama uchun ishlatmaymiz.
+        rejalashtirish platformasi. Ustozona va LessonLab — bitta jamoaning
+        ikki brendi: oʻyinlar (Ustozona-Games) va Telegram bot
+        (@uzlessonlabbot) LessonLab xizmatlari. Bu hujjat qanday maʼlumot
+        yigʻilishini, u qayerda saqlanishini, ikki xizmat nimani almashishini
+        va siz uni qanday nazorat qilishingizni tushuntiradi. Qisqa qilib:{" "}
+        <strong>maʼlumotlaringiz sizniki</strong>, biz ularni sotmaymiz va
+        reklama uchun ishlatmaymiz.
       </p>
 
       <h2>1. Qanday maʼlumot yigʻamiz</h2>
@@ -66,16 +69,52 @@ export default function PrivacyPage() {
 
       <h2>4. Qayerda saqlanadi</h2>
       <p>
-        Maʼlumotlar Neon (PostgreSQL) bulut bazasida, Yevropa Ittifoqi hududida
-        (Frankfurt) joylashgan serverlarda saqlanadi. Ulanish shifrlangan
-        (TLS). Ilova Vercel platformasida ishlaydi.
+        Maʼlumotlar Supabase (PostgreSQL) bulut bazasida, Yevropa Ittifoqi
+        hududida (Frankfurt) joylashgan serverlarda saqlanadi — LessonLab
+        bilan bitta bazada, lekin har xizmat oʻz jadvallarida. Ulanish
+        shifrlangan (TLS). Ilova Vercel platformasida ishlaydi.
       </p>
       <p>
-        <strong>Zaxira nusxa:</strong> baza avtomatik ravishda ~24 soatlik
-        tiklash oynasiga ega; bundan tashqari davriy toʻliq nusxalar olinadi.
+        <strong>Zaxira nusxa:</strong> davriy toʻliq nusxalar olinadi.
       </p>
 
-      <h2>5. Sizning nazoratingiz</h2>
+      <h2>5. Oʻyinlar va Telegram (LessonLab)</h2>
+      <p>
+        Telegramingizni Ustozona akkauntiga bogʻlash — ixtiyoriy
+        (Sozlamalar → Telegram). Bogʻlasangiz, ikki xizmat faqat quyidagi
+        eng kam maʼlumotni almashadi:
+      </p>
+      <ul>
+        <li>
+          <strong>Bogʻlash:</strong> bir martalik kodni @uzlessonlabbot’da
+          ochasiz. Bot tasdiqlash uchun ismingizni va qisman yashirilgan
+          emailingizni (masalan, a***@gmail.com) koʻrsatadi va ekrandagi
+          kodni tanlashingizni soʻraydi — begona odam sizning Telegramingizni
+          oʻz akkauntiga ulay olmasligi uchun. Keyin faqat «Ustozona ID ↔
+          Telegram ID» juftligi saqlanadi.
+        </li>
+        <li>
+          <strong>Oʻyinlarga avtomatik kirish:</strong> «Oʻyinlar» boʻlimini
+          ochganingizda Ustozona serveri LessonLab’ga Ustozona ID, Telegram ID
+          va ismingizni imzolangan soʻrov bilan yuboradi va{" "}
+          <strong>2 daqiqalik, bir martalik</strong> kirish chiptasini oladi.
+          Parol, email, baholar yoki oʻquvchilar roʻyxati yuborilmaydi.
+        </li>
+        <li>
+          <strong>Uzish:</strong> Sozlamalar → Telegram boʻlimida istalgan
+          vaqtda. Uzilgach juftlik oʻchiriladi, har ikki xizmatdagi
+          maʼlumotlaringiz esa joyida qoladi.
+        </li>
+      </ul>
+      <p>
+        LessonLab xizmatlarining oʻz siyosati:{" "}
+        <a href="https://lessonlab.uz/privacy.html" target="_blank" rel="noopener noreferrer">
+          lessonlab.uz/privacy.html
+        </a>
+        .
+      </p>
+
+      <h2>6. Sizning nazoratingiz</h2>
       <ul>
         <li>
           <strong>Eksport:</strong> Sozlamalar → Maʼlumotlar boʻlimidan
@@ -90,20 +129,20 @@ export default function PrivacyPage() {
         <li><strong>Tuzatish:</strong> istalgan maʼlumotni ilova ichida oʻzgartirasiz.</li>
       </ul>
 
-      <h2>6. Cookie fayllari</h2>
+      <h2>7. Cookie fayllari</h2>
       <p>
         Faqat xizmat ishlashi uchun <strong>zarur</strong> cookie'lardan
         foydalanamiz — ular sizni tizimda ushlab turadi. Reklama yoki kuzatuv
         cookie'lari yoʻq.
       </p>
 
-      <h2>7. Oʻzgarishlar</h2>
+      <h2>8. Oʻzgarishlar</h2>
       <p>
         Ushbu siyosat oʻzgarsa, sahifadagi sana yangilanadi. Muhim
         oʻzgarishlar haqida ilova ichida xabar beramiz.
       </p>
 
-      <h2>8. Bogʻlanish</h2>
+      <h2>9. Bogʻlanish</h2>
       <p>
         Savol yoki soʻrovingiz boʻlsa —{" "}
         <a href={TELEGRAM_URL} target="_blank" rel="noopener noreferrer">

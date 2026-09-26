@@ -2,17 +2,18 @@ import { LegalPage } from "@/components/landing/LegalPage";
 import { TELEGRAM_HANDLE, TELEGRAM_URL } from "@/lib/landing-nav";
 
 export const metadata = {
-  title: "Foydalanish shartlari — Ustozona",
+  title: "Foydalanish shartlari — Ustozona va LessonLab",
   description:
-    "Ustozona platformasidan foydalanish qoidalari, masʼuliyat chegaralari va hisobni oʻchirish tartibi.",
+    "Ustozona platformasidan foydalanish qoidalari, oʻyinlar va Telegram bot (LessonLab), masʼuliyat chegaralari va hisobni oʻchirish tartibi.",
 };
 
 export default function TermsPage() {
   return (
-    <LegalPage title="Foydalanish shartlari" updatedAt="2026-yil 14-iyul">
+    <LegalPage title="Foydalanish shartlari" updatedAt="2026-yil 26-sentabr">
       <p>
         Ustozonadan foydalanish orqali siz quyidagi shartlarga rozilik
         bildirasiz. Ular sodda tilda yozilgan — chalkash yuridik iboralarsiz.
+        Ustozona va LessonLab — bitta jamoaning ikki brendi.
       </p>
 
       <h2>1. Xizmat nima</h2>
@@ -21,6 +22,17 @@ export default function TermsPage() {
         elektron jurnal, davomat, xulq ballari, dars jadvali va dars
         ishlanmalari. Bu rasmiy davlat jurnalining oʻrnini bosmaydi va
         rasmiy hujjat sifatida kuchga ega emas.
+      </p>
+      <p>
+        «Oʻyinlar» boʻlimi (Ustozona-Games) va Telegram bot (@uzlessonlabbot)
+        — jamoamizning LessonLab brendi xizmatlari. Ularga qoʻshimcha
+        ravishda{" "}
+        <a href="https://lessonlab.uz/terms.html" target="_blank" rel="noopener noreferrer">
+          LessonLab shartlari
+        </a>{" "}
+        qoʻllanadi. Telegramni bogʻlash ixtiyoriy va istalgan vaqtda
+        Sozlamalar → Telegram boʻlimida uziladi; nima almashinishi —{" "}
+        <a href="/privacy">Maxfiylik siyosatida</a>.
       </p>
 
       <h2>2. Narx</h2>
