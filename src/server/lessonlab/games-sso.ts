@@ -1,7 +1,5 @@
 import "server-only";
-import { eq } from "drizzle-orm";
-import { db } from "@/server/db/client";
-import { userTelegram } from "@/server/db/schema";
+import { linkedTelegramIdOf } from "@/server/dal/account-link";
 import { getSession } from "@/server/session";
 import { isTeacher } from "@/lib/auth-roles";
 import { isConfigured, lessonlab, LessonLabError } from "./client";
@@ -48,12 +46,8 @@ export async function gamesTicket(): Promise<GamesIdentity> {
   if (!session || !isTeacher(session.user)) return { state: "anonymous" };
   if (session.session.impersonatedBy) return { state: "unavailable" };
 
-  const [link] = await db
-    .select({ telegramId: userTelegram.telegramId })
-    .from(userTelegram)
-    .where(eq(userTelegram.userId, session.user.id))
-    .limit(1);
-  if (!link) return { state: "not_linked" };
+  const telegramId = await linkedTelegramIdOf(session.user.id);
+  if (!telegramId) return { state: "not_linked" };
   if (!isConfigured()) return { state: "unavailable" };
 
   try {
@@ -62,7 +56,7 @@ export async function gamesTicket(): Promise<GamesIdentity> {
       path: "/api/v1/games/ticket",
       body: {
         uz_user_id: session.user.id,
-        telegram_id: link.telegramId,
+        telegram_id: telegramId,
         first_name: (session.user.name ?? "").split(/\s+/)[0]?.slice(0, 64) ?? "",
       },
       timeoutMs: TICKET_TIMEOUT_MS,

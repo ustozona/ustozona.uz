@@ -94,6 +94,19 @@ export async function getLinkStatus(): Promise<LinkState> {
   return getOrCreateLink();
 }
 
+/** Oʻyinlarga avtomatik kirish uchun (`server/lessonlab/games-sso.ts`):
+    foydalanuvchiga bogʻlangan Telegram ID yoki `null`. Faqat OʻQIYDI —
+    `getOrCreateLink` dan farqli, havola kodi yaratmaydi. Chaqiruvchi
+    rol va sessiyani oʻzi tekshirgan boʻladi. */
+export async function linkedTelegramIdOf(userId: string): Promise<string | null> {
+  const [row] = await db
+    .select({ telegramId: userTelegram.telegramId })
+    .from(userTelegram)
+    .where(eq(userTelegram.userId, userId))
+    .limit(1);
+  return row?.telegramId ?? null;
+}
+
 /** Joriy o'qituvchining biriktirish holati + kerak bo'lsa yangi havola.
 
     ⚠️ IDEMPOTENT — MAVJUD FAOL KOD BO'LSA O'SHANI QAYTARADI.
