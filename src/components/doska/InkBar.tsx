@@ -7,20 +7,22 @@ import { cn } from "@/lib/utils";
 import { useActiveScreen, useDoskaStore } from "@/lib/doska/store";
 import { backgroundById } from "@/lib/doska/backgrounds";
 import { currentSize, useInkTool, type InkMode } from "@/lib/doska/ink-tool";
-import { INK_SIZES, MARKER_COLORS, PEN_COLORS, inkColorVar, type InkSize } from "@/lib/doska/ink";
+import { INK_SIZES, MARKER_COLORS, PEN_COLORS, inkColorVar, visibleInk, type InkSize } from "@/lib/doska/ink";
 import { BarButton } from "./BarButton";
 import { BarGroup, BarSeparator, BarTextButton } from "./BarGroup";
 import { useDockLayout } from "./dock";
-import { IconCheck, IconCursor, IconEraser, IconMarker, IconPen, IconTrash } from "./icons";
+import { IconCheck, IconCursor, IconEraser, IconLaser, IconMarker, IconPen, IconTrash } from "./icons";
 
 /* ════════════════════════════════════════════════════════════════════
    QOʻLYOZMA PANELI — yozish rejimida vidjet paneli OʻRNIDA turadi.
 
-   Tuzilma: Tanlash │ Qalam · Marker · Oʻchirgʻich │ ranglar │ qalinlik │
-   Tozalash [│ Faqat qalam].
+   Tuzilma: Tanlash │ Qalam · Marker · Oʻchirgʻich · Lazer │ ranglar │
+   qalinlik [· Qisman] │ Tozalash [│ Faqat qalam].
 
    «Faqat qalam» faqat qalam yozgandan keyin chiqadi (`penSeen`,
    lib/doska/ink-tool.ts): qalami yoʻq qurilmada u keraksiz shovqin.
+   «Qisman» — faqat oʻchirgʻichda: tekkan joyni kesadi, butun chiziqni
+   emas (R334). Lazerda rang va qalinlik yoʻq — u bitta, yorqin qizil.
 
    ⚠️ Vidjet paneli bilan BIR JOYDA, yonida emas: ikkalasi birga 75″
    doskada ham bir qatorga sigʻmaydi, oʻqituvchi esa bir vaqtda yo yozadi,
@@ -55,10 +57,13 @@ export function InkBar() {
   const penSeen = useInkTool((s) => s.penSeen);
   const penOnly = useInkTool((s) => s.penOnly);
   const togglePenOnly = useInkTool((s) => s.togglePenOnly);
+  const eraserPartial = useInkTool((s) => s.eraserPartial);
+  const toggleEraserPartial = useInkTool((s) => s.toggleEraserPartial);
 
   const clearInk = useDoskaStore((s) => s.clearInk);
   const screen = useActiveScreen();
-  const hasInk = (screen?.ink?.length ?? 0) > 0;
+  // Koʻrinib turgan yozuv: taqdimotning boshqa slaydidagi belgi «Tozalash» ga kirmaydi.
+  const hasInk = React.useMemo(() => visibleInk(screen).length > 0, [screen]);
   const tone = backgroundById(screen?.background).tone;
 
   // Oʻchirgichda ham oxirgi asbobning palitrasi koʻrinadi: rang bosilsa
@@ -67,6 +72,8 @@ export function InkBar() {
   const palette = tool === "marker" ? MARKER_COLORS : PEN_COLORS;
   const color = tool === "marker" ? markerColor : penColor;
   const erasing = mode === "eraser";
+  // Lazerda rang va qalinlik yoʻq — guruhlar yashiriladi.
+  const laser = mode === "laser";
 
   const colorLabel = (key: string) =>
     key === "auto" ? t(tone === "dark" ? "colors.autoDark" : "colors.autoLight") : t(`colors.${key}`);
@@ -106,14 +113,15 @@ export function InkBar() {
       {toolButton("pen", t("pen"), IconPen)}
       {toolButton("marker", t("marker"), IconMarker)}
       {toolButton("eraser", t("eraser"), IconEraser)}
+      {toolButton("laser", t("laser"), IconLaser)}
 
-      {divider}
+      {!laser && divider}
 
       <div
         role="group"
         aria-label={t("color")}
         data-bg-tone={tone}
-        className={cn("grid shrink-0", vertical ? "grid-cols-2" : "grid-flow-col")}
+        className={cn("grid shrink-0", vertical ? "grid-cols-2" : "grid-flow-col", laser && "hidden")}
       >
         {palette.map((key) => {
           const selected = !erasing && key === color;
@@ -142,13 +150,13 @@ export function InkBar() {
         })}
       </div>
 
-      {divider}
+      {!laser && divider}
 
       <div
         role="group"
         aria-label={t("size")}
         data-bg-tone={tone}
-        className={cn("flex shrink-0", vertical && "flex-col")}
+        className={cn("flex shrink-0", vertical && "flex-col", laser && "hidden")}
       >
         {INK_SIZES.map((s: InkSize) => (
           <button
@@ -171,6 +179,18 @@ export function InkBar() {
           </button>
         ))}
       </div>
+
+      {erasing && (
+        <BarTextButton
+          label={t("erasePartial")}
+          aria-pressed={eraserPartial}
+          onClick={toggleEraserPartial}
+          className="aria-pressed:bg-muted shrink-0 rounded-xl"
+          icon={
+            <IconCheck className={cn("size-5 transition-opacity", eraserPartial ? "opacity-100" : "opacity-25")} />
+          }
+        />
+      )}
 
       {divider}
 

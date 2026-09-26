@@ -4933,7 +4933,9 @@
         "yellow": "Yellow",
         "pink": "Pink"
       },
-      "penOnly": "Pen only"
+      "penOnly": "Pen only",
+      "laser": "Laser",
+      "erasePartial": "Partial"
     }
   }
 }

@@ -36,6 +36,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "doska-qolyozma-2",
+    date: "2026-09-26",
+    type: "yangi",
+    title: "Doskada qalam aqlliroq: toʻgʻri chiziq, lazer va slayd ustiga yozish",
+    body:
+      "Chiziq yoki aylanani chizib, oxirida qalamni bir lahza ushlab turing — u aniq toʻgʻri chiziq, aylana yoki toʻrtburchakka aylanadi; chiziqni qoʻyib yubormaguningizcha burab, uzaytirish mumkin. «Lazer» bilan sinfga kerakli joyni koʻrsatasiz — iz bir soniyada oʻzi soʻnadi va doskada hech narsa qolmaydi. Taqdimot slaydi ustiga yozgan belgingiz shu slayd bilan birga qoladi: keyingisiga oʻtsangiz yashirinadi, qaytsangiz yana chiqadi. Oʻchirgʻichda «Qisman» yoqilsa, butun chiziq emas, faqat tekkan joy oʻchadi.",
+    href: "/doska",
+  },
+  {
     id: "doska-qolyozma",
     date: "2026-09-26",
     type: "yangi",

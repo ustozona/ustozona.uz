@@ -1,6 +1,7 @@
 import { getStroke, type StrokeOptions } from "perfect-freehand";
 
-import type { InkStroke, InkTool } from "./types";
+import { widgetMeta } from "./registry";
+import type { DoskaScreen, DoskaWidget, InkAnchor, InkShape, InkStroke, InkTool } from "./types";
 
 /* ════════════════════════════════════════════════════════════════════
    QOʻLYOZMA — sof geometriya (docs/doska-qolyozma-tadqiqot.md).
@@ -168,12 +169,29 @@ export function canvasColor(value: string): string {
    oʻzi yutadi.
    ──────────────────────────────────────────────────────────────────── */
 
+/** Bosim qalinlikka qanchalik taʼsir qiladi. Marker bir xil enli — haqiqiy marker kabi. */
+function thinningOf(tool: InkTool): number {
+  return tool === "marker" ? 0 : 0.55;
+}
+
 function strokeOptions(tool: InkTool, size: number, last: boolean): StrokeOptions {
-  const px = strokeWidthPx(tool, size);
-  if (tool === "marker") {
-    return { size: px, thinning: 0, smoothing: 0.5, streamline: 0, simulatePressure: false, last };
-  }
-  return { size: px, thinning: 0.55, smoothing: 0.5, streamline: 0, simulatePressure: false, last };
+  return {
+    size: strokeWidthPx(tool, size),
+    thinning: thinningOf(tool),
+    smoothing: 0.5,
+    streamline: 0,
+    simulatePressure: false,
+    last,
+  };
+}
+
+/**
+ * Shu bosimdagi chiziq eni (px) — kutubxona formulasi bilan bir xil:
+ * `size · (1 − 2 · thinning · (0,5 − bosim))`. Tizimning siyoh izi
+ * (`InkLayer`) qalam uchida aynan shu qalinlikda chizsin.
+ */
+export function inkWidthAt(tool: InkTool, size: number, pressure: number): number {
+  return strokeWidthPx(tool, size) * (1 - 2 * thinningOf(tool) * (0.5 - pressure));
 }
 
 /** Tekis `[x, y, p, …]` → kutubxona kutgan `[x, y, bosim 0–1][]`. */
@@ -272,27 +290,36 @@ function segmentDistance3(
 /**
  * Yozilgan nuqtalar (`[x, y, bosim 0–1, …]`, kasr) → saqlanadigan
  * ixcham massiv (`[x, y, bosim 0–100, …]`, butun son).
+ */
+export function compactPoints(raw: number[]): number[] {
+  return simplify(raw, 1);
+}
+
+/**
+ * RDP soddalashtirish. `pressureScale` — kirishdagi bosim shkalasi:
+ * yozilgan nuqtada 1, saqlangan chiziqdan kesilgan boʻlakda 100.
  *
  * Takrorlanuvchi (rekursiyasiz) — uzun chiziqda stek toʻlmasin.
  */
-export function compactPoints(raw: number[]): number[] {
+function simplify(raw: ArrayLike<number>, pressureScale: number, tolerance = SIMPLIFY_TOLERANCE): number[] {
   const n = Math.floor(raw.length / 3);
   if (n === 0) return [];
 
   const keep = new Uint8Array(n);
   keep[0] = 1;
   keep[n - 1] = 1;
+  const weight = PRESSURE_WEIGHT / pressureScale;
 
   const stack: [number, number][] = [[0, n - 1]];
   while (stack.length) {
     const [a, b] = stack.pop()!;
     let maxD = 0;
     let index = -1;
-    const az = raw[a * 3 + 2] * PRESSURE_WEIGHT;
-    const bz = raw[b * 3 + 2] * PRESSURE_WEIGHT;
+    const az = raw[a * 3 + 2] * weight;
+    const bz = raw[b * 3 + 2] * weight;
     for (let i = a + 1; i < b; i++) {
       const d = segmentDistance3(
-        raw[i * 3], raw[i * 3 + 1], raw[i * 3 + 2] * PRESSURE_WEIGHT,
+        raw[i * 3], raw[i * 3 + 1], raw[i * 3 + 2] * weight,
         raw[a * 3], raw[a * 3 + 1], az,
         raw[b * 3], raw[b * 3 + 1], bz,
       );
@@ -301,7 +328,7 @@ export function compactPoints(raw: number[]): number[] {
         index = i;
       }
     }
-    if (index !== -1 && maxD > SIMPLIFY_TOLERANCE) {
+    if (index !== -1 && maxD > tolerance) {
       keep[index] = 1;
       stack.push([a, index], [index, b]);
     }
@@ -310,15 +337,351 @@ export function compactPoints(raw: number[]): number[] {
   const out: number[] = [];
   for (let i = 0; i < n; i++) {
     if (!keep[i]) continue;
-    out.push(Math.round(raw[i * 3]), Math.round(raw[i * 3 + 1]), Math.round(raw[i * 3 + 2] * 100));
+    out.push(
+      Math.round(raw[i * 3]),
+      Math.round(raw[i * 3 + 1]),
+      Math.round((raw[i * 3 + 2] * 100) / pressureScale),
+    );
   }
   return out;
 }
 
+/* ── Tekislangan shakllar (R336) ─────────────────────────────────────
+
+   Shakl kontur bilan emas, kanvas `stroke()` bilan chiziladi: toʻgʻri
+   chiziq aniq toʻgʻri, aylana aniq aylana boʻlsin. Qalinligi — oʻrtacha
+   bosimdagi qoʻlyozma bilan bir xil (`strokeWidthPx`), yaʼni qoʻlda
+   chizilgani bilan yonma-yon bir xil koʻrinadi.
+
+   Oʻchirgich va chegara uchun shakl SINIQ CHIZIQQA aylantiriladi
+   (`strokePolyline`) — urilish va kesish qoʻlyozma bilan bir xil kod.
+   ──────────────────────────────────────────────────────────────────── */
+
+const ELLIPSE_SEGMENTS = 64;
+/** Shakl nuqtalaridagi bosim (0–100) — kesilsa oʻrtacha qalinlikda qoladi. */
+const SHAPE_PRESSURE = 50;
+
+type Box = { x1: number; y1: number; x2: number; y2: number };
+
+function shapeBox(p: ArrayLike<number>): Box {
+  return { x1: p[0], y1: p[1], x2: p[3] ?? p[0], y2: p[4] ?? p[1] };
+}
+
+function buildShapePolyline(shape: InkShape, p: ArrayLike<number>): number[] {
+  const { x1, y1, x2, y2 } = shapeBox(p);
+  const z = SHAPE_PRESSURE;
+  if (shape === "line") return [x1, y1, z, x2, y2, z];
+  if (shape === "rect") return [x1, y1, z, x2, y1, z, x2, y2, z, x1, y2, z, x1, y1, z];
+
+  const cx = (x1 + x2) / 2;
+  const cy = (y1 + y2) / 2;
+  const rx = Math.abs(x2 - x1) / 2;
+  const ry = Math.abs(y2 - y1) / 2;
+  const out: number[] = [];
+  for (let i = 0; i <= ELLIPSE_SEGMENTS; i++) {
+    const a = (i / ELLIPSE_SEGMENTS) * Math.PI * 2;
+    out.push(cx + rx * Math.cos(a), cy + ry * Math.sin(a), z);
+  }
+  return out;
+}
+
+function buildShapePath(shape: InkShape, p: ArrayLike<number>): Path2D {
+  const { x1, y1, x2, y2 } = shapeBox(p);
+  const path = new Path2D();
+  if (shape === "line") {
+    path.moveTo(x1, y1);
+    path.lineTo(x2, y2);
+  } else if (shape === "rect") {
+    path.rect(Math.min(x1, x2), Math.min(y1, y2), Math.abs(x2 - x1), Math.abs(y2 - y1));
+  } else {
+    path.ellipse((x1 + x2) / 2, (y1 + y2) / 2, Math.abs(x2 - x1) / 2, Math.abs(y2 - y1) / 2, 0, 0, Math.PI * 2);
+  }
+  return path;
+}
+
+const shapePathCache = new WeakMap<InkStroke, Path2D>();
+
+/**
+ * Shakl yoʻli — kanvas uni `strokeWidthPx` qalinlikda `stroke()` qiladi.
+ * Saqlangan chiziqning AYNAN oʻzi berilsin (nusxasi emas) — kesh shunga
+ * bogʻlangan.
+ */
+export function shapePath(stroke: InkStroke): Path2D {
+  let path = shapePathCache.get(stroke);
+  if (!path) {
+    path = buildShapePath(stroke.shape ?? "line", stroke.points);
+    shapePathCache.set(stroke, path);
+  }
+  return path;
+}
+
+const polylineCache = new WeakMap<InkStroke, number[]>();
+
+/** Chiziqning oʻrta chizigʻi `[x, y, bosim 0–100, …]` — shakl ham siniq chiziq boʻlib. */
+export function strokePolyline(stroke: InkStroke): number[] {
+  if (!stroke.shape) return stroke.points;
+  let p = polylineCache.get(stroke);
+  if (!p) {
+    p = buildShapePolyline(stroke.shape, stroke.points);
+    polylineCache.set(stroke, p);
+  }
+  return p;
+}
+
+/* ── «Chiz va ushlab tur» → shakl (R336) ─────────────────────────────
+
+   Oʻqituvchi chiziq chizib, oxirida qalamni toʻxtatib tursa, chiziq
+   tanib olinadi:
+
+     • TOʻGʻRI CHIZIQ — uchlar orasidagi masofa yoʻl uzunligiga yaqin va
+       hech bir nuqta uchlarni tutashtiruvchi kesmadan uzoqlashmagan;
+     • YOPIQ SHAKL — oxiri boshiga yaqin qaytgan. Toʻrtburchakmi yoki
+       ellipsmi — chegaraviy qutining BURCHAKLARIGA qarab: toʻrtburchak
+       toʻrt burchakdan ham oʻtadi, aylana esa burchakdan tomonning
+       ~0,2 qismi uzoqda qoladi. Oʻrtacha masofa bilan solishtirish bu
+       farqni sezmaydi: qoʻlda chizilgan aylana ham qutiga ancha yaqin.
+
+   Tanilmasa `null` — chiziq qoʻlyozmaligicha qoladi. Yarim tanish
+   (masalan uchburchakni toʻrtburchakka aylantirish) yozuvni buzgandan
+   koʻra hech narsa qilmagan maʼqul.
+   ──────────────────────────────────────────────────────────────────── */
+
+/** Shundan qisqa chiziq tanilmaydi — nuqta yoki vergul shaklga aylanmasin. */
+const MIN_SHAPE_LENGTH = 32;
+/** Toʻgʻri chiziq: nuqtaning kesmadan ogʻishi — uzunlikka nisbatan va kamida px. */
+const LINE_DEVIATION = 0.07;
+const LINE_DEVIATION_MIN_PX = 6;
+/** Yopiq shakl: uchlar orasidagi masofa yoʻl uzunligining shu qismidan kam. */
+const CLOSED_GAP = 0.2;
+/** Ellips: oʻrtacha radial ogʻish (qutining oʻrtacha tomoniga nisbatan). */
+const ELLIPSE_TOLERANCE = 0.07;
+/** Toʻrtburchak: har burchakdan shu masofada (tomonga nisbatan) nuqta bor. */
+const RECT_CORNER = 0.14;
+/** Tomonlari shuncha farq qilsa — aylana yoki kvadrat qilib tekislanadi. */
+const SQUARE_SNAP = 0.12;
+
+/**
+ * Qoʻl titrashi yutiladigan ogʻish (px). Xom nuqtalarda 240 Hz qalamning
+ * ±1–2 px titrashi yoʻl uzunligini ikki barobargacha oshiradi va toʻgʻri
+ * chiziq «egri» boʻlib chiqardi — shuning uchun oʻlchovlar
+ * soddalashtirilgan siniq chiziqda olinadi.
+ */
+const RECOGNIZE_TOLERANCE = 3;
+
+/**
+ * Yozilgan nuqtalar (`[x, y, bosim, …]`, har qanday bosim shkalasi) →
+ * tanilgan shakl va uning ikki nuqtasi `[x1, y1, 50, x2, y2, 50]`.
+ *
+ * ⚠️ Chaqiruvchi ushlab turish paytidagi nuqtalarni BERMASIN (qalam
+ * joyida titragan davr) — ular shaklning oxiriga bir toʻda shovqin
+ * qoʻshadi. `InkLayer` qalam toʻxtagan nuqtagacha kesib beradi.
+ */
+export function recognizeShape(input: ArrayLike<number>): { shape: InkShape; points: number[] } | null {
+  // Bosim tanishga taʼsir qilmasin — faqat shakl.
+  const flat: number[] = [];
+  for (let i = 0; i + 2 < input.length; i += 3) flat.push(input[i], input[i + 1], 0);
+  const raw = simplify(flat, 1, RECOGNIZE_TOLERANCE);
+  const n = Math.floor(raw.length / 3);
+  if (n < 2) return null;
+
+  let length = 0;
+  let minX = raw[0];
+  let maxX = raw[0];
+  let minY = raw[1];
+  let maxY = raw[1];
+  for (let i = 1; i < n; i++) {
+    const x = raw[i * 3];
+    const y = raw[i * 3 + 1];
+    length += Math.hypot(x - raw[i * 3 - 3], y - raw[i * 3 - 2]);
+    if (x < minX) minX = x;
+    if (x > maxX) maxX = x;
+    if (y < minY) minY = y;
+    if (y > maxY) maxY = y;
+  }
+  if (length < MIN_SHAPE_LENGTH) return null;
+
+  const x0 = raw[0];
+  const y0 = raw[1];
+  const xn = raw[(n - 1) * 3];
+  const yn = raw[(n - 1) * 3 + 1];
+  const chord = Math.hypot(xn - x0, yn - y0);
+  const z = SHAPE_PRESSURE;
+
+  // Toʻgʻri chiziq.
+  const allowed = Math.max(LINE_DEVIATION_MIN_PX, chord * LINE_DEVIATION);
+  let straight = chord > length * 0.8;
+  for (let i = 1; straight && i < n - 1; i++) {
+    if (segmentDistance(raw[i * 3], raw[i * 3 + 1], x0, y0, xn, yn) > allowed) straight = false;
+  }
+  if (straight) return { shape: "line", points: [x0, y0, z, xn, yn, z] };
+
+  // Yopiq shakl.
+  const w = maxX - minX;
+  const h = maxY - minY;
+  if (chord > length * CLOSED_GAP || Math.min(w, h) < MIN_SHAPE_LENGTH / 2) return null;
+
+  const side = (w + h) / 2;
+  const corners = [
+    [minX, minY],
+    [maxX, minY],
+    [maxX, maxY],
+    [minX, maxY],
+  ];
+  const nearest = corners.map(() => Infinity);
+  const cx = (minX + maxX) / 2;
+  const cy = (minY + maxY) / 2;
+  let radial = 0;
+  for (let i = 0; i < n; i++) {
+    const x = raw[i * 3];
+    const y = raw[i * 3 + 1];
+    corners.forEach(([qx, qy], k) => {
+      nearest[k] = Math.min(nearest[k], Math.hypot(x - qx, y - qy));
+    });
+    radial += Math.abs(Math.hypot((x - cx) / (w / 2), (y - cy) / (h / 2)) - 1);
+  }
+  radial = (radial / n) * (side / 2);
+
+  let shape: InkShape;
+  if (nearest.every((d) => d < side * RECT_CORNER)) shape = "rect";
+  else if (radial < side * ELLIPSE_TOLERANCE) shape = "ellipse";
+  else return null;
+
+  // Deyarli teng tomonlar — aniq aylana / kvadrat.
+  let bx1 = minX;
+  let by1 = minY;
+  let bx2 = maxX;
+  let by2 = maxY;
+  if (Math.abs(w - h) < Math.max(w, h) * SQUARE_SNAP) {
+    bx1 = cx - side / 2;
+    bx2 = cx + side / 2;
+    by1 = cy - side / 2;
+    by2 = cy + side / 2;
+  }
+  return { shape, points: [bx1, by1, z, bx2, by2, z] };
+}
+
+/** Burchak shunga karrali yoʻnalishga yopishadi (R336). */
+const ANGLE_STEP = Math.PI / 12; // 15°
+const ANGLE_SNAP = (4 * Math.PI) / 180;
+
+/**
+ * Tekislangan chiziq uchini qalam ortidan olib boradi: boshi joyida,
+ * uchi qalamda; yoʻnalish 15° ga yaqin boʻlsa aniq 15° ga yopishadi —
+ * gorizontal, vertikal va 45° qoʻlda chizilganda ham aniq chiqadi.
+ */
+export function snapLineEnd(x1: number, y1: number, x: number, y: number): [number, number] {
+  const length = Math.hypot(x - x1, y - y1);
+  const angle = Math.atan2(y - y1, x - x1);
+  const snapped = Math.round(angle / ANGLE_STEP) * ANGLE_STEP;
+  if (Math.abs(angle - snapped) > ANGLE_SNAP) return [x, y];
+  return [x1 + Math.cos(snapped) * length, y1 + Math.sin(snapped) * length];
+}
+
+/* ── Vidjet sahifasiga bogʻlash (R338) ───────────────────────────────
+
+   Taqdimot slaydi ustida BOSHLANGAN chiziq shu slaydga bogʻlanadi.
+   Mezon — boshlangan nuqta: slayddan tashqaridan ichiga chizilgan
+   strelka ekranniki boʻlib qoladi, slayd almashsa ham koʻrinadi.
+
+   Nuqta ustida eng yuqori vidjet olinadi. U sahifasiz boʻlsa (taqdimot
+   ustiga qoʻyilgan taymer) — bogʻlanmaydi: oʻqituvchi taymer ustiga
+   yozdi, slaydga emas.
+   ──────────────────────────────────────────────────────────────────── */
+
+/** Chiziqni ekranga chizish uchun siljish va masshtab. */
+export type InkPlacement = { x: number; y: number; scale: number };
+
+const SCREEN_PLACEMENT: InkPlacement = { x: 0, y: 0, scale: 1 };
+
+export function widgetInkPage(widget: DoskaWidget): string | null {
+  return widgetMeta(widget.kind)?.inkPage?.(widget.state) ?? null;
+}
+
+/** `(x, y)` da boshlangan chiziq qaysi sahifaga bogʻlanadi; `origin` — vidjet burchagi. */
+/** Shu vidjetning hozirgi sahifasiga bogʻlash; sahifasi boʻlmasa `null`. */
+export function inkAnchorFor(
+  widget: DoskaWidget | undefined,
+): { anchor: InkAnchor; originX: number; originY: number } | null {
+  const page = widget && widgetInkPage(widget);
+  if (!widget || !page) return null;
+  return { anchor: { widgetId: widget.id, page, w: widget.w }, originX: widget.x, originY: widget.y };
+}
+
+export function inkAnchorAt(
+  widgets: readonly DoskaWidget[],
+  x: number,
+  y: number,
+): { anchor: InkAnchor; originX: number; originY: number } | null {
+  let top: DoskaWidget | null = null;
+  for (const w of widgets) {
+    if (x < w.x || x > w.x + w.w || y < w.y || y > w.y + w.h) continue;
+    if (!top || w.z > top.z) top = w;
+  }
+  return inkAnchorFor(top ?? undefined);
+}
+
+/**
+ * Chiziq hozir qayerda chiziladi. `null` — koʻrinmaydi: boshqa slayd
+ * ochiq, toʻplam almashtirilgan yoki vidjet yoʻq.
+ */
+export function strokePlacement(
+  stroke: InkStroke,
+  widgets: ReadonlyMap<string, DoskaWidget>,
+): InkPlacement | null {
+  const a = stroke.anchor;
+  if (!a) return SCREEN_PLACEMENT;
+  const w = widgets.get(a.widgetId);
+  if (!w || widgetInkPage(w) !== a.page) return null;
+  return { x: w.x, y: w.y, scale: a.w > 0 ? w.w / a.w : 1 };
+}
+
+export type PlacedStroke = { stroke: InkStroke; place: InkPlacement };
+
+/** Ekranda hozir koʻrinadigan chiziqlar — chizish, oʻchirish va «Tozalash» shularga. */
+export function visibleInk(screen: DoskaScreen | undefined): PlacedStroke[] {
+  if (!screen?.ink?.length) return [];
+  const ink = screen.ink;
+  const widgets = new Map(screen.widgets.map((w) => [w.id, w]));
+  const out: PlacedStroke[] = [];
+  for (const stroke of ink) {
+    const place = strokePlacement(stroke, widgets);
+    if (place) out.push({ stroke, place });
+  }
+  return out;
+}
+
+/**
+ * Bogʻlangan chiziqlar joyini belgilovchi kalit — vidjet surilsa,
+ * kattalashsa yoki slayd almashsa oʻzgaradi, qatlam shunda qayta chiziladi.
+ * Bogʻlangan chiziq yoʻq boʻlsa boʻsh satr.
+ */
+export function anchorsKey(screen: DoskaScreen | undefined): string {
+  const ids = new Set<string>();
+  for (const s of screen?.ink ?? []) if (s.anchor) ids.add(s.anchor.widgetId);
+  if (!ids.size || !screen) return "";
+  let key = "";
+  for (const w of screen.widgets) {
+    if (ids.has(w.id)) key += `${w.id}:${w.x},${w.y},${w.w}:${widgetInkPage(w)};`;
+  }
+  return key;
+}
+
+/** Ekran nuqtasi → chiziqning oʻz koordinatasi. */
+function toLocal(place: InkPlacement, x: number, y: number): [number, number] {
+  return [(x - place.x) / place.scale, (y - place.y) / place.scale];
+}
+
 /* ── Oʻchirgich: urilish ─────────────────────────────────────────────
 
-   Butun chiziq oʻchadi — sinfda eng koʻp kerak boʻlgani va eng aniqi
-   (R334). Avval chegaraviy toʻrtburchak, keyin kesmalar boʻyicha masofa.
+   Ikki xil (R334):
+     • BUTUN CHIZIQ — tekkan chiziq toʻliq oʻchadi. Sinfda eng koʻp
+       kerak boʻlgani va eng aniqi.
+     • QISMAN — faqat oʻchirgʻich oʻtgan joy ketadi, chiziq boʻlaklarga
+       boʻlinadi. Harfning bir qismini tuzatish, jadval chizigʻini
+       qisqartirish uchun.
+
+   Ikkalasi ham oʻchirgʻichning YOʻLI bilan ishlaydi (hodisadagi barcha
+   nuqtalar): tez harakatda nuqtalar oraligʻidagi chiziq ham oʻchsin.
    ──────────────────────────────────────────────────────────────────── */
 
 type Bounds = { minX: number; minY: number; maxX: number; maxY: number };
@@ -327,7 +690,7 @@ const boundsCache = new WeakMap<InkStroke, Bounds>();
 function strokeBounds(stroke: InkStroke): Bounds {
   let b = boundsCache.get(stroke);
   if (!b) {
-    const p = stroke.points;
+    const p = strokePolyline(stroke);
     b = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity };
     for (let i = 0; i + 1 < p.length; i += 3) {
       if (p[i] < b.minX) b.minX = p[i];
@@ -344,18 +707,180 @@ function segmentDistance(px: number, py: number, ax: number, ay: number, bx: num
   return segmentDistance3(px, py, 0, ax, ay, 0, bx, by, 0);
 }
 
-/** Oʻchirgich `(x, y)` nuqtada `radius` bilan shu chiziqqa tegadimi. */
-export function strokeHit(stroke: InkStroke, x: number, y: number, radius: number): boolean {
-  const reach = radius + strokeWidthPx(stroke.tool, stroke.size) / 2;
-  const b = strokeBounds(stroke);
-  if (x < b.minX - reach || x > b.maxX + reach || y < b.minY - reach || y > b.maxY + reach) {
-    return false;
+/** Nuqtadan siniq chiziqqa (`[x, y, x, y, …]`) masofa. */
+function pathDistance(x: number, y: number, path: readonly number[]): number {
+  if (path.length < 4) return Math.hypot(path[0] - x, path[1] - y);
+  let best = Infinity;
+  for (let i = 0; i + 3 < path.length; i += 2) {
+    best = Math.min(best, segmentDistance(x, y, path[i], path[i + 1], path[i + 2], path[i + 3]));
   }
+  return best;
+}
 
-  const p = stroke.points;
-  if (p.length < 6) return Math.hypot(p[0] - x, p[1] - y) <= reach;
+/**
+ * Oʻchirgʻich yoʻli ekran koordinatasida → chiziqning oʻz koordinatasida
+ * yoʻl va radius. Chegara boʻyicha tez rad etish ham shu yerda.
+ */
+function localEraser(
+  placed: PlacedStroke,
+  path: readonly number[],
+  radius: number,
+): { path: number[]; reach: number } | null {
+  const { stroke, place } = placed;
+  const local: number[] = [];
+  for (let i = 0; i + 1 < path.length; i += 2) local.push(...toLocal(place, path[i], path[i + 1]));
+  const reach = radius / place.scale + strokeWidthPx(stroke.tool, stroke.size) / 2;
+
+  const b = strokeBounds(stroke);
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  for (let i = 0; i + 1 < local.length; i += 2) {
+    minX = Math.min(minX, local[i]);
+    maxX = Math.max(maxX, local[i]);
+    minY = Math.min(minY, local[i + 1]);
+    maxY = Math.max(maxY, local[i + 1]);
+  }
+  if (maxX < b.minX - reach || minX > b.maxX + reach || maxY < b.minY - reach || minY > b.maxY + reach) {
+    return null;
+  }
+  return { path: local, reach };
+}
+
+function cross(ax: number, ay: number, bx: number, by: number, cx: number, cy: number): number {
+  return (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
+}
+
+/** Ikki kesma orasidagi eng qisqa masofa (kesishsa 0). */
+function segmentsDistance(
+  ax: number, ay: number, bx: number, by: number,
+  cx: number, cy: number, dx: number, dy: number,
+): number {
+  const d1 = cross(ax, ay, bx, by, cx, cy);
+  const d2 = cross(ax, ay, bx, by, dx, dy);
+  const d3 = cross(cx, cy, dx, dy, ax, ay);
+  const d4 = cross(cx, cy, dx, dy, bx, by);
+  if (((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) && ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0))) return 0;
+  return Math.min(
+    segmentDistance(ax, ay, cx, cy, dx, dy),
+    segmentDistance(bx, by, cx, cy, dx, dy),
+    segmentDistance(cx, cy, ax, ay, bx, by),
+    segmentDistance(dx, dy, ax, ay, bx, by),
+  );
+}
+
+/** Oʻchirgʻich yoʻli (`[x, y, …]`, ekran) `radius` bilan shu chiziqqa tegadimi. */
+export function strokeHit(placed: PlacedStroke, path: readonly number[], radius: number): boolean {
+  const e = localEraser(placed, path, radius);
+  return !!e && touches(placed.stroke, e);
+}
+
+/** Chiziq oʻrta chizigʻi oʻchirgʻich yoʻliga `reach` dan yaqin keladimi (oʻz koordinatasida). */
+function touches(stroke: InkStroke, e: { path: number[]; reach: number }): boolean {
+  const p = strokePolyline(stroke);
+  const q = e.path;
+  if (p.length < 6) return pathDistance(p[0], p[1], q) <= e.reach;
   for (let i = 0; i + 5 < p.length; i += 3) {
-    if (segmentDistance(x, y, p[i], p[i + 1], p[i + 3], p[i + 4]) <= reach) return true;
+    if (q.length < 4) {
+      if (segmentDistance(q[0], q[1], p[i], p[i + 1], p[i + 3], p[i + 4]) <= e.reach) return true;
+      continue;
+    }
+    for (let j = 0; j + 3 < q.length; j += 2) {
+      const d = segmentsDistance(p[i], p[i + 1], p[i + 3], p[i + 4], q[j], q[j + 1], q[j + 2], q[j + 3]);
+      if (d <= e.reach) return true;
+    }
   }
   return false;
+}
+
+/**
+ * Qisman oʻchirish: oʻchirgʻich yoʻli tekkan joy kesib tashlanadi.
+ *
+ * Qaytaradi: `null` — chiziqqa tegmadi; aks holda qolgan boʻlaklar
+ * (boʻsh massiv — butunlay oʻchdi). Boʻlaklar asl chiziqning rangi,
+ * qalinligi va bogʻlanishini oladi; shakl esa oddiy chiziqqa aylanadi
+ * (kesilgan aylana endi aylana emas).
+ *
+ * Chiziq avval zichlashtiriladi: saqlangan chiziqda nuqtalar siyrak
+ * (RDP), toʻgʻri chiziq esa atigi ikki nuqta — ularsiz kesish joyi
+ * oʻchirgʻichdan ancha uzoqda boʻlib qolardi.
+ */
+export function eraseAlong(
+  placed: PlacedStroke,
+  path: readonly number[],
+  radius: number,
+  newId: () => string,
+): InkStroke[] | null {
+  const e = localEraser(placed, path, radius);
+  // Avval arzon tekshiruv: tegmagan chiziq zichlashtirilmaydi.
+  if (!e || !touches(placed.stroke, e)) return null;
+
+  const { stroke } = placed;
+  const p = strokePolyline(stroke);
+  const n = Math.floor(p.length / 3);
+  const step = Math.max(1, e.reach / 3);
+
+  const dense: number[] = [p[0], p[1], p[2]];
+  for (let i = 1; i < n; i++) {
+    const [ax, ay, ap] = [p[i * 3 - 3], p[i * 3 - 2], p[i * 3 - 1]];
+    const [bx, by, bp] = [p[i * 3], p[i * 3 + 1], p[i * 3 + 2]];
+    const steps = Math.max(1, Math.ceil(Math.hypot(bx - ax, by - ay) / step));
+    for (let k = 1; k <= steps; k++) {
+      const t = k / steps;
+      dense.push(ax + (bx - ax) * t, ay + (by - ay) * t, ap + (bp - ap) * t);
+    }
+  }
+
+  const pieces: number[][] = [];
+  let run: number[] = [];
+  let touched = false;
+  for (let i = 0; i + 2 < dense.length; i += 3) {
+    if (pathDistance(dense[i], dense[i + 1], e.path) <= e.reach) {
+      touched = true;
+      if (run.length) pieces.push(run);
+      run = [];
+    } else {
+      run.push(dense[i], dense[i + 1], dense[i + 2]);
+    }
+  }
+  if (!touched) return null;
+  if (run.length) pieces.push(run);
+
+  // Yakka nuqta qolsa tashlanadi — kesilgan joyda mayda dogʻ qolmasin.
+  return pieces
+    .filter((piece) => piece.length >= 6)
+    .map((piece) => ({
+      id: newId(),
+      tool: stroke.tool,
+      color: stroke.color,
+      size: stroke.size,
+      points: simplify(piece, 100),
+      ...(stroke.anchor ? { anchor: stroke.anchor } : {}),
+    }));
+}
+
+/* ── Lazer koʻrsatkich (R335) ────────────────────────────────────────
+
+   Siyoh emas: SAQLANMAYDI, tarixga yozilmaydi. Iz «kometa» kabi —
+   boshi yoʻgʻon va yorqin, dumi ingichkalashib yoʻqoladi. Har nuqta
+   `LASER_LIFE_MS` yashaydi: aylanani bir soniyada chizsa butun aylana
+   koʻrinadi, qoʻyib yuborgach iz oʻzi soʻnadi.
+   ──────────────────────────────────────────────────────────────────── */
+
+export const LASER_LIFE_MS = 1100;
+const LASER_PX = 7;
+
+/** Lazer izi `[x, y, vaqt ms, …]` → `now` paytidagi kontur. */
+export function laserPath(trail: readonly number[], now: number): Path2D | null {
+  const input: number[][] = [];
+  for (let i = 0; i + 2 < trail.length; i += 3) {
+    const age = now - trail[i + 2];
+    if (age < LASER_LIFE_MS) input.push([trail[i], trail[i + 1], 1 - age / LASER_LIFE_MS]);
+  }
+  if (!input.length) return null;
+  const d = outlineToPath(
+    getStroke(input, { size: LASER_PX, thinning: 0.9, smoothing: 0.5, streamline: 0.3, simulatePressure: false }),
+  );
+  return d ? new Path2D(d) : null;
 }

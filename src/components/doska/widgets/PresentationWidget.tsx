@@ -119,6 +119,7 @@ export function PresentationWidget({ widget }: { widget: DoskaWidget }) {
         syncLive(index, !revealed, activityId);
       }}
       onChange={() => patch(widget.id, { setId: null, index: 0, revealed: false })}
+      onClampIndex={(next) => patch(widget.id, { index: next })}
       teams={teams}
       onTeamsChange={setTeams}
       live={live}
@@ -277,6 +278,7 @@ function Player({
   onGo,
   onReveal,
   onChange,
+  onClampIndex,
   teams,
   onTeamsChange,
   live,
@@ -293,6 +295,13 @@ function Player({
   /** Ochilayotgan savol — server uni qulflaydi («Yashirish» dan keyin ham). */
   onReveal: (activityId?: string) => void;
   onChange: () => void;
+  /**
+   * Saqlangan qadam toʻplamdan tashqarida (toʻplam qisqargan) — koʻrsatilayotgan
+   * qadamga tenglashtiriladi. Aks holda slaydga bogʻlangan qoʻlyozma
+   * (`WidgetMeta.inkPage`) boshqa raqam ostida saqlanib, oʻsha slaydning
+   * oʻzida yoʻqolib-chiqib qolardi.
+   */
+  onClampIndex: (next: number) => void;
   teams: Team[] | null;
   onTeamsChange: (next: Team[] | null) => void;
   live: LiveSessionInfo | null;
@@ -355,6 +364,14 @@ function Player({
       reveal: () => step && step.shape !== "slide" && onReveal(step.activityId),
     };
   });
+
+  // Toʻplam yuklangach qadam oraliqqa keltiriladi (`onClampIndex`).
+  const loadedTotal = draft?.questions.length ?? 0;
+  React.useEffect(() => {
+    if (loadedTotal === 0) return;
+    const clamped = Math.min(Math.max(index, 0), loadedTotal - 1);
+    if (clamped !== index) onClampIndex(clamped);
+  }, [loadedTotal, index, onClampIndex]);
 
   React.useEffect(() => {
     let cancelled = false;

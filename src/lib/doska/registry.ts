@@ -96,6 +96,18 @@ export type WidgetMeta = {
    * Soat yoki svetoforda yoʻq — ular sozlamasiz ham tayyor.
    */
   openSettingsOnAdd?: boolean;
+  /**
+   * Vidjetning hozirgi SAHIFASI — uning ustida yozilgan qoʻlyozma shu
+   * sahifaga bogʻlanadi (docs/doska-qolyozma-tadqiqot.md R338).
+   *
+   * Taqdimotda: toʻplam + slayd raqami. Slayd almashsa eski slayddagi
+   * belgilar yashirinadi, qaytilsa yana chiqadi. `null` — sahifa yoʻq
+   * (toʻplam tanlanmagan): yozuv ekranning oʻziga tushadi.
+   *
+   * Sahifasiz vidjetlarda (taymer, soat) maydon yoʻq — ular ustidagi
+   * yozuv ekranga tegishli.
+   */
+  inkPage?: (state: Record<string, unknown>) => string | null;
 };
 
 export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
@@ -185,6 +197,8 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
     defaultSize: { w: 880, h: 520 },
     minSize: { w: 420, h: 280 },
     initialState: { setId: null, index: 0, revealed: false, teams: null },
+    inkPage: (state) =>
+      typeof state.setId === "string" ? `${state.setId}#${Number(state.index ?? 0)}` : null,
   },
   "wheel.v1": {
     kind: "wheel.v1",

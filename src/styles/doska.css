@@ -310,6 +310,9 @@ html[data-doska-style] {
   --doska-marker-green: oklch(0.86 0.2 145);
   --doska-marker-pink: oklch(0.76 0.19 350);
   --doska-marker-blue: oklch(0.8 0.13 228);
+  /* Lazer koʻrsatkich — nur kabi yorqin qizil, atrofida yogʻdu. Och va
+     toʻq fonda bir xil: haqiqiy lazer nuri ham fonga moslashmaydi. */
+  --doska-laser: oklch(0.63 0.26 25);
 }
 
 /* ── Boʻr rejimi ──
