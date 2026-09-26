@@ -16,9 +16,11 @@
     "standards": "Standartlar",
     "tasks": "Vazifalar",
     "changelog": "Yangilanishlar",
+    "help": "Yordam",
     "feedback": "Fikr-mulohaza",
     "settings": "Sozlamalar",
     "assignments": "Topshiriqlar",
+    "resources": "Materiallar",
     "baholash": "Baholash",
     "blog": "Blog"
   },
@@ -34,10 +36,12 @@
     "timetable": "Dars jadvali",
     "planner": "Rejalashtiruvchi",
     "lessons": "Darslar",
+    "resources": "Materiallar",
     "attendance": "Davomat",
     "behavior": "Xulq-atvor",
     "grades": "Jurnal",
     "gradesHelp": "Yordam",
+    "help": "Yordam",
     "statistics": "Statistika",
     "standards": "Standartlar",
     "tasks": "Vazifalar",
@@ -49,7 +53,8 @@
     "adminUsers": "Foydalanuvchilar",
     "adminSchools": "Maktablar",
     "adminFeedback": "Fikrlar",
-    "adminAudit": "Audit jurnali"
+    "adminAudit": "Audit jurnali",
+    "adminAi": "Ustozona AI"
   },
   "GlobalCommandPalette": {
     "search": "Qidirish",
@@ -64,7 +69,6 @@
   "HeaderBreadcrumb": {
     "notFound": "Topilmadi",
     "searchClassPlaceholder": "Sinf qidirish…",
-    "myClassesHeading": "Sinflar",
     "searchStudentPlaceholder": "Oʻquvchi qidirish…"
   },
   "HeaderAccountMenu": {
@@ -103,6 +107,9 @@
     "dismissWarning": "Ogohlantirishni yopish",
     "month": "Oy",
     "quarter": "Chorak",
+    "year": "Yil",
+    "noYearLessonDaysTitle": "Bu oʻquv yilida dars kuni yoʻq",
+    "noYearLessonDaysDescription": "Bu sinf uchun oʻquv yilida rejalashtirilgan dars yoʻq. Dars jadvali va oʻquv yili sozlamalarini tekshiring.",
     "showAll": "Hammasini koʻrsatish",
     "needsAttentionCount": "Diqqat talab qiladiganlar ({count})",
     "today": "Bugun",
@@ -127,7 +134,16 @@
     "noAttentionStudents": "Diqqat talab qiladigan oʻquvchi topilmadi.",
     "noStudentsInClass": "Bu sinfda oʻquvchi yoʻq.",
     "studentCount": "{count} oʻquvchi",
-    "note": "Izoh"
+    "note": "Izoh",
+    "orphanTitle": "{count} ta davomat yozuvi dars jadvaliga mos kelmaydi",
+    "orphanDescription": "Dars kunlari oʻzgargan. Yozuvlar saqlanib turibdi, lekin jadvalda koʻrinmaydi.",
+    "orphanReview": "Koʻrish",
+    "orphanKeep": "Saqlab qoʻyish",
+    "orphanDialogTitle": "Jadvalga mos kelmaydigan yozuvlar",
+    "orphanDialogDescription": "Quyidagi sanalarda davomat belgilangan, lekin ular endi dars kuni emas.",
+    "orphanRecordsOnDate": "{count} ta yozuv",
+    "orphanDelete": "Hammasini oʻchirish",
+    "orphanClose": "Yopish"
   },
   "SettingsPage": {
     "title": "Sozlamalar",
@@ -158,7 +174,7 @@
     "schoolLabel": "Taʼlim muassasasi / Maktab",
     "schoolPlaceholder": "Masalan: 24-maktab",
     "subjectLabel": "Fan",
-    "subjectPlaceholder": "Masalan: Ingliz tili",
+    "subjectPlaceholder": "Fanni tanlang",
     "birthDateLabel": "Tavallud sana",
     "optional": "(ixtiyoriy)",
     "toastImageOnly": "Faqat rasm fayli yuklang.",
@@ -258,7 +274,13 @@
     "sheetStudents": "Oʻquvchilar",
     "sheetClasses": "Sinflar",
     "sheetLessons": "Darslar",
-    "sheetTasks": "Topshiriqlar"
+    "sheetTasks": "Topshiriqlar",
+    "emailTitle": "Yordam xatlari",
+    "emailDescription": "Ustozonadan keladigan xatlar",
+    "emailToggleTitle": "Boshlashga yordam beruvchi xatlar",
+    "emailToggleDescription": "Ishni boshlashga yordam beradigan qisqa xatlar. Parolni tiklash kabi xavfsizlik xatlari bunga bogʻliq emas — ular baribir keladi.",
+    "emailToastSaved": "Saqlandi",
+    "emailToastError": "Saqlab boʻlmadi"
   },
   "BellSection": {
     "title": "Smenalar va qoʻngʻiroqlar jadvali",
@@ -737,8 +759,8 @@
   "ArticleFeedback": {
     "thanks": "Fikringiz uchun rahmat!",
     "wasHelpful": "Bu maqola foydali boʻldimi?",
-    "yes": "Ha",
-    "no": "Yoʻq"
+    "moreQuestions": "Yana savolingiz boʻlsa?",
+    "contactLink": "Shu yerga yozing"
   },
   "ArticleToc": {
     "tableOfContents": "Mundarija"
@@ -759,12 +781,12 @@
   "StudentsPage": {
     "sortLabels": {
       "name": "Ism",
+      "lastName": "Familiya",
       "grade": "Oʻrtacha baho",
       "attendance": "Davomat"
     },
     "status": {
       "active": "Oʻqimoqda",
-      "away": "Taʼtilda",
       "archived": "Chiqib ketgan"
     },
     "statusFilterAll": "Hammasi",
@@ -775,12 +797,12 @@
     "searchPlaceholder": "Ism yoki ID boʻyicha qidirish…",
     "filterAria": "Holat boʻyicha filtrlash",
     "filterByStatus": "Holat boʻyicha",
-    "filterChip": "Holat: {label}",
     "sortButton": "Saralash: {label}",
     "sortMenuLabel": "Saralash",
     "sortGrade": "Oʻrtacha baho (pastdan)",
     "sortAttendance": "Davomat (pastdan)",
     "sortName": "Ism (A–Z)",
+    "sortLastName": "Familiya (A–Z)",
     "exportAria": "Eksport",
     "exportToast": "Oʻquvchilar roʻyxati eksport qilindi",
     "newStudent": "Yangi oʻquvchi",
@@ -790,12 +812,16 @@
     "emptyFilteredDescription": "Filtr yoki qidiruvni oʻzgartirib koʻring.",
     "emptyDescription": "Birinchi oʻquvchini qoʻshing yoki tayyor roʻyxatni import qiling.",
     "viewProfile": "Profilni koʻrish",
+    "previewPanel": "Oʻquvchi kartasi",
     "edit": "Tahrirlash",
     "addNote": "Izoh qoʻshish",
     "statusLabel": "Holati",
     "delete": "Oʻchirish",
-    "markAway": "Yoʻq deb belgilash",
+    "markArchived": "Chiqib ketgan deb belgilash",
     "markActive": "Faol deb belgilash",
+    "archiveDialogTitle": "Oʻquvchi chiqib ketganmi?",
+    "archiveDialogDescription": "«{name}» chiqib ketganlar roʻyxatiga oʻtadi va joriy roʻyxatda koʻrinmaydi. Baholari va davomat tarixi saqlanib qoladi — istalgan vaqtda qaytarib qoʻyish mumkin.",
+    "confirmArchive": "Ha, chiqib ketgan",
     "toastCreated": "Oʻquvchi qoʻshildi",
     "toastImported": "{count} ta oʻquvchi qoʻshildi",
     "toastDeleted": "Oʻquvchi oʻchirildi",
@@ -827,6 +853,7 @@
     "viewCardAria": "Karta koʻrinishi",
     "viewTableAria": "Jadval koʻrinishi",
     "tableColName": "Ism sharifi",
+    "tableColSurname": "Familiyasi",
     "tableColId": "ID",
     "tableColGrade": "Baho",
     "tableColAttendance": "Davomat",
@@ -1167,6 +1194,18 @@
     "deleteDialogWithStudents": "«{name}» sinfi, uning {count} ta oʻquvchisi va barcha baholari butunlay oʻchiriladi. Bu amalni ortga qaytarib boʻlmaydi.",
     "deleteDialogWithoutStudents": "«{name}» sinfi va unga tegishli barcha maʼlumotlar butunlay oʻchiriladi. Bu amalni ortga qaytarib boʻlmaydi.",
     "deleteDialogBulk": "{count} ta sinf ({students} ta oʻquvchi) va ularga tegishli barcha maʼlumotlar butunlay oʻchiriladi. Bu amalni ortga qaytarib boʻlmaydi.",
+    "detachDialogTitle": "Roʻyxatingizdan olib tashlansinmi?",
+    "detachDialogOne": "«{name}» sinfi sizning roʻyxatingizdan chiqadi. Sinf, oʻquvchilar va baholar hamkasblaringizda qoladi — hech narsa oʻchmaydi.",
+    "detachDialogBulk": "{count} ta sinf sizning roʻyxatingizdan chiqadi. Ularni hamkasblaringiz ham oʻtadi, shuning uchun sinflar, oʻquvchilar va baholar oʻchmaydi.",
+    "detachConfirm": "Olib tashlash",
+    "detachToast": "«{name}» roʻyxatingizdan olib tashlandi",
+    "detachBulkToast": "{count} ta sinf roʻyxatingizdan olib tashlandi",
+    "deleteDialogMixed": "{deleted} ta sinf butunlay oʻchiriladi. Qolgan {detached} tasini hamkasblaringiz ham oʻtadi — ular faqat sizning roʻyxatingizdan chiqadi.",
+    "deleteMixedToast": "{deleted} ta sinf oʻchirildi, {detached} tasi roʻyxatingizdan olib tashlandi",
+    "blockedDialogTitle": "Bu sinfni oʻchirib boʻlmaydi",
+    "blockedDialogOne": "«{name}» sinfini hamkasbingiz ham oʻtadi, siz esa uning egasisiz. Avval hamkasbni darsdan chiqaring yoki egalikni unga oʻtkazing.",
+    "blockedDialogBulk": "{count} ta sinfni hamkasblaringiz ham oʻtadi, siz esa ularning egasisiz. Avval hamkasblarni darsdan chiqaring yoki egalikni oʻtkazing.",
+    "close": "Yopish",
     "deleteBulkToast": "{count} ta sinf oʻchirildi",
     "archiveBulkToast": "{count} ta sinf arxivlandi",
     "selectedCount": "{count} ta tanlandi",
@@ -1223,7 +1262,6 @@
     "sortGrade": "Oʻrtacha baho",
     "sortAttendance": "Davomat",
     "statusActive": "Oʻqimoqda",
-    "statusAway": "Taʼtilda",
     "statusArchived": "Chiqib ketgan",
     "toastCreated": "Oʻquvchi qoʻshildi",
     "toastImported": "{count} ta oʻquvchi qoʻshildi",
@@ -1239,7 +1277,7 @@
     "emptyTitle": "Bu sinfda hali oʻquvchi yoʻq",
     "emptyFilteredDescription": "Qidiruvni oʻzgartirib koʻring.",
     "emptyDescription": "Oʻquvchilarni qoʻshing.",
-    "markAway": "Yoʻq deb belgilash",
+    "markArchived": "Chiqib ketgan deb belgilash",
     "markActive": "Faol deb belgilash",
     "fullProfileAria": "Toʻliq profil",
     "viewProfile": "Profilni koʻrish",
@@ -1283,7 +1321,7 @@
     "cancel": "Bekor qilish",
     "save": "Saqlash",
     "deleteUnitDialogTitle": "Boʻlimni oʻchirish",
-    "deleteUnitDialogDescription": "«{unit}» boʻlimi oʻchiriladi. Undagi darslar oʻchmaydi — faqat boʻlimsiz boʻlib qoladi. Bu amalni keyinroq bekor qilishingiz mumkin.",
+    "deleteUnitDialogDescription": "«{unit}» boʻlimi va undagi darslar oʻchiriladi — jadvalga joylangan darslar ham olib tashlanadi. Bu amalni keyinroq bekor qilishingiz mumkin.",
     "delete": "Oʻchirish",
     "noUnitSelectedTitle": "Boʻlim tanlanmagan",
     "noUnitSelectedDescription": "Mavzularni koʻrish uchun boʻlim tanlang.",
@@ -1291,6 +1329,13 @@
     "editAria": "Tahrirlash",
     "searchAria": "Qidirish",
     "sortAria": "Saralash",
+    "reorderMenuItem": "Tartibni oʻzgartirish",
+    "reorderHint": "Sudrang yoki ↑ ↓ bosing",
+    "reorderMoved": "{count} ta oʻrni oʻzgardi",
+    "reorderDone": "Tayyor",
+    "reorderDrag": "Sudrash",
+    "reorderUp": "Yuqoriga",
+    "reorderDown": "Pastga",
     "newLesson": "Yangi mavzu",
     "listViewAria": "Roʻyxat",
     "calendarViewAria": "Kalendar",
@@ -1299,15 +1344,44 @@
     "deleteLessonAria": "Oʻchirish",
     "deleteLessonDialogTitle": "Mavzuni oʻchirish",
     "deleteLessonDialogDescription": "Bu mavzu va uning tahrirlagichdagi barcha mazmuni butunlay oʻchiriladi. Bu amalni qaytarib boʻlmaydi.",
-    "lessonDeletedToast": "Mavzu oʻchirildi"
+    "lessonDeletedToast": "Mavzu oʻchirildi",
+    "deleteUnitKeepLessons": "Darslar oʻchmasin — «Boʻlimsiz» ga oʻtsin",
+    "deleteUnitImpact": "Boʻlimda {lessons} ta dars bor, ulardan jadvalga {sessions} ta yozuv joylangan."
   },
   "LessonsPage": {
     "statusCompleted": "Tugallandi",
     "statusScheduled": "Rejalashtirilgan",
     "statusUnscheduled": "Rejasiz",
+    "classMeta": "{units} ta boʻlim · {lessons} ta mavzu",
+    "classCoverage": "Qamrov: {pct}%",
+    "moveToNewUnit": "Yangi boʻlimga…",
+    "lessonMovedToUnit": "«{lesson}» → {unit}",
+    "lessonsMovedToUnit": "{count} ta mavzu → {unit}",
+    "lessonsSearchPlaceholder": "Mavzu qidirish…",
+    "lessonsSearchEmpty": "«{q}» boʻyicha mavzu topilmadi",
+    "classUnitsTip": "{count} ta boʻlim",
+    "classLessonsTip": "{count} ta mavzu · {taught} tasi oʻtildi",
     "statusDraft": "Qoralama",
-    "unitDeletedToast": "«{unit}» oʻchirildi",
-    "undo": "Bekor qilish",
+    "unitDeletedToast": "«{unit}» oʻchirildi",
+    "undo": "Bekor qilish",
+    "selectAria": "Belgilash",
+    "selectMenuItem": "Tanlash",
+    "reorderMenuItem": "Tartibni oʻzgartirish",
+    "reorderHint": "Sudrang yoki ↑ ↓ bosing",
+    "reorderMoved": "{count} ta oʻrni oʻzgardi",
+    "reorderDone": "Tayyor",
+    "reorderDrag": "Sudrash",
+    "reorderUp": "Yuqoriga",
+    "reorderDown": "Pastga",
+    "selectAll": "Hammasini tanlash",
+    "bulkDeleteUnitsTitle": "Tanlangan boʻlimlar oʻchirilsinmi?",
+    "bulkDeleteUnitsDescription": "{units} ta boʻlim va ular ichidagi {lessons} ta dars oʻchiriladi. Amalni xabarnomadagi «Bekor qilish» orqali darhol qaytarish mumkin.",
+    "bulkDeleteLessonsTitle": "Tanlangan darslar oʻchirilsinmi?",
+    "bulkDeleteLessonsDescription": "{lessons} ta dars oʻchiriladi. Amalni xabarnomadagi «Bekor qilish» orqali darhol qaytarish mumkin.",
+    "bulkUnitsDeletedToast": "{units} ta boʻlim va {lessons} ta dars oʻchirildi",
+    "bulkLessonsDeletedToast": "{lessons} ta dars oʻchirildi",
+    "selectedCount": "{count} ta tanlandi",
+    "bulkDeleteSessions": "Jadvaldagi {sessions} ta yozuv ham olib tashlanadi.",
     "newLessonToast": "Yangi dars yaratildi",
     "editUnit": "Tahrirlash",
     "deleteUnit": "Oʻchirish",
@@ -1335,7 +1409,7 @@
     "cancel": "Bekor qilish",
     "save": "Saqlash",
     "deleteUnitDialogTitle": "Boʻlimni oʻchirish",
-    "deleteUnitDialogDescription": "«{unit}» boʻlimi oʻchiriladi. Undagi darslar oʻchmaydi — faqat boʻlimsiz boʻlib qoladi. Bu amalni keyinroq bekor qilishingiz mumkin.",
+    "deleteUnitDialogDescription": "«{unit}» boʻlimi va undagi darslar oʻchiriladi — jadvalga joylangan darslar ham olib tashlanadi. Bu amalni keyinroq bekor qilishingiz mumkin.",
     "delete": "Oʻchirish",
     "noUnitSelectedTitle": "Boʻlim tanlanmagan",
     "noUnitSelectedDescription": "Mavzularni koʻrish uchun boʻlim tanlang.",
@@ -1347,18 +1421,29 @@
     "lessonsEmptyTitle": "Hali mavzu yoʻq",
     "lessonsEmptyDescription": "Ushbu boʻlimga birinchi mavzuni qoʻshing.",
     "deleteLessonAria": "Oʻchirish",
+    "moveLesson": "Koʻchirish",
     "deleteLessonDialogTitle": "Darsni oʻchirish",
     "deleteLessonDialogDescription": "Bu dars va uning tahrirlagichdagi barcha mazmuni butunlay oʻchiriladi. Bu amalni qaytarib boʻlmaydi.",
-    "lessonDeletedToast": "Dars oʻchirildi"
+    "lessonDeletedToast": "Dars oʻchirildi",
+    "deleteUnitKeepLessons": "Darslar oʻchmasin — «Boʻlimsiz» ga oʻtsin",
+    "deleteUnitImpact": "Boʻlimda {lessons} ta dars bor, ulardan jadvalga {sessions} ta yozuv joylangan."
   },
   "TimetablePage": {
+    "scheduleSavedToast": "Jadval yangilandi",
+    "pendingSubtitle": "Jadvalda hali eski tartib amal qiladi",
+    "discardedToast": "{count} ta oʻzgarish bekor qilindi",
+    "undo": "Qaytarish",
+    "discardConfirmTitle": "Oʻzgarishlar bekor qilinsinmi?",
+    "discardConfirmDescription": "{count} ta oʻzgarish oʻchadi va jadval oxirgi qoʻllangan holatiga qaytadi.",
+    "pendingChanges": "{count} ta oʻzgarish saqlanmagan",
+    "applyChanges": "Saqlash",
+    "discardChanges": "Bekor qilish",
     "unknownClass": "Nomaʼlum sinf",
     "versionExistsError": "Bu sanada allaqachon versiya bor",
     "newVersionToast": "Yangi jadval versiyasi — {date}dan",
     "exportEmptyError": "Eksport uchun jadval boʻsh",
     "exportSuccessToast": "Jadval eksport qilindi",
     "classRemovedToast": "Sinf jadvaldan olib tashlandi",
-    "undo": "Qaytarish",
     "notScheduled": "Jadvalga qoʻshilmagan",
     "classesTitle": "Sinflar",
     "add": "Qoʻshish",
@@ -1432,7 +1517,7 @@
     "today": "Bugun",
     "nextAria": "Keyingi",
     "noScheduleTitle": "Jadval hali tuzilmagan",
-    "noScheduleDescription": "Planner dars jadvalingiz ustiga quriladi. Avval haftalik jadvalni tuzing — keyin bu yerda darslarni rejalashtirasiz.",
+    "noScheduleDescription": "Rejalashtiruvchi dars jadvalingiz ustiga quriladi. Avval haftalik jadvalni tuzing — keyin bu yerda darslarni rejalashtirasiz.",
     "buildSchedule": "Jadval tuzish",
     "scheduleUpdated": "Jadval yangilandi",
     "daySettingsAria": "Kun sozlamalari",
@@ -1957,11 +2042,14 @@
     "compactGroupShow": "koʻrsatish",
     "showPrevious": "Oldingi yangilanishlarni koʻrsatish",
     "types": {
-      "yangi": "Yangi",
-      "yaxshilandi": "Yaxshilandi",
-      "tuzatildi": "Tuzatildi"
+      "yangi": "Yangilik",
+      "yaxshilandi": "Sayqallandi",
+      "tuzatildi": "Sozlandi"
     },
     "routes": {
+      "help": "Yordam markazi",
+      "baholash": "Baholash",
+      "blog": "Blog",
       "assignments": "Topshiriqlar",
       "planner": "Rejalashtiruvchi",
       "dashboard": "Bosh sahifa",
@@ -1980,6 +2068,30 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "doska-uslublar": {
+        "title": "Doskaga oʻzingizga yoqqan uslubni tanlang va panelni oʻzingiz tuzing",
+        "body": "Menyudagi «Koʻrinish»da uchta uslubdan birini tanlang: «Sokin» — proyektorda eng aniq, «Oʻyinchoq» — kichik sinflar uchun quvnoq va rangli, «Doska» — yashil doskadagi qogʻoz va magnitlar. Panelni pastda, chap yoki oʻng chetda qoldirish mumkin — interaktiv doska yonida turib ishlasangiz qulay. Kerakli vositalarni «Hammasi» oynasidan panelga qadab qoʻying, qolganlari oʻsha oynada turadi."
+      },
+      "doska-qulay-boshqaruv": {
+        "title": "Doska qulaylashdi: taymerga istalgan vaqt, har amal qaytariladi, boshqaruv qoʻl ostida",
+        "body": "Taymerni qoʻyganingizda vaqtni darhol tanlaysiz (1–15 daqiqa yoki ± tugmalari), uni bosib boshlaysiz, tugaganda qoʻngʻiroq chalinadi; har vidjetning sozlamasi uning yonida, «Sozlash» tugmasida ochiladi. Tasodifan oʻchirilgan vidjet yoki ekran «Qaytarish» bilan joyiga qaytadi, kerakli vidjetni qulflab qoʻyish yoki «Markazga» bilan butun ekranga chiqarish mumkin. Butun boshqaruv endi pastda — interaktiv doskada qoʻl choʻzmasdan yetasiz; menyuda esa sinf eʼtiborini olish uchun «Ekranni yopish» va «Qoʻngʻiroq chalish» bor."
+      },
+      "doska-gildirak": {
+        "title": "Doskada Gʻildirak: kim javob berishini adolatli tanlang",
+        "body": "Doskaning pastki panelidan «Gʻildirak»ni qoʻyasiz, qalamcha tugmasi bilan oʻquvchilar ismini yozasiz va gʻildirakni bosasiz — u aylanib, bitta oʻquvchini tanlaydi. «Hamma bir martadan» rejimida soʻralgan bola gʻildirakdan chiqadi, shuning uchun «nega doim men?!» degan gap boʻlmaydi; hamma soʻralgach yangi aylanmani boshlaysiz. Bola tayyor boʻlmasa «Keyinroq»ni bosasiz — u gʻildirakka qaytadi va keyinroq yana chiqadi."
+      },
+      "sahna-uslubi": {
+        "title": "Taqdimot va testlar uchun yangi koʻrinish: shrift, uslub va rangli javoblar",
+        "body": "Muharrirdagi «Mavzu» panelida shriftni (Nunito, Rubik, Montserrat, Onest) va sahna uslubini — «Klassik» yoki «Zamonaviy» — tanlaysiz: oʻquvchi telefoni ham, Doska ham shu koʻrinishda chiqadi. Javob variantlari endi rangli, shaklli va raqamli — kompyuter sinfida oʻquvchilar 1–6 tugmalari bilan javob beradi. Javob ochilganda toʻgʻrisi yashil, xato tanlov qizil boʻlib chiqadi, Doskada esa savollar progressi va vaqt chizigʻi koʻrinadi. Uyga vazifada oʻquvchi har savoldan keyin natijasini darhol koʻradi."
+      },
+      "taqdimot-doskada": {
+        "title": "Interaktiv taqdimot: slaydlar, savollar va jonli dars — bitta joyda",
+        "body": "Jurnalda topshiriq yaratayotganda «Avtomatik» → «Taqdimot» ni tanlaysiz. Slaydni tayyor maketdan tuzasiz (sarlavha, roʻyxat, rasm, video, iqtibos) yoki mavjud PowerPoint va PDF faylingizni import qilasiz, slaydlar orasiga esa test, soʻrovnoma, soʻz buluti va ochiq javob qoʻyasiz. Darsda Doskadan «Jonli sessiya» ni boshlaysiz: oʻquvchilar QR yoki PIN bilan kiradi, siz slaydni almashtirsangiz hamma ekran birga oʻtadi, javoblar esa doskada jonli ustun boʻlib oʻsadi. Qurilma boʻlmasa ham boʻladi — javobni doskada ochib, sinfni jamoalarga boʻlib ball berasiz. Ochiq javoblarni keyin 0, ½ yoki 1 bilan baholaysiz va natijani jurnalga koʻchirasiz."
+      },
+      "jamoa-ish-maydoni": {
+        "title": "Endi maktab boʻlib birga ishlash mumkin — bir necha oʻqituvchi, bitta oʻquvchilar roʻyxati",
+        "body": "Sozlamalar › Jamoa boʻlimida hamkasbingizga taklif kodi berasiz. U qoʻshilganda sinflari va oʻquvchilari bilan birga keladi — qabul qilishdan oldin nima koʻchishini roʻyxat bilan koʻradi. Har sinfning egasi bor: darsni kim oʻtishini u belgilaydi, bitta sinfga bir necha oʻqituvchi biriktirilishi mumkin. Bola haqidagi baho, davomat va qaydlarni esa faqat oʻsha bolaga dars beradigan oʻqituvchi koʻradi — bir maktabda ishlashning oʻzi hech narsani ochmaydi."
+      },
       "topshiriq-qoralama-royxatda": {
         "title": "Tugallanmagan topshiriq endi roʻyxatda turadi va yoʻqolmaydi",
         "body": "Muharrirni yopsangiz hech nima soʻralmaydi — qoralama Topshiriqlar roʻyxatida karta boʻlib turadi, bosib davom ettirasiz. Boshqa sinfda «+» bossangiz ham eski qoralamangiz oʻchib ketmaydi, oʻsha ochiladi. Kichraytirish tugmasi va burchakdagi yorliq kerak boʻlmay qoldi."
@@ -2190,6 +2302,11 @@
         "title": "Vazifalar — oʻng panelda statistika qoʻshildi",
         "body": "Hech qanday vazifa tanlanmaganda oʻng panel endi boʻsh turmaydi: rejadagi vaqt, rejadagi vazifalar, sarflangan vaqt va bajarilganlar foizi bir qarashda koʻrinadi. Toʻliq statistikaga oʻtish tugmasi ham shu yerda."
       }
+    },
+    "cta": {
+      "help": "Qoʻllanmani oʻqish",
+      "blog": "Blogda koʻrish",
+      "try": "Sinab koʻrish"
     }
   },
   "StandardsView": {
@@ -2283,6 +2400,7 @@
     "customSetsCount": "{count} custom toʻplam",
     "noCustomSetsYet": "Hali custom toʻplam yoʻq. Yuqorida nom kiritib «Yaratish» bosing.",
     "importSuccess": "{count} ta standart import qilindi",
+    "importDomainsInferred": "{count} ta maqsadning mazmun sohasi koddan taxmin qilindi — tekshiring",
     "importNoStandards": "Faylda standart topilmadi",
     "importReadError": "Faylni oʻqib boʻlmadi",
     "editAria": "Tahrirlash",
@@ -2337,9 +2455,18 @@
     "unknownClass": "Nomaʼlum sinf",
     "untitledTopic": "(nomsiz mavzu)",
     "tomorrow": "Ertaga",
+    "inDays": "{count} kundan keyin",
     "durationSuffix": "{count} daq.",
     "emptyTitle": "Kelgusi darslar yoʻq",
-    "emptyDescription": "Hali reja tuzilmagan — dars jadvalini tekshiring."
+    "emptyDescription": "Hali reja tuzilmagan — dars jadvalini tekshiring.",
+    "noTopic": "Mavzu biriktirilmagan",
+    "addTopic": "Mavzu qoʻshish",
+    "addTopicTooltip": "Yangi mavzu yaratib, muharrirni ochish",
+    "link": "Ulash",
+    "linkTooltip": "Mavjud mavzuni shu darsga ulash",
+    "thisWeek": "Bu hafta",
+    "weekProgressAria": "Bu hafta {total} ta darsdan {done} tasiga mavzu biriktirilgan",
+    "holidayRow": "{day} — {name}"
   },
   "QueueSection": {
     "title": "Vazifalar",
@@ -2359,8 +2486,11 @@
     "dueToday": "Bugun",
     "dueTomorrow": "Ertaga",
     "footerDone": "Bugun: {done}/{total} bajarildi",
-    "emptyTitle": "Hammasi tekshirilgan",
-    "emptyDescription": "Navbat boʻsh — yangi vazifa qoʻshing yoki dam oling."
+    "emptyTitle": "Hozircha vazifa yoʻq",
+    "emptyDescription": "Yuqoridagi maydonga yozib, bugungi vazifani qoʻshing.",
+    "emptyWeekTitle": "Bu hafta boʻsh",
+    "emptyWeekDescription": "Keyinroq yana {count} ta vazifa bor.",
+    "quickAddPlaceholder": "Bugunga vazifa qoʻshish"
   },
   "TodayRail": {
     "title": "Bugungi darslar",
@@ -2385,6 +2515,7 @@
     "showSunday": "Yakshanbani koʻrsatish",
     "hideSunday": "Yakshanbani yashirish",
     "attendanceAction": "Davomat",
+    "startPresentation": "Taqdimotni boshlash",
     "gradesAction": "Jurnal"
   },
   "HomeHero": {
@@ -2403,7 +2534,9 @@
   "YearProgress": {
     "ariaLabel": "Oʻquv yili jarayoni: {year}",
     "quarterWeek": "{quarter} · {week}/{weeks}-hafta",
-    "quarterUntil": "{name} — {date}gacha"
+    "quarterUntil": "{name} — {date}gacha",
+    "quarterEndDate": "{date}gacha",
+    "weekOfYear": "{week}/{weeks}-hafta"
   },
   "DashboardPage": {
     "unknownClass": "Nomaʼlum sinf",
@@ -2591,7 +2724,7 @@
     "signingIn": "Kirilmoqda…",
     "signIn": "Tizimga kirish",
     "noAccount": "Hisobingiz yoʻqmi?",
-    "getStartedFree": "Bepul boshlash",
+    "getStartedFree": "Roʻyxatdan oʻtish",
     "googleNotConfigured": "Google orqali kirish hozircha sozlanmagan.",
     "errors": {
       "invalidEmailOrPassword": "Email yoki parol notoʻgʻri.",
@@ -2601,9 +2734,71 @@
     },
     "continueWithTelegram": "Telegram bilan davom etish"
   },
+  "TelegramAuth": {
+    "titleLogin": "Telegram orqali davom etish",
+    "titleLink": "Telegramni ulash",
+    "descLogin": "Kirish yoki roʻyxatdan oʻtish — bot orqali",
+    "descLink": "Eslatmalar va parolsiz kirish uchun",
+    "starting": "Tayyorlanmoqda…",
+    "codeLabel": "Saytdagi kod",
+    "codeHint": "Botda aynan shu kodni tanlang.",
+    "qrHint": "Yoki telefon kamerasi bilan QR kodni skanerlang.",
+    "openTelegram": "Telegramni ochish",
+    "waiting": "Telegramda tasdiqlashingiz kutilmoqda…",
+    "awaitingPhone": "Botda «Raqamni yuborish» tugmasini bosing — akkaunt ochiladi.",
+    "signedIn": "Tasdiqlandi, kirilmoqda…",
+    "linked": "Telegram akkauntingizga ulandi!",
+    "rejected": "Soʻrov rad etildi yoki kod mos kelmadi.",
+    "hasAccount": "Avval email bilan kiring, keyin Sozlamalar → Telegram boʻlimida ulang.",
+    "takenTg": "Bu Telegram boshqa Ustozona akkauntiga ulangan.",
+    "takenUz": "Bu akkaunt boshqa Telegramga ulangan. Avval uni uzing.",
+    "banned": "Hisobingiz vaqtincha bloklangan.",
+    "expired": "Vaqt tugadi. Qaytadan urinib koʻring.",
+    "failed": "Xatolik yuz berdi. Qaytadan urinib koʻring.",
+    "retry": "Qaytadan",
+    "cancel": "Bekor qilish",
+    "close": "Yopish"
+  },
+  "TelegramSection": {
+    "title": "Telegram",
+    "description": "Ertangi va bugungi darslar haqida eslatmalar, parolsiz kirish.",
+    "disabled": "Ustozona boti hali ishga tushirilmagan.",
+    "telegramLabel": "Telegram",
+    "notLinked": "Ulanmagan",
+    "linked": "Ulangan",
+    "linkedAs": "Ulangan: {username}",
+    "botInactive": "Ulangan, lekin bot ishga tushirilmagan — xabarlar kelishi uchun botni oching.",
+    "connect": "Ulash",
+    "openBot": "Botni ochish",
+    "phoneLabel": "Telefon",
+    "phoneMissing": "Qoʻshilmagan — botda «Raqamni yuborish» tugmasini bosing.",
+    "phoneNeedsLink": "Avval Telegramni ulang.",
+    "marketingLabel": "Yangiliklar va maslahatlar",
+    "marketingHint": "Ustozona yangiliklari Telegramga keladi. Darslar haqidagi xabarlarga taʼsir qilmaydi.",
+    "saveFailed": "Saqlanmadi. Qaytadan urinib koʻring.",
+    "digestTitle": "Kunlik xabarlar",
+    "digestDescription": "Aytadigan narsa boʻlmagan kuni (taʼtil, dam olish) xabar kelmaydi.",
+    "eveningLabel": "Kechqurun — ertangi kun",
+    "eveningHint": "Ertangi darslar, mavzu biriktirilmagan darslar va muddatlar.",
+    "morningLabel": "Ertalab — bugungi kun",
+    "morningHint": "Bugungi darslar, bugungi va muddati oʻtgan vazifalar."
+  },
+  "TelegramPrompt": {
+    "link": "Ertangi darslar har kuni kechqurun, bugungi reja esa ertalab Telegramga kelsin — ulash bir daqiqa.",
+    "linkAction": "Telegramni ulash",
+    "startBot": "Telegram ulangan, lekin bot hali ishga tushirilmagan — eslatmalar kelishi uchun botni oching.",
+    "phone": "Telefon raqamingizni qoʻshing — botda bitta tugma.",
+    "openBot": "Botni ochish",
+    "later": "Keyinroq",
+    "preview": "Namuna",
+    "previewLoading": "Xabar tayyorlanmoqda…",
+    "previewEmpty": "Yaqin kunlarda yuboradigan xabar yoʻq — jadvalga dars qoʻshilganda keladi.",
+    "previewTitle": "Kechqurun botdan shunday xabar keladi:",
+    "previewError": "Namunani yuklab boʻlmadi.",
+    "previewRetry": "Qayta urinish"
+  },
   "SignupForm": {
-    "title": "Bepul boshlash",
-    "subtitle": "Bank kartasi talab qilinmaydi. Bir daqiqada ishga tushasiz.",
+    "title": "Roʻyxatdan oʻtish",
     "continueWithGoogle": "Google orqali davom etish",
     "orWithEmail": "yoki email bilan",
     "firstNameLabel": "Ism",
@@ -2615,19 +2810,24 @@
     "passwordLabel": "Parol",
     "passwordPlaceholder": "Kamida 8 belgi",
     "creating": "Yaratilmoqda…",
-    "submit": "Bepul boshlash",
+    "submit": "Hisob yarating",
     "haveAccount": "Hisobingiz bormi?",
     "signIn": "Tizimga kirish",
     "googleNotConfigured": "Google orqali kirish hozircha sozlanmagan.",
     "errors": {
+      "required": "Bu maydon toʻldirilishi shart.",
       "userAlreadyExists": "Bu email bilan hisob allaqachon mavjud.",
       "passwordTooShort": "Parol kamida 8 belgidan iborat boʻlsin.",
       "passwordTooLong": "Parol juda uzun.",
       "invalidEmail": "Email manzili notoʻgʻri koʻrinishda.",
       "generic": "Roʻyxatdan oʻtishda xatolik yuz berdi. Qayta urinib koʻring."
     },
-    "continueWithTelegram": "Telegram bilan davom etish",
-    "telegramHint": "Eng tez yoʻl — ism-familiya va bogʻlanish avtomatik"
+    "passwordStrength": {
+      "weak": "Zaif",
+      "medium": "Oʻrtacha",
+      "strong": "Kuchli"
+    },
+    "continueWithTelegram": "Telegram bilan davom etish"
   },
   "ForgotPasswordPage": {
     "title": "Parolni unutdingizmi?",
@@ -2701,7 +2901,7 @@
       "schoolLabel": "Maktab / muassasa",
       "schoolPlaceholder": "Masalan, 24-maktab",
       "subjectLabel": "Asosiy fan",
-      "subjectPlaceholder": "Masalan, Ingliz tili",
+      "subjectPlaceholder": "Fanni tanlang",
       "birthDateLabel": "Tavallud sana"
     },
     "yearStep": {
@@ -2807,6 +3007,14 @@
     "standards": "Standartlar",
     "addStandard": "Standart qoʻshish",
     "removeStandard": "O'chirish",
+    "materials": "Taqdimot va testlar",
+    "addMaterial": "Taqdimot yoki test biriktirish",
+    "searchMaterial": "Qidirish…",
+    "noMaterials": "Hali taqdimot yoki test yoʻq",
+    "removeMaterial": "Ajratish",
+    "kindDeck": "Taqdimot",
+    "kindTest": "Test",
+    "materialsHint": "Dars kuni Dashboard va Doskada tayyor turadi",
     "taught": "O'tilgan",
     "selectClassFirst": "Avval sinf tanlang",
     "searchStandard": "Standart qidirish…",
@@ -2827,6 +3035,7 @@
     "textColor": "Matn rangi",
     "highlightColor": "Ajratish rangi",
     "clearColor": "Rangni tozalash",
+    "blockStyle": "Uslub",
     "paragraph": "Oddiy matn",
     "heading1": "Sarlavha 1",
     "heading2": "Sarlavha 2",
@@ -2857,6 +3066,12 @@
     "link": "Havola",
     "linkApply": "Qoʻshish",
     "insertImage": "Rasm qoʻshish",
+    "insertVideo": "Video qoʻshish",
+    "videoApply": "Qoʻyish",
+    "videoHint": "YouTube yoki Instagram havolasini qoʻying. Boʻsh qatorga havola tashlansa video oʻzi qoʻyiladi.",
+    "videoNotRecognized": "Havola tanilmadi — YouTube yoki Instagram havolasini qoʻying",
+    "imageUploadFailed": "Rasmni yuklab boʻlmadi",
+    "captionPlaceholder": "Rasm izohi (ixtiyoriy)",
     "insertCallout": "Callout qoʻshish",
     "changeCalloutType": "Turini oʻzgartirish",
     "insertNotionCallout": "Emojili blok",
@@ -2959,37 +3174,36 @@
     "pastMidnightWarning": "Darslar yarim tundan oshib ketmoqda — boshlanish vaqti yoki darslar sonini tekshiring."
   },
   "EffectiveDateDialog": {
-    "title": "Yangi dars jadvali qachondan kuchga kiradi?",
-    "description": "Ungacha boʻlgan dars va baholar tarixi oldingi jadvalda saqlanadi.",
+    "title": "Oʻzgarish qachondan amal qilsin?",
+    "description": "Bu tahrirlar qaysi kunlarga tegsin.",
+    "pickTitle": "Yangi jadval qachondan boshlansin?",
+    "pickDescription": "Tanlangan sanadan yangi jadval versiyasi yaratiladi.",
     "close": "Yopish",
     "options": {
-      "monday": {
-        "title": "Keyingi dushanbadan",
-        "caption": "Yangi jadval '{date}'dan kuchga kiradi. Ungacha darslar eski tartibda boʻladi."
+      "new": {
+        "title": "Bugundan",
+        "caption": "Oldingi darslar eski jadvalda qoladi."
       },
-      "today": {
-        "title": "Bugundan boshlab",
-        "caption": "'{date}'dan boshlanadi. Oʻtgan kunlar tarixiga taʼsir qilmaydi."
-      },
-      "custom": {
-        "title": "Boshqa sanadan…",
-        "caption": "'{date}'dan kuchga kiradi",
-        "pickFromCalendar": "Sanani kalendardan tanlang."
-      },
-      "inPlace": {
-        "title": "Xatoni toʻgʻrilash",
-        "caption": "Yangi jadval yaratilmaydi, oʻzgarishlar barcha kunlarga qoʻllanadi."
+      "fix": {
+        "title": "Boshidan — xatoni toʻgʻrilash",
+        "caption": "Barcha darslar yangi jadval boʻyicha koʻrsatiladi."
       }
     },
+    "attendanceWarning": "Oʻtgan darslardagi davomat belgilariga taʼsir qilishi mumkin.",
+    "effectiveDateLabel": "Boshlanish sanasi",
     "dateAlreadyTaken": "Ushbu sanaga dars jadvali tuzilgan",
-    "effectiveDateLabel": "Kuchga kirish sanasi",
-    "pickDate": "Sanani tanlang",
-    "dateAlreadyTakenFull": "Ushbu sanaga dars jadvali tuzilgan.",
     "pastDateWarning": "Oʻtmishdagi sana — shu kundan keyingi kunlar tarixi ham yangi jadval bilan koʻrsatiladi.",
-    "noteLabel": "Oʻzgarishlar haqida izoh (ixtiyoriy)",
-    "notePlaceholder": "Masalan: 7-B darsi juma kuniga oʻtkazildi",
     "cancel": "Bekor qilish",
     "save": "Saqlash"
+  },
+  "SubjectPicker": {
+    "placeholder": "Fanni tanlang",
+    "search": "Fan qidiring…",
+    "empty": "Fan topilmadi",
+    "mySubjects": "Mening fanlarim",
+    "suggested": "Tavsiya",
+    "addCustom": "«{value}» fanini qoʻshish",
+    "clear": "Tanlovni tozalash"
   },
   "ClassFormModal": {
     "createTitle": "Yangi sinf yaratish",
@@ -3000,7 +3214,7 @@
     "pickColor": "Rang tanlash",
     "gradeValue": "{grade}-sinf",
     "subject": "Fan",
-    "subjectPlaceholder": "Masalan, Matematika",
+    "subjectPlaceholder": "Fanni tanlang",
     "cancel": "Bekor qilish",
     "create": "Yaratish",
     "save": "Saqlash",
@@ -3021,6 +3235,7 @@
       "undo": "Bekor qilish"
     },
     "title": "Sinflar",
+    "selectClass": "Sinf tanlang",
     "addClass": "Sinf qoʻshish",
     "add": "Qoʻshish",
     "emptyTitle": "Hozircha sinflar yoʻq",
@@ -3052,7 +3267,8 @@
     "submit": "Boʻlim yaratish"
   },
   "LessonsServerSync": {
-    "saveError": "Darslar serverga saqlanmadi"
+    "saveError": "Darslar serverga saqlanmadi",
+    "deleteError": "Oʻchirish serverda bajarilmadi — qayta urinib koʻring"
   },
   "SettingsDialogContent": {
     "close": "Yopish"
@@ -3103,27 +3319,15 @@
         },
         "1": {
           "title": "Kunni boshqarish markazi",
-          "body": "Salomdagi chiplar bosiladi: tekshirishlar jurnalga, davomat sanashi davomat sahifasiga olib boradi. Pastdagi yupqa chiziq — oʻquv yili progressi; fasl belgilariga kursorni olib borsangiz chorak sanalari chiqadi."
+          "body": "Bu yerda kunning holati chiqadi: birinchi kirishda — salom va bugungi holat (nechta dars, keyingisi qachon); keyingi kirishlarda — iqtibos, uni bosib oʻzingiznikini qoʻshasiz. Salom paytida pastda yupqa chiziq — oʻquv yili progressi; fasl belgilariga kursorni olib borsangiz chorak sanalari chiqadi."
         },
         "2": {
           "title": "Ishlar navbati",
-          "body": "Vazifalar, tekshirilmagan ishlar va nazorat muddatlari bitta navbatda. Sarlavhadagi «Bugun» bilan ufqni kengaytirasiz (hafta yoki hammasi), «+ Vazifa» esa shu yerning oʻzida tez qoʻshadi."
+          "body": "Baholash kutayotgan vazifalar muddatiga qarab guruhlangan — muddati oʻtgan, bugungi, keyingi hafta ichidagi. Katakchani belgilasangiz bajarilgan boʻladi, qatorni bossangiz toʻgʻridan-toʻgʻri shu sinf jurnaliga oʻtasiz; hammasi sigʻmasa, pastda «Yana koʻrish» havolasi chiqadi."
         },
         "3": {
           "title": "Bugungi darslar",
-          "body": "Roʻyxat va vaqt oʻqi orasida almashtirgich bor — tanlovingiz eslab qolinadi. Oʻtgan darslar xira, joriysi ajralib turadi; oxirgi darsdan soʻng kun yakuni kartasi chiqadi, undagi tugma bilan iqtiboslarni oʻzingiz boshqarasiz."
-        },
-        "4": {
-          "title": "Haftalik tasma",
-          "body": "Kun tanlasangiz faqat darslar paneli oʻsha kunga oʻtadi — ishlar navbati bugunga qarayveradi. Kun ostidagi nuqta oʻsha kunga dars rejalanganini bildiradi."
-        },
-        "5": {
-          "title": "Yoʻl-yoʻriq markazi",
-          "body": "Biror boʻlim qanday ishlashini unutsangiz, shu tugmani bosing — har bir sahifaning qoʻllanmasini istalgan vaqt qayta koʻrasiz."
-        },
-        "6": {
-          "title": "Fikringiz biz uchun muhim",
-          "body": "Xato topdingizmi yoki taklif bormi? Shu yerdan jamoaga toʻgʻridan-toʻgʻri yozing — skrinshot ham biriktirsa boʻladi."
+          "body": "Darslar vaqt oʻqida davomiyligiga mos balandlikda joylashadi. Oʻtgan darslar xira, joriysi ajralib turadi; oxirgi darsdan soʻng kun yakunlangani va ertangi birinchi dars vaqti koʻrsatiladigan karta chiqadi. Yuqorida kun tanlasangiz faqat shu panel oʻsha kunga oʻtadi — ishlar navbati bugunga qarayveradi; kun ostidagi nuqta oʻsha kunga dars rejalanganini bildiradi."
         }
       }
     },
@@ -3132,17 +3336,13 @@
       "steps": {
         "0": {
           "title": "Hammasi shu yerdan boshlanadi",
-          "body": "Avval yangi sinf yarating: nomi, fani va ajratib turuvchi rangini kiriting. Tizimdagi boshqa barcha boʻlim (jadval, oʻquvchilar, jurnal, davomat) shu sinflarga bogʻlanadi."
+          "body": "Avval yangi sinf yarating: nomi, fani va ajratib turuvchi rangini kiriting (yonidagi strelka orqali Excelʼdan import ham qilsa boʻladi). Tizimdagi boshqa barcha boʻlim (jadval, oʻquvchilar, jurnal, davomat) shu sinflarga bogʻlanadi."
         },
         "1": {
           "title": "Sinf kartochkasi",
           "body": "Har bir kartochkada oʻquvchilar, mavzular va topshiriqlar soni bir qarashda koʻrinadi. Kartochka ustiga bosib toʻliq sinf sahifasiga oʻtasiz."
         },
         "2": {
-          "title": "Koʻrinishni oʻzgartirish",
-          "body": "Sinflaringizni katakcha yoki roʻyxat shaklida koʻrish imkoniyati mavjud — oʻzingizga eng qulay koʻrinishni tanlang."
-        },
-        "3": {
           "title": "Umumiy statistika",
           "body": "Ushbu qismda barcha sinflar, oʻquvchilar, darslar va topshiriqlarning umumiy soni jamlangan. Yangi sinf qoʻshishingiz bilan bu koʻrsatkichlar oʻz-oʻzidan yangilanadi."
         }
@@ -3162,10 +3362,6 @@
         "2": {
           "title": "Oʻquvchi maʼlumotlari",
           "body": "Sahifadan chiqmagan holda oʻquvchining sinfi, bogʻlanish maʼlumotlari va tezkor amallari bilan tanishing. Toʻliq davomat, baholar, eslatmalar va shaxsiy toʻplami bilan tanishish uchun «Profilni koʻrish»ni bosing."
-        },
-        "3": {
-          "title": "Holat boʻyicha filtrlash",
-          "body": "Oʻquvchilarni holatiga qarab (faol, taʼtilda, arxivda) saralang — kerakli oʻquvchilarga eʼtibor qaratish uchun qulay."
         }
       }
     },
@@ -3225,6 +3421,40 @@
         "2": {
           "title": "Darslaringiz",
           "body": "Har bir boʻlim ichida alohida darslar yarating. Har bir dars kartasi uning holati va sanasini koʻrsatib turadi."
+        }
+      }
+    },
+    "assignments": {
+      "label": "Topshiriqlar",
+      "steps": {
+        "0": {
+          "title": "Sinflaringiz",
+          "body": "Topshiriqlarni koʻrish uchun biror sinfni tanlang."
+        },
+        "1": {
+          "title": "Topshiriqlar roʻyxati",
+          "body": "Topshiriqlar toifalar boʻyicha guruhlanadi. Har bir karta holati (rejalangan, tugallangan) va muddatini koʻrsatib turadi."
+        },
+        "2": {
+          "title": "Yangi topshiriq",
+          "body": "Testlar bankidan tayyor test tanlang yoki noldan yangi topshiriq — test, taqdimot yoki oddiy baho ustuni — yarating."
+        }
+      }
+    },
+    "resources": {
+      "label": "Materiallar",
+      "steps": {
+        "0": {
+          "title": "Yangi material",
+          "body": "Bu tugmadan test, dars yoki boshqa material yarating. Har bir tur oʻzining muharririga olib boradi."
+        },
+        "1": {
+          "title": "Turlar boʻyicha filtr",
+          "body": "Materiallarni tur boʻyicha (test, dars) yoki qoralama holati boʻyicha filtrlashingiz mumkin."
+        },
+        "2": {
+          "title": "Materiallar roʻyxati",
+          "body": "Barcha tuzgan materiallaringiz shu yerda — qaysi sinfda ishlatilgani va oxirgi oʻzgartirilgan vaqti bilan."
         }
       }
     },
@@ -3614,6 +3844,24 @@
     "discardCancel": "Davom etish",
     "discardConfirm": "Tashlab chiqish"
   },
+  "MaterialKinds": {
+    "test": "Test",
+    "testHint": "Savollar toʻplami — jonli yoki mustaqil yechiladi",
+    "lesson": "Dars",
+    "lessonHint": "Matn, rasm va formulali toʻliq dars hujjati",
+    "deck": "Taqdimot",
+    "deckHint": "Slaydlar va ular ichidagi savollar",
+    "video": "Video",
+    "videoHint": "Video davomida savol beriladi",
+    "flashcard": "Flashkarta",
+    "flashcardHint": "Old tomonda savol, orqasida javob",
+    "testShort": "Savollar toʻplami",
+    "lessonShort": "Toʻliq hujjat",
+    "deckShort": "Slaydlar",
+    "videoShort": "Savolli video",
+    "flashcardShort": "Old–orqa kartalar",
+    "soon": "Tez orada"
+  },
   "AssignmentsPage": {
     "status_today": "Bugun",
     "statusHint_today": "Bugun oʻtkaziladi — hali baho kiritilmagan.",
@@ -3627,7 +3875,15 @@
     "deleteSetFailed": "Testni oʻchirib boʻlmadi",
     "attachNewTest": "Yangi test tuzish",
     "attachExisting": "Mavjud testdan tanlash",
+    "contentCreate": "Yaratish",
+    "contentAttach": "Biriktirish",
+    "gradingModeLabel": "Baholash usuli",
+    "gradingManual": "Qoʻlda",
+    "gradingAuto": "Avtomatik",
     "attachExistingTitle": "Qaysi test biriktirilsin?",
+    "attachFromThisClass": "Shu sinfda tuzilgan",
+    "attachFromLibrary": "Materiallardan",
+    "attachOriginNoClass": "sinfsiz",
     "attachExistingDescription": "Shu sinf uchun tuzilgan yoki bankdan olingan testlar. Tanlangani jurnaldagi shu ustunga bogʻlanadi.",
     "attachedTitle": "Test biriktirildi",
     "setAlreadyUsed": "Boshqa topshiriqda ham ishlatilgan",
@@ -3696,11 +3952,7 @@
     "statusHint_planned": "Sana hali kelmagan.",
     "statusHint_grading": "{graded} / {total} oʻquvchi baholandi.",
     "statusHint_done": "Barchasi baholandi — {graded} / {total}.",
-    "contentLabel": "Kontent",
     "kindManual": "Baho ustuni",
-    "noContentTitle": "Kontent biriktirilmagan",
-    "noContentDescription": "Bu — jurnaldagi baho ustuni: qogʻozdagi ish, ogʻzaki soʻrov yoki sinfda oʻtgan ish uchun baho shu ustunga yoziladi. Xohlasangiz test biriktiring.",
-    "moreKindsSoon": "Taqdimot, video, matn va flashkartalar tez orada.",
     "questionCount": "{count} savol",
     "runSession": "Sessiya",
     "detachTest": "Testni ajratish",
@@ -3764,6 +4016,9 @@
   },
   "ImportClassesModal": {
     "title": "Sinflarni import qilish",
+    "titleAdd": "Sinf qoʻshish",
+    "choiceSingleTitle": "Bitta sinf",
+    "choiceSingleDescription": "Daraja, harf va fanni tanlab qoʻshing.",
     "close": "Yopish",
     "back": "Orqaga",
     "review": "Koʻrib chiqish",
@@ -3790,5 +4045,797 @@
     "newBadge": "Yangi",
     "removeRowAria": "Olib tashlash",
     "submit": "{count} ta sinfni qoʻshish"
+  },
+  "Landing": {
+    "common": {
+      "register": "Roʻyxatdan oʻtish",
+      "login": "Kirish",
+      "freeNote": "Oʻqituvchilar uchun bepul. Bank kartasi talab qilinmaydi."
+    },
+    "nav": {
+      "top": "Asosiy",
+      "features": "Imkoniyatlar",
+      "products": "Mahsulotlar",
+      "pricing": "Narxlar",
+      "faq": "FAQ",
+      "blog": "Blog",
+      "menu": "Menyu",
+      "doska": "Doska",
+      "jurnal": "Jurnal",
+      "baholash": "Baholash",
+      "enterCode": "Kodni kiritish",
+      "enterCodeShort": "Kod"
+    },
+    "legal": {
+      "terms": "Foydalanish shartlari",
+      "privacy": "Maxfiylik siyosati"
+    },
+    "social": {
+      "telegram": "Telegram"
+    },
+    "hero": {
+      "badge": "Yangi: interaktiv taqdimot va jonli dars",
+      "titleLine1": "Darslaringizni rejalashtiring, oʻtkazing, baholang — qolganini Ustozona",
+      "titleHighlight": "bajaradi",
+      "subtitle": "Ish rejani yuklaysiz — mavzular darslarga kunma-kun joylanadi. Darsda taqdimot va test oʻtkazasiz: telefondan, QR-kartadan yoki qogʻozda. Natija jurnalga tushadi — kimga yordam kerakligi darhol koʻrinadi.",
+      "taskPrompt": "Bugun darsda nima qilasiz?",
+      "tasks": [
+        {
+          "label": "Taymer qoʻyish",
+          "hint": "Roʻyxatdan oʻtmasdan"
+        },
+        {
+          "label": "Sinfni tinchlantirish",
+          "hint": "Svetofor bilan"
+        },
+        {
+          "label": "Test oʻtkazish",
+          "hint": "Telefon, QR-karta yoki qogʻoz"
+        },
+        {
+          "label": "Taqdimot koʻrsatish",
+          "hint": "Slaydlar va jonli savollar"
+        },
+        {
+          "label": "Davomat olish",
+          "hint": "Butun sinf — bir bosishda"
+        },
+        {
+          "label": "Dars rejasi tuzish",
+          "hint": "AI yordamchi bilan"
+        }
+      ],
+      "roleTeacher": "Oʻqituvchi",
+      "roleStudent": "Oʻquvchi"
+    },
+    "pricing": {
+      "badge": "Narxlar",
+      "heading": "Oʻqituvchilar uchun — bepul",
+      "desc": "Darsni tayyorlash, oʻtkazish va baholash uchun kerak boʻlgan hamma narsa oʻqituvchilar uchun bepul. Pullik tariflar haqida oldindan ochiq aytamiz.",
+      "plans": [
+        {
+          "name": "Maktab uchun",
+          "status": "Tez orada",
+          "descp": "Maktab maʼmuriyati va ota-onalar uchun qoʻshimcha imkoniyatlar.",
+          "price": "Tez orada",
+          "cta": "Xabardor boʻlish",
+          "features": [
+            "Maʼmuriyat uchun boshqaruv paneli",
+            "Maktab boʻyicha umumiy hisobotlar",
+            "Ota-ona uchun Telegram mini-ilova"
+          ]
+        },
+        {
+          "name": "Ustoz uchun",
+          "status": "Mavjud",
+          "descp": "Darsning uchala bosqichi uchun yetarli. Bank kartasi talab qilinmaydi.",
+          "price": "0 soʻm",
+          "cta": "Roʻyxatdan oʻtish",
+          "features": [
+            "Elektron jurnal va 10+ baholash shkalasi",
+            "Davomat va avtomatik xulq-atvor bali",
+            "Ish rejani Excel fayldan yuklash",
+            "AI yordamchi (kunlik limit bilan)",
+            "Onlayn test, qogʻoz test skaneri, QR-karta",
+            "Doska va interaktiv taqdimot",
+            "Hamkasblar bilan jamoa boʻlib ishlash",
+            "Cheksiz sinf va oʻquvchi"
+          ]
+        },
+        {
+          "name": "Pro",
+          "status": "Tez orada",
+          "descp": "Koʻp sinf va koʻp dars bilan ishlaydigan ustozlar uchun.",
+          "price": "Tez orada",
+          "cta": "Navbatga yozilish",
+          "features": [
+            "Kengaytirilgan AI limiti",
+            "Kengaytirilgan oʻzlashtirish hisobotlari",
+            "Ustuvor qoʻllab-quvvatlash"
+          ]
+        }
+      ]
+    },
+    "cta": {
+      "headingLine1": "Keyingi darsingizni Ustozonada",
+      "headingLine2": "tayyorlang, oʻtkazing va baholang",
+      "desc": "Google yoki Telegram bilan bir tugmada kirasiz. Sinfingizni qoʻshing, ish rejani yuklang — ertangi darsga tayyorsiz.",
+      "ctaLabel": "Bepul roʻyxatdan oʻtish",
+      "trust": "Bepul · Karta kerak emas · 7 tilda"
+    },
+    "faq": {
+      "heading": "Savollaringiz bormi? Bizda javoblar tayyor",
+      "items": [
+        {
+          "question": "Bu rasmiy elektron jurnal oʻrniga oʻtadimi?",
+          "answer": "Yoʻq. Ustozona — sizning shaxsiy ish vositangiz. Chorak baholari, davomat va xulq hisobotini shu yerda tayyorlaysiz, keyin tayyor raqamlarni rasmiy tizimga koʻchirasiz. Kalkulyator bilan hisoblab oʻtirmaysiz."
+        },
+        {
+          "question": "Telefonda ishlaydimi?",
+          "answer": "Oʻqituvchi paneli kompyuter va noutbuk uchun moʻljallangan. Oʻquvchilar esa testga va taqdimotga oʻz telefonidan qoʻshiladi, qogʻoz testni siz telefon kamerasi bilan tekshirasiz. Hech qanday ilova oʻrnatish shart emas — hammasi brauzerda."
+        },
+        {
+          "question": "Oʻquvchilarda telefon boʻlmasa, test qanday oʻtadi?",
+          "answer": "Uch yoʻl bor. QR-karta: har oʻquvchi kartani burab javobini koʻrsatadi, siz sinfni telefon kamerasi bilan skanerlaysiz. Qogʻoz test: javob varaqlarini chop etib, kamera bilan tekshirasiz. Yoki taqdimotda sinfni jamoalarga boʻlib, doskada ball berasiz."
+        },
+        {
+          "question": "Tayyor slaydlarim bor — ularni ishlatsam boʻladimi?",
+          "answer": "Ha. PowerPoint (PPTX) yoki PDF faylingizni import qilasiz va slaydlar orasiga test, soʻrovnoma, soʻz buluti qoʻshasiz. Darsda Doskadan jonli sessiya boshlaysiz — oʻquvchilar QR yoki PIN bilan qoʻshiladi. Ochiq darsda ayniqsa qoʻl keladi."
+        },
+        {
+          "question": "Ish rejani qoʻlda qayta kiritishim kerakmi?",
+          "answer": "Yoʻq. Ish rejani Excel fayldan yuklaysiz yoki mavzular roʻyxatini nusxalab qoʻyasiz. Darslar birdaniga yaratiladi va jadvalingiz boʻyicha kunma-kun joylanadi, taʼtil kunlari oʻtkazib yuboriladi."
+        },
+        {
+          "question": "Doska uchun roʻyxatdan oʻtish shartmi?",
+          "answer": "Yoʻq. Taymer, svetofor va soat kabi vositalar roʻyxatdan oʻtmasdan darhol ishlaydi. Taqdimot, test va natijalarni saqlash uchun esa roʻyxatdan oʻtish kerak — ular jurnalingizga ulanadi."
+        },
+        {
+          "question": "Men 100 ballik tizimda baholayman — dastur menga toʻgʻri keladimi?",
+          "answer": "Albatta. 10 dan ortiq baholash shkalasi bor: 5 ballik, 100 ballik, foizli, harfli va boshqalar. Oʻzingizga mosini tanlab, kategoriya vaznlarini bir marta sozlaysiz."
+        },
+        {
+          "question": "Hammasi haqiqatan bepulmi?",
+          "answer": "Ha, oʻqituvchilar uchun bepul: bank kartasi soʻralmaydi, sinf va oʻquvchi soni cheklanmagan. Keyinchalik maktablar uchun va kengaytirilgan imkoniyatli pullik tariflar chiqadi — ular haqida oldindan ochiq aytamiz."
+        },
+        {
+          "question": "Tizimdan foydalanishni qanday oʻrganaman?",
+          "answer": "Birinchi kirganingizda interaktiv qoʻllanma qadam-baqadam yetaklaydi. Yordam markazida har boʻlim boʻyicha maqolalar bor. Taklifingizni fikr-mulohaza doskasiga yozasiz — boshqa ustozlar ovoz beradi, jamoa koʻrib chiqadi."
+        }
+      ],
+      "subtitle": "Oʻqituvchilar eng koʻp soʻraydigan savollar.",
+      "contactPrompt": "Savolingizga javob topmadingizmi?",
+      "contactCta": "Telegram orqali yozing"
+    },
+    "footer": {
+      "tagline": "Oʻqituvchining darsdan oldingi, dars paytidagi va darsdan keyingi ishi — bitta joyda.",
+      "pagesTitle": "Sahifalar",
+      "productsTitle": "Mahsulotlar",
+      "moreInfoTitle": "Qoʻshimcha maʼlumot",
+      "contactTitle": "Bogʻlanish uchun",
+      "contactNote": "Savol va takliflar uchun Telegram orqali yozing.",
+      "telegramAria": "Telegram kanalimiz",
+      "copyright": "© {year} Ustozona. Barcha huquqlar himoyalangan."
+    },
+    "products": {
+      "badge": "Mahsulotlar",
+      "heading": "Darsning har bosqichi uchun",
+      "desc": "Hammasi bir-biriga ulangan. Toʻrttasi bugun ishlaydi, ota-ona ilovasi va maʼmuriyat paneli — yoʻlda.",
+      "mainTitle": "Ustozona",
+      "mainStatus": "Mavjud",
+      "mainDesc": "Oʻqituvchi paneli: jurnal, davomat, xulq, jadval, ish reja va AI bilan dars rejasi.",
+      "mainCta": "Imkoniyatlarni koʻrish",
+      "detailCta": "Batafsil",
+      "statusLive": "Mavjud",
+      "statusSoon": "Tez orada",
+      "taglines": {
+        "blog": "Oʻqituvchilar yozgan maqolalar: tajriba, metodika, dars gʻoyalari. Oʻzingiz ham yozasiz.",
+        "baholash": "Onlayn test, qogʻoz test skaneri va QR-kartalar — natija jurnalga tushadi.",
+        "doska": "Sinf ekrani: taymer, svetofor va jonli taqdimot. Taymer bilan svetofor kirmasdan ham ishlaydi.",
+        "shogird": "Ota-ona uchun Telegram ilovasi: bolaning bahosi, davomati va xulqi.",
+        "boshqaruv": "Maktab maʼmuriyati uchun panel va maktab boʻyicha hisobotlar."
+      }
+    },
+    "cookie": {
+      "text": "Saytdan foydalanish tajribasini yaxshilash uchun cookie fayllaridan foydalanamiz. Davom etish orqali bunga rozilik bildirasiz.",
+      "reject": "Rad etish",
+      "accept": "Qabul qilish"
+    },
+    "what": {
+      "heading": "Ustozonada nima bor?",
+      "tabs": [
+        {
+          "label": "Jurnal",
+          "question": "Qaysi oʻquvchi ortda qolayotganini kech bilasizmi?",
+          "summary": "Jurnal, davomat, xulq, jadval va dars ishlanmasi — har kungi ish bir joyda.",
+          "cta": "Jurnalni sinab koʻrish",
+          "facts": [
+            {
+              "lead": "«Eʼtibor kerak» roʻyxati",
+              "text": "davomat, xulq va baho pasayishiga qarab kimga yordam kerakligini bosh sahifa oʻzi koʻrsatadi."
+            },
+            {
+              "lead": "Davomat — bir bosishda",
+              "text": "butun sinf kelgan boʻlsa, sana ustunini bir marta bosasiz."
+            },
+            {
+              "lead": "Ish reja — Excel yoki Word fayldan",
+              "text": "mavzular jadval boʻyicha kunma-kun joylanadi, taʼtil kunlari oʻtkazib yuboriladi."
+            },
+            {
+              "lead": "AI dars rejasi",
+              "text": "mashq va test savollarini dars davomiyligiga moslab tuzadi. Oʻquvchilar ismi AIʼga yuborilmaydi."
+            }
+          ]
+        },
+        {
+          "label": "Baholash",
+          "question": "Test varaqlarini qoʻlda tekshirasizmi?",
+          "summary": "Qaysi yoʻl bilan oʻtkazmang, natija bitta jurnalga tushadi — qaysi test bahoga kirishini oʻzingiz belgilaysiz.",
+          "cta": "Baholash haqida",
+          "facts": [
+            {
+              "lead": "Jonli test",
+              "text": "oʻquvchilar oʻz telefonidan PIN yoki QR orqali qoʻshiladi."
+            },
+            {
+              "lead": "Telefonsiz sinf",
+              "text": "oʻquvchilar QR-kartani koʻtaradi, kamera barcha javoblarni bir zumda oʻqiydi."
+            },
+            {
+              "lead": "Qogʻoz test",
+              "text": "javob varaqlarini chop etasiz va telefon kamerasi bilan tekshirasiz."
+            },
+            {
+              "lead": "Uyga vazifa",
+              "text": "muddat bilan; oʻquvchi har savoldan keyin natijasini darhol koʻradi."
+            }
+          ]
+        },
+        {
+          "label": "Taqdimot",
+          "question": "Darsda oʻquvchilar zerikib qolyaptimi?",
+          "summary": "Slayd koʻrsatish va sinfni tekshirish — bitta taqdimotda.",
+          "cta": "Taqdimot haqida",
+          "facts": [
+            {
+              "lead": "PowerPoint va PDF dan",
+              "text": "tayyor slaydlaringizni qaytadan yasamaysiz."
+            },
+            {
+              "lead": "Slaydlar orasida savol",
+              "text": "test, soʻrovnoma, soʻz buluti yoki ochiq javob."
+            },
+            {
+              "lead": "Jonli sessiya",
+              "text": "oʻquvchilar telefonidan QR yoki PIN bilan qoʻshiladi."
+            },
+            {
+              "lead": "Doskada ochiladi",
+              "text": "taqdimot sinf ekranida taymer va svetofor yonida turadi."
+            }
+          ]
+        },
+        {
+          "label": "Doska",
+          "question": "Sinfni tartibda ushlash qiyinmi?",
+          "summary": "Projektor va katta ekran uchun — uzoqdan ham oʻqiladi.",
+          "cta": "Doskani ochish",
+          "facts": [
+            {
+              "lead": "Taymer va soat",
+              "text": "mashq vaqtini butun sinf katta ekranda koʻrib turadi."
+            },
+            {
+              "lead": "Svetofor",
+              "text": "«jim ishlaymiz», «pichirlab», «erkin gaplashamiz» — qoidani har safar aytib oʻtirmaysiz."
+            },
+            {
+              "lead": "Matn va stikerlar",
+              "text": "topshiriq va eslatmani doskaga yozib qoʻyasiz."
+            },
+            {
+              "lead": "Roʻyxatdan oʻtmasdan",
+              "text": "taymer, svetofor va soat darhol ochiladi."
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "StandardTagPicker": {
+    "label": "Oʻlchanadigan standartlar",
+    "add": "Standart",
+    "searchPlaceholder": "Kod yoki matn boʻyicha qidirish…",
+    "empty": "Topilmadi",
+    "noDomain": "Boʻlimsiz",
+    "remove": "{code} ni olib tashlash",
+    "orphanHint": "Bu standart toʻplamdan oʻchirilgan",
+    "hint": "Bu topshiriq natijasi shu standartlar boʻyicha dalil boʻladi."
+  },
+  "StudentStandards": {
+    "title": "Standartlar oʻzlashtirishi",
+    "radarHint": "Mazmun sohalari boʻyicha umumiy manzara",
+    "notAssessed": "Baholanmagan",
+    "needMore": "{have} ta dalil bor, kamida {need} ta kerak",
+    "evidence": "{count} ta dalil"
+  },
+  "StandardsGap": {
+    "title": "Boʻshliq hisoboti",
+    "subtitle": "Dars rejasi va baholash oʻrtasidagi nomutanosiblik.",
+    "problemCount": "{count} ta eʼtibor talab qiladi",
+    "draftRestored": "Tugallanmagan qoralama tiklandi — standart biriktirilmadi.",
+    "attach": "Topshiriq",
+    "status": {
+      "untested": "Oʻqitildi, lekin oʻlchanmadi",
+      "untaught": "Oʻlchandi, lekin oʻqitilmadi"
+    },
+    "hint": {
+      "untested": "Bu standartlarni darsda oʻtgansiz, lekin hech bir topshiriq ularni tekshirmaydi — oʻzlashtirish haqida dalil yoʻq.",
+      "untaught": "Bu standartlar topshiriqlarda oʻlchanyapti, lekin darsda oʻtilgani belgilanmagan."
+    }
+  },
+  "IshRejaImport": {
+    "title": "Yangi dars",
+    "classesLabel": "Sinflarga bogʻlash",
+    "colTopic": "Mavzu",
+    "topicPlaceholder": "Mavzu nomi",
+    "deleteRow": "Qatorni oʻchirish",
+    "back": "Orqaga",
+    "next": "Keyingi",
+    "confirm": "{count} ta dars qoʻshish",
+    "savedToast": "{count} ta dars qoʻshildi",
+    "step": {
+      "topics": "«{unit}» boʻlimiga mavzularni kiriting yoki fayldan yuklang.",
+      "schedule": "Darslar dars jadvalidagi navbatdagi boʻsh soatlarga ketma-ket qoʻyiladi.",
+      "choice": "«{unit}» boʻlimiga darslarni qanday qoʻshmoqchisiz?"
+    },
+    "pastePlaceholder": "1. Matn qoʻshish, oʻzgartirish va koʻchirish\n2. Shrift turi, oʻlchami va rangini oʻzgartirish\n3. Hujjatga tasvir va hoshiya qoʻshish",
+    "pasteHint": "Har qatorda bitta mavzu. Chorak ajratkichlari va tartib raqamlari avtomatik ajratiladi.",
+    "cancel": "Bekor qilish",
+    "scheduleFrom": "{date} dan",
+    "schedulePickDate": "Sanani tanlang",
+    "presetNext": "Eng yaqin dars",
+    "presetFirst": "Birinchi dars",
+    "noSlot": "Sigʻmadi",
+    "presetFree": "Birinchi boʻsh dars",
+    "listLabel": "{count} ta mavzu",
+    "listEmpty": "Chapga mavzular roʻyxatini joylashtiring yoki fayl yuklang — shu yerda tartiblaysiz",
+    "choice": {
+      "singleTitle": "Bitta dars",
+      "singleDescription": "Darsni muharrirda yarating.",
+      "pasteTitle": "Nusxa koʻchirish",
+      "pasteDescription": "Mavzular roʻyxatini Word/Excelʼdan joylashtiring.",
+      "fileTitle": "Excel yuklash",
+      "fileDescription": "Ish reja faylini (.xlsx, .xls) yuklang."
+    },
+    "undo": "Bekor qilish",
+    "undoneToast": "Import bekor qilindi",
+    "duplicateBadge": "Bor",
+    "templateExample1": "Kompyuter bilan tanishuv",
+    "templateExample2": "Matn muharriri",
+    "templateExample3": "Nazorat ishi",
+    "statLessons": "Darslar",
+    "statStart": "Boshlanadi",
+    "statEnd": "Tugaydi",
+    "statFit": "Oʻquv yili",
+    "statFits": "Sigʻdi",
+    "statMissing": "{count} ta sigʻmadi",
+    "timelineNew": "{unit} · {count} dars",
+    "queueStart": "Navbat boshlanishi:",
+    "queueHintFree": "Oldingi boʻlimlar tugagan joydan davom etadi; taʼtil va band soatlar oʻtkaziladi.",
+    "queueHintDate": "Shu kundan boshlab boʻsh dars soatlariga; band soatlar oʻtkaziladi.",
+    "showDates": "Har bir dars sanasini koʻrish ({count})",
+    "saveUndated": "Sanasiz saqlash"
+  },
+  "UnitImport": {
+    "title": "Yangi boʻlim",
+    "cancel": "Bekor qilish",
+    "confirm": "{count} ta boʻlim yaratish",
+    "savedToast": "{count} ta boʻlim yaratildi",
+    "classesLabel": "Sinflarga bogʻlash",
+    "classesPlaceholder": "Sinf tanlang…",
+    "namePlaceholder": "Boʻlim nomi",
+    "deleteRow": "Qatorni oʻchirish",
+    "listLabel": "{count} ta boʻlim",
+    "description": "Boʻlim nomlarini yozing, joylashtiring yoki Excelʼdan yuklang.",
+    "sourcePaste": "Nusxa koʻchirish",
+    "pastePlaceholder": "Algebraga kirish\nChiziqli tenglamalar\nKvadrat tenglamalar",
+    "pasteHint": "Har qatorda bitta boʻlim. Tartib raqamlari va takrorlar avtomatik tozalanadi.",
+    "listEmpty": "Chapga boʻlim nomlarini yozing yoki fayl yuklang — shu yerda tartiblaysiz",
+    "choiceDescription": "Boʻlimlarni qanday qoʻshmoqchisiz?",
+    "back": "Orqaga",
+    "choice": {
+      "singleTitle": "Bitta boʻlim",
+      "singleDescription": "Nom, sinflar va tavsifni qoʻlda kiriting.",
+      "pasteTitle": "Nusxa koʻchirish",
+      "pasteDescription": "Roʻyxatni Word/Excelʼdan joylashtiring.",
+      "fileTitle": "Excel yuklash",
+      "fileDescription": ".xlsx yoki .xls faylni yuklang."
+    },
+    "undo": "Bekor qilish",
+    "undoneToast": "Import bekor qilindi",
+    "duplicateBadge": "Bor"
+  },
+  "ImportSource": {
+    "emaktabSheet": "eMaktab: {info}",
+    "emaktabDetected": "eMaktab eksporti tanildi — {count} ta mavzu (sarlavha qatorlarisiz)",
+    "errorEmpty": "Faylda maʼlumot topilmadi",
+    "errorRead": "Faylni oʻqib boʻlmadi. .xlsx, .xls yoki .csv tanlang.",
+    "dropTitle": "Faylni tanlang yoki shu yerga tashlang",
+    "replaceFile": "Almashtirish",
+    "dropHint": {
+      "topics": "Excel yoki CSV — ish reja fayli",
+      "units": "Excel yoki CSV — boʻlimlar roʻyxati"
+    },
+    "pasteLabel": {
+      "topics": "Mavzular roʻyxati",
+      "units": "Boʻlimlar roʻyxati"
+    },
+    "sheet": "Varaq",
+    "template": "Namuna faylni yuklab olish",
+    "templateFile": {
+      "topics": "ish-reja-namuna.xlsx",
+      "units": "bolimlar-namuna.xlsx"
+    },
+    "templateName": {
+      "topics": "Mavzu",
+      "units": "Boʻlim nomi"
+    },
+    "templateHours": "Soat",
+    "skipped": "{count} ta qator oʻtkazib yuborildi",
+    "rowReason": "{row}-qator · {reason}",
+    "reason": {
+      "separator": "chorak/yarim yil ajratkichi",
+      "total": "jami qatori",
+      "number": "faqat raqam"
+    },
+    "restore": "Qoʻshish",
+    "expanded": "{count} ta mavzu soatiga koʻra takrorlandi",
+    "duplicates": {
+      "topics": "{count} ta mavzu boʻlimda bor — oʻtkaziladi",
+      "units": "{count} ta boʻlim allaqachon bor — oʻtkaziladi"
+    },
+    "duplicatesSkip": {
+      "topics": "{count} ta mavzu boʻlimda bor — oʻtkazib yuborish",
+      "units": "{count} ta boʻlim allaqachon bor — oʻtkazib yuborish"
+    },
+    "mapped": {
+      "topics": "Mavzular «{name}» ustunidan olindi.",
+      "units": "Boʻlimlar «{name}» ustunidan olindi."
+    },
+    "mappedWithHours": "Mavzular «{name}» ustunidan, soatlar «{hours}» ustunidan olindi.",
+    "showTable": "Notoʻgʻrimi? Jadvalda koʻrsatish",
+    "tableTitle": "Ustunlarni belgilang",
+    "closeTable": "Yopish",
+    "setHeader": "Shu qator — sarlavha",
+    "role": {
+      "topics": "Mavzu",
+      "units": "Boʻlim nomi",
+      "hours": "Soat",
+      "none": "Ishlatilmaydi"
+    },
+    "tableHelp": "Ustun nomini bosib «Mavzu» yoki «Soat» deb belgilang. Qator raqamini bossangiz — shu qator sarlavha boʻladi. Chizilgan qatorlar oʻtkaziladi.",
+    "expandHoursShort": "2+ soat → har soatga dars"
+  },
+  "LessonCycle": {
+    "planReady": "Dars rejasi",
+    "taught": "Oʻtildi",
+    "pillNone": "Dars rejasi yoʻq",
+    "pillDraft": "Jarayonda",
+    "markPlanButton": "Rejani tayyor deb belgilash",
+    "planReadyShort": "Rejalashtirilgan",
+    "askPlanReady": "Dars rejasi tayyormi?",
+    "askPlanReadyDesc": "Matn yozilgan, lekin tayyor deb belgilanmagan.",
+    "yesReady": "Ha, tayyor",
+    "later": "Keyin",
+    "planStateReady": "Dars rejasi tayyor",
+    "planStateDraft": "Dars rejasi — jarayonda",
+    "planStateNone": "Dars rejasi hali yoʻq",
+    "standardsChip": "Standartlar: {count}",
+    "materialsChip": "Materiallar: {count}",
+    "markPlanReady": "Dars rejasi tayyor",
+    "unmarkPlanReady": "Reja tayyor emas",
+    "markTaught": "Oʻtildi deb belgilash",
+    "unmarkTaught": "Oʻtilmagan deb belgilash",
+    "section": "Dars holati",
+    "planReadyLabel": "Dars rejasi tayyor",
+    "taughtLabel": "Dars oʻtildi",
+    "askTaught": "Oʻtildimi?",
+    "statusSection": "Holat",
+    "taughtByClass": "Qaysi sinflarda oʻtildi",
+    "askTaughtBanner": "Dars vaqti oʻtdi. Oʻtildimi?",
+    "yesTaught": "Ha, oʻtildi",
+    "bumpNext": "Keyingi darsga surish",
+    "bump": "Keyingi darsga sur",
+    "bumpedToast": "{count} ta mavzu bir darsga surildi",
+    "bumpNoSlot": "Oxirgi mavzuga jadvalda boʻsh joy topilmadi — sanasiz qoldi",
+    "bumpNothing": "Bu mavzu jadvalga qoʻyilmagan — surish uchun sessiya yoʻq",
+    "undo": "Bekor qilish"
+  },
+  "Doska": {
+    "widgets": {
+      "clock": "Soat",
+      "timer": "Taymer",
+      "trafficLight": "Svetofor",
+      "text": "Matn",
+      "stickyNote": "Eslatma",
+      "shape": "Shakl",
+      "presentation": "Taqdimot",
+      "wheel": "Gʻildirak"
+    },
+    "toolbar": {
+      "duplicate": "{widget} — nusxalash",
+      "remove": "{widget} — oʻchirish",
+      "duplicateShort": "Nusxa",
+      "removeShort": "Oʻchirish",
+      "settings": "{widget} — sozlash",
+      "settingsShort": "Sozlash",
+      "lock": "{widget} — qulflash",
+      "lockShort": "Qulflash",
+      "unlock": "{widget} — qulfni ochish",
+      "unlockShort": "Qulfni ochish",
+      "spotlight": "{widget} — markazga chiqarish",
+      "spotlightShort": "Markazga"
+    },
+    "bar": {
+      "clear": "Tozalash",
+      "background": "Fon",
+      "home": "Ustozona bosh sahifasi",
+      "fullscreen": "Toʻliq ekran",
+      "showControls": "Boshqaruvni koʻrsatish",
+      "hideControls": "Boshqaruvni yashirish",
+      "prevScreen": "Oldingi ekran",
+      "nextScreen": "Keyingi ekran",
+      "addScreen": "Ekran qoʻshish",
+      "undo": "Bekor qilish",
+      "redo": "Qaytadan bajarish",
+      "screenNumber": "{n}-ekran",
+      "menu": "Menyu",
+      "proFeature": "Pullik imkoniyat"
+    },
+    "guestNote": {
+      "text": "Ekran shu brauzerda saqlanadi. <link>Kirsangiz</link> sinf roʻyxatingiz ulanadi.",
+      "dismiss": "Eslatmani yopish"
+    },
+    "notice": {
+      "widgetRemoved": "{widget} oʻchirildi",
+      "screenCleared": "Ekran tozalandi",
+      "screenRemoved": "Ekran oʻchirildi",
+      "undo": "Qaytarish",
+      "inkCleared": "Yozuv tozalandi",
+      "saveFailed": "Ekran saqlanmayapti.",
+      "saveFailedHint": "Brauzer xotirasi toʻldi — yozuvni tozalang yoki keraksiz ekranni oʻchiring."
+    },
+    "settings": {
+      "title": "{widget}: sozlamalar",
+      "close": "Yopish",
+      "instant": "Oʻzgarish darhol qoʻllanadi · Esc — yopish"
+    },
+    "timer": {
+      "start": "Boshlash",
+      "pause": "Toʻxtatish",
+      "reset": "Qaytadan",
+      "addMinute": "Bir daqiqa qoʻshish",
+      "finished": "Vaqt tugadi",
+      "time": "Vaqt",
+      "minutes": "{n} daq",
+      "less": "Kamroq",
+      "more": "Koʻproq",
+      "view": "Koʻrinish",
+      "viewDigits": "Raqam",
+      "viewDisk": "Disk",
+      "viewBoth": "Ikkalasi",
+      "whenDone": "Tugaganda",
+      "sound": "Ovoz chalinsin"
+    },
+    "trafficLight": {
+      "red": "Jim",
+      "amber": "Pichirlab",
+      "green": "Gaplashamiz",
+      "labelSection": "Yozuv",
+      "showLabel": "Holatni soʻz bilan koʻrsatish"
+    },
+    "clock": {
+      "view": "Koʻrinish",
+      "showSeconds": "Soniyalarni koʻrsatish"
+    },
+    "shapeSettings": {
+      "shape": "Shakl",
+      "view": "Koʻrinish",
+      "labels": "Uchlarda harflar (A, B, C)"
+    },
+    "spotlight": {
+      "exit": "Kichraytirish"
+    },
+    "curtain": {
+      "title": "Diqqat!",
+      "hint": "Davom etish uchun istalgan joyni bosing"
+    },
+    "menu": {
+      "deckName": "Ekran nomi",
+      "unsaved": "Saqlanmagan",
+      "localOnly": "{n} ta ekran · faqat shu brauzerda",
+      "curtain": "Ekranni yopish",
+      "bell": "Qoʻngʻiroq chalish",
+      "newScreen": "Yangi ekran",
+      "connectClass": "Sinf roʻyxatini ulash",
+      "clearScreen": "Ekranni tozalash",
+      "removeScreen": "Shu ekranni oʻchirish",
+      "removeScreenLocked": "Ekranda qulflangan vidjet bor — avval qulfni oching",
+      "promoTitle": "Ishingizni saqlab qoʻying",
+      "promoBody": "Ekranlaringiz hisobingizda saqlanadi, sinf roʻyxatingiz ulanadi va soʻralgan oʻquvchi jurnalga tushadi.",
+      "promoCta": "Imkoniyatlarni koʻrish",
+      "appearance": "Koʻrinish",
+      "saveImage": "Rasm qilib saqlash",
+      "savingImage": "Tayyorlanmoqda…",
+      "saveImageFailed": "Rasm chiqmadi — qayta urinib koʻring"
+    },
+    "catalog": {
+      "open": "Hammasi",
+      "title": "Barcha vositalar",
+      "hint": "Bosing — ekranga qoʻyiladi. Qadash belgisi vositani panelga chiqaradi.",
+      "full": "Panel toʻla ({max} ta). Yangisini qadash uchun avval bittasini olib tashlang.",
+      "pin": "{tool} — panelga qadash",
+      "unpin": "{tool} — paneldan olish",
+      "categories": {
+        "time": "Vaqt",
+        "class": "Sinf",
+        "writing": "Yozuv",
+        "media": "Media"
+      },
+      "descriptions": {
+        "clock": "Joriy vaqt",
+        "timer": "Orqaga sanash, ovoz bilan",
+        "trafficLight": "Shovqin darajasi",
+        "text": "Sarlavha yoki topshiriq",
+        "stickyNote": "Rangli eslatma qogʻoz",
+        "shape": "Geometrik figuralar",
+        "presentation": "Savollar va javoblar",
+        "wheel": "Tasodifiy ism tanlash"
+      }
+    },
+    "appearance": {
+      "title": "Koʻrinish",
+      "back": "Orqaga",
+      "style": "Uslub",
+      "styles": {
+        "sokin": {
+          "name": "Sokin",
+          "note": "Tinch va aniq — proyektorda yaxshi koʻrinadi"
+        },
+        "oyinchoq": {
+          "name": "Oʻyinchoq",
+          "note": "Quvnoq va rangli — kichik sinflar uchun"
+        },
+        "doska": {
+          "name": "Doska",
+          "note": "Qogʻoz va magnit — yashil doskaga mos"
+        }
+      },
+      "dock": "Panel joyi",
+      "dockLeft": "Chapda",
+      "dockBottom": "Pastda",
+      "dockRight": "Oʻngda"
+    },
+    "backgrounds": {
+      "chalkboard-green": "Yashil doska",
+      "chalkboard-black": "Qora doska",
+      "whiteboard": "Oq taxta",
+      "grid-paper": "Katak daftar",
+      "dot-paper": "Nuqtali qogʻoz",
+      "notebook": "Daftar varagʻi",
+      "husnixat": "Husnixat mashqi",
+      "dusk": "Kechki tus",
+      "shakllar": "Rangli shakllar"
+    },
+    "shapes": {
+      "triangle": "Uchburchak",
+      "right-triangle": "Toʻgʻri burchakli",
+      "rectangle": "Toʻrtburchak",
+      "parallelogram": "Parallelogram",
+      "trapezoid": "Trapetsiya",
+      "rhombus": "Romb",
+      "circle": "Aylana",
+      "pentagon": "Beshburchak",
+      "hexagon": "Oltiburchak"
+    },
+    "wheel": {
+      "spin": "Gʻildirakni aylantirish",
+      "hint": "Bosing — aylanadi",
+      "editList": "Roʻyxatni tahrirlash",
+      "backToWheel": "Gʻildirakka qaytish",
+      "soundOn": "Ovozni oʻchirish",
+      "soundOff": "Ovozni yoqish",
+      "counter": "{asked} / {total}",
+      "counterLabel": "{total} kishidan {asked} tasi soʻraldi",
+      "again": "Yana",
+      "later": "Keyinroq",
+      "close": "Yopish",
+      "roundDone": "Hamma soʻraldi!",
+      "roundDoneHint": "{total} kishining hammasi bir martadan chiqdi.",
+      "newRound": "Yangi aylanma",
+      "listTitle": "Ismlar",
+      "listHint": "Har qatorga bitta ism",
+      "samplesHint": "Hozir namuna ismlar aylanmoqda. Oʻz roʻyxatingizni yozing.",
+      "mode": "Tanlash",
+      "modeOnce": "Hamma bir martadan",
+      "modeOnceHint": "Soʻralgan bola gʻildirakdan chiqadi. Hamma soʻralgach yangi aylanma boshlanadi.",
+      "modeRepeat": "Qaytarilsin",
+      "modeRepeatHint": "Soʻralgan bola gʻildirakda qoladi va yana chiqishi mumkin.",
+      "asked": "Soʻralganlar",
+      "returnToPool": "{name} — gʻildirakka qaytarish",
+      "resetRound": "Hammasini qaytarish",
+      "sound": "Ovoz",
+      "speed": "Tezlik",
+      "speedShort": "Tez",
+      "speedMedium": "Oʻrta",
+      "speedLong": "Sekin",
+      "sampleNames": [
+        "Aziza",
+        "Bobur",
+        "Dilnoza",
+        "Jasur",
+        "Madina",
+        "Otabek",
+        "Sevara",
+        "Sardor"
+      ],
+      "tooMany": "Gʻildirakka {max} tagacha ism sigʻadi — qolganlari chiqmaydi.",
+      "connectClass": "Sinf roʻyxatidan olish",
+      "connectGuest": "Jurnaldagi sinf roʻyxatini ulash uchun hisobingizga kiring.",
+      "login": "Kirish",
+      "connectFree": "Sinf roʻyxatini jurnaldan olish — Pro tarifidagi imkoniyat.",
+      "aboutPro": "Pro haqida",
+      "chooseClass": "Qaysi sinf?",
+      "noClasses": "Sizda hali sinf yoʻq.",
+      "loading": "Yuklanmoqda…",
+      "loadFailed": "Roʻyxatni yuklab boʻlmadi.",
+      "fromClass": "{className} roʻyxati",
+      "disconnect": "Uzish",
+      "absentToggle": "{name} — bugun yoʻq",
+      "absentHint": "Bugun yoʻq bolani bosing — u gʻildirakka chiqmaydi.",
+      "suggestConnect": "Sinfingiz jurnalda boʻlsa, ismlarni qoʻlda yozish shart emas.",
+      "rosterUnavailable": "Sinf roʻyxati faqat Pro tarifida, hisobingizga kirganingizda koʻrinadi.",
+      "rosterLocked": "Roʻyxat yopiq",
+      "rosterFailed": "Roʻyxat yuklanmadi",
+      "retry": "Qayta urinish"
+    },
+    "ink": {
+      "toolbar": "Qoʻlyozma asboblari",
+      "pen": "Qalam",
+      "marker": "Marker",
+      "eraser": "Oʻchirgʻich",
+      "select": "Tanlash",
+      "clear": "Tozalash",
+      "clearLabel": "Yozuvni tozalash",
+      "color": "Rang",
+      "size": "Qalinlik",
+      "sizes": {
+        "thin": "Ingichka",
+        "medium": "Oʻrta",
+        "thick": "Qalin"
+      },
+      "colors": {
+        "autoLight": "Qora",
+        "autoDark": "Oq",
+        "red": "Qizil",
+        "blue": "Koʻk",
+        "green": "Yashil",
+        "orange": "Toʻq sariq",
+        "violet": "Binafsha",
+        "yellow": "Sariq",
+        "pink": "Pushti"
+      },
+      "penOnly": "Faqat qalam",
+      "laser": "Lazer",
+      "erasePartial": "Qisman",
+      "lasso": "Belgilash",
+      "ruler": "Chizgʻich",
+      "protractor": "Transportir",
+      "rotate": "Burish",
+      "hideGuide": "Yopish: {guide}",
+      "deleteSelection": "Oʻchirish"
+    }
   }
 }
