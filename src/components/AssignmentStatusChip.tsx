@@ -34,7 +34,7 @@ export function AssignmentStatusChip({
       <TooltipTrigger asChild>
         <span
           className={cn(
-            "inline-flex shrink-0 cursor-default items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold",
+            "inline-flex shrink-0 cursor-default items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold",
             meta.cls,
             className
           )}

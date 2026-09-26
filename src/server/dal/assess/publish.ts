@@ -3,7 +3,6 @@ import { randomUUID } from "node:crypto";
 import { and, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import {
-  activityItems,
   activitySets,
   assignments,
   grades,
@@ -13,6 +12,7 @@ import {
   topics,
 } from "@/server/db/schema";
 import { requireTeacher } from "@/server/session";
+import { countGradedItems } from "./graded-items";
 
 /* ════════════════════════════════════════════════════════════════════
    JURNALGA KOʻCHIRISH — docs/ost-loyihalar-arxitektura.md, B boʻlim.
@@ -67,16 +67,9 @@ export async function publishSessionToGrades(
   // maxScore — toʻplamdagi barcha faoliyatning avto-tekshiriladigan
   // elementlari soni (xom maxraj — baho shundan foizga normallanadi).
   const activityIds = set.items.map((i) => i.activityId);
-  const maxScore =
-    activityIds.length === 0
-      ? 0
-      : (
-          await db
-            .select({ count: sql<number>`count(*)::int` })
-            .from(activityItems)
-            .where(inArray(activityItems.activityId, activityIds))
-        )[0]?.count ?? 0;
-  if (maxScore === 0) throw new PublishError("Toʻplamda elementlar yoʻq");
+  // Soʻrovnoma/soʻz buluti kabi baholanmaydiganlar kirmaydi (graded-items.ts).
+  const maxScore = await countGradedItems(activityIds);
+  if (maxScore === 0) throw new PublishError("Toʻplamda baholanadigan savol yoʻq");
 
   // 3 — bitta assignments qatori. Uch holat, shu tartibda:
   //

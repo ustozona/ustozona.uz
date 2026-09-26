@@ -12,6 +12,7 @@ import ScaleControls from "@/components/grade-scale/ScaleControls";
 import { useClassStore } from "@/store/useClassStore";
 import { useGradesStore } from "@/store/useGradesStore";
 import { TOPIC_COLOR_HEX, type Topic } from "@/lib/grades-data";
+import { ClassSwatch } from "@/components/ClassSwatch";
 import { SettingsCard, SettingsList, useDraft, useRegisterDraft } from "./SettingsShared";
 
 /** BellSection'dagi "Faqat koʻrish" badge patterni — manba boshqa boʻlimda. */
@@ -114,12 +115,7 @@ export default function JournalSection() {
                 g.classNames.length > 2
                   ? `${g.classNames.slice(0, 2).join(", ")} ${t("moreClasses", { count: g.classNames.length - 2 })}`
                   : g.classNames.join(", "),
-              leading: (
-                <span
-                  className="size-2.5 rounded-full"
-                  style={{ backgroundColor: TOPIC_COLOR_HEX[g.topic.color] }}
-                />
-              ),
+              leading: <ClassSwatch hex={TOPIC_COLOR_HEX[g.topic.color]} />,
               trailing:
                 g.topic.purpose === "formative" ? (
                   <Badge variant="outline" className="font-normal text-muted-foreground">

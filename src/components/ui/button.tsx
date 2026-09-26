@@ -3,7 +3,7 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { Slot } from "radix-ui"
-import { motion } from "motion/react"
+import * as m from "motion/react-m"
 import { Loader2 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -38,6 +38,7 @@ const buttonVariants = cva(
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",
         xs: "h-6 gap-1 rounded-md px-2 text-xs has-[>svg]:px-1.5 [&_svg:not([class*='size-'])]:size-3",
+        // design-tokens-ignore: ikonali kichik tugma — optik kompensatsiya (px-3 → px-2.5)
         sm: "h-8 gap-1.5 rounded-md px-3 has-[>svg]:px-2.5",
         lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
         icon: "size-9",
@@ -96,7 +97,7 @@ function Button({
   }
 
   const button = (
-    <motion.button
+    <m.button
       data-slot="button"
       data-variant={variant}
       data-size={size}
@@ -115,7 +116,7 @@ function Button({
       ) : (
         children
       )}
-    </motion.button>
+    </m.button>
   )
 
   if (isDisabled && disabledReason) {

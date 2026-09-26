@@ -3,13 +3,28 @@ import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import { studentNotes, teachers } from "@/server/db/schema";
 import { requireTeacher } from "@/server/session";
+import { visibleStudentIds } from "@/server/workspace";
 import type { StudentNoteEntry } from "@/store/useStudentNotesStore";
 import type { StudentNotesBatch } from "@/lib/sync/student-notes-batch";
 
 /* Student notes DAL — useStudentNotesStore'ning server tomoni.
    feedback DAL qoidalari: idempotent upsert + setWhere teacherId. */
 
-export type StudentNotesPayload = { items: StudentNoteEntry[] };
+/**
+ * `items` — oʻqituvchining OʻZ qaydlari (tahrirlanadi).
+ * `foreign` — hamkasblarniki (faqat oʻqiladi).
+ *
+ * ⚠️ `foreign` hozir har doim boʻsh: qaydlarni ulashish hali
+ * yoqilmagan (arxitektura hujjati §8 — avval bogʻlanishlar haqiqiy
+ * maktabda sinaladi). Maydon OLDIN qoʻshildi, chunki client store
+ * ajratilishi aynan shu chegara ustiga qurilgan
+ * (`useStudentNotesStore` boshidagi izoh). Ulashish yoqilganda shu
+ * yerda ikkinchi soʻrov qoʻshiladi — client tomoni tayyor.
+ */
+export type StudentNotesPayload = {
+  items: StudentNoteEntry[];
+  foreign: StudentNoteEntry[];
+};
 
 export async function getStudentNotesPayload(): Promise<StudentNotesPayload> {
   const teacher = await requireTeacher();
@@ -45,6 +60,7 @@ export async function getStudentNotesPayload(): Promise<StudentNotesPayload> {
       authorName: r.authorName,
       authorAvatarUrl: r.authorAvatarUrl,
     })),
+    foreign: [],
   };
 }
 
@@ -52,11 +68,21 @@ export async function applyStudentNotesBatch(batch: StudentNotesBatch): Promise<
   const teacher = await requireTeacher();
   const tid = teacher.id;
 
-  if (batch.itemsUpsert.length) {
+  /* 🔴 Oʻquvchi egaligi TEKSHIRILADI.
+
+     Ilgari clientdan kelgan `studentId` tekshiruvsiz yozilardi. Bugungi
+     zarari kichik edi (qaydni faqat muallif oʻqiydi), lekin qaydlar
+     oʻqituvchilar orasida ulashilgach bu "har kim istalgan bolaning
+     profiliga qayd yozib qoʻyadi" ga aylanardi.
+     docs/ish-maydoni-arxitektura.md §6 */
+  const allowed = new Set(await visibleStudentIds("data"));
+  const itemsUpsert = batch.itemsUpsert.filter((n) => allowed.has(n.studentId));
+
+  if (itemsUpsert.length) {
     await db
       .insert(studentNotes)
       .values(
-        batch.itemsUpsert.map((n) => ({
+        itemsUpsert.map((n) => ({
           id: n.id,
           teacherId: tid,
           studentId: n.studentId,

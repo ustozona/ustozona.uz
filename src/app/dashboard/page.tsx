@@ -8,6 +8,7 @@ import { HomeHero, type HeroEvent } from "@/components/dashboard/HomeHero";
 import { TodayRail } from "@/components/dashboard/TodayRail";
 import { QueueSection } from "@/components/dashboard/QueueSection";
 import { NextLessonsCard } from "@/components/dashboard/NextLessonsCard";
+import { TelegramConnectPrompt } from "@/components/telegram/TelegramConnectPrompt";
 import { resolveVersionForDate } from "@/lib/timetable-versions";
 import { getHolidayForDate } from "@/lib/academic-calendar";
 import { dateToKey } from "@/lib/date-keys";
@@ -84,6 +85,9 @@ export default function DashboardPage() {
       })),
     [welcomeDemo, tourDemo, todaysEvents, classNameById]
   );
+  // Ishlar navbati ham xuddi shu shartda (hisob boʻsh + tur faol) demoga
+  // oʻtadi — Hero/TodayRail bilan bir xil signal, panellar mos holatda qoladi.
+  const queueDemoTasks = welcomeDemo && tourDemo ? tourDemo.tasks : undefined;
 
   const hour = currentTime.getHours();
   const minute = currentTime.getMinutes();
@@ -105,12 +109,17 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col max-lg:min-h-full lg:h-full">
+      {/* Telegram ulanmagan boʻlsa — yumshoq taklif (tur paytida emas). */}
+      {!tourDemoActive && <TelegramConnectPrompt />}
       <DashboardPageLayout className="flex-1">
-        <div data-tour="home-overview" className={cn(dashboardGridClass, "stagger-children flex-1 min-h-0 grid-cols-1 lg:grid-cols-[minmax(0,45fr)_minmax(0,30fr)_minmax(0,25fr)] lg:grid-rows-[1fr]")}>
+        {/* Mobilда uch ustun ustma-ust tushadi: har biriga oʻqiladigan
+            eng kichik balandlik beriladi (aks holda `min-h-0` ularni nolga
+            siqadi), sahifa esa vertikal scroll qiladi. */}
+        <div className={cn(dashboardGridClass, "stagger-children grid-cols-1 lg:flex-1 lg:min-h-0 lg:grid-cols-[minmax(0,45fr)_minmax(0,30fr)_minmax(0,25fr)] lg:grid-rows-[1fr]")}>
 
           {/* Chap ustun (45%) — Hero + Kelgusi darslar */}
-          <div className={cn(dashboardStackClass, "h-full min-h-0")}>
+          <div className={cn(dashboardStackClass, "min-h-0 lg:h-full max-lg:min-h-[70svh]")}>
             <HomeHero
               firstName={firstName}
               greeting={greetingText()}
@@ -129,13 +138,13 @@ export default function DashboardPage() {
           </div>
 
           {/* Oʻrta ustun (30%) — Bugungi darslar (WeekStrip + roʻyxat ⇄ vaqt oʻqi) */}
-          <div className={cn(dashboardStackClass, "h-full min-h-0")}>
+          <div className={cn(dashboardStackClass, "min-h-0 lg:h-full max-lg:min-h-[60svh]")}>
             <TodayRail now={currentTime} />
           </div>
 
           {/* Oʻng ustun (25%) — Vazifalar (tekshirish + summativ muddatlar) */}
-          <div className={cn(dashboardStackClass, "h-full min-h-0")}>
-            <QueueSection now={currentTime} />
+          <div className={cn(dashboardStackClass, "min-h-0 lg:h-full max-lg:min-h-[60svh]")}>
+            <QueueSection now={currentTime} demoTasks={queueDemoTasks} />
           </div>
 
         </div>

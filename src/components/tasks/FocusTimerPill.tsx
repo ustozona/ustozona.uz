@@ -178,7 +178,7 @@ export default function FocusTimerPill() {
         <div className="flex items-center justify-between gap-2">
           <span className="min-w-0 truncate text-sm font-medium text-foreground">{taskLabel}</span>
           {isPaused && (
-            <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+            <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-tag font-medium text-muted-foreground">
               {t("pausedLabel")}
             </span>
           )}

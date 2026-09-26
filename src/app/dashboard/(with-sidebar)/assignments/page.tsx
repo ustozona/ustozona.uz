@@ -5,9 +5,10 @@ import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
-  ClipboardList, Plus, Presentation, FileCheck2, Copy, Trash2, Tag, Library, Columns3, Users,
+  ClipboardList, Plus, FileCheck2, Copy, Trash2, Tag, Library, Columns3, Users,
   PenLine, MoreHorizontal,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useClassIdParam } from "@/hooks/useClassIdParam";
@@ -17,8 +18,9 @@ import {
   TOPIC_COLOR_HEX, assignmentGroupKey, classColor,
   type Assignment, type TopicColor,
 } from "@/lib/grades-data";
-import { CLASS_COLOR_HEX } from "@/lib/class-colors";
-import { ClassSwatch } from "@/components/ClassSwatch";
+import { CLASS_COLOR_HEX, classTints } from "@/lib/class-colors";
+import { MATERIAL_KINDS } from "@/lib/material-kinds";
+import { ClassSwatch, ClassSwatchStack } from "@/components/ClassSwatch";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { CardTitle } from "@/components/ui/card";
@@ -40,7 +42,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { AssignmentStatusChip } from "@/components/AssignmentStatusChip";
 import { assignmentStatusFrom, gradedCountByAssignment } from "@/lib/assignment-status";
-import { MONTHS_UZ_SHORT } from "@/lib/localization";
+import { MONTHS_UZ } from "@/lib/localization";
 import { todayKey } from "@/lib/date-keys";
 import { Illustration } from "@/components/ui/illustration";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -54,32 +56,58 @@ import type { ActivitySetRow } from "@/server/db/schema";
 import SetBuilderOverlay from "./_components/test/SetBuilderOverlay";
 import SessionPanelModal from "./_components/test/SessionPanelModal";
 import TestBankOverlay from "./_components/TestBankOverlay";
+import { useTourRequest } from "@/components/tour/tour-request";
+import { TourDemoBanner } from "@/components/tour/TourDemoBanner";
+import {
+  makeAssignmentsTourDemoClassData, makeAssignmentsTourDemoClasses, ASSIGNMENTS_TOUR_DEMO_CLASS_ID,
+} from "@/components/tour/assignments-tour-demo";
 
 /** "Other" (Toifasiz) chelagi uchun sentinel — DB qatori emas, faqat guruhlash kaliti. */
 const OTHER_GROUP = "__other__";
 
-/** `yyyy-mm-dd` → "14-sen". Qatorda joy tor — hafta kuni chipda emas, tooltipda. */
+/** Toifa rangining yumshoq (shaffofga aralashgan) yuzasi — akkordeon chegarasi,
+    sarlavha foni va karta ikonkasi UCHALASI shu bitta joydan chaqiradi
+    (foiz turlicha boʻlishi mumkin, lekin formula bitta manbada). */
+const topicTint = (hex: string, pct: number) => `color-mix(in srgb, ${hex} ${pct}%, transparent)`;
+
+/** `yyyy-mm-dd` → "14-sentabr". Oy nomi TOʻLIQ: qisqartma ("14-sen")
+    oʻzbek imlosida qabul qilinmagan va sentabr/oktabrni chalkashtirardi. */
 function shortDate(key: string): string {
   const [y, m, d] = key.split("-").map(Number);
   if (!y || !m || !d) return key;
-  return `${d}-${MONTHS_UZ_SHORT[(m - 1) % 12]}`;
+  return `${d}-${MONTHS_UZ[(m - 1) % 12].toLowerCase()}`;
 }
 
 export default function AssignmentsPage() {
   const t = useTranslations("AssignmentsPage");
   const tb = useTranslations("TestBank");
+  const tMaterial = useTranslations("MaterialKinds");
   const searchParams = useSearchParams();
   const openId = searchParams.get("assignment");
 
   const classDataMap = useGradesStore((s) => s.classDataMap);
   const updateClass = useGradesStore((s) => s.updateClass);
-  const [selectedClassId, handleSelectClass] = useClassIdParam();
+  // Yon menyudan «toza» kirilganda (URL'da `?classId=` yoʻq) oxirgi
+  // tanlangan sinfdan davom etadi — har safar qaytadan tanlash shart emas.
+  const [selectedClassId, handleSelectClass] = useClassIdParam({ fallbackToStore: true });
   const [deleteTarget, setDeleteTarget] = useState<Assignment | null>(null);
   /* Muharrir GLOBAL (AssignmentEditorHost) — sahifa faqat sessiya ochadi. */
   const openDraft = useAssignmentEditorStore((s) => s.openDraft);
   const openEdit = useAssignmentEditorStore((s) => s.openEdit);
 
-  const classData = selectedClassId ? classDataMap[selectedClassId] : undefined;
+  /** Boʻsh hisobda "topshiriqlar" turʼi ishga tushsa, panel namunaviy sinf
+      va topshiriqlar bilan toʻldiriladi (faqat vizual — [[lessons-tour-demo]]
+      bilan bir xil naqsh). Yaratish/oʻchirish kabi yozuv amallari baribir
+      HAQIQIY `selectedClassId`ga bogʻlangani uchun demo rejimda oʻzidan
+      oʻzi xavfsiz — hech narsa yozilmaydi. */
+  const tourActive = useTourRequest((s) => s.activeTourId === "assignments");
+  const isDemoMode = tourActive && Object.keys(classDataMap).length === 0;
+  const demoClassData = useMemo(
+    () => (isDemoMode ? makeAssignmentsTourDemoClassData() : null),
+    [isDemoMode]
+  );
+  const effectiveClassId = isDemoMode ? ASSIGNMENTS_TOUR_DEMO_CLASS_ID : selectedClassId;
+  const classData = isDemoMode ? demoClassData! : (effectiveClassId ? classDataMap[effectiveClassId] : undefined);
 
   /* ── TUZILGAN, LEKIN HALI JURNALGA CHIQMAGAN TESTLAR ──────────────
      Toʻplam (mazmun) va topshiriq (jurnaldagi baho ustuni) — ikki
@@ -129,7 +157,7 @@ export default function AssignmentsPage() {
   const closeSession = useAssignmentEditorStore((s) => s.close);
 
   /* Tugallanmagan qoralama — muharrir yopilganda u yoʻqolmaydi, shu
-     roʻyxatda karta boʻlib turadi (Google Classroom "Draft" naqshi).
+     roʻyxatda karta boʻlib turadi (qoralama-kartochka naqshi).
      Ilgari uning oʻrniga ekran burchagida suzuvchi yorliq bor edi va
      kichraytirish tugmasi kerak boʻlardi. */
   const draftCard =
@@ -339,21 +367,23 @@ export default function AssignmentsPage() {
     });
   }
 
-  const noClass = !selectedClassId;
+  const noClass = !effectiveClassId;
   const columnsTemplate = "minmax(0,1fr) minmax(0,3fr)";
 
   return (
-    <div className="flex flex-col flex-1 min-w-0 h-full min-h-0">
-      <DashboardColumns template={columnsTemplate} className="h-full overflow-hidden p-4 md:p-6">
-        <DashboardColumn hideBelow="lg">
+    <div className="flex flex-col flex-1 min-w-0 gap-4 p-4 md:p-6 max-lg:min-h-full lg:h-full lg:min-h-0">
+      <TourDemoBanner tourId="assignments" active={isDemoMode} />
+      <DashboardColumns template={columnsTemplate} className="lg:h-full lg:overflow-hidden">
+        <DashboardColumn hideBelow="lg" mobile="self" data-tour="assignments-classes">
           <ClassListPanel
             page="assignments"
-            selectedClassId={selectedClassId ?? ""}
+            selectedClassId={effectiveClassId ?? ""}
             onSelect={handleSelectClass}
+            demoClasses={isDemoMode ? makeAssignmentsTourDemoClasses() : undefined}
           />
         </DashboardColumn>
 
-        <div className="flex min-w-0 min-h-0 h-full flex-col overflow-hidden rounded-xl border border-border bg-card">
+        <div data-tour="assignments-list" className="flex min-w-0 min-h-0 flex-col overflow-hidden rounded-xl border border-border bg-card lg:h-full max-lg:min-h-[60svh]">
           {noClass ? (
             <Empty className="h-full border-0">
               <EmptyHeader>
@@ -365,7 +395,7 @@ export default function AssignmentsPage() {
           ) : (
             <>
               <div className={panelHeaderClass + " items-center justify-between gap-3"}>
-                <div className="flex min-w-0 flex-1 items-center gap-2.5">
+                <div className="flex min-w-0 flex-1 items-center gap-3">
                   <SectionIcon>
                     <ClipboardList />
                   </SectionIcon>
@@ -374,7 +404,7 @@ export default function AssignmentsPage() {
                     ({totalCount})
                   </TypographyMuted>
                 </div>
-                <div className="flex shrink-0 items-center gap-2">
+                <div data-tour="assignments-create" className="flex shrink-0 items-center gap-2">
                   {/* Bank «Yaratish» dan OLDIN turadi: tayyor test tanlash
                       noldan tuzishdan tezroq va koʻpincha aynan shu kerak. */}
                   <Button
@@ -420,7 +450,7 @@ export default function AssignmentsPage() {
                             <button
                               type="button"
                               onClick={restoreSession}
-                              className="list-card flex w-full items-center gap-3 border-dashed py-3 pl-4 pr-3.5 text-left"
+                              className="list-card flex w-full items-center gap-3 border-dashed py-3 pl-4 pr-4 text-left"
                             >
                               <div className="list-card-icon flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
                                 <PenLine className="size-4" />
@@ -433,7 +463,7 @@ export default function AssignmentsPage() {
                                   {t("draftCardHint")}
                                 </TypographyMuted>
                               </div>
-                              <Badge variant="outline" className="shrink-0 text-[10px] text-muted-foreground">
+                              <Badge size="sm" variant="outline" className="shrink-0 text-muted-foreground">
                                 {t("status_draft")}
                               </Badge>
                             </button>
@@ -458,9 +488,9 @@ export default function AssignmentsPage() {
                           eng tepada, chunki oʻqituvchi aynan ularni
                           qidirib keladi (endigina tuzgan). */}
                       {orphanSets.length > 0 && (
-                        <div className="flex flex-col gap-2.5">
+                        <div className="flex flex-col gap-3">
                           <div className="flex items-center gap-2">
-                            <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                            <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
                               <FileCheck2 className="size-3.5" />
                             </div>
                             <h3 className="text-sm font-semibold text-foreground">
@@ -480,7 +510,7 @@ export default function AssignmentsPage() {
                             {orphanSets.map((set) => (
                               <ContextMenu key={set.id}>
                                 <ContextMenuTrigger asChild>
-                                  <div className="list-card group flex items-center gap-2 pr-2.5">
+                                  <div className="list-card group flex items-center gap-2 pr-2">
                                     <button
                                       type="button"
                                       onClick={() => setBuilderSetId(set.id)}
@@ -495,9 +525,9 @@ export default function AssignmentsPage() {
                                         </h4>
                                       </div>
                                     </button>
-                                    <Badge
+                                    <Badge size="sm"
                                       variant="outline"
-                                      className="shrink-0 text-[10px] text-muted-foreground"
+                                      className="shrink-0 text-muted-foreground"
                                     >
                                       {t("questionCount", { count: set.itemCount })}
                                     </Badge>
@@ -563,31 +593,56 @@ export default function AssignmentsPage() {
                       className="flex flex-col gap-3"
                     >
                       {groups.map((group) => (
-                        <AccordionItem key={group.id} value={group.id} className="border-b-0">
+                        /* Toifa = RANGLI LENTALI panel: sarlavha toifa rangining
+                           ochiq yuzasida turadi, chegara ham shu rangdan. Ilgari
+                           sarlavha erkin qator edi va uzun roʻyxatda qaysi
+                           topshiriq qaysi toifaga tegishli ekani koʻrinmasdi. */
+                        <AccordionItem
+                          key={group.id}
+                          value={group.id}
+                          /* `last:border-b` — primitivning `last:border-b-0`
+                             defaulti oxirgi toifani pastki chegarasiz qoldirardi
+                             (u roʻyxat-ajratkich uchun, panel uchun emas). */
+                          className="overflow-hidden rounded-xl border last:border-b"
+                          style={
+                            group.color
+                              ? { borderColor: topicTint(TOPIC_COLOR_HEX[group.color], 35) }
+                              : undefined
+                          }
+                        >
                           {/* `justify-start` MAJBURIY: AccordionTrigger'ning
                               standart `justify-between`i ikonka/nom/sonni
                               butun kenglikka tarqatib, sarlavhani ekran
                               oʻrtasiga tashlab yuborardi — roʻyxat vertikal
                               skanerlanmasdi. Chevron `mr-auto` bilan chetga
                               suriladi. */}
-                          <AccordionTrigger className="items-center justify-start gap-3 rounded-lg px-2 py-3 hover:bg-muted/40 hover:no-underline [&[data-state=open]>svg]:rotate-180">
+                          <AccordionTrigger
+                            className={cn(
+                              "items-center justify-start gap-2 rounded-none px-4 py-3 hover:no-underline [&[data-state=open]>svg]:rotate-180",
+                              !group.color && "bg-muted/50 text-muted-foreground",
+                            )}
+                            style={
+                              group.color
+                                ? {
+                                    backgroundColor: topicTint(TOPIC_COLOR_HEX[group.color], 12),
+                                    color: TOPIC_COLOR_HEX[group.color],
+                                  }
+                                : undefined
+                            }
+                          >
+                            {/* Ikonka-quti — TOʻQ toifa rangi + oq ikonka
+                                (kartadagi bilan bir xil retsept). */}
                             <div
-                              className={
-                                group.color
-                                  ? "flex size-8 shrink-0 items-center justify-center rounded-lg"
-                                  : "flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground"
-                              }
-                              style={
-                                group.color
-                                  ? {
-                                      backgroundColor: `color-mix(in srgb, ${TOPIC_COLOR_HEX[group.color]} 15%, transparent)`,
-                                      color: TOPIC_COLOR_HEX[group.color],
-                                    }
-                                  : undefined
-                              }
+                              className={cn(
+                                "flex size-8 shrink-0 items-center justify-center rounded-full",
+                                group.color ? "text-white" : "bg-muted-foreground/20 text-muted-foreground",
+                              )}
+                              style={group.color ? { backgroundColor: TOPIC_COLOR_HEX[group.color] } : undefined}
                             >
                               <Tag className="size-4" />
                             </div>
+                            {/* Sarlavha `text-foreground` — toifa rangining oʻzida
+                                yozilsa ochiq ranglarda (sariq, lime) oʻqilmasdi. */}
                             <span className="text-[15px] font-semibold text-foreground">{group.name}</span>
                             <TypographyMuted className="text-xs">{group.items.length}</TypographyMuted>
                             {/* Chevron'ni chetga suruvchi boʻshliq. */}
@@ -614,24 +669,31 @@ export default function AssignmentsPage() {
                             )}
                           </AccordionTrigger>
                           {group.items.length > 0 && (
-                            <AccordionContent className="px-2 pb-3">
+                            <AccordionContent className="bg-card p-3">
                               {/* BITTA ustun, chapga tekis — Classroom/Canvas
                                   roʻyxati naqshi. Uch ustunli karta gridida
                                   koʻz vertikal skanerlay olmasdi va qatorga
                                   holat/sana sigʻmasdi. */}
                               <div className="flex flex-col gap-2">
                                 {group.items.map((a) => {
-                                  // Mazmun turi — kartaning ikonkasi va yorligʻi.
-                                  // Mazmunsiz topshiriq ham toʻlaqonli: u jurnaldagi
-                                  // baho ustuni (qogʻozdagi ish, ogʻzaki soʻrov).
+                                  /* Mazmun turi — ikonkasi, rangi va nomi YAGONA
+                                     registrdan (`MATERIAL_KINDS`): oʻqituvchi
+                                     muharrirdagi shakl tanlovida koʻrgan yashil
+                                     «Test» belgisini roʻyxatda ham tanisin.
+                                     Mazmunsiz topshiriq registrda YOʻQ — u
+                                     material emas, jurnaldagi baho ustuni
+                                     (qogʻozdagi ish, ogʻzaki soʻrov), shuning
+                                     uchun neytral qoladi. */
                                   const isDeck = a.kind === "deck";
                                   const isTest = a.kind === "test" || Boolean(a.setId);
-                                  const Icon = isDeck ? Presentation : isTest ? FileCheck2 : Columns3;
-                                  const kindLabel = isDeck
-                                    ? t("kindDeck")
+                                  const kindMeta = isDeck
+                                    ? MATERIAL_KINDS.deck
                                     : isTest
-                                      ? t("kindTest")
-                                      : t("kindManual");
+                                      ? MATERIAL_KINDS.test
+                                      : null;
+                                  const Icon = kindMeta?.icon ?? Columns3;
+                                  const kindTints = kindMeta ? classTints(kindMeta.color) : null;
+                                  const kindLabel = kindMeta ? tMaterial(kindMeta.labelKey) : t("kindManual");
                                   /* Holat sanadan va baholardan hisoblanadi —
                                      muharrir sarlavhasidagi chip bilan bitta
                                      komponent, bitta mantiq. */
@@ -654,13 +716,43 @@ export default function AssignmentsPage() {
                                   return (
                                     <ContextMenu key={a.id}>
                                       <ContextMenuTrigger asChild>
-                                        <div className="list-card group flex items-center gap-2 pr-2.5">
+                                        {/* `--card-accent` — hover/tanlov rangi
+                                            TOIFAdan keladi (Mavzular sahifasida
+                                            sinf rangidan kelgani kabi). Berilmasa
+                                            `.list-card` neytral `--primary`ga
+                                            tushib qolardi. */}
+                                        <div
+                                          className="list-card group flex items-center gap-2 pr-2"
+                                          style={
+                                            group.color
+                                              ? { ["--card-accent" as string]: TOPIC_COLOR_HEX[group.color] }
+                                              : undefined
+                                          }
+                                        >
                                           <button
                                             type="button"
                                             onClick={() => openEditor(a.id)}
                                             className="flex min-w-0 flex-1 items-center gap-3 py-3 pl-4 text-left"
                                           >
-                                            <div className="list-card-icon flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                                            {/* Ikonka toifa rangini oladi — YENGIL yuza
+                                                (15%) + toʻyingan siyoh. Toʻq yuza faqat
+                                                akkordeon sarlavhasida: qatorlarda ham
+                                                takrorlansa roʻyxat rang shovqiniga
+                                                aylanardi. */}
+                                            <div
+                                              className={cn(
+                                                "list-card-icon flex size-9 shrink-0 items-center justify-center rounded-full",
+                                                !group.color && "bg-muted text-muted-foreground",
+                                              )}
+                                              style={
+                                                group.color
+                                                  ? {
+                                                      backgroundColor: topicTint(TOPIC_COLOR_HEX[group.color], 15),
+                                                      color: TOPIC_COLOR_HEX[group.color],
+                                                    }
+                                                  : undefined
+                                              }
+                                            >
                                               <Icon className="size-4" />
                                             </div>
                                             <div className="min-w-0 flex-1">
@@ -681,16 +773,9 @@ export default function AssignmentsPage() {
                                             <Tooltip>
                                               <TooltipTrigger asChild>
                                                 <span className="hidden shrink-0 cursor-default items-center gap-1.5 rounded-full bg-muted px-2 py-1 sm:inline-flex">
-                                                  <span className="flex items-center -space-x-1">
-                                                    {members.slice(0, 3).map((m) => (
-                                                      <ClassSwatch
-                                                        key={m.id}
-                                                        hex={m.hex}
-                                                        className="size-2.5 ring-1 ring-card"
-                                                      />
-                                                    ))}
-                                                  </span>
-                                                  <span className="text-[10px] font-semibold text-muted-foreground">
+                                                  <ClassSwatchStack
+                                                    hexes={members.map((m) => m.hex)} />
+                                                  <span className="text-micro font-semibold text-muted-foreground">
                                                     {members.length}
                                                   </span>
                                                 </span>
@@ -702,12 +787,24 @@ export default function AssignmentsPage() {
                                               </TooltipContent>
                                             </Tooltip>
                                           )}
-                                          <Badge
-                                            variant="outline"
-                                            className="hidden shrink-0 text-[10px] text-muted-foreground sm:inline-flex"
+                                          {/* Tur belgisi — registrdagi rang + ikonka
+                                              (`MaterialKindTile` bilan bir oilada),
+                                              shakli `AssignmentStatusChip` bilan
+                                              AYNAN bir xil (rounded-full pill,
+                                              gap-1.5, text-xs) — ikkalasi yonma-yon
+                                              turadi, ikki xil "pill tili" gapirmasin.
+                                              Registrda yoʻq «Baho ustuni» neytral
+                                              `bg-muted` boʻlib qoladi. */}
+                                          <span
+                                            className={cn(
+                                              "hidden shrink-0 items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold sm:inline-flex",
+                                              !kindTints && "bg-muted text-muted-foreground",
+                                            )}
+                                            style={kindTints ? { ...kindTints.badge, ...kindTints.textStrong } : undefined}
                                           >
+                                            <Icon className="size-3.5" />
                                             {kindLabel}
-                                          </Badge>
+                                          </span>
                                           <AssignmentStatusChip status={status} />
                                           {/* Amal endi KOʻRINADI. Oʻng-tugma
                                               menyusi yagona yoʻl boʻlib
@@ -799,8 +896,15 @@ export default function AssignmentsPage() {
         />
       )}
 
-      {sessionSet && (
-        <SessionPanelModal set={sessionSet} onClose={() => setSessionSet(null)} />
+      {/* Sessiya sinfsiz boshlanmaydi — roʻyxat ham, baho ham sinfdan
+          keladi. Bu yerda sinf doim tanlangan (toʻplamlar roʻyxati
+          shundan yuklanadi), shart faqat tipni toraytiradi. */}
+      {sessionSet && selectedClassId && (
+        <SessionPanelModal
+          set={sessionSet}
+          classId={selectedClassId}
+          onClose={() => setSessionSet(null)}
+        />
       )}
 
       <AlertDialog open={!!deleteSet} onOpenChange={(open) => { if (!open) setDeleteSet(null); }}>

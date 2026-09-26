@@ -1,9 +1,18 @@
-import { eq, and, sql, inArray } from "drizzle-orm";
 import { requireTeacher } from "@/server/session";
-import { db } from "@/server/db/client";
-import { aiUsage, aiDocs, classes } from "@/server/db/schema";
+import {
+  consumeAiMessage,
+  recordAiProvider,
+  findAiDoc,
+  listAiClassNames,
+} from "@/server/dal/ai-usage";
+import { visibleClassIds } from "@/server/workspace";
 import { streamChat, configuredProviders, type AiChatMessage, type StreamChatArgs, type ProviderId } from "@/server/ai/providers";
 import { buildClassContext, buildClassContexts } from "@/server/ai/class-context";
+import {
+  CALLOUT_KEYS,
+  AI_CALLOUT_USAGE,
+  NOTION_CALLOUT_COLORS,
+} from "@/components/lesson-editor/callout-types";
 import uzMessages from "../../../../messages/uz.json";
 
 /* Callout turkodlari + yorliqlar — YAGONA MANBADAN (messages/uz.json,
@@ -11,19 +20,32 @@ import uzMessages from "../../../../messages/uz.json";
    takrorlangan edi: muharrir tomonidagi yorliq oʻzgarsa, AI eski nom bilan
    callout yasashda davom etardi. Prompt har doim oʻzbekcha boʻlgani uchun
    uz.json'dan toʻgʻridan-toʻgʻri olinadi (callout-extension.ts "use client"
-   va lucide-react ni ortiqcha ilova qilib yuboradi, bu yerga kerak emas). */
-const CALLOUT_TYPE_LIST = Object.entries(
-  uzMessages.LessonEditorToolbar.calloutTypes as Record<string, string>
-)
-  .map(([code, label]) => `${code} (${label})`)
-  .join(", ");
+   va lucide-react ni ortiqcha ilova qilib yuboradi, bu yerga kerak emas).
+
+   ⚠️ YORLIQNING OʻZI YETARLI EMAS. Turkodlar Obsidian'dan meros va
+   bizdagi pedagogik yorliq bilan ustma-ust tushmaydi — eng yomoni
+   `bug` = «Uyga vazifa». Faqat "kod (yorliq)" berilsa, model inglizcha
+   soʻzga tayanadi va uyga vazifani boshqa turga yozadi. Shuning uchun
+   har turga QACHON ishlatish izohi qoʻshiladi (AI_CALLOUT_USAGE,
+   callout-types.ts — u yerda `Record<CalloutType, …>` bilan yangi tur
+   izohsiz qolmasligi kafolatlangan). */
+const CALLOUT_LABELS = uzMessages.LessonEditorToolbar.calloutTypes as Record<
+  string,
+  string
+>;
+const CALLOUT_TYPE_LIST = CALLOUT_KEYS.map(
+  (code) => `    - ${code} — «${CALLOUT_LABELS[code] ?? code}»: ${AI_CALLOUT_USAGE[code]}`
+).join("\n");
+
+/** Emojili blok fon ranglari — muharrir palitrasi bilan bir xil. */
+const NOTION_COLOR_LIST = NOTION_CALLOUT_COLORS.join(", ");
 
 /**
  * Ustozona AI — dars muharriridagi AI yordamchi uchun streaming endpoint.
- * Provayder zanjiri (Gemini → Groq → Anthropic) src/server/ai/providers.ts da.
+ * Provayder zanjiri (Gemini → Groq → OpenRouter) src/server/ai/providers.ts da.
  * Soʻrov: { messages: {role,content}[], lesson?: {title, classes, unit, content} }
  * Javob: oddiy matn (text/plain) — boʻlak-boʻlak (streaming).
- * Kunlik kvota: AI_DAILY_LIMIT (default 30) xabar/foydalanuvchi.
+ * Kvota: taʼrifga bogʻliq OYLIK kredit (`src/lib/ai-limits.ts`).
  */
 
 export const runtime = "nodejs";
@@ -36,21 +58,45 @@ mavjud darsni yaxshilash, savollar va baholash mezonlarini taklif qilish.
 Qoidalar:
 - Faqat oʻzbek tilida (lotin), tabiiy va aniq yoz.
 - Apostrof oʻrniga toʻgʻri belgilardan foydalan: Oʻ/Gʻ uchun ʻ (U+02BB), tutuq belgisi uchun ʼ (U+02BC).
-- Javobni Markdown formatida yoz va dars muharririning HAMMA formatlash imkoniyatlaridan maksimal foydalan (bular darsga "Darsga qoʻshish" bilan toʻgʻridan-toʻgʻri, tayyor koʻrinishda tushadi):
-  - Sarlavhalar (##, ###) — bosqich/boʻlim nomlari uchun.
-  - Roʻyxatlar (- yoki 1.) va vazifa roʻyxati (- [ ]) — qadamlar, topshiriqlar uchun.
-  - **Qalin** — asosiy atama/koʻrsatma; jadval (| ... | ... |, GFM) — mezon/rubrika, taqqoslash, vaqt jadvali kabi tuzilmalar uchun.
-  - Formulalar — $...$ (qator ichi) yoki $$...$$ (alohida qator), LaTeX sintaksisi.
-  - Callout (rangli, ikonli maʼlumot bloki) — ikki turi bor, HAR safar mos joyda ishlatilsin (masalan maqsad/eslatma/misol/diqqatli oʻrin uchun):
-    1) Qatʼiy pedagogik tur (Obsidian uslubi) — "> [!turkod] Sarlavha" qatoridan keyin har qatorda "> " bilan davom etadigan matn. Mumkin boʻlgan turkodlar (aynan shu inglizcha soʻz, boshqasi ishlamaydi):
-       ${CALLOUT_TYPE_LIST}.
+- Javobni Markdown formatida yoz. Javob "Darsga qoʻshish" tugmasi bilan dars muharririga TOʻGʻRIDAN-TOʻGʻRI tushadi, shuning uchun FAQAT quyidagilarni ishlat — roʻyxatda yoʻq narsa muharrirda yoʻqoladi yoki oddiy matnga aylanadi:
+  - Sarlavhalar: ## va ### — bosqich/boʻlim nomlari uchun. Darsning oʻz sarlavhasi alohida maydonda, shuning uchun # ishlatma.
+  - Roʻyxatlar: "- " (nuqtali), "1. " (raqamli), ichma-ich joylash mumkin (2 boʻshliq bilan).
+  - Vazifa roʻyxati: "- [ ] bajarilmagan" va "- [x] bajarilgan" — muharrirda haqiqiy belgilanadigan katakcha boʻladi. Oʻquvchi/oʻqituvchi belgilab boradigan qadamlar uchun aynan shuni ishlat.
+  - Matn ichi: **qalin**, *kursiv*, ~~oʻchirilgan~~, \`kod\`.
+  - Jadval (GFM): "| ustun | ustun |" va ostida "| --- | --- |" — mezon/rubrika, taqqoslash, vaqt jadvali uchun.
+  - Havola: [koʻrinadigan matn](https://...) — FAQAT haqiqatan bilgan manzilingni yoz. Havola oʻylab topma; ishonchli manba boʻlmasa umuman havola qoʻyma.
+  - Kod bloki: uch teskari tirnoq bilan ochib-yopiladi — informatika darsi yoki namunaviy matn uchun.
+  - Ajratuvchi chiziq: alohida qatorda "---" — yirik boʻlimlar orasida, kam ishlat.
+  - Oddiy iqtibos: "> " bilan boshlangan qator (quyidagi callout sintaksisiga tushmasa) — sitata/parcha uchun.
+  - Formulalar: $...$ (qator ichi) yoki $$...$$ (alohida qator), LaTeX sintaksisi. Muharrirda KaTeX bilan chiroyli chiziladi, shuning uchun matematik/kimyoviy ifodani oddiy matn bilan emas, aynan shu bilan yoz.
+  - Emoji: oddiy unicode emoji toʻgʻridan-toʻgʻri matnga yoziladi va muharrirda yagona uslubdagi chiroyli belgi sifatida koʻrinadi. Sarlavhada, roʻyxat boshida yoki callout ichida ishlatsa boʻladi — bosqichlarni koʻzga tashlanadigan qilish uchun foydali (mas. "### 🎯 Maqsad", "### ⏱️ Kirish qismi"). Meʼyorida: bitta sarlavhaga bittadan koʻp emas, jadval ichida va rasmiy hujjat ohangini buzadigan joyda ishlatma.
+  - Callout — rangli, ikonli maʼlumot bloki. Darsning eng muhim joylarini koʻzga tashlantiradi, shuning uchun har javobda mos oʻrinlarda ishlat (lekin ketma-ket 5-6 ta emas: blok koʻpaysa ajralib turishdan toʻxtaydi). Ikki xili bor va ular ARALASHTIRILMAYDI:
+
+    1) PEDAGOGIK TUR — qatʼiy roʻyxatdan tur tanlanadi, ikon va rang shu turdan avtomatik keladi.
+       Format: "> [!turkod] Sarlavha" qatori, keyin har qatori "> " bilan boshlanadigan matn.
+       ⚠️ TURKOD INGLIZCHA SOʻZ, LEKIN MAʼNOSI BOSHQA. Kodning inglizcha maʼnosiga tayanma — quyidagi izohga tayan. Ayniqsa: bug = uyga vazifa (dasturlash xatosi EMAS), danger = xavfsizlik qoidasi, info = taʼrif.
+${CALLOUT_TYPE_LIST}
+       SARLAVHA QOIDALARI (ikkala tur uchun ham bir xil):
+       - Sarlavha QISQA boʻlsin — 2-5 soʻz, gap emas, nuqta qoʻyilmaydi. Butun fikrni sarlavhaga sigʻdirma: u blok tanasiga, keyingi "> " qatorlariga yoziladi.
+       - Sarlavha ALLAQACHON qalin chiqadi — uni ** ** bilan oʻrama. "> [!warning] **Eslatma**" NOTOʻGʻRI, "> [!warning] Eslatma" TOʻGʻRI.
+       - Sarlavha yorliqni takrorlamasin: "> [!abstract] Maqsad" emas, "> [!abstract] Bugun nimani oʻrganamiz".
+       Blok tanasida oddiy matndan tashqari roʻyxat, **qalin** va formulalar ishlaydi — har qator "> " bilan boshlansa boʻldi.
        Masalan:
-       > [!abstract] Dars maqsadi
-       > Oʻquvchi ... qila oladi.
-    2) Erkin "Emojili blok" — qatʼiy tur mos kelmaydigan, ochiq/norasmiy eslatma uchun (masalan qiziqarli fakt, motivatsion soʻz, umumiy maslahat). Format: "> [!free:EMOJI] Sarlavha" — EMOJI oʻrniga MAVZUGA MOS bitta emoji (mas. 💡, 🎯, ⭐, 🔥), keyin xuddi yuqoridagidek "> " bilan davom etadigan matn. Turkodlardan birortasi ham mos kelmasa, shuni ishlat — "note" bilan "free"ni bir-biriga aralashtirma.
+       > [!abstract] Bugun nimani oʻrganamiz
+       > - Fotosintez bosqichlarini ayta oladi
+       > - Tenglamani $6CO_2 + 6H_2O$ koʻrinishida yoza oladi
+
+    2) EMOJILI BLOK — qatʼiy tur yoʻq, emoji va rangni OʻZING tanlaysan. Roʻyxatdagi turlardan birortasi ham mos kelmaganda ishlatiladi: qiziqarli fakt, motivatsion soʻz, umumiy maslahat, mavzuga kirish.
+       Format: "> [!free:EMOJI|rang] Sarlavha", keyin xuddi yuqoridagidek "> " bilan davom etadigan matn.
+       EMOJI — mavzuga mos bitta emoji (mas. 💡, 🎯, ⭐, 🔥, 🔬, 📚).
+       rang — ixtiyoriy, mumkin boʻlganlari: ${NOTION_COLOR_LIST}. Yozilmasa gray boʻladi; rangni mazmunga qarab tanla (mas. qiziqarli fakt — amber, tadqiqot — cyan, ogohlantirmaydigan eslatma — gray).
        Masalan:
-       > [!free:🔥] Qiziqarli fakt
-       > Bilasizmi, ...
+       > [!free:🔥|amber] Qiziqarli fakt
+       > Bir dona bargda milliondan ortiq xloroplast bor.
+       ⚠️ "note" bilan "free"ni aralashtirma: pedagogik maʼnosi bor blok — 1-tur, erkin/norasmiy blok — 2-tur.
+       ⚠️ "> [!free:...]" ichida turkod yozma, "> [!turkod]" ichida esa emoji/rang yozma — ikkala sintaksis alohida.
+- ISHLATMA (muharrir buni qabul qilmaydi va javob buzilib tushadi): HTML teglari (<div>, <br>, <span> va h.k.); rasm qoʻyish (![]() — sen fayl yuklay olmaysan); matn rangi, fon rangi, markazga tekislash, shrift oʻlchami; izohlar (footnote); HTML jadval. Rang va tekislash muharrirdagi tugmalar bilan qoʻlda qoʻyiladi.
+- Formatni bezak uchun emas, MAʼNO uchun ishlat: har bosqich — sarlavha, har qadam — roʻyxat elementi, har mezon — jadval qatori. Bir xil narsani ikki xil formatda takrorlama (masalan sarlavha ostiga yana qalin sarlavha yozma).
 - Aniq, amaliy va oʻqituvchi darhol ishlatadigan koʻrinishda ber. Ortiqcha muqaddimasiz.
 - Oʻquvchilarning ism-familiyasi kabi shaxsiy maʼlumotlarini soʻrama va javobda ishlatma.
 - Dars rejasi soʻralganda (foydalanuvchi aynan qanday soʻz bilan soʻrashidan qatʼi nazar) quyidagi ikkita maʼlumot HAR DOIM, SOʻRALMASDAN hisobga olinadi:
@@ -60,13 +106,6 @@ Qoidalar:
   - "Backward Design" (Wiggins & McTighe, teskari loyihalash): 1) Kutilgan natijalar (standart/maqsad), 2) Baholash dalili (qanday bilamiz oʻrganilganini), 3) Oʻqitish rejasi/faoliyati — shu tartibda, har bosqichni sarlavha qilib.
   - "5E modeli": Engage (Jalb qilish) → Explore (Tadqiq qilish) → Explain (Tushuntirish) → Elaborate (Chuqurlashtirish) → Evaluate (Baholash) — har biri alohida bosqich, taxminiy vaqt bilan.
   - "SMART maqsad": har bir maqsadni Specific/Measurable/Achievable/Relevant/Time-bound (Aniq/Oʻlchanadigan/Erishish mumkin/Dolzarb/Muddatli) mezonlariga mos, bitta-ikkita gapda yoz.`;
-
-/** Asia/Tashkent (UTC+5) boʻyicha YYYY-MM-DD. */
-function todayTashkent(): string {
-  return new Date(Date.now() + 5 * 3600_000).toISOString().slice(0, 10);
-}
-
-const DAILY_LIMIT = Math.max(1, Number(process.env.AI_DAILY_LIMIT) || 30);
 
 export async function POST(req: Request) {
   let teacher;
@@ -79,24 +118,16 @@ export async function POST(req: Request) {
 
   if (!configuredProviders().length) {
     return new Response(
-      "Ustozona AI sozlanmagan: GEMINI_API_KEY (yoki GROQ_API_KEY / ANTHROPIC_API_KEY) .env.local faylida yoʻq.",
+      "Ustozona AI sozlanmagan: GEMINI_API_KEY (yoki GROQ_API_KEY / OPENROUTER_API_KEY) .env.local faylida yoʻq.",
       { status: 503 }
     );
   }
 
-  // ── Kunlik kvota (atomik: inkrement + qaytgan qiymat tekshiruvi — poyga yoʻq) ──
-  const day = todayTashkent();
-  const [usage] = await db
-    .insert(aiUsage)
-    .values({ id: `${userId}:${day}`, userId, day, count: 1 })
-    .onConflictDoUpdate({
-      target: [aiUsage.userId, aiUsage.day],
-      set: { count: sql`${aiUsage.count} + 1` },
-    })
-    .returning({ count: aiUsage.count });
-  if (usage.count > DAILY_LIMIT) {
+  // ── Oylik kredit (sarflash + tekshirish DAL ichida) ──
+  const quota = await consumeAiMessage(userId, teacher.plan);
+  if (!quota.allowed) {
     return new Response(
-      `Bugungi AI limiti (${DAILY_LIMIT} xabar) tugadi. Ertaga yana urinib koʻring.`,
+      `Bu oyning AI krediti (${quota.credit} xabar) tugadi. Keyingi oy boshida yangilanadi.`,
       { status: 429 }
     );
   }
@@ -138,7 +169,7 @@ export async function POST(req: Request) {
 
   // Sinf statistikasi (anonim agregat) — faqat toggle yoqilganda.
   // Gemini: tool-calling (kerak paytda oʻzi soʻraydi, token tejaladi);
-  // Groq/Anthropic fallback: tayyor blok system promptga qoʻshiladi.
+  // Groq/OpenRouter fallback: tayyor blok system promptga qoʻshiladi.
   let classTools: StreamChatArgs["tools"];
   let classFallbackCtx = "";
   if (body.useClassData && Array.isArray(body.classIds) && body.classIds.length) {
@@ -146,10 +177,9 @@ export async function POST(req: Request) {
       const ids = body.classIds
         .filter((id): id is string => typeof id === "string")
         .slice(0, 3);
-      const own = await db
-        .select({ id: classes.id, name: classes.name })
-        .from(classes)
-        .where(and(eq(classes.teacherId, userId), inArray(classes.id, ids)));
+      const allowed = new Set(await visibleClassIds("data"));
+      const scoped = ids.filter((id) => allowed.has(id));
+      const own = await listAiClassNames(scoped);
       if (own.length) {
         classTools = {
           declarations: [
@@ -190,28 +220,25 @@ export async function POST(req: Request) {
   // Egalik tekshiruvi: uri aynan shu foydalanuvchi yuklagan fayl boʻlishi shart.
   let doc: { uri: string; mimeType: string } | undefined;
   if (body.doc?.uri) {
-    const [owned] = await db
-      .select({ uri: aiDocs.uri, mimeType: aiDocs.mimeType })
-      .from(aiDocs)
-      .where(and(eq(aiDocs.userId, userId), eq(aiDocs.uri, body.doc.uri)));
+    const owned = await findAiDoc(userId, body.doc.uri);
     if (owned) doc = { uri: owned.uri, mimeType: owned.mimeType };
   }
   const docCtx = doc
     ? `\n\n— Hujjat rejimi —\nSenga "${(body.doc?.name || "hujjat").slice(0, 120)}" nomli hujjat biriktirilgan. Savollarga FAQAT shu hujjat mazmuni asosida javob ber. Javob hujjatda boʻlmasa, ochiq ayt: "Bu maʼlumot yuklangan hujjatda topilmadi" — taxmin qilma. Iloji boricha qaysi boʻlim/sahifaga tayanganingni koʻrsat.`
     : "";
 
-  // Premium: Anthropic (Claude) zanjir boshida; tekin: Gemini → Groq
-  const chainOverride: ProviderId[] | undefined =
-    teacher.plan === "premium" ? ["anthropic", "gemini", "groq"] : undefined;
+  /* Zanjir hamma uchun bir xil: Gemini → Groq → OpenRouter (hammasi tekin
+     tarif). Ilgari premium reja Anthropic'ni zanjir boshiga qoʻyardi, lekin
+     ANTHROPIC_API_KEY hech qachon sozlanmagan — chainOverride jimgina
+     Gemini'ga tushib, premium tekindan farq qilmasdi. Premium uchun alohida
+     model kerak boʻlsa, uni AI_PROVIDER_CHAIN emas, per-request model
+     tanlovi orqali qaytarish kerak. */
 
   // Telemetriya: javob bergan provayderni sanaymiz (fire-and-forget)
   const recordProvider = (id: ProviderId) => {
-    db.update(aiUsage)
-      .set({
-        providers: sql`jsonb_set(coalesce(${aiUsage.providers}, '{}'::jsonb), array[${id}::text], to_jsonb(coalesce((${aiUsage.providers}->>${id})::int, 0) + 1))`,
-      })
-      .where(and(eq(aiUsage.userId, userId), eq(aiUsage.day, day)))
-      .catch((err) => console.warn("[ustozona-ai] telemetriya xatosi:", err));
+    recordAiProvider(userId, quota.day, id).catch((err) =>
+      console.warn("[ustozona-ai] telemetriya xatosi:", err)
+    );
   };
 
   const abort = new AbortController();
@@ -222,7 +249,6 @@ export async function POST(req: Request) {
     doc,
     tools: classTools,
     fallbackContext: classFallbackCtx || undefined,
-    chainOverride,
     onProvider: recordProvider,
   });
 
@@ -255,7 +281,9 @@ export async function POST(req: Request) {
     headers: {
       "Content-Type": "text/plain; charset=utf-8",
       "Cache-Control": "no-store",
-      "X-AI-Remaining": String(Math.max(0, DAILY_LIMIT - usage.count)),
+      /* Oyning oxirigacha qolgan kredit (panel shuni koʻrsatadi).
+         Nomi orqaga mos saqlandi — klient shu sarlavhani oʻqiydi. */
+      "X-AI-Remaining": String(Math.max(0, quota.credit - quota.used)),
     },
   });
 }

@@ -22,7 +22,9 @@ export default function GradesPage() {
   // Sinf tanlash — `?classId=` URL param (refresh/deep-link chidamli).
   // null = hech narsa tanlanmagan (Sinflar ustuni 50%). Tanlanganda URL +
   // store default yangilanadi (boshqa sahifalar bilan sinxron).
-  const [selectedClassId, handleSelectClass] = useClassIdParam();
+  // Yon menyudan «toza» kirilganda (URL'da `?classId=` yoʻq) oxirgi
+  // tanlangan sinfdan davom etadi — har safar qaytadan tanlash shart emas.
+  const [selectedClassId, handleSelectClass] = useClassIdParam({ fallbackToStore: true });
 
   // Boʻsh hisobda "jurnal" turi ishga tushsa — namunaviy sinf + toʻliq
   // jurnal koʻrsatiladi (students/lessons turi bilan bir xil naqsh).
@@ -46,10 +48,10 @@ export default function GradesPage() {
   const columnsTemplate = `minmax(0,${grow.classes}fr) minmax(0,${grow.content}fr)`;
 
   return (
-    <div className="flex flex-col flex-1 min-w-0 h-full min-h-0">
+    <div className="flex flex-col flex-1 min-w-0 gap-6 p-4 md:p-6 max-lg:min-h-full lg:h-full lg:min-h-0">
       <TourDemoBanner tourId="grades" active={isDemoMode} />
-      <DashboardColumns template={columnsTemplate} className="h-full overflow-hidden p-4 md:p-6">
-        <DashboardColumn hideBelow="lg" data-tour="grades-classes">
+      <DashboardColumns template={columnsTemplate} className="lg:h-full lg:overflow-hidden">
+        <DashboardColumn hideBelow="lg" mobile="self" data-tour="grades-classes">
           <ClassListPanel
             page="grades"
             selectedClassId={selectedClassId ?? (isDemoMode ? GRADES_TOUR_DEMO_CLASS_ID : "")}
@@ -58,7 +60,7 @@ export default function GradesPage() {
           />
         </DashboardColumn>
 
-        <div className="flex min-w-0 min-h-0 h-full flex-col">
+        <div className="flex min-w-0 min-h-0 flex-col lg:h-full max-lg:min-h-[60svh]">
           {noClass ? (
             <div className="h-full overflow-hidden rounded-xl border border-border bg-card">
               <Empty className="h-full border-0">

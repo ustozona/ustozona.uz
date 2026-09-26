@@ -12,9 +12,9 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/components/ui/avatar";
-import ArticleToc from "./ArticleToc";
-import ShareActions from "./ShareActions";
-import ArticleClosing from "./ArticleClosing";
+import ArticleToc from "@/components/article/ArticleToc";
+import ShareActions from "@/components/article/ShareActions";
+import ArticleClosing from "@/components/article/ArticleClosing";
 
 const TITLE = "Zamonaviy raqamli jurnal: pedagogik inferensiya va oʻlchov mantiqi";
 
@@ -154,7 +154,7 @@ export default async function GradesHelpPage() {
                         <SectionIcon className="mt-0.5 shrink-0">{s.icon}</SectionIcon>
                         <h2 className="heading-section pt-1">{s.title}</h2>
                       </div>
-                      <div className="space-y-3.5 pl-[3.25rem]">
+                      <div className="space-y-3 pl-[3.25rem]">
                         {s.paragraphs.map((p, i) => (
                           <p key={i} className="text-body leading-7">
                             {p}

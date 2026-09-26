@@ -27,13 +27,13 @@ export function BehaviorMultiSelectMock() {
         }
       `}</style>
 
-      <div className="grid grid-cols-4 gap-2.5">
+      <div className="grid grid-cols-4 gap-3">
         {Array.from({ length: 4 }).map((_, i) => {
           const active = SELECTED.includes(i);
           return (
             <div key={i} className="relative flex flex-col items-center gap-1">
               <span
-                className="relative flex size-9 items-center justify-center rounded-full text-[10px] font-semibold text-white"
+                className="relative flex size-9 items-center justify-center rounded-full text-micro font-semibold text-white"
                 style={{ backgroundColor: "color-mix(in oklab, var(--primary) 55%, var(--muted-foreground))" }}
               >
                 {String.fromCharCode(65 + i)}

@@ -25,7 +25,7 @@ import { useCalendarStore } from "@/store/useCalendarStore";
 import { ReportPanel } from "./ReportPanel";
 
 /* ════════════════════════════════════════════════════════════════════
-   Sinf-darajali hisobot (ClassDojo "Reports" UX): chapda "Butun sinf" +
+   Sinf-darajali hisobot (sinf hisoboti UX): chapda "Butun sinf" +
    oʻquvchilar roʻyxati (tanlangan davrdagi ijobiy foizi bilan), oʻngda
    tanlanganga donut + davr filtri + timeline — oʻquvchi modalidagi
    hisobot paneli (ReportPanel) qayta ishlatiladi.
@@ -104,7 +104,7 @@ export function ClassReportDialog({
 
   const rowClass = (active: boolean) =>
     cn(
-      "flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors",
+      "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors",
       active
         ? "bg-muted text-foreground"
         : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
@@ -133,7 +133,7 @@ export function ClassReportDialog({
                   {students.slice(0, 3).map((st) => (
                     <Avatar key={st.id} className="size-7">
                       <AvatarFallback
-                        className="text-[10px] font-semibold text-white"
+                        className="text-micro font-semibold text-white"
                         style={{ backgroundColor: colorHex }}
                       >
                         {st.initials}
@@ -141,7 +141,7 @@ export function ClassReportDialog({
                     </Avatar>
                   ))}
                   {students.length > 3 && (
-                    <AvatarGroupCount className="size-7 text-[10px] font-semibold tabular-nums">
+                    <AvatarGroupCount className="size-7 text-micro font-semibold tabular-nums">
                       +{students.length - 3}
                     </AvatarGroupCount>
                   )}
@@ -160,7 +160,7 @@ export function ClassReportDialog({
                   >
                     <Avatar className="size-7 shrink-0">
                       <AvatarFallback
-                        className="text-[10px] font-semibold text-white"
+                        className="text-micro font-semibold text-white"
                         style={{ backgroundColor: colorHex }}
                       >
                         {st.initials}

@@ -259,10 +259,10 @@ export default function FeedbackPage() {
     <ScrollArea className="h-full min-h-0 flex-1">
       <div className="mx-auto w-full max-w-3xl space-y-4 p-4 md:p-6">
         {/* Sarlavha */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           <h1 className="heading-page text-foreground">{t("title")}</h1>
         </div>
-        <TypographyMuted className="-mt-2.5 text-sm">
+        <TypographyMuted className="-mt-2 text-sm">
           {t("subtitle")}
         </TypographyMuted>
 
@@ -279,7 +279,7 @@ export default function FeedbackPage() {
 
           {/* Tablar + toolbar */}
           <div
-            className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2.5 md:px-4"
+            className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-3 md:px-4"
             data-tour="feedback-toolbar"
           >
           <FeedbackViewTabs
@@ -338,7 +338,7 @@ export default function FeedbackPage() {
                     >
                       <ListFilter className="size-4" />
                       {filterCount > 0 && (
-                        <span className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-semibold tabular-nums text-primary-foreground">
+                        <span className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-primary text-micro font-semibold tabular-nums text-primary-foreground">
                           {filterCount}
                         </span>
                       )}

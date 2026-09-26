@@ -48,8 +48,8 @@ export type PlannerTourDemo = {
 };
 
 export function makePlannerTourDemo(): PlannerTourDemo {
-  const classA: ClassInfo = { id: CLASS_A, name: "Matematika 7-A", subject: "Matematika", color: "sky" };
-  const classB: ClassInfo = { id: CLASS_B, name: "Ona tili 8-B", subject: "Ona tili", color: "green" };
+  const classA: ClassInfo = { id: CLASS_A, name: "7-A", subject: "Matematika", color: "sky" };
+  const classB: ClassInfo = { id: CLASS_B, name: "8-B", subject: "Ona tili", color: "green" };
 
   return {
     classInfoById: new Map([[CLASS_A, classA], [CLASS_B, classB]]),

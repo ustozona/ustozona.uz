@@ -44,6 +44,9 @@ Barcha semantik ranglar OKLCH, `:root` (light) / `.dark` da aniqlangan,
 manbalardan foydalaniladi:
 - Baho/davomat rangi → [`src/lib/score-colors.ts`](src/lib/score-colors.ts) (`gradeBadgeClass`, `attendanceBadgeClass`, `scoreBarColor`)
 - Sinf rangi → [`src/lib/class-colors.ts`](src/lib/class-colors.ts) (`CLASS_COLOR_BASE`, OKLCH `-400`, v3.shadcn.com/colors darajasi) → `CLASS_COLOR_HEX`, `classTints()`
+  - **Deviatsiya (2026-09-10) — sinflar paneli (`ClassListPanel`):** nuqta oʻrnida sinf ikonkasi 36px tint doirada (`size-9`, `rounded-full`, 18px glif; `.list-row--glyph`). Tinch holatda 18% tint fon + rangli glif, hoverda qator foni sinf rangining 5% tinti, tanlanganda doira toʻyinadi — `gradientTile` + oq glif, qator foni tint + 1px chegara toʻliq sinf rangida; rail yoʻq (§7 dagi «tanlangan = 3px rail» qoidasidan chetlanish), qator 52px. Hover-harakat — faqat doira `scale(1.08)`. Sabab: panel sinfning asosiy navigatsiyasi, foydalanuvchi tanlagan ikonka sinfni nuqtadan tezroq tanitadi; tanlov doira + chegarada yetarli aniq, rail ortiqcha. Boshqa zich roʻyxatlar nuqtada qoladi
+  - **Deviatsiya (2026-09-22) — Darslar sahifasi ustunlari (`LessonsClassPanel`, boʻlimlar):** tanlanmagan sinf/boʻlim kartasida iconbox gradient emas — 18% tint fon + rangli glif; tanlanganda `gradientTile` + oq glif (§7 dagi «iconbox = gradient» qoidasidan chetlanish). Sabab va naqsh — yuqoridagi `ClassListPanel` deviatsiyasi bilan bir xil: ustunda bir vaqtda koʻp karta turadi, hammasi toʻyingan boʻlsa tanlangani ajralmaydi
+  - Sinfni chizish: nuqta = `<ClassSwatch>` (**8px, yagona — oʻlcham sozlanmaydi**), oʻqiladigan yorliq = `<ClassBadge>`, bosiladigan chip = `<ClassChip>`, «nechta sinf» = `<ClassSwatchStack>` — qoʻlda span yoki mahalliy nusxa yoʻq (`docs/design-system.md` §1)
 - Toifa (topic) rangi → `TOPIC_COLOR_BASE` (`src/lib/grades-data`), xuddi shu engine ustida
 
 Batafsil jadval: `docs/design-system.md` §1.
@@ -52,20 +55,92 @@ Batafsil jadval: `docs/design-system.md` §1.
 
 ## 3. Tipografika
 
-Utility klasslar (`globals.css`) + React analoglar (`@/components/ui/typography`, `CardTitle`):
+Rollar — Tailwind tokeni (`globals.css` `@theme`). Bitta klass oʻlcham,
+qator balandligi, vazn va harf oraligʻini birga beradi; variant ishlaydi
+(`md:text-title`); yonidagi `font-medium`, `leading-relaxed` yoki rang
+utility'si rolni ustidan yozadi. React analoglar:
+`@/components/ui/typography`, `CardTitle`.
 
-| Klass | Oʻlcham / vazn | Ishlatish |
-|---|---|---|
-| `.heading-page` | 24px / 700 | Sahifa sarlavhasi |
-| `.heading-section` | 18px / 600 | Panel sarlavhasi (`CardTitle`) |
-| `.heading-small` | 15px / 600 | Karta ichidagi ism |
-| `.text-body` | 14px / 400 | Asosiy matn |
-| `.text-caption` | 12px / 400 muted | Izoh |
-| `.text-label` | 11px / 500 UPPERCASE | Boʻlim yorligʻi |
+| Rol | Oʻlcham / qator / vazn | Ishlatish | Eski nom |
+|---|---|---|---|
+| `text-headline` | 24px / 1.2 / 700 | Sahifa sarlavhasi | `.heading-page` |
+| `text-title` | 18px / 1.3 / 600 | Panel sarlavhasi (`CardTitle`) | `.heading-section` |
+| `text-title-sm` | 15px / 1.3 / 600 | Karta ichidagi ism | `.heading-small` |
+| `text-reading` | 16px / 1.6 / 400 | Uzun oʻqiladigan matn (blog, yordam, jurnal) | — |
+| `text-body` | 14px / 1.5 / 400 | Ilova asosiy matni | — |
+| `text-caption` | 12px / 1.4 / 400 | Izoh, meta, vaqt | — |
+| `text-label` | 11px / 1.4 / 500 UPPERCASE | Boʻlim yorligʻi | — |
+| `text-tag` | 11px / 1.4 / vazn joyida | Badge, chip, pill, ixcham meta (`ClassBadge`) | — |
+| `text-micro` | 10px / 1.2 / 600 tabular | **Faqat zich toʻr katagi va kichik idish belgisi** (`<Badge size="sm">`) — pastga qarang | — |
+
+Eski `.heading-*` nomlar alias boʻlib ishlaydi; yangi kodda rol nomi.
+`text-caption` va `text-label` hozircha muted rangni oʻzi beradi (meros) —
+yangi kodda rangni alohida yozing: `text-caption text-muted-foreground`.
+Oʻlcham `--typo-*` dan oʻqiladi — sirt (`surfaces.css`) va
+`.readable-scale` rollarni shu orqali qayta oʻlchaydi.
+
+⚠️ Yangi rol qoʻshilsa — `src/lib/utils.ts` dagi `TEXT_ROLES` ga ham,
+aks holda `cn()` uni rang deb oʻylab tashlab yuboradi.
+
+⚠️ **`.text-micro` — ongli deviatsiya (2026-09-02).** Shkalaning eng
+kichigi 12px (`.text-caption`) edi va oddiy sahifada shundayligicha
+qoladi. Istisno maktab dars jadvali uchun ochildi: u yerda 1200 katak
+bitta toʻrda turadi va katak eni ~30px — 12px matn sigʻmaydi, katakni
+kattalashtirish esa toʻrni ekrandan chiqarib yuboradi. Sabab va oʻlchov
+hisobi: [docs/dars-jadvali-spec.md](docs/dars-jadvali-spec.md) §12.3,
+§14. Ikkinchi ruxsat (2026-09-18): **20px dan kichik idish ichidagi belgi** —
+hisoblagich nishoni, kichik avatar initsiali, 16px doiradagi raqam. U yerda
+12px sigʻmaydi, 10px dan kichigi esa pastki chegaradan past (ilgari 8–9px
+yozilgan edi). **Boshqa joyda ishlatilmaydi** — roʻyxat yoki kartada 10px
+matn kerak boʻlsa, muammo zichlikda emas, ierarxiyada.
 
 Rang har doim tokendan (`--foreground` / `--muted-foreground`). Yangi
 oʻlcham kerak boʻlsa avval shu jadvalga (va `globals.css`ga) qoʻshiladi —
-inline `text-[13px]` yozilmaydi.
+inline `text-[13px]` yozilmaydi — `npm run check:tokens` buni build
+oldidan ushlaydi.
+
+---
+
+## 3.5 Boʻshliq shkalasi
+
+**4px toʻri.** Qiymatni emas, **rolni** tanlaysiz — qiymat roldan keladi.
+`--spacing` sirtga boʻysunadi (projektor, telefon), shuning uchun
+qadamlar oʻz-oʻzidan kattalashadi; ixtiyoriy `p-[13px]` esa yoʻq.
+
+| Rol | Qiymat |
+|---|---|
+| Karta ichidagi matn qatorlari (sarlavha ↔ izoh) | `gap-0.5` (2) |
+| Yonma-yon belgilar, badge ichi | `gap-1` (4) |
+| Ikona ↔ matn | `gap-1.5` (6) · 20px+ ikonada `gap-2` |
+| Bir qatordagi boshqaruvlar · zich karta paddingi | `gap-2` · `p-2` (8) |
+| Karta ichidagi bloklar · karta paddingi | `gap-3` · `p-3` (12) |
+| Panel ichidagi bloklar · panel paddingi · panel ↔ panel | `gap-4` · `p-4` (16) |
+| Keng panel paddingi, dialog | `p-5` (20) |
+| Sahifa boʻlimlari · hero | `gap-6` · `p-6` (24) |
+| Sahifa yuqori/quyi chegarasi | `gap-8` (32) va undan katta |
+| Chip / badge | `px-2 py-0.5` |
+
+**Ruxsat:** 4 ga karrali har qadam (`0 · 1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 …`) va zich joyda `0.5 · 1.5`. Rol jadvalidagilar — birinchi tanlov; `7 · 9 · 11` kabilar geometriyadan chiqqanda (inputdagi ikona oʻrni `pl-9`).
+**Taqiq:** `2.5 · 3.5 · 4.5` va ixtiyoriy `[Npx]` —
+`npm run check:tokens` ushlaydi (`space-off-grid`, `space-arbitrary`).
+
+Tanlab boʻlmasa: **yaqinroq, lekin guruhni ajratadigan** qadam. `2.5`
+(10px) odatda `gap-2` (qator ichidagi elementlar) yoki `gap-3` (alohida
+bloklar) — qaysi biri, yuqoridagi rol hal qiladi. Qoida: guruh
+**ichidagi** boʻshliq guruhlar **orasidagi**dan doim kichik.
+
+Eski kodni tozalash lugʻati (bir xil holat — bir xil qaror):
+
+| Avval | Holat | Keyin |
+|---|---|---|
+| `px-2.5` | pill/chip (`rounded-full`, `py-1`), kichik tugma | `px-3` |
+| `gap-2.5` | iconbox/avatar (32px+) ↔ matn bloki | `gap-3` |
+| `gap-2.5` | tugma/badge guruhi, kichik ikona ↔ yorliq, nav qatori | `gap-2` |
+| `gap-2.5` | vertikal karta roʻyxati | `gap-3` |
+| `py-2.5`, `py-3.5` | roʻyxat qatori, jadval katagi | `py-3` |
+| `pt-2.5` | `border-t` dan keyingi footer | `pt-3` |
+
+Asos va oʻlchov: [docs/dizayn-token-standartlashtirish.md](docs/dizayn-token-standartlashtirish.md).
 
 ---
 
@@ -149,9 +224,96 @@ Yangi sahifa/komponent yozgach:
 - [ ] Yangi panel qoʻlda klass emas — `<Panel>` yoki `panelCard*Class`
 - [ ] Dark mode alohida kod bilan emas, token orqali ishlaydi
 
+**Deviatsiya (2026-09-22) — karta ichidagi tasdiqlash lentasi** (Darslar, «Oʻtildimi?»): lentadagi tugmalar 28px (`h-7`), §8 dagi 36px boshqaruv standartidan past. Sabab: lenta 72px kartaning ichida turadi — 36px tugmalar kartani qoʻpol balandlashtiradi; bu toolbar emas, kartaning ichki harakati. Boshqa joyda 36px qoladi.
+
+---
+
+## 9. Toast (sonner) — 2026-09-02
+
+**Sabab:** avval ikki xil toast tili bor edi — sonner `richColors`
+(har tur toʻliq rangli fon) va alohida `award-toast` (karta yuzasi,
+katta emoji). Ikkalasi ham tokenlarga toʻliq bogʻlanmagan. Jahon
+konvensiyasi (Carbon, Material, Atlassian, Polaris) va §5 (yuza = fon
+RANG bilan emas) asosida yagona tilга keltirildi.
+
+| Element | Qiymat |
+|---|---|
+| Yuza | `--popover` + 1px `--border` + yumshoq elevation (koʻtarilgan qatlam) |
+| Eni | `--width: 384px` (inline `style`, sonner default bilan teng ustunlik) |
+| Radius | `--radius-xl` (inline `style`, xuddi shu sabab) — panel bilan bir xil |
+| Tur belgisi | **faqat** 32px iconbox — turi rangi ~18% (`--popover` ustida **opaque**; shaffof tint yorugʻ fonda koʻrinmasdi), glif 16px tur rangida. Rangli fon / `richColors` YOʻQ |
+| Ikon ↔ matn | 12px · padding 16 (X boʻlsa oʻngdan 44px — `:has([data-close-button])`) |
+| Sarlavha | `.toast-title` — 14px / 600 / lh 1.3 |
+| Izoh | `.toast-desc` — 13px / 400 / lh 1.35 muted · ixtiyoriy, 2 qator maks |
+| Amal tugmasi | `.toast-action` / sonner `[data-button]` — **ghost** (border yoʻq, hover `--muted`), h-32, `--radius-md`, 12.5/600. Buzuvchi tasdiqда matn `--destructive`. Outline/primary EMAS |
+| Yopish (X) | ichkarida, oʻngda, vertikal markazда · 24px nishon |
+| Stack | past-oʻrta, 8px oraliq |
+
+**Deviatsiya:** `.toast-title` (14/600) va `.toast-desc` (13/400) §3
+shkalasiga aniq tushmaydi (eng yaqin — `.heading-small` 15/600,
+`.text-caption` 12/400). Toast — zич, vaqtinchalik yuza; sanoat
+standarti 13–14px. Ikki klass `globals.css` toast blokida yagona
+manba sifatida aniqlangan, inline `text-[13px]` ishlatilmaydi.
+
+Amalga oshirish: `src/components/ui/sonner.tsx` (tema + ikon +
+`closeButton`), `src/app/globals.css` `[data-sonner-toaster]` bloki
+(butun vizual), `src/components/behavior/award-toast.tsx` (xuddi shu
+til, emoji + ball nishoni + progress chizigʻi saqlangan).
+
+## 10. Mobil (`< lg`) — `DashboardColumns` Sheet bosqichi — 2026-09-06
+
+**Sabab:** koʻp-ustunli sahifalarda yon ustunlar `hideBelow="lg"` bilan
+shunchaki **yashirilardi**. Natijada telefonda oʻqituvchi oʻrta ustunga
+tushib qolar va sinf tanlay olmasdi — jurnal, davomat, oʻquvchilar,
+standartlar, darslar, topshiriqlar, statistika va xulq sahifalari amalda
+tugik edi. Roadmap (`docs/roadmap-texnik.md` §2.2) bu bosqichni ataylab
+shu primitivга yuklagan.
+
+| Qatlam | Qoida |
+|---|---|
+| Maket | `lg+` — grid, `template` nisbatlari (oʻzgarmadi). `< lg` — bitta ustun |
+| Yon ustun | Yoʻqolmaydi — `DashboardColumn`ning `mobile` propiga koʻra yuzaga chiqadi |
+| `mobile` yoʻq | Avvalgidek `hidden lg:block` — faqat haqiqatan desktop-only kontent uchun |
+| `mobile="self"` | Bola oʻz holicha render boʻladi; ixcham koʻrinishни OʻZI beradi (`ClassListPanel` — trigger + Sheet) |
+| `mobile={{ title }}` | Bola `Sheet` ichida, ustun oʻrnida trigger tugma |
+| Sheet tomoni | Navigatsiya/tanlov — `left`; detal/preview — `right` |
+| Sheet yuzasi | `w-[88vw] max-w-sm`, `p-3` ichki masofa (panel oʻz `rounded-xl` chegarasini saqlaydi), yopish tugmasi yoʻq — qoplama bosiladi (`Sidebar` bilan bir xil naqsh) |
+| Detal paneli | `hideTrigger: true` + `open`/`onOpenChange` — roʻyxatdagi qator bosilganda ochiladi |
+| Scroll | `< lg` da sahifa VERTIKAL scroll qiladi (`dashboard/layout.tsx` → `max-lg:overflow-y-auto`); qobiq klasslarida `h-full`/`overflow-hidden` `lg:` prefiksida |
+| Stacked panel balandligi | `max-lg:min-h-[50–70svh]` — `min-h-0` ularni nolga siqmasin |
+
+⚠️ **JS va CSS chegarasi bitta manbadan.** `useIsBelow(bp)`
+([`src/hooks/use-mobile.ts`](src/hooks/use-mobile.ts)) `hideBelow` bilan
+AYNAN bir xil breakpointни oladi. Ular ajralib qolsa (mas. JS `md`, CSS `lg`)
+768–1023px oraligʻida ustun CSS bilan yashirilib, mobil muqobili hali
+yoqilmagan **oʻlik zona** paydo boʻladi.
+
+**Deviatsiya — 40px barmoq nishoni.** §8 checklistidagi «toolbar 36px»
+qoidasidan mobil trigger tugmalari (`ClassListPanel` selecti va
+`DashboardColumn` trigger'i) ataylab chetga chiqadi: `h-10` (40px). Sabab —
+bular toolbar boshqaruvi emas, sahifaning asosiy mobil navigatsiya nishoni;
+36px barmoq uchun kichik. Desktop toolbar standarti oʻzgarmadi.
+
+Amalga oshirish: [`src/components/DashboardColumns.tsx`](src/components/DashboardColumns.tsx)
+(alohida `"use client"` modul — hooklar kerak; `DashboardPage.tsx` re-eksport
+qiladi, import yoʻli oʻzgarmadi), [`src/components/ClassListPanel.tsx`](src/components/ClassListPanel.tsx),
+[`src/app/dashboard/layout.tsx`](src/app/dashboard/layout.tsx),
+[`src/components/Header.tsx`](src/components/Header.tsx) (mobilда toʻliq-ekran
+toggle, fokus-pill va `QuickFeedback` yashiriladi — 375px ga sigʻishi uchun).
+
+**Tegilmagan:** `settings`, `classes/[id]` va `timetable` sahifalarining
+oʻz mobil naqshlari bor (master-detail, gorizontal chip-nav, stacking) —
+ular shu ishда oʻzgartirilmadi.
+
 ## Ochiq savollar / keyingi qadam nomzodlari
 
 (Bu boʻlim faqat kuzatuv uchun — hech narsa avtomatik qoʻllanmaydi.)
+
+- **Tipografika va boʻshliq shkalasini standartlashtirish** — §3 dagi
+  shkala amalda ishlamayapti (1352 ta xom `text-*`, 181 ta ixtiyoriy
+  `text-[Npx]`), boʻshliq shkalasi esa umuman yoʻq. Oʻlchov, kelishilgan
+  qaror va bosqichlar:
+  [docs/dizayn-token-standartlashtirish.md](docs/dizayn-token-standartlashtirish.md).
 
 - `src/app/globals.css` ichida `.prose-journal` bloki ikki marta aynan
   takrorlangan (527–551 va 553–577-qatorlar atrofida) — tozalash mumkin,

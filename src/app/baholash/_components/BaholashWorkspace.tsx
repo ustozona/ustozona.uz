@@ -32,7 +32,8 @@ export type ClassOption = { id: string; name: string };
 
 export type SetOption = {
   id: string;
-  classId: string;
+  /** Qayerda tuzilgani — `null` = sinfsiz (kutubxonada yashaydi). */
+  classId: string | null;
   title: string;
   purpose: "formative" | "summative";
   itemCount: number;
@@ -203,14 +204,16 @@ export default function BaholashWorkspace({
                       ko'rsatiladi. Yashirmaslik kerak: o'qituvchi bir xil
                       nomli ikki testni ajrata olishi shart. */}
                   {set.classId !== classId && (
-                    <Badge variant="outline" className="text-[10px] text-muted-foreground">
-                      {classNameById.get(set.classId) ?? "boshqa sinf"}dan
+                    <Badge size="sm" variant="outline" className="text-muted-foreground">
+                      {set.classId === null
+                        ? "materiallardan"
+                        : `${classNameById.get(set.classId) ?? "boshqa sinf"}dan`}
                     </Badge>
                   )}
-                  <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                  <Badge size="sm" variant="outline" className="text-muted-foreground">
                     {set.purpose === "summative" ? "Summativ" : "Formativ"}
                   </Badge>
-                  <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                  <Badge size="sm" variant="outline" className="text-muted-foreground">
                     {set.itemCount} savol
                   </Badge>
                   <div className="flex gap-1.5">
@@ -348,6 +351,20 @@ function ImportPanel({ status, hasClasses, classId }:
     }
     if (s === "denied") return "Ruxsat berilmadi — koʻchirish bekor qilindi.";
     if (s === "badstate") return "Havola eskirgan — qaytadan urinib koʻring.";
+    /* Egalik nizosi — «koʻchirib boʻlmadi» deb umumiy xato koʻrsatish
+       notoʻgʻri boʻlardi: nosozlik yoʻq, shunchaki bogʻlanish band.
+       Sababi aytilmasa oʻqituvchi tugmani qayta-qayta bosardi. */
+    if (s === "takentg") {
+      return "Bu Telegram hisobi allaqachon BOSHQA Ustozona hisobiga " +
+             "bogʻlangan — shu sababli hech narsa koʻchirilmadi. Toʻgʻri " +
+             "hisob bilan kiring yoki Sozlamalar > LessonLab boʻlimida " +
+             "bogʻlanishni oʻzgartiring.";
+    }
+    if (s === "otherlink") {
+      return "Bu hisob BOSHQA Telegram hisobiga bogʻlangan — shu sababli " +
+             "hech narsa koʻchirilmadi. Sozlamalar > LessonLab boʻlimida " +
+             "bogʻlanishni tekshiring.";
+    }
     if (s === "notconfigured") return "LessonLab ulanishi hali sozlanmagan.";
     if (s === "failed") return "Koʻchirib boʻlmadi — keyinroq qayta urinib koʻring.";
     return null;
@@ -356,7 +373,7 @@ function ImportPanel({ status, hasClasses, classId }:
   const details = status?.details ?? [];
 
   return (
-    <div className="rounded-xl border border-border bg-muted/40 px-4 py-3.5">
+    <div className="rounded-xl border border-border bg-muted/40 px-4 py-3">
       <div className="flex flex-wrap items-center gap-3">
         <Info className="size-4 shrink-0 text-muted-foreground" />
         <p className="flex-1 text-sm text-muted-foreground">
@@ -431,7 +448,7 @@ function ImportPanel({ status, hasClasses, classId }:
 
 function EmptyNote({ text, action }: { text: string; action?: React.ReactNode }) {
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-muted/40 px-4 py-3.5">
+    <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-muted/40 px-4 py-3">
       <Info className="size-4 shrink-0 text-muted-foreground" />
       <p className="flex-1 text-sm text-muted-foreground">{text}</p>
       {action}

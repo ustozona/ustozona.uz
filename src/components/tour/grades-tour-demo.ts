@@ -15,9 +15,9 @@ export const GRADES_TOUR_DEMO_CLASS_ID = "demo-grades-cl-1";
 
 export function makeGradesTourDemoClasses(): ClassInfo[] {
   return [
-    { id: GRADES_TOUR_DEMO_CLASS_ID, name: "Matematika 7-A", subject: "Matematika", color: "sky" as ClassColor },
-    { id: "demo-grades-cl-2", name: "Ona tili 8-B", subject: "Ona tili", color: "green" as ClassColor },
-    { id: "demo-grades-cl-3", name: "Fizika 9-A", subject: "Fizika", color: "amber" as ClassColor },
+    { id: GRADES_TOUR_DEMO_CLASS_ID, name: "7-A", subject: "Matematika", color: "sky" as ClassColor },
+    { id: "demo-grades-cl-2", name: "8-B", subject: "Ona tili", color: "green" as ClassColor },
+    { id: "demo-grades-cl-3", name: "9-A", subject: "Fizika", color: "amber" as ClassColor },
   ];
 }
 
@@ -86,7 +86,7 @@ const DEMO_GRADES: Grade[] = [
 
 export function makeGradesTourDemoClassData(): ClassData {
   return {
-    info: { id: GRADES_TOUR_DEMO_CLASS_ID, name: "Matematika 7-A", subject: "Matematika", color: "sky" as ClassColor },
+    info: { id: GRADES_TOUR_DEMO_CLASS_ID, name: "7-A", subject: "Matematika", color: "sky" as ClassColor },
     students: DEMO_STUDENTS,
     topics: DEMO_TOPICS,
     assignments: DEMO_ASSIGNMENTS,

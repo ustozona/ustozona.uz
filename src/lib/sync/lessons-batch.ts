@@ -43,15 +43,27 @@ export type UnitUpsert = z.infer<typeof unitUpsertSchema>;
 export type LessonUpsert = z.infer<typeof lessonUpsertSchema>;
 export type LessonsBatch = z.infer<typeof lessonsBatchSchema>;
 
-export function emptyLessonsBatch(): LessonsBatch {
-  return { unitsUpsert: [], unitsDelete: [], lessonsUpsert: [], lessonsDelete: [] };
-}
+/* ════════════════════════════════════════════════════════════════════
+   OʻCHIRISH BUYRUGʻI — batch'dan ATAYLAB alohida.
 
-export function isEmptyLessonsBatch(b: LessonsBatch): boolean {
-  return (
-    b.unitsUpsert.length === 0 &&
-    b.unitsDelete.length === 0 &&
-    b.lessonsUpsert.length === 0 &&
-    b.lessonsDelete.length === 0
-  );
-}
+   Yuqoridagi `lessonsDelete`/`unitsDelete` maydonlari ikki suratning
+   FARQIDAN tugʻiladi: «avval bu id bor edi, endi yoʻq — demak
+   oʻchirilgan». Bu taxmin tahrir uchun yetarli, lekin oʻchirish uchun
+   xavfli: paket serverga yetib bormasa (refresh, uzilish, xato) hech
+   kim sezmaydi va qator bazada qolib ketadi. Kuzatilgani: oʻchirilgan
+   darslar plannerda va Materiallarda «tirilib» qaytardi.
+
+   Shuning uchun oʻchirish endi AYTIB bajariladi: chaqiruvchi shu
+   buyruqni yuboradi va javobini KUTADI. Tasdiq kelmasa interfeys
+   oʻchganini koʻrsatmaydi — xato chiqaradi.
+
+   Buyruq idempotent: allaqachon oʻchgan id xato bermaydi, shuning
+   uchun qayta yuborish xavfsiz.
+   ════════════════════════════════════════════════════════════════════ */
+
+export const lessonsDeleteSchema = z.object({
+  unitIds: z.array(id).max(2000).default([]),
+  lessonIds: z.array(id).max(5000).default([]),
+});
+
+export type LessonsDeleteCommand = z.infer<typeof lessonsDeleteSchema>;

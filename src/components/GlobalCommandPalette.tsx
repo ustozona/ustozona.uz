@@ -17,10 +17,11 @@ import { useGradesStore } from "@/store/useGradesStore";
 import { useLessonStore } from "@/store/useLessonStore";
 import { classColor } from "@/lib/grades-data";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
+import { subjectLabel } from "@/lib/standards-data";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import {
-  LayoutGrid, Users, Calendar, BookOpen, FileText, ClipboardCheck,
+  LayoutGrid, Users, Calendar, BookOpen, FileText, ClipboardCheck, Library,
   Award, BarChart2, Target, MessagesSquare, Megaphone, Settings, Home,
   Search,
   type LucideIcon,
@@ -33,6 +34,7 @@ const PAGE_ICONS: Record<string, LucideIcon> = {
   "/dashboard/timetable": Calendar,
   "/dashboard/planner": BookOpen,
   "/dashboard/lessons": FileText,
+  "/dashboard/resources": Library,
   "/dashboard/attendance": ClipboardCheck,
   "/dashboard/behavior": Award,
   "/dashboard/grades": BarChart2,
@@ -103,7 +105,7 @@ export default function GlobalCommandPalette() {
         </TooltipTrigger>
         <TooltipContent className="flex items-center gap-1.5">
           {t("search")}
-          <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-0.5 rounded border border-border/60 bg-background/10 px-1.5 font-mono text-[10px] font-medium">
+          <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-0.5 rounded border border-border/60 bg-background/10 px-1.5 font-mono text-micro font-medium">
             ⌘K
           </kbd>
         </TooltipContent>
@@ -137,12 +139,12 @@ export default function GlobalCommandPalette() {
               {classes.map((c) => (
                 <CommandItem
                   key={c.id}
-                  value={`${c.name} ${c.subject ?? ""}`}
+                  value={`${c.name} ${subjectLabel(c.subject)}`}
                   onSelect={() => go(`/dashboard/classes/${encodeURIComponent(c.id)}`)}
                 >
                   <ClassSwatch hex={CLASS_COLOR_HEX[classColor(c)]} />
                   {c.name}
-                  {c.subject && <span className="text-muted-foreground">· {c.subject}</span>}
+                  {c.subject && <span className="text-muted-foreground">· {subjectLabel(c.subject)}</span>}
                 </CommandItem>
               ))}
             </CommandGroup>

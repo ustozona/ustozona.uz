@@ -33,6 +33,9 @@ const eslintConfig = defineConfig([
       "src/server/auth.ts",
       "src/server/play/**",
       "src/server/shogird/**",
+      // Ustozona boti: darvoza — webhook siri / cron siri, sessiya emas.
+      "src/server/telegram/**",
+      "src/server/auth-telegram.ts",
     ],
     rules: {
       "no-restricted-imports": ["error", {
@@ -86,7 +89,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
-    "*.js"
+    "*.js",
+    // Tashqi bloklar arxivi — asl kod, ilovaga ulanmagan (docs/tashqi-bloklar/README.md).
+    "docs/tashqi-bloklar/**",
   ]),
 ]);
 

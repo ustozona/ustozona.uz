@@ -4,7 +4,7 @@ import { db } from "@/server/db/client";
 import { lessons, units } from "@/server/db/schema";
 import { requireTeacher } from "@/server/session";
 import type { Lesson, Unit } from "@/lib/lessons-data";
-import type { LessonsBatch } from "@/lib/sync/lessons-batch";
+import type { LessonsBatch, LessonsDeleteCommand } from "@/lib/sync/lessons-batch";
 
 /* ════════════════════════════════════════════════════════════════════
    LESSONS DAL — useLessonStore'ning server tomoni.
@@ -122,4 +122,55 @@ export async function applyLessonsBatch(batch: LessonsBatch): Promise<void> {
   for (const part of chunks(batch.unitsDelete)) {
     await db.delete(units).where(and(eq(units.teacherId, tid), inArray(units.id, part)));
   }
+}
+
+/**
+ * Boʻlim va darslarni ATAYLAB oʻchirish — `applyLessonsBatch` dagi
+ * farqdan chiqarilgan oʻchirishdan farqli oʻlaroq, bu aniq buyruq.
+ *
+ * Bitta tranzaksiya: yo hammasi oʻchadi, yo hech nima. Yarim holat
+ * (boʻlim ketdi, darsi qoldi) — aynan shu funksiya oldini olishi kerak
+ * boʻlgan narsa.
+ *
+ * Idempotent: mavjud boʻlmagan id xato bermaydi. Shu sabab buyruqni
+ * qayta yuborish xavfsiz — tarmoq uzilganda chaqiruvchi shunday qiladi.
+ */
+export async function deleteLessonsAndUnits(
+  cmd: LessonsDeleteCommand
+): Promise<{ lessons: number; units: number }> {
+  const teacher = await requireTeacher();
+  const tid = teacher.id;
+  if (!cmd.lessonIds.length && !cmd.unitIds.length) return { lessons: 0, units: 0 };
+
+  return db.transaction(async (tx) => {
+    let lessonCount = 0;
+    let unitCount = 0;
+
+    for (const part of chunks(cmd.lessonIds)) {
+      const rows = await tx
+        .delete(lessons)
+        .where(and(eq(lessons.teacherId, tid), inArray(lessons.id, part)))
+        .returning({ id: lessons.id });
+      lessonCount += rows.length;
+    }
+
+    for (const part of chunks(cmd.unitIds)) {
+      const rows = await tx
+        .delete(units)
+        .where(and(eq(units.teacherId, tid), inArray(units.id, part)))
+        .returning({ id: units.id });
+      unitCount += rows.length;
+
+      /* Xavfsizlik toʻri: boʻlim ketdi, lekin uni koʻrsatib turgan dars
+         qoldi (foydalanuvchi «Darslar oʻchmasin» ni tanlagan boʻlishi
+         mumkin). Ustun osilib qolmasin — `data` JSONB'ni klient
+         baribir tuzatilgan holida qayta yozadi. */
+      await tx
+        .update(lessons)
+        .set({ unitId: null })
+        .where(and(eq(lessons.teacherId, tid), inArray(lessons.unitId, part)));
+    }
+
+    return { lessons: lessonCount, units: unitCount };
+  });
 }

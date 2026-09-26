@@ -8,6 +8,7 @@ import {
   ArrowUpRight, ArrowRight, Pencil, ChevronUp, ChevronDown,
   AlertTriangle, MessageSquareText,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
 import { DAYS_UZ_SUN } from "@/lib/localization";
 import {
@@ -45,8 +46,15 @@ import { SectionIcon } from "@/components/ui/section-icon";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { AttendanceDonut, ATT_COLORS } from "@/app/dashboard/(with-sidebar)/students/[id]/_components/charts";
+import { SegmentedToggle } from "@/components/ui/segmented-toggle";
+import { ATT_COLORS } from "@/lib/attendance-colors";
+/* Donut faqat oʻquvchi ismiga sichqoncha tekkanda chiziladi (HoverCard),
+   lekin statik import boʻlgani uchun diagramma kutubxonasi sahifa
+   ochilishi bilan yuklanardi. */
+const AttendanceDonut = dynamic(
+  () => import("@/app/dashboard/(with-sidebar)/students/[id]/_components/charts").then((m) => m.AttendanceDonut),
+  { ssr: false }
+);
 import type { AttendanceWindow } from "@/lib/student-profile";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -104,7 +112,7 @@ function AttendancePreview({
         </Avatar>
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-foreground">{student.name}</p>
-          <Badge variant="secondary" className="mt-1 text-[10px]">{classLabel}</Badge>
+          <Badge size="sm" variant="secondary" className="mt-1">{classLabel}</Badge>
         </div>
       </div>
       <Separator />
@@ -351,8 +359,9 @@ export default function AttendanceView({
   const [sortField, setSortField] = useState<SortField>("firstName");
   const [notePopup, setNotePopup] = useState<{ studentId: string; date: string } | null>(null);
   // Davr granularligi — "Oy" (bitta oy) yoki "Chorak" (akademik chorak toʻlaligicha,
-  // dars kunlari `quarter.range` boʻyicha; navigatsiya choraklar boʻylab).
-  const [period, setPeriod] = useState<"month" | "quarter">("month");
+  // dars kunlari `quarter.range` boʻyicha; navigatsiya choraklar boʻylab) yoki
+  // "Yil" (faol oʻquv yilining barcha dars kunlari bitta jadvalda).
+  const [period, setPeriod] = useState<"month" | "quarter" | "year">("month");
   const [onlyAttention, setOnlyAttention] = useState(false);
   
   // Bugungi sana yil diapazonidan tashqaridaligi bo'yicha ogohlantirish (bir martalik yopish uchun)
@@ -367,7 +376,12 @@ export default function AttendanceView({
   // Roster va sinf nomi — baholar jurnali bilan bitta manba (server-backed).
   const gradesClass = useGradesStore((s) => s.classDataMap[classId]);
   const versions = useTimetableStore((s) => s.versions);
-  const roster = demoMode ? (demoRoster ?? []) : (gradesClass?.students ?? []);
+  // Chiqib ketgan oʻquvchi davomat roʻyxatida koʻrinmaydi (xulq sahifasi bilan
+  // bir xil naqsh, [[student-status-model]]) — tarixi saqlanadi, faqat
+  // koʻrinishdan chiqadi.
+  const roster = demoMode
+    ? (demoRoster ?? [])
+    : (gradesClass?.students ?? []).filter((s) => s.status !== "archived");
   const className = demoMode ? (demoClassInfo?.name ?? classId) : (gradesClass?.info.name ?? classId);
   const today = todayKey();
 
@@ -423,28 +437,85 @@ export default function AttendanceView({
 
   useEffect(() => { setOnlyAttention(false); }, [classId]);
 
-  // Yetim yozuvlarni tozalash — ilgari "barcha kunlar" rejimida dars jadvalidan
-  // tashqari sanaga qoʻyilgan yozuvlar endi jadvalda koʻrinmaydi; joriy oʻquv
-  // yili ichida dars kuniga toʻgʻri kelmaydigan yozuvlar oʻchiriladi. Yil
-  // diapazonidan tashqaridagi (oʻtgan yil) yozuvlarga tegilmaydi.
-  useEffect(() => {
-    if (demoMode || !mounted) return;
-    if (!isCalendarConfigured(calendar) || realLessonDays.length === 0) return;
-    if (!storedRecords?.length) return;
+  /* ════════════════════════════════════════════════════════════════
+     YETIM YOZUVLAR — jadvalga mos kelmay qolgan davomat.
+
+     🔴 Ilgari bu yerda effekt turardi va ularni SOʻRAMASDAN oʻchirardi.
+     Oqibati jimgina va ogʻir edi: dars kuni seshanbadan dushanbaga
+     koʻchirilsa, seshanbadagi BUTUN tarix yoʻqolardi — oʻqituvchi buni
+     sezmasdi ham, chunki hech qanday xabar chiqmasdi.
+
+     ⛔ Endi hech narsa oʻchirilmaydi. Yozuvlar joyida qoladi (jadvalda
+     koʻrinmasa ham), oʻqituvchiga esa bir martalik tanlov beriladi:
+     koʻrish · saqlab qoʻyish · oʻchirish. Oʻchirish endi ANIQ amal.
+
+     ⚠️ Yil diapazonidan tashqaridagi (oʻtgan yil) yozuvlar bu yerga
+     umuman kirmaydi — ular yetim emas, shunchaki boshqa yilniki.
+     ════════════════════════════════════════════════════════════════ */
+  const orphanRecords = useMemo<AttendanceRecord[]>(() => {
+    if (demoMode || !mounted) return [];
+    if (!isCalendarConfigured(calendar) || realLessonDays.length === 0) return [];
+    if (!storedRecords?.length) return [];
     const lessonSet = new Set(realLessonDays.map((d) => d.date));
     const end = today < calendar.range.end ? today : calendar.range.end;
-    const orphan = (r: AttendanceRecord) =>
-      r.date >= calendar.range.start && r.date <= end && !lessonSet.has(r.date);
-    if (storedRecords.some(orphan)) {
-      setRecordsRaw(classId, storedRecords.filter((r) => !orphan(r)));
-    }
-  }, [demoMode, mounted, calendar, realLessonDays, storedRecords, today, classId, setRecordsRaw]);
+    return storedRecords.filter(
+      (r) => r.date >= calendar.range.start && r.date <= end && !lessonSet.has(r.date)
+    );
+  }, [demoMode, mounted, calendar, realLessonDays, storedRecords, today]);
+
+  /* Yetimlar toʻplamining barmoq izi. Oʻqituvchi «saqlab qoʻyish» desa
+     banner yopiladi, lekin jadval KEYIN yana oʻzgarsa yangi yetimlar
+     paydo boʻladi — va ular haqida qayta ogohlantirish SHART. Shu bois
+     yopilish sanalar toʻplamiga bogʻlangan, «koʻrdim» bayrogʻiga emas. */
+  const orphanSignature = useMemo(() => {
+    if (orphanRecords.length === 0) return "";
+    const dates = [...new Set(orphanRecords.map((r) => r.date))].sort();
+    return `${orphanRecords.length}|${dates[0]}|${dates[dates.length - 1]}`;
+  }, [orphanRecords]);
+
+  const orphanKey = `attendance-orphan-dismissed:${classId}`;
+  const [orphanDismissed, setOrphanDismissed] = useState("");
+  useEffect(() => {
+    if (demoMode || typeof window === "undefined") return;
+    setOrphanDismissed(localStorage.getItem(orphanKey) ?? "");
+  }, [demoMode, orphanKey]);
+
+  const showOrphanBanner = orphanSignature !== "" && orphanSignature !== orphanDismissed;
+  const [orphanOpen, setOrphanOpen] = useState(false);
+
+  /** Yetim sanalar — har birida nechta yozuv borligi bilan. */
+  const orphanByDate = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const r of orphanRecords) m.set(r.date, (m.get(r.date) ?? 0) + 1);
+    return [...m.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+  }, [orphanRecords]);
+
+  const keepOrphans = () => {
+    setOrphanDismissed(orphanSignature);
+    if (typeof window !== "undefined") localStorage.setItem(orphanKey, orphanSignature);
+    setOrphanOpen(false);
+  };
+
+  /* ⚠️ `showBanners` yuqorida, yetim tekshiruvidan OLDIN hisoblanadi —
+     shuning uchun bu yerda kengaytiriladi, u yerda emas. */
+  const anyBanner = showBanners || showOrphanBanner;
+
+  const deleteOrphans = () => {
+    const doomed = new Set(orphanRecords.map((r) => `${r.studentId}:${r.date}`));
+    setRecordsRaw(classId, (storedRecords ?? []).filter(
+      (r) => !doomed.has(`${r.studentId}:${r.date}`)
+    ));
+    setOrphanOpen(false);
+  };
 
   // Oʻquv yili choraklarga boʻlinmay qolsa (masalan davrsiz shablonga
   // oʻtilsa) — "Chorak" rejimida qolib ketmaslik uchun "Oy"ga qaytariladi.
   useEffect(() => {
     if (period === "quarter" && calendar.quarters.length === 0) setPeriod("month");
-  }, [period, calendar.quarters.length]);
+    // Yil rejimi — tanlagich yashiringan boʻlsa (demo/tur yoki yil sozlanmagan)
+    // va ‹ › oʻchiq boʻlsa, foydalanuvchi oyga qaytolmay qolmasin.
+    if (period === "year" && (demoMode || !isCalendarConfigured(calendar))) setPeriod("month");
+  }, [period, calendar, demoMode]);
 
   // Bugungi ustunga avtoscroll — jadval ochilganda (yoki oy/sinf almashganda)
   // bugungi sana koʻrinishda boʻlsa, ustun markazga keltiriladi.
@@ -473,7 +544,9 @@ export default function AttendanceView({
 
   // Koʻrsatiladigan kunlar — har doim dars kunlari. Oy rejimi: koʻrilayotgan
   // oyga tushganlari; chorak rejimi: chorak diapazonidagilari.
-  const monthDays = period === "quarter"
+  const monthDays = period === "year"
+    ? lessonDays
+    : period === "quarter"
     ? (viewedQuarter ? lessonDays.filter((d) => inRange(d.date, viewedQuarter.range)) : [])
     : lessonDays.filter((d) => {
         const [y, m] = d.date.split("-").map(Number);
@@ -509,20 +582,23 @@ export default function AttendanceView({
   // Vaznlar — holat sozlamalaridan (Sozlamalar > Davomat); yagona manba.
   const weights = statusWeights(statuses);
   const monthRateOf = (id: string) => weightedRate(records, id, weights, monthLessonDates);
-  const quarterRateOf = (id: string) => weightedRate(records, id, weights, quarterLessonDates);
-  const periodRateOf = quarterRateOf;
+  // Yil rejimida "xavfli" va hover-card butun yil dars kunlari boʻyicha hisoblanadi.
+  const periodLessonDates = period === "year"
+    ? new Set(lessonDays.map((d) => d.date))
+    : quarterLessonDates;
+  const periodRateOf = (id: string) => weightedRate(records, id, weights, periodLessonDates);
 
-  // Hover-card chart uchun — choraklik holat taqsimoti (profil chart formati)
+  // Hover-card chart uchun — davr (chorak yoki yil) holat taqsimoti (profil chart formati)
   const quarterSummaryOf = (id: string): AttendanceWindow => {
     let present = 0, absent = 0, late = 0, excused = 0;
     for (const r of records) {
-      if (r.studentId !== id || !quarterLessonDates.has(r.date)) continue;
+      if (r.studentId !== id || !periodLessonDates.has(r.date)) continue;
       if (r.status === "present") present++;
       else if (r.status === "absent") absent++;
       else if (r.status === "late") late++;
       else if (r.status === "excused") excused++;
     }
-    return { total: present + absent + late + excused, present, absent, late, excused, pct: quarterRateOf(id)?.pct ?? 0 };
+    return { total: present + absent + late + excused, present, absent, late, excused, pct: periodRateOf(id)?.pct ?? 0 };
   };
 
   // Avatar/preview rangi — joriy sinf palitrasidan (jonli info; yoʻq boʻlsa id boʻyicha avto)
@@ -536,7 +612,22 @@ export default function AttendanceView({
   const SAFE_FLOOR_PCT = 90;
   const periodPcts = baseStudents.map((s) => periodRateOf(s.id)?.pct).filter((p): p is number => p != null);
   const p25 = percentile(periodPcts, 25);
-  const isChronic = (id: string) => (monthRateOf(id)?.absents ?? 0) >= 3; // oyiga ≥3 Kelmadi
+  // Surunkali — oyiga ≥3 Kelmadi. Oy rejimida koʻrilayotgan oy; chorak/yil
+  // rejimida koʻrinayotgan davrdagi ISTALGAN oy (yashirin `month` holati emas).
+  const chronicIds = new Set<string>();
+  if (period !== "month") {
+    const shownDates = new Set(monthDays.map((d) => d.date));
+    const absentsByMonth = new Map<string, number>();
+    for (const r of records) {
+      if (r.status !== "absent" || !shownDates.has(r.date)) continue;
+      const k = `${r.studentId}:${r.date.slice(0, 7)}`;
+      const n = (absentsByMonth.get(k) ?? 0) + 1;
+      absentsByMonth.set(k, n);
+      if (n >= 3) chronicIds.add(r.studentId);
+    }
+  }
+  const isChronic = (id: string) =>
+    period === "month" ? (monthRateOf(id)?.absents ?? 0) >= 3 : chronicIds.has(id);
   const isDanger = (id: string) => {
     const r = periodRateOf(id);
     if (!r) return false;
@@ -616,6 +707,11 @@ export default function AttendanceView({
   };
 
   const goToday = () => {
+    // Yil rejimi: hamma kun bitta jadvalda — faqat bugungi ustunga suriladi.
+    if (period === "year") {
+      todayColRef.current?.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
+      return;
+    }
     const n = new Date();
     const y = n.getFullYear(), m = n.getMonth() + 1;
     // Chorak rejimi: bugun chorakka tushmasa ham eng yaqin chorakni koʻrsatamiz.
@@ -640,6 +736,54 @@ export default function AttendanceView({
   const goPrev = () => (period === "quarter" ? quarterStep(-1) : prevMonth());
   const goNext = () => (period === "quarter" ? quarterStep(1) : nextMonth());
 
+  // Avtoscroll / «Bugun» nishoni — bugun dars kuni boʻlsa oʻsha ustun, aks
+  // holda bugungacha boʻlgan oxirgi dars kuni (u ham yoʻq boʻlsa — birinchisi).
+  // Aks holda dars boʻlmagan kunda ref boʻsh qolib, «Bugun» hech narsa qilmasdi.
+  const scrollAnchor =
+    [...monthDays].reverse().find((d) => d.date <= today)?.date ?? monthDays[0]?.date;
+
+  // Chorak/yil rejimida kunlar bir necha oyga choʻziladi — ustunlar ustida oy
+  // nomi guruh sarlavhasi sifatida koʻrsatiladi (qaysi kun qaysi oyniki).
+  const monthGroups: { key: string; month: number; span: number }[] = [];
+  if (period !== "month") {
+    for (const d of monthDays) {
+      const key = d.date.slice(0, 7);
+      const last = monthGroups[monthGroups.length - 1];
+      if (last?.key === key) last.span++;
+      else monthGroups.push({ key, month: Number(key.slice(5, 7)), span: 1 });
+    }
+  }
+
+  // "Oʻquvchilar" sarlavhasi (saralash bilan) — oy guruh qatori boʻlsa ikki
+  // qatorni egallaydi.
+  const studentsHead = (
+    <TableHead rowSpan={monthGroups.length > 0 ? 2 : undefined} className="sticky left-0 z-40 border-b border-r border-border p-4 text-center align-middle whitespace-nowrap" style={{ width: 220, background: HEADER_BG }}>
+      <div className="flex items-center justify-center gap-1.5">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost"
+              onClick={() => setSortField((f) => (f === "firstName" ? "lastName" : "firstName"))}
+              className="text-label hover:text-foreground transition-colors cursor-pointer h-auto min-h-0 p-0 hover:bg-transparent">
+              {t("students")}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{sortField === "firstName" ? t("sortByLastName") : t("sortByFirstName")}</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost"
+              onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
+              className="flex flex-col -space-y-1 h-auto min-h-0 w-auto p-0 hover:bg-transparent">
+              <ChevronUp className={cn("size-3", sortDir === "asc" ? "text-foreground" : "text-muted-foreground/40")} aria-hidden />
+              <ChevronDown className={cn("size-3", sortDir === "desc" ? "text-foreground" : "text-muted-foreground/40")} aria-hidden />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{sortDir === "asc" ? t("sortDesc") : t("sortAsc")}</TooltipContent>
+        </Tooltip>
+      </div>
+    </TableHead>
+  );
+
   const noteRecord = notePopup ? records.find((r) => r.studentId === notePopup.studentId && r.date === notePopup.date) : null;
   const noteStudent = notePopup ? roster.find((s) => s.id === notePopup.studentId) : null;
 
@@ -648,8 +792,8 @@ export default function AttendanceView({
   return (
     <>
       {/* Main panel */}
-      <div className="flex-1 min-w-0 min-h-0 grid gap-3" data-tour="attendance-heatmap" style={{ minHeight: 0, gridTemplateRows: showBanners ? "auto 1fr" : "1fr" }}>
-        {showBanners && (
+      <div className="flex-1 min-w-0 min-h-0 grid gap-3" data-tour="attendance-heatmap" style={{ minHeight: 0, gridTemplateRows: anyBanner ? "auto 1fr" : "1fr" }}>
+        {anyBanner && (
           <div className="grid gap-3">
             {todayOutsideCalendar && !isAlertDismissed && (
               <Alert variant="info" className="pr-10 relative">
@@ -676,6 +820,25 @@ export default function AttendanceView({
               </Alert>
             )}
             {scheduleGapAtStart && <TimetableCoverageBanner />}
+            {/* `info` — yondagi banner bilan bir xil. Bu ogohlantirish,
+                xato emas: hech narsa yoʻqolmagan, tanlov soʻralyapti. */}
+            {showOrphanBanner && (
+              <Alert variant="info">
+                <AlertTriangle className="size-4" aria-hidden />
+                <AlertTitle>{t("orphanTitle", { count: orphanRecords.length })}</AlertTitle>
+                <AlertDescription className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                  <span>{t("orphanDescription")}</span>
+                  <span className="flex gap-2">
+                    <Button variant="outline" size="sm" className="h-7" onClick={() => setOrphanOpen(true)}>
+                      {t("orphanReview")}
+                    </Button>
+                    <Button variant="ghost" size="sm" className="h-7" onClick={keepOrphans}>
+                      {t("orphanKeep")}
+                    </Button>
+                  </span>
+                </AlertDescription>
+              </Alert>
+            )}
           </div>
         )}
         <Card className={cn("min-w-0", panelCardClass)} style={{ height: "100%" }}>
@@ -684,20 +847,23 @@ export default function AttendanceView({
             <div className="flex items-center gap-3 shrink-0">
               <SectionIcon><Calendar /></SectionIcon>
               <CardTitle className="flex items-baseline gap-1.5">
-                {period === "quarter" && viewedQuarter ? viewedQuarter.name : MONTH_NAMES[month.month - 1]}
-                <span className="font-normal text-foreground/50">({month.year})</span>
+                {period === "year"
+                  ? t("year")
+                  : period === "quarter" && viewedQuarter ? viewedQuarter.name : MONTH_NAMES[month.month - 1]}
+                <span className="font-normal text-foreground/50">
+                  ({period === "year" ? (calendar.yearLabel || month.year) : month.year})
+                </span>
               </CardTitle>
             </div>
 
             {/* Davr granularligi — Oy | Chorak (demo/turda va choraksiz oʻquv yilida yashirin) — markazda */}
             <div className="flex flex-1 items-center justify-center">
-              {!demoMode && calendar.quarters.length > 0 && (
-                <ToggleGroup
-                  type="single"
+              {!demoMode && isCalendarConfigured(calendar) && (
+                <SegmentedToggle
+                  variant="pill"
                   value={period}
                   onValueChange={(v) => {
-                    if (!v) return;
-                    setPeriod(v as "month" | "quarter");
+                    setPeriod(v);
                     if (v === "quarter") {
                       // Koʻrilayotgan oy chorakka tushmasa (yil tashqarisi) — boʻsh
                       // ekran oʻrniga eng yaqin chorakka sakraymiz.
@@ -707,14 +873,12 @@ export default function AttendanceView({
                       }
                     }
                   }}
-                  variant="outline"
-                  size="default"
-                >
-                  <ToggleGroupItem value="month" className="px-3 text-sm font-medium">{t("month")}</ToggleGroupItem>
-                  <ToggleGroupItem value="quarter" className="px-3 text-sm font-medium">
-                    {t("quarter")}
-                  </ToggleGroupItem>
-                </ToggleGroup>
+                  options={[
+                    { value: "month" as const, label: t("month") },
+                    ...(calendar.quarters.length > 0 ? [{ value: "quarter" as const, label: t("quarter") }] : []),
+                    { value: "year" as const, label: t("year") },
+                  ]}
+                />
               )}
             </div>
 
@@ -734,13 +898,13 @@ export default function AttendanceView({
               )}
 
               <div className="flex items-center gap-1">
-                <Button variant="outline" size="icon" onClick={goPrev} className={ctrlBtn}>
+                <Button variant="outline" size="icon" onClick={goPrev} disabled={period === "year"} className={ctrlBtn}>
                   <ChevronLeft className="h-5 w-5" aria-hidden />
                 </Button>
                 <Button variant="outline" onClick={goToday} className="h-9 rounded-md bg-card border-border shadow-none font-semibold px-4">
                   {t("today")}
                 </Button>
-                <Button variant="outline" size="icon" onClick={goNext} className={ctrlBtn}>
+                <Button variant="outline" size="icon" onClick={goNext} disabled={period === "year"} className={ctrlBtn}>
                   <ChevronRight className="h-5 w-5" aria-hidden />
                 </Button>
               </div>
@@ -769,14 +933,18 @@ export default function AttendanceView({
           </CardHeader>
 
           {/* Table */}
-          <CardContent className={cn(panelCardContentClass, "overflow-auto [&_div[data-slot=table-container]]:overflow-visible [&_div[data-slot=table-container]]:h-full")}>
+          <CardContent className={cn(panelCardContentClass, "scrollbar-hover overflow-auto [&_div[data-slot=table-container]]:overflow-visible [&_div[data-slot=table-container]]:h-full")}>
             {monthDays.length === 0 ? (
               <Empty className="h-full w-full">
                 <EmptyHeader>
                   <EmptyMedia><Illustration name="22" className="h-32 text-black dark:text-white" /></EmptyMedia>
-                  <EmptyTitle>{period === "quarter" ? t("noQuarterLessonDaysTitle") : t("noMonthLessonDaysTitle")}</EmptyTitle>
+                  <EmptyTitle>
+                    {period === "year" ? t("noYearLessonDaysTitle")
+                      : period === "quarter" ? t("noQuarterLessonDaysTitle") : t("noMonthLessonDaysTitle")}
+                  </EmptyTitle>
                   <EmptyDescription>
-                    {period === "quarter"
+                    {period === "year" ? t("noYearLessonDaysDescription")
+                      : period === "quarter"
                       ? t("noQuarterLessonDaysDescription", { quarter: viewedQuarter?.name ?? t("thisQuarterFallback") })
                       : t("noMonthLessonDaysDescription", { month: MONTH_NAMES[month.month - 1] })}
                   </EmptyDescription>
@@ -792,58 +960,32 @@ export default function AttendanceView({
                 <colgroup>
                   <col style={{ width: 220 }} />
                   {monthDays.map((d) => <col key={d.date} style={{ width: 44 }} />)}
-                  <col style={{ width: 120 }} />
                 </colgroup>
 
                 <TableHeader className="sticky top-0 z-30" style={{ background: HEADER_BG }}>
+                  {monthGroups.length > 0 && (
+                    <TableRow style={{ height: 28 }}>
+                      {studentsHead}
+                      {monthGroups.map((g) => (
+                        <TableHead key={g.key} colSpan={g.span}
+                          className="h-7 border-b border-r border-border px-2 text-center align-middle whitespace-nowrap text-caption"
+                          style={{ background: HEADER_BG }}>
+                          {g.span >= 3 ? MONTH_NAMES[g.month - 1] : MONTH_NAMES[g.month - 1].slice(0, 3)}
+                        </TableHead>
+                      ))}
+                    </TableRow>
+                  )}
                   <TableRow style={{ height: 57 }}>
-                    <TableHead className="sticky left-0 z-40 border-b border-r border-border p-4 text-center align-middle whitespace-nowrap" style={{ width: 220, background: HEADER_BG }}>
-                      <div className="flex items-center justify-center gap-1.5">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button variant="ghost"
-                              onClick={() => setSortField((f) => (f === "firstName" ? "lastName" : "firstName"))}
-                              className="text-label hover:text-foreground transition-colors cursor-pointer h-auto min-h-0 p-0 hover:bg-transparent">
-                              {t("students")}
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>{sortField === "firstName" ? t("sortByLastName") : t("sortByFirstName")}</TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button variant="ghost"
-                              onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
-                              className="flex flex-col -space-y-1 h-auto min-h-0 w-auto p-0 hover:bg-transparent">
-                              <ChevronUp className={cn("size-3", sortDir === "asc" ? "text-foreground" : "text-muted-foreground/40")} aria-hidden />
-                              <ChevronDown className={cn("size-3", sortDir === "desc" ? "text-foreground" : "text-muted-foreground/40")} aria-hidden />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>{sortDir === "asc" ? t("sortDesc") : t("sortAsc")}</TooltipContent>
-                        </Tooltip>
-                      </div>
-                    </TableHead>
+                    {monthGroups.length === 0 && studentsHead}
 
                     {monthDays.map((d) => (
-                      <ColHeader key={d.date} date={d.date} isToday={d.date === today} future={d.date > today} statuses={activeStatuses} onBulk={(s) => handleBulk(d.date, s)} cellRef={d.date === today ? todayColRef : undefined} />
+                      <ColHeader key={d.date} date={d.date} isToday={d.date === today} future={d.date > today} statuses={activeStatuses} onBulk={(s) => handleBulk(d.date, s)} cellRef={d.date === scrollAnchor ? todayColRef : undefined} />
                     ))}
-
-                    {/* Davomat % — akademik chorak boʻyicha */}
-                    <TableHead className="sticky right-0 z-40 border-b border-l border-border px-2 text-center align-middle text-label whitespace-nowrap" style={{ width: 120, background: HEADER_BG }}>
-                      {viewedQuarter ? t("quarterPercent", { quarter: viewedQuarter.name }) : t("quarterlyPercentFallback")}
-                    </TableHead>
                   </TableRow>
                 </TableHeader>
 
                 <TableBody className="text-sm">
                   {students.map((student) => {
-                    const pr = periodRateOf(student.id);
-                    const chronic = isChronic(student.id);
-                    const danger = isDanger(student.id);
-                    const attention = chronic || danger;
-                    const attReasons = [
-                      danger && t("lowAttendance"),
-                      chronic && t("absentTimesThisMonth", { count: monthRateOf(student.id)?.absents ?? 0 }),
-                    ].filter(Boolean).join(" · ");
                     return (
                       <TableRow key={student.id} className="group hover:bg-muted/30 transition-colors">
                         <TableCell className="sticky left-0 z-10 bg-card group-hover:bg-muted border-b border-r border-border p-3 no-elevation">
@@ -864,15 +1006,19 @@ export default function AttendanceView({
                               </TooltipTrigger>
                               <TooltipContent>{t("viewProfile", { name: student.name })}</TooltipContent>
                             </Tooltip>
-                            <span className="text-data-row whitespace-nowrap inline-block pt-px">{student.name}</span>
-                            {attention && (
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <span className="shrink-0 text-muted-foreground/30 transition-colors group-hover:text-muted-foreground/60"><AlertTriangle className="size-4" /></span>
-                                </TooltipTrigger>
-                                <TooltipContent>{attReasons}</TooltipContent>
-                              </Tooltip>
-                            )}
+                            <HoverCard openDelay={120} closeDelay={60}>
+                              <HoverCardTrigger asChild>
+                                <span className="text-data-row whitespace-nowrap inline-block pt-px cursor-default">{student.name}</span>
+                              </HoverCardTrigger>
+                              <HoverCardContent align="start" className="w-64">
+                                <AttendancePreview
+                                  student={student}
+                                  classLabel={className}
+                                  classHex={classHex}
+                                  summary={quarterSummaryOf(student.id)}
+                                />
+                              </HoverCardContent>
+                            </HoverCard>
                           </div>
                         </TableCell>
 
@@ -888,35 +1034,13 @@ export default function AttendanceView({
                           </TableCell>
                         ))}
 
-                        {/* Davomat % — faqat foiz; hoverda oʻquvchi preview */}
-                        <TableCell className="sticky right-0 z-10 bg-card group-hover:bg-muted border-b border-l border-border px-3 text-center no-elevation">
-                          {pr ? (
-                            <HoverCard openDelay={120} closeDelay={60}>
-                              <HoverCardTrigger asChild>
-                                <span className={cn("inline-block cursor-default text-sm font-semibold tabular-nums", danger ? "text-destructive" : "text-foreground")}>
-                                  {pr.pct}%
-                                </span>
-                              </HoverCardTrigger>
-                              <HoverCardContent align="end" className="w-64">
-                                <AttendancePreview
-                                  student={student}
-                                  classLabel={className}
-                                  classHex={classHex}
-                                  summary={quarterSummaryOf(student.id)}
-                                />
-                              </HoverCardContent>
-                            </HoverCard>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">—</span>
-                          )}
-                        </TableCell>
                       </TableRow>
                     );
                   })}
 
                   {students.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={monthDays.length + 2} className="py-10 px-8">
+                      <TableCell colSpan={monthDays.length + 1} className="py-10 px-8">
                         <Alert className="max-w-md mx-auto bg-muted/50 text-left">
                           <div className="flex items-center gap-2 mb-1">
                             <AlertTriangle className="size-4 text-muted-foreground" />
@@ -975,6 +1099,39 @@ export default function AttendanceView({
           onSave={(v) => handleNoteSave(notePopup.studentId, notePopup.date, v)}
           onClose={() => setNotePopup(null)} />
       )}
+
+      {/* Yetim yozuvlar — sanalar ochiq koʻrsatiladi. Oʻchirish tugmasi
+          shu yerda, chunki nima oʻchayotganini koʻrmasdan bosilmasin. */}
+      <Dialog open={orphanOpen} onOpenChange={setOrphanOpen}>
+        <DialogContent className="max-w-md">
+          <DialogTitle>{t("orphanDialogTitle")}</DialogTitle>
+          <DialogDescription>{t("orphanDialogDescription")}</DialogDescription>
+          <div className="max-h-64 overflow-y-auto rounded-md border border-border">
+            {orphanByDate.map(([date, n]) => (
+              <div
+                key={date}
+                className="flex items-center justify-between border-b border-border/60 px-3 py-2 text-sm last:border-b-0"
+              >
+                <span className="text-foreground">{date}</span>
+                <span className="text-xs text-muted-foreground">
+                  {t("orphanRecordsOnDate", { count: n })}
+                </span>
+              </div>
+            ))}
+          </div>
+          <DialogFooter className="gap-2 sm:justify-between">
+            <Button variant="destructive" onClick={deleteOrphans}>
+              {t("orphanDelete")}
+            </Button>
+            <div className="flex gap-2">
+              <DialogClose asChild>
+                <Button variant="ghost">{t("orphanClose")}</Button>
+              </DialogClose>
+              <Button onClick={keepOrphans}>{t("orphanKeep")}</Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

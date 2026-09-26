@@ -22,7 +22,11 @@ import { authClient } from "@/lib/auth-client";
 import { deleteAccountAction } from "@/server/actions/account";
 import { useLessonStore } from "@/store/useLessonStore";
 import { useGradesStore } from "@/store/useGradesStore";
-import { SettingsCard, SettingsList } from "./SettingsShared";
+import {
+  fetchEmailActivationPrefAction,
+  setEmailActivationPrefAction,
+} from "@/server/actions/email-activation";
+import { SettingsCard, SettingsList, SwitchRow } from "./SettingsShared";
 
 export default function DataSection() {
   const t = useTranslations("DataSection");
@@ -31,6 +35,38 @@ export default function DataSection() {
   const classDataMap = useGradesStore((s) => s.classDataMap);
   const [confirmText, setConfirmText] = React.useState("");
   const [deleting, setDeleting] = React.useState(false);
+
+  /* Yordam xatlari toggle'i — serverdan oʻqiladi. null = hali kelmadi
+     (switch oʻchirilgan holatda turadi, notoʻgʻri holat koʻrsatmaslik
+     uchun). Bu yagona toggle boʻlgani uchun draft registriga qoʻshilmaydi:
+     bosilishi bilan saqlanadi, Save tugmasi kutilmaydi. */
+  const [emailEnabled, setEmailEnabled] = React.useState<boolean | null>(null);
+
+  React.useEffect(() => {
+    let bekor = false;
+    fetchEmailActivationPrefAction()
+      .then((r) => {
+        if (!bekor) setEmailEnabled(r.enabled);
+      })
+      .catch(() => {
+        if (!bekor) setEmailEnabled(true);
+      });
+    return () => {
+      bekor = true;
+    };
+  }, []);
+
+  const handleEmailToggle = async (next: boolean) => {
+    const oldingi = emailEnabled;
+    setEmailEnabled(next); // optimistik
+    try {
+      await setEmailActivationPrefAction(next);
+      toast.success(t("emailToastSaved"));
+    } catch {
+      setEmailEnabled(oldingi);
+      toast.error(t("emailToastError"));
+    }
+  };
 
   const handleExport = async () => {
     try {
@@ -129,6 +165,17 @@ export default function DataSection() {
               ),
             },
           ]}
+        />
+      </SettingsCard>
+
+      {/* Yordam xatlari — opt-out. Tranzaksion xatlar bunga bogʻliq emas. */}
+      <SettingsCard title={t("emailTitle")} description={t("emailDescription")}>
+        <SwitchRow
+          title={t("emailToggleTitle")}
+          description={t("emailToggleDescription")}
+          checked={emailEnabled ?? true}
+          disabled={emailEnabled === null}
+          onCheckedChange={handleEmailToggle}
         />
       </SettingsCard>
 

@@ -21,6 +21,7 @@ import {
 } from "@/lib/grades-data";
 import { Badge } from "@/components/ui/badge";
 import { TypographySmall } from "@/components/ui/typography";
+import { ClassSwatch } from "@/components/ClassSwatch";
 
 type Props = {
   assignment: Assignment;
@@ -59,7 +60,7 @@ export default function AssignmentTooltip({
             {assignment.title}
           </TypographySmall>
           {kindLabel && (
-            <Badge variant="secondary" className="shrink-0 text-[10px] font-medium">
+            <Badge size="sm" variant="secondary" className="shrink-0 font-medium">
               {kindLabel}
             </Badge>
           )}
@@ -109,10 +110,7 @@ export default function AssignmentTooltip({
       <div className="flex flex-col gap-2 text-xs">
         {topic && (
           <div className="flex items-center gap-2">
-            <span
-              className="size-2 rounded-full shrink-0"
-              style={{ backgroundColor: TOPIC_COLOR_HEX[topic.color] }}
-            />
+            <ClassSwatch hex={TOPIC_COLOR_HEX[topic.color]} />
             <span className="text-muted-foreground">{topic.name}</span>
           </div>
         )}

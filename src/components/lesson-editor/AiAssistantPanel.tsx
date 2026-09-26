@@ -14,7 +14,9 @@ import {
   MessageScrollerProvider, MessageScroller, MessageScrollerViewport, MessageScrollerContent, MessageScrollerItem, MessageScrollerButton,
 } from "@/components/ui/message-scroller";
 import { EditorSidePanelHeader } from "@/components/ui/editor-side-panel";
-import { CALLOUT_KEYS_RE_SOURCE, normalizeCalloutType } from "./callout-types";
+import { CALLOUT_KEYS_RE_SOURCE, normalizeCalloutType, normalizeNotionColor, type CalloutType } from "./callout-types";
+import { CALLOUT_ICON_NODE, CALLOUT_META } from "./callout-extension";
+import { CLASS_COLOR_BASE, makeColorTints, type ClassColor } from "@/lib/class-colors";
 
 marked.setOptions({ breaks: true, gfm: true });
 
@@ -33,9 +35,13 @@ const katexHtml = (expr: string, displayMode: boolean) => {
    boʻlishi mumkin) — render va darsga qoʻshishdan oldin DOMPurify bilan tozalanadi. */
 const md = (text: string) => {
   const parts: string[] = [];
-  const masked = text
-    .replace(/\$\$([\s\S]+?)\$\$/g, (_, expr: string) => `@@MATH${parts.push(katexHtml(expr, true)) - 1}@@`)
-    .replace(/\$([^$\n]+?)\$/g, (_, expr: string) => `@@MATH${parts.push(katexHtml(expr, false)) - 1}@@`);
+  const mask = (html: string) => `@@MATH${parts.push(html) - 1}@@`;
+  let masked = text
+    .replace(/\$\$([\s\S]+?)\$\$/g, (_, expr: string) => mask(katexHtml(expr, true)))
+    .replace(/\$([^$\n]+?)\$/g, (_, expr: string) => mask(katexHtml(expr, false)));
+  /* Chat pufakchasida ham callout CHIZILADI (statik variant) — ilgari bu
+     qator yoʻq edi va javobda "[!question] **Sarlavha**" xom matn koʻrinardi. */
+  masked = extractCallouts(masked, mask, renderChatCallout);
   let html = marked.parse(masked) as string;
   html = html.replace(/@@MATH(\d+)@@/g, (_, i: string) => parts[Number(i)] ?? "");
   return DOMPurify.sanitize(html);
@@ -123,9 +129,32 @@ const escapeAttr = (s: string) => s.replace(/&/g, "&amp;").replace(/"/g, "&quot;
    sintaksis: qatʼiy tur yoʻq, faqat erkin emoji. Route.ts SYSTEM promptida
    tushuntirilgan. */
 const CALLOUT_TYPES_RE = new RegExp(`^(${CALLOUT_KEYS_RE_SOURCE})$`);
-const FREE_CALLOUT_RE = /^>\s*\[!free:(\S+)\]\s*(.*)$/;
+/* "> [!free:EMOJI] Sarlavha" yoki "> [!free:EMOJI|rang] Sarlavha".
+   Rang ixtiyoriy va ORQAGA MOS: eski (rangsiz) yozuv oldingidek `gray`
+   boʻladi. Nomaʼlum rang `normalizeNotionColor` orqali `gray` ga tushadi,
+   yaʼni AI xato rang yozsa blok yoʻqolmaydi. */
+const FREE_CALLOUT_RE = /^>\s*\[!free:([^\s|\]]+)(?:\|([a-z]+))?\]\s*(.*)$/;
 
-function extractCallouts(text: string, mask: (html: string) => string): string {
+/* Callout topilganda chaqiriladigan chizuvchi. Ikkita amalga oshirilishi bor:
+   muharrirga qoʻshish uchun Tiptap tugun HTML'i (`renderEditorCallout`) va
+   chat pufakchasi uchun statik HTML (`renderChatCallout`). Ilgari faqat
+   birinchisi bor edi va `md()` (chat) callout'ni umuman tanimasdi — javobda
+   xom "[!question] ..." matni koʻrinardi, darsga qoʻshilgach esa toʻgʻri
+   karta chiqardi: koʻrib turgan narsa bilan qoʻshiladigan narsa bir xil
+   emasdi. */
+type CalloutRender = (
+  spec:
+    | { kind: "type"; type: CalloutType }
+    | { kind: "free"; emoji: string; color: string },
+  titleHtml: string,
+  bodyHtml: string
+) => string;
+
+function extractCallouts(
+  text: string,
+  mask: (html: string) => string,
+  render: CalloutRender
+): string {
   const lines = text.split("\n");
   const out: string[] = [];
   let i = 0;
@@ -134,7 +163,7 @@ function extractCallouts(text: string, mask: (html: string) => string): string {
     const m = freeMatch ? null : /^>\s*\[!(\w+)\]\s*(.*)$/.exec(lines[i]);
     const type = m?.[1].toLowerCase();
     if (freeMatch || (m && type && CALLOUT_TYPES_RE.test(type))) {
-      const title = (freeMatch ? freeMatch[2] : m![2]).trim();
+      const title = (freeMatch ? freeMatch[3] : m![2]).trim();
       const bodyLines: string[] = [];
       i++;
       while (i < lines.length && /^>/.test(lines[i])) {
@@ -142,12 +171,28 @@ function extractCallouts(text: string, mask: (html: string) => string): string {
         i++;
       }
       const bodyHtml = bodyLines.join("\n").trim() ? (marked.parse(bodyLines.join("\n")) as string) : "<p></p>";
-      // Sarlavha `<strong>` bilan — qalinlik endi CSS orqali majburiy emas,
-      // faqat haqiqiy Bold markasi orqali (EditorToolbar.tsx'dagi
-      // insertCallout/insertNotionCallout bilan bir xil andoza).
-      const html = freeMatch
-        ? `<div data-notion-callout data-emoji="${escapeAttr(freeMatch[1])}" data-color="gray"><div data-notion-callout-title><strong>${escapeAttr(title)}</strong></div>${bodyHtml}</div>`
-        : `<div data-callout-type="${normalizeCalloutType(type)}"><div data-callout-title><strong>${escapeAttr(title)}</strong></div>${bodyHtml}</div>`;
+      /* Sarlavha `<strong>` bilan — qalinlik endi CSS orqali majburiy emas,
+         faqat haqiqiy Bold markasi orqali (EditorToolbar.tsx'dagi
+         insertCallout/insertNotionCallout bilan bir xil andoza).
+
+         ⚠️ Sarlavha ichidagi markdown ham OʻQILADI (`parseInline`). Ilgari
+         u `escapeAttr` bilan yalangʻoch matn sifatida qoʻyilardi va
+         "> [!question] **Standartni aniqlash**" muharrirda aynan
+         yulduzchalari bilan chiqardi. Tana (`marked.parse`) toʻgʻri
+         ishlagani uchun farq koʻzga tashlanardi: bir blokning tanasi
+         formatlangan, sarlavhasi esa xom matn.
+
+         `parseInline` — `parse` emas: calloutTitle sxemasi `inline*`,
+         yaʼni ichiga <p> tushsa Tiptap uni tashlab yuboradi. Chiqish
+         DOMPurify'dan oʻtadi (mdEditor oxirida). */
+      const titleHtml = marked.parseInline(title) as string;
+      const html = render(
+        freeMatch
+          ? { kind: "free", emoji: freeMatch[1], color: normalizeNotionColor(freeMatch[2]) }
+          : { kind: "type", type: normalizeCalloutType(type) },
+        titleHtml,
+        bodyHtml
+      );
       out.push(mask(html));
       continue;
     }
@@ -155,6 +200,108 @@ function extractCallouts(text: string, mask: (html: string) => string): string {
     i++;
   }
   return out.join("\n");
+}
+
+/* Muharrirga qoʻshish uchun — Tiptap `parseHTML` aynan shu atributlarni
+   qidiradi (Callout / NotionCallout kengaytmalari). */
+const renderEditorCallout: CalloutRender = (spec, titleHtml, bodyHtml) =>
+  spec.kind === "free"
+    ? `<div data-notion-callout data-emoji="${escapeAttr(spec.emoji)}" data-color="${spec.color}"><div data-notion-callout-title><strong>${titleHtml}</strong></div>${bodyHtml}</div>`
+    : `<div data-callout-type="${spec.type}"><div data-callout-title><strong>${titleHtml}</strong></div>${bodyHtml}</div>`;
+
+/* Chat pufakchasi uchun ikon SVG'i — `calloutIconSpec()` ProseMirror
+   DOMOutputSpec (massiv) qaytaradi, bu yerda esa HTML MATN kerak. Shuning
+   uchun satr AYNI YAGONA MANBADAN (`CALLOUT_ICON_NODE`) yigʻiladi — ikon
+   muharrirdagi bilan bir xil boʻlib qolsin. */
+function calloutIconSvg(type: CalloutType): string {
+  const children = CALLOUT_ICON_NODE[type]
+    .map(
+      ([tag, attrs]) =>
+        `<${tag} ${Object.entries(attrs)
+          .map(([k, v]) => `${k}="${escapeAttr(v)}"`)
+          .join(" ")} />`
+    )
+    .join("");
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${children}</svg>`;
+}
+
+/* Chat pufakchasi uchun — `.static-callout` (globals.css, yordam
+   maqolalarida ishlatiladigan statik variant). Muharrirdagi `.callout`
+   bilan bir xil vizual til (chap rangli hoshiya + tint fon + ikon), lekin
+   Tiptap NodeView'siz va `.lesson-prose` skopiga bogʻlanmagan. Chat paneli
+   tor boʻlgani uchun ataylab shu yengil variant tanlangan: toʻliq muharrir
+   kartasi (tahrirlanadigan sarlavha, drag qoʻli) pufakchada ortiqcha. */
+const renderChatCallout: CalloutRender = (spec, titleHtml, bodyHtml) => {
+  const inner = `<div><p class="static-callout-title">${titleHtml}</p><div class="static-callout-body">${bodyHtml}</div></div>`;
+  if (spec.kind === "free") {
+    /* `--cl` ham beriladi: `.static-callout` uni default `var(--info)` dan
+       oladi va faqat fonni oʻzgartirsak, chap hoshiya tanlangan rangdan
+       qatʼi nazar koʻk boʻlib qolardi — bir blok ikki xil rangda
+       koʻrinardi. */
+    const base = CLASS_COLOR_BASE[spec.color as ClassColor];
+    const tint = makeColorTints(base);
+    return `<div class="static-callout" style="--cl:${escapeAttr(base)};background:${escapeAttr(String(tint.tint.backgroundColor ?? ""))}"><div class="static-callout-icon">${escapeAttr(spec.emoji)}</div>${inner}</div>`;
+  }
+  return `<div class="static-callout" style="--cl:${escapeAttr(CALLOUT_META[spec.type].color)}"><div class="static-callout-icon">${calloutIconSvg(spec.type)}</div>${inner}</div>`;
+};
+
+/* Vazifa roʻyxati (`- [ ]`) — marked va Tiptap BOSHQA-BOSHQA HTML kutadi.
+
+   marked chiqaradi:   <ul><li><input type="checkbox"> Matn</li></ul>
+   Tiptap TaskList kutadi:
+     <ul data-type="taskList"><li data-type="taskItem" data-checked="false">
+       <p>Matn</p></li></ul>
+
+   ⚠️ Moslashtirilmasa xato CHIQMAYDI — Tiptap `<input>` ni tanimay tashlab
+   yuboradi va vazifa roʻyxati jimgina oddiy nuqtali roʻyxatga aylanadi,
+   katakchasiz. SYSTEM prompt esa AI'ga `- [ ]` ishlatishni aytadi, yaʼni
+   vaʼda qilingan format har safar buzilardi. */
+function toTaskLists(html: string): string {
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  doc.querySelectorAll("ul").forEach((ul) => {
+    const items = Array.from(ul.children).filter((el) => el.tagName === "LI");
+    /* Katakcha ikki joyda boʻlishi mumkin: "zich" roʻyxatda toʻgʻridan-toʻgʻri
+       <li> ichida, "boʻsh qatorli" (loose) roʻyxatda esa marked elementni
+       <p> ga oʻrab qoʻyadi. Faqat birinchisini qidirsak, boʻsh qator bilan
+       yozilgan vazifa roʻyxati oʻgirilmay qolardi. */
+    const boxes = items.map(
+      (li) =>
+        li.querySelector<HTMLInputElement>(':scope > input[type="checkbox"]') ??
+        li.querySelector<HTMLInputElement>(
+          ':scope > p:first-child > input[type="checkbox"]:first-child'
+        )
+    );
+    // Faqat HAMMA element katakchali boʻlsa — aralash roʻyxat oddiy qoladi
+    if (!items.length || boxes.some((b) => !b)) return;
+
+    ul.setAttribute("data-type", "taskList");
+    items.forEach((li, i) => {
+      const box = boxes[i]!;
+      li.setAttribute("data-type", "taskItem");
+      li.setAttribute("data-checked", box.hasAttribute("checked") ? "true" : "false");
+      const host = box.parentElement!;
+      box.remove();
+      // "<input> Matn" dagi ajratuvchi boʻshliq katakcha bilan ketmaydi
+      const lead = host.firstChild;
+      if (lead && lead.nodeType === 3 && /^\s/.test(lead.nodeValue ?? "")) {
+        lead.nodeValue = (lead.nodeValue ?? "").replace(/^\s+/, "");
+      }
+      /* taskItem tanasi blok tugun boʻlishi shart. Ichma-ich roʻyxat
+         (`nested: true`) tanaga tortilmasin — birinchi UL/OL da toʻxtaymiz. */
+      if (!li.querySelector(":scope > p")) {
+        const p = doc.createElement("p");
+        while (
+          li.firstChild &&
+          !(li.firstChild.nodeType === 1 &&
+            /^(UL|OL)$/.test((li.firstChild as Element).tagName))
+        ) {
+          p.appendChild(li.firstChild);
+        }
+        li.insertBefore(p, li.firstChild);
+      }
+    });
+  });
+  return doc.body.innerHTML;
 }
 
 /* Darsga qoʻshish uchun: formulalar Tiptap Mathematics tugunlariga, callout'lar
@@ -168,10 +315,10 @@ const mdEditor = (text: string) => {
       mask(`<div data-type="block-math" data-latex="${escapeAttr(expr.trim())}"></div>`))
     .replace(/\$([^$\n]+?)\$/g, (_, expr: string) =>
       mask(`<span data-type="inline-math" data-latex="${escapeAttr(expr.trim())}"></span>`));
-  masked = extractCallouts(masked, mask);
+  masked = extractCallouts(masked, mask, renderEditorCallout);
   let html = marked.parse(masked) as string;
   html = html.replace(/@@TOK(\d+)@@/g, (_, i: string) => parts[Number(i)] ?? "");
-  return DOMPurify.sanitize(html);
+  return DOMPurify.sanitize(toTaskLists(html));
 };
 
 type Msg = { role: "user" | "assistant"; content: string };
@@ -351,7 +498,7 @@ export default function AiAssistantPanel({
                   )}
                   <div className={cn("min-w-0 max-w-[85%]", m.role === "user" && "order-1")}>
                     {m.role === "user" ? (
-                      <div className="rounded-2xl rounded-tr-sm bg-primary text-primary-foreground px-3.5 py-2 text-sm whitespace-pre-wrap break-words">{m.content}</div>
+                      <div className="rounded-2xl rounded-tr-sm bg-primary text-primary-foreground px-4 py-2 text-sm whitespace-pre-wrap break-words">{m.content}</div>
                     ) : (
                       <>
                         {m.content ? (
@@ -391,7 +538,7 @@ export default function AiAssistantPanel({
               onClick={() => setUseClassData((v) => !v)}
               title={t("classDataHint")}
               className={cn(
-                "inline-flex items-center gap-1.5 text-xs font-medium border rounded-full px-2.5 py-1 transition-colors",
+                "inline-flex items-center gap-1.5 text-xs font-medium border rounded-full px-3 py-1 transition-colors",
                 useClassData
                   ? "border-ring bg-primary/10 text-foreground"
                   : "border-border text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -403,7 +550,7 @@ export default function AiAssistantPanel({
             </button>
           )}
           {doc ? (
-            <span className="inline-flex items-center gap-1.5 text-xs font-medium border border-ring bg-primary/10 text-foreground rounded-full px-2.5 py-1 max-w-[220px]">
+            <span className="inline-flex items-center gap-1.5 text-xs font-medium border border-ring bg-primary/10 text-foreground rounded-full px-3 py-1 max-w-[220px]">
               <FileText className="size-3.5 shrink-0" />
               <span className="truncate">{doc.name}</span>
               <button onClick={() => setDoc(null)} title={t("removeDocument")} className="shrink-0 text-muted-foreground hover:text-foreground">
@@ -415,7 +562,7 @@ export default function AiAssistantPanel({
               onClick={() => fileRef.current?.click()}
               disabled={uploadingDoc}
               title={t("docHint")}
-              className="inline-flex items-center gap-1.5 text-xs font-medium border border-border rounded-full px-2.5 py-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 text-xs font-medium border border-border rounded-full px-3 py-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50"
             >
               {uploadingDoc ? <Loader2 className="size-3.5 animate-spin" /> : <Paperclip className="size-3.5" />}
               {uploadingDoc ? t("uploadingDoc") : t("attachDocument")}
@@ -436,9 +583,9 @@ export default function AiAssistantPanel({
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
             placeholder={t("composerPlaceholder")}
             rows={2}
-            className="block w-full resize-none field-sizing-content max-h-[40vh] min-h-[3.5rem] bg-transparent px-3.5 pt-2.5 pb-12 text-sm leading-relaxed outline-none placeholder:text-muted-foreground"
+            className="block w-full resize-none field-sizing-content max-h-[40vh] min-h-[3.5rem] bg-transparent px-4 pt-3 pb-12 text-sm leading-relaxed outline-none placeholder:text-muted-foreground"
           />
-          <div className="absolute right-2.5 bottom-2.5">
+          <div className="absolute right-2.5 bottom-2">
             {streaming ? (
               <button onClick={stop} title={t("stop")} className="size-9 rounded-xl bg-muted text-foreground flex items-center justify-center hover:bg-muted/70 transition-colors">
                 <Square className="size-4 fill-current" />

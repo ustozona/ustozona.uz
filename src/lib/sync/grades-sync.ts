@@ -6,15 +6,14 @@ import type {
   Student,
   Topic,
 } from "@/lib/grades-data";
-import {
-  emptyGradesBatch,
-  isEmptyGradesBatch,
-  type AssignmentUpsert,
-  type ClassUpsert,
-  type GradesBatch,
-  type GradeUpsert,
-  type StudentUpsert,
-  type TopicUpsert,
+import { emptyGradesBatch, isEmptyGradesBatch } from "./grades-batch-shape";
+import type {
+  AssignmentUpsert,
+  ClassUpsert,
+  GradesBatch,
+  GradeUpsert,
+  StudentUpsert,
+  TopicUpsert,
 } from "./grades-batch";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -99,6 +98,8 @@ function toAssignmentUpsert(
     setId: a.setId ?? null,
     // Guruh kaliti ham shu qoidada — guruhdan chiqarish oʻzgarish.
     groupId: a.groupId ?? null,
+    // Standart bogʻlanishi ham: teglashni olib tashlash ham oʻzgarish.
+    standardIds: a.standardIds ?? null,
     sortOrder,
   };
 }

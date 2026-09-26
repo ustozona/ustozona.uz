@@ -48,7 +48,7 @@ export function FeedbackViewTabs({
             {tab.label}
             <span
               className={cn(
-                "rounded-full px-1.5 text-[11px] font-semibold tabular-nums",
+                "rounded-full px-1.5 text-tag font-semibold tabular-nums",
                 isActive ? "bg-primary-foreground/20" : "bg-foreground/10"
               )}
             >

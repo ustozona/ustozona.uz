@@ -41,7 +41,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const row = await submitResponse(parsed as SubmitResponseInput);
+    const { row } = await submitResponse(parsed as SubmitResponseInput);
     return corsJson(request, { ok: true, isCorrect: row?.isCorrect ?? null });
   } catch (err) {
     return corsJson(request, errorBody(err), { status: errorStatus(err) });

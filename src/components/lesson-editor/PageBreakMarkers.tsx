@@ -40,7 +40,7 @@ export function PageBreakMarkers({
     <div className="no-print pointer-events-none absolute inset-x-0 top-0" aria-hidden>
       {Array.from({ length: pageCount - 1 }, (_, i) => i + 1).map((n) => (
         <div key={n} className="absolute inset-x-0 border-t border-dashed border-border/70" style={{ top: n * PAGE_CONTENT_HEIGHT }}>
-          <span className="absolute right-0 top-1 -translate-y-full rounded-full bg-card px-2 py-0.5 text-[10px] font-medium text-muted-foreground shadow-sm ring-1 ring-border">
+          <span className="absolute right-0 top-1 -translate-y-full rounded-full bg-card px-2 py-0.5 text-micro font-medium text-muted-foreground shadow-sm ring-1 ring-border">
             {label(n + 1)}
           </span>
         </div>

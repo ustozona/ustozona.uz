@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
+import { NowPulseDot, NowTimePill } from "@/components/calendar/NowIndicator";
 import {
   BookOpenCheck,
   CalendarDays,
@@ -12,6 +13,7 @@ import {
   EyeOff,
   Link as LinkIcon,
   MoreHorizontal,
+  Presentation,
   UserCheck,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,6 +23,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty";
@@ -30,7 +33,8 @@ import { ScrollFade } from "@/components/ui/scroll-fade";
 import { WeekStrip } from "@/components/dashboard/WeekStrip";
 import { addDays, startOfWeekMon } from "@/lib/calendar-core/date-math";
 import { sessionMatchesSlot } from "@/lib/calendar-core/resolve";
-import { EventCard } from "@/components/calendar/EventCard";
+import { subjectLabel } from "@/lib/standards-data";
+import { EventCard, EventSubtitle } from "@/components/calendar/EventCard";
 import { AddTopicButton } from "@/components/calendar/AddTopicButton";
 import { LessonChip } from "@/components/calendar/LessonChip";
 import { LinkLessonDialog, type LinkLessonSlot } from "@/components/LinkLessonDialog";
@@ -65,7 +69,7 @@ import { cn } from "@/lib/utils";
     tur-demo eventi ham shu shaklga tushadi). */
 type RailEvent = { id: string; classId: string; startMin: number; endMin: number };
 
-type LessonInfo = { id: string; title: string; status: LessonStatus };
+type LessonInfo = { id: string; title: string; status: LessonStatus; setIds?: string[] };
 
 const SUNDAY_PREF_KEY = "today-rail-show-sunday";
 
@@ -133,9 +137,11 @@ export function TodayRail({ now }: { now: Date }) {
 
   // ── Sinf meta — jonli roʻyxat, demo idlar uchun zaxira nom/rang ──
   const liveById = useMemo(() => new Map(liveClasses.map((c) => [c.id, c])), [liveClasses]);
-  const metaFor = (classId: string): { name: string; color: ClassColor } => {
+  const metaFor = (classId: string): { name: string; color: ClassColor; subject?: string } => {
     const cls = liveById.get(classId);
-    if (cls) return { name: cls.name, color: classColor(cls) };
+    // Fan nomi — sinf kartochkasidan (katalog id → yorliq). Sinfda fan
+    // belgilanmagan boʻlsa qator faqat vaqtdan iborat qoladi.
+    if (cls) return { name: cls.name, color: classColor(cls), subject: subjectLabel(cls.subject) || undefined };
     return { name: DEMO_CLASS_NAMES[classId] ?? t("unknownClass"), color: autoClassColor(classId) };
   };
 
@@ -149,15 +155,21 @@ export function TodayRail({ now }: { now: Date }) {
           classId: s.classId,
           startMin: s.startMin,
           endMin: s.endMin,
-          info: { id: l.id, title: l.title, status: l.status },
+          info: { id: l.id, title: l.title, status: l.status, setIds: l.setIds },
         });
       }
     }
     return list;
   }, [allLessons, selectedKey]);
   // "overlap" — rail'ning tarixiy semantikasi (planner "start-in-slot" ishlatadi).
-  const lessonFor = (ev: RailEvent): LessonInfo | undefined =>
-    daySessions.find((s) => sessionMatchesSlot(ev, s, "overlap"))?.info;
+  // Demo hodisalar (classId DEMO_CLASS_NAMES'da) haqiqiy `allLessons`da hech
+  // qachon topilmaydi — mavzusi `home-tour-demo.ts`dagi `event.lesson`dan.
+  const lessonFor = (ev: RailEvent): LessonInfo | undefined => {
+    if (DEMO_CLASS_NAMES[ev.classId]) {
+      return tourDemo?.events.find((e) => e.id === ev.id)?.lesson;
+    }
+    return daySessions.find((s) => sessionMatchesSlot(ev, s, "overlap"))?.info;
+  };
 
   // ── Temporal holat (faqat bugun) ──
   const nextEvent = isToday ? events.find((e) => e.startMin > nowMin) : undefined;
@@ -211,7 +223,11 @@ export function TodayRail({ now }: { now: Date }) {
   };
 
   return (
-    <Card className={panelCardClass}>
+    // `data-tour="home-schedule"` — ATAYIN butun Card'da (sarlavha + hafta
+    // tasmasi + jadval), pastdagi scroll qismida EMAS: avval faqat scroll
+    // konteynerida edi, shuning uchun tur spotlight'i sarlavha va hafta
+    // tasmasini tashlab ketardi (2026-08-18, sidebar bilan bir xil sabab).
+    <Card data-tour="home-schedule" className={panelCardClass}>
       {/* border-b-0: kontent (kun tasmasi) darhol davom etadi, ajratuvchi chiziq keraksiz — panel-language-v1 "no-divider" istisnosi */}
       <CardHeader className={cn(panelCardHeaderClass, "border-b-0 pt-4! pb-4!")}>
         <div className="flex min-w-0 items-center gap-2">
@@ -237,7 +253,7 @@ export function TodayRail({ now }: { now: Date }) {
         </Tooltip>
       </CardHeader>
 
-      <div data-tour="home-week" className="shrink-0 px-4 pb-3">
+      <div className="shrink-0 px-4 pb-3">
         <WeekStrip
           selected={selectedDate}
           onSelect={setSelectedDate}
@@ -250,7 +266,7 @@ export function TodayRail({ now }: { now: Date }) {
         />
       </div>
 
-      <div data-tour="home-schedule" className="relative flex min-h-0 flex-1 flex-col">
+      <div className="relative flex min-h-0 flex-1 flex-col">
         <ScrollFade position="top" />
         <div ref={scrollRef} className={panelCardContentClass}>
           <div className="px-4 py-4">
@@ -275,7 +291,7 @@ export function TodayRail({ now }: { now: Date }) {
                 </EmptyHeader>
                 {!holiday && dow !== 0 && (
                   <EmptyContent>
-                    <Button asChild variant="link" size="sm" className="h-auto p-0 underline">
+                    <Button asChild variant="ghost" size="sm">
                       <Link href="/dashboard/timetable">{t("openSchedule")}</Link>
                     </Button>
                   </EmptyContent>
@@ -312,7 +328,7 @@ export function TodayRail({ now }: { now: Date }) {
                 </div>
                 {/* Iqtibos ataylab bu yerda emas — u bosh sahifa hero'sida
                     koʻrsatiladi (bir kunda ikki joyda takrorlanmasligi uchun). */}
-                <p className="mt-2.5 text-xs text-muted-foreground">
+                <p className="mt-2 text-xs text-muted-foreground">
                   {tomorrow.count > 0 && tomorrow.firstMin != null
                     ? t("tomorrowInfo", { count: tomorrow.count, time: fmtMin(tomorrow.firstMin) })
                     : t("tomorrowFree")}
@@ -355,7 +371,7 @@ function DayGridView({
   events: RailEvent[];
   nowMin: number;
   isToday: boolean;
-  metaFor: (classId: string) => { name: string; color: ClassColor };
+  metaFor: (classId: string) => { name: string; color: ClassColor; subject?: string };
   lessonFor: (ev: RailEvent) => LessonInfo | undefined;
   temporalOf: (ev: RailEvent) => "past" | "current" | "next" | "none";
   /** Boʻsh slotga mavzu yaratish / mavjudini ulash — planner bilan bir xil. */
@@ -385,7 +401,7 @@ function DayGridView({
           className="absolute inset-x-0 flex items-start"
           style={{ top: (m - rangeStart) * PX_PER_MIN }}
         >
-          <span className="w-10 shrink-0 -translate-y-1/2 text-right text-[10px] tabular-nums text-muted-foreground/70">
+          <span className="w-10 shrink-0 -translate-y-1/2 text-right text-micro font-normal tabular-nums text-muted-foreground/70">
             {hourLabel(m)}
           </span>
           <div className="ml-2 h-px flex-1 bg-border/60" />
@@ -394,14 +410,15 @@ function DayGridView({
 
       {showNowLine && (
         <div
-          className="absolute inset-x-0 z-20 flex items-center"
+          className="absolute inset-x-0 z-20 flex items-start"
           style={{ top: (nowMin - rangeStart) * PX_PER_MIN }}
         >
-          <span className="w-10 shrink-0 -translate-y-1/2 text-right text-[10px] font-semibold tabular-nums text-destructive">
-            {fmtMin(nowMin)}
+          {/* Vaqt — kapsulada, kulrang soat yozuvlaridan ajralib tursin. */}
+          <span className="flex w-10 shrink-0 -translate-y-1/2 justify-end">
+            <NowTimePill label={fmtMin(nowMin)} />
           </span>
-          <div className="relative ml-2 h-px flex-1 bg-destructive">
-            <span className="absolute -left-1 top-1/2 size-1.5 -translate-y-1/2 rounded-full bg-destructive" />
+          <div className="relative ml-2 h-0.5 flex-1 bg-destructive">
+            <NowPulseDot className="absolute -left-1 top-1/2 -translate-y-1/2" />
           </div>
         </div>
       )}
@@ -439,10 +456,14 @@ function DayGridView({
                edi. Karta ustidagi ortiqcha amal menyusining kanonik oʻrni —
                oʻng-yuqori burchak. */
             titleRowClassName={compact ? "pr-8" : "pr-10"}
-            subtitle={`${fmtMin(ev.startMin)} — ${fmtMin(ev.endMin)}`}
+            /* Fan + vaqt — Timetable bilan bir xil naqsh: baland kartada
+               ALOHIDA qatorda, past kartada `·` bilan bitta qatorga
+               yigʻiladi ([[EventBlock]] etalon, timetable/page.tsx). */
+            subtitle={<EventSubtitle subject={meta.subject} time={`${fmtMin(ev.startMin)} — ${fmtMin(ev.endMin)}`} height={height} />}
             actions={
               <EventActions
                 classId={ev.classId}
+                setId={lesson?.setIds?.[0]}
                 triggerClassName={compact ? undefined : "size-9 [&_svg]:size-4"}
               />
             }
@@ -518,9 +539,13 @@ function DayGridView({
    `group-hover/ev` bilan boshqariladi. */
 function EventActions({
   classId,
+  setId,
   triggerClassName,
 }: {
   classId: string;
+  /** Darsga biriktirilgan birinchi taqdimot/test — Doska'da ochiladi
+      (R278, 6-qaror). Yoʻq boʻlsa band chiqmaydi. */
+  setId?: string;
   /** Joylashuvga qarab oʻlcham tokeni — ikkalasi ham `Button` komponentining
       oʻz oʻlchamlaridan olingan ([[design-system]]), oraliq qiymat emas:
       — default `icon-xs` = 24px quti + 12px ikonka — faqat TOR kartada;
@@ -546,6 +571,17 @@ function EventActions({
         <MoreHorizontal />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-40" onClick={(e) => e.stopPropagation()}>
+        {setId && (
+          <>
+            <DropdownMenuItem asChild>
+              <Link href={`/doska?setId=${encodeURIComponent(setId)}&classId=${encodeURIComponent(classId)}`}>
+                <Presentation />
+                {t("startPresentation")}
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
         <DropdownMenuItem asChild>
           <Link href={`/dashboard/attendance?classId=${encodeURIComponent(classId)}`}>
             <UserCheck />

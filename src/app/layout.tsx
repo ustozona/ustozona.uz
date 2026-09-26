@@ -6,8 +6,10 @@ import { getLocale, getMessages } from "next-intl/server";
 import {
   PRODUCT_HEADER,
   SURFACE_HEADER,
+  TONE_HEADER,
   toProduct,
   toSurface,
+  toTone,
 } from "@/lib/product-scope";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -16,7 +18,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ProductScopeSync } from "@/components/product-scope-sync";
 import { MotionProvider } from "@/components/providers/motion-provider";
+import { SITE_URL } from "@/lib/site-url";
 import "./globals.css";
+import { AppHistoryTracker } from "@/components/AppHistoryTracker";
 
 const dmSans = DM_Sans({
   variable: "--font-sans",
@@ -32,13 +36,12 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
-const siteUrl = "https://www.ustozona.uz";
-const title = "Ustozona — Oʻqituvchi boshqaruv tizimi";
+const title ="Ustozona — Oʻqituvchi boshqaruv tizimi";
 const description =
   "Ustozona — oʻqituvchilar uchun toʻliq boshqaruv tizimi. Sinflar, oʻquvchilar, darslar, baholar va davomatni bir joyda boshqaring.";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: title,
     template: "%s — Ustozona",
@@ -55,12 +58,15 @@ export const metadata: Metadata = {
   ],
   applicationName: "Ustozona",
   authors: [{ name: "Ustozona" }],
-  alternates: {
-    canonical: siteUrl,
-  },
+  /* ⛔ BU YERGA `alternates.canonical` YOZMANG.
+     Next metadatani SAYOZ (shallow) birlashtiradi: bola segment maydonni
+     qayta belgilamasa, ota qiymati meros boʻlib oʻtadi. Ildizda turgan
+     canonical shu sababli HAR BIR sahifaga koʻchgan va butun sayt oʻzini
+     bosh sahifaning nusxasi deb eʼlon qilgan edi (2026-09-01 da prodda
+     ushlandi: 3 ta blog maqolasi ham `href="https://www.ustozona.uz"`).
+     Canonical har doim sahifaning OʻZIDA belgilanadi. */
   openGraph: {
     type: "website",
-    url: siteUrl,
     siteName: "Ustozona",
     title,
     description,
@@ -73,6 +79,10 @@ export const metadata: Metadata = {
   },
   verification: {
     yandex: "68a7b34ec38b727a",
+    /* Search Console'da sayt DNS orqali tasdiqlangan boʻlishi mumkin —
+       u holda bu kerak emas. HTML-meta usuli tanlansa, tokenni Vercel
+       env'iga qoʻyish yetarli, kodni oʻzgartirish shart emas. */
+    google: process.env.GOOGLE_SITE_VERIFICATION || undefined,
   },
   robots: {
     index: true,
@@ -98,12 +108,14 @@ export default async function RootLayout({
   const requestHeaders = await headers();
   const surface = toSurface(requestHeaders.get(SURFACE_HEADER));
   const product = toProduct(requestHeaders.get(PRODUCT_HEADER));
+  const tone = toTone(requestHeaders.get(TONE_HEADER));
 
   return (
     <html
       lang={locale}
       data-surface={surface}
       data-product={product}
+      data-tone={tone}
       suppressHydrationWarning
       className={`${dmSans.variable} ${jetbrainsMono.variable}`}
     >
@@ -116,10 +128,13 @@ export default async function RootLayout({
             disableTransitionOnChange
           >
             <MotionProvider>
-              <TooltipProvider>{children}</TooltipProvider>
+              <TooltipProvider>
+                <AppHistoryTracker />
+                {children}
+              </TooltipProvider>
             </MotionProvider>
             <ProductScopeSync />
-            <Toaster richColors position="bottom-center" />
+            <Toaster position="bottom-center" />
           </ThemeProvider>
         </NextIntlClientProvider>
         <Analytics />

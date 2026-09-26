@@ -19,6 +19,7 @@ import {
   type BehaviorSkillRow,
 } from "@/server/db/schema";
 import { requireTeacher } from "@/server/session";
+import { visibleClassIds, visibleStudentIds } from "@/server/workspace";
 import {
   DEFAULT_REWARD_DEFS,
   DEFAULT_SKILL_DEFS,
@@ -359,12 +360,12 @@ export async function applyBehaviorBatch(batch: BehaviorBatch): Promise<void> {
   let ownClasses = new Set<string>();
   let ownStudents = new Set<string>();
   if (needsOwnership) {
-    const [classRows, studentRows] = await Promise.all([
-      db.select({ id: classes.id }).from(classes).where(eq(classes.teacherId, tid)),
-      db.select({ id: students.id }).from(students).where(eq(students.teacherId, tid)),
+    const [classIds, studentIds] = await Promise.all([
+      visibleClassIds("data"),
+      visibleStudentIds("data"),
     ]);
-    ownClasses = new Set(classRows.map((r) => r.id));
-    ownStudents = new Set(studentRows.map((r) => r.id));
+    ownClasses = new Set(classIds);
+    ownStudents = new Set(studentIds);
   }
 
   /* 4. Eventlar (append-only ledger; upsert — izoh tahriri uchun ham). */

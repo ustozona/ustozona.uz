@@ -168,7 +168,7 @@ export function SkillFormDialog({
                 {skill ? t("editTitle") : t("newTitle")}
                 <span
                   className={cn(
-                    "rounded-full px-1.5 py-px text-[11px] font-medium",
+                    "rounded-full px-1.5 py-px text-tag font-medium",
                     type === "positive"
                       ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30"
                       : "bg-destructive/10 text-destructive"
@@ -181,7 +181,7 @@ export function SkillFormDialog({
           />
 
           <div className="flex justify-center bg-muted/40 pt-5 pb-3">
-            <div className="relative flex w-28 flex-col items-center gap-2 rounded-xl border border-border bg-card px-2.5 pt-5 pb-3">
+            <div className="relative flex w-28 flex-col items-center gap-2 rounded-xl border border-border bg-card px-3 pt-5 pb-3">
               <span
                 className={cn(
                   "absolute top-1.5 right-2 text-xs font-bold tabular-nums",
@@ -193,7 +193,7 @@ export function SkillFormDialog({
               <BehaviorEmoji code={emoji} className="size-8" />
               <span
                 className={cn(
-                  "line-clamp-2 text-center text-[13px] font-medium leading-tight",
+                  "line-clamp-2 text-center text-sm font-medium leading-tight",
                   name.trim() ? "text-foreground" : "text-muted-foreground"
                 )}
               >

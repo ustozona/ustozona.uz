@@ -1,8 +1,15 @@
 "use client";
 
 import * as React from "react";
+import { LazyMotion } from "motion/react";
+import * as m from "motion/react-m";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
+
+/* Sirpanuvchi fon `layoutId` ga, ya'ni domMax'ga muhtoj. U header'dagi
+   bildirishnomalar orqali har sahifaga toʻliq motion'ni olib kelardi —
+   endi talabga koʻra yuklanadi. Yuklanguncha fon oniy almashadi. */
+const loadDomMax = () => import("@/lib/motion-dom-max").then((mod) => mod.default);
 
 export type SegmentedToggleOption<T extends string = string> = {
   value: T;
@@ -12,50 +19,104 @@ export type SegmentedToggleOption<T extends string = string> = {
 };
 
 /**
- * Icon+matn segmentli toggle — `/classes` koʻrinish almashtirgichi bilan bir
- * xil vizual til (`ToggleGroup variant="outline"`): tashqi ramka, default
- * holatda oq, tanlangani primary rangda toʻldirilgan, hoverda muted.
+ * Icon+matn segmentli toggle.
+ *
+ * Faol fon `layoutId` orqali tanlangan variantga SIRPANADI — oniy
+ * almashinuvda koʻz oʻzgarishni sezmay qolardi, sirpanish esa qaysi
+ * tomonga oʻtganini koʻrsatadi. Bu ikkala variantda ham bir xil; `variant`
+ * faqat JOYLASHUVni belgilaydi:
+ *
+ * - `grid` (boshlangʻich) — butun enni egallaydi, variantlar teng ustunlarda.
+ * - `pill` — kompakt, `w-fit`. Yorliq bilan bir qatorda turadigan kichik
+ *   boshqaruvlar uchun.
  */
 export function SegmentedToggle<T extends string>({
   value,
   onValueChange,
   options,
+  variant = "grid",
+  iconOnly = false,
   className,
+  "aria-label": ariaLabel,
 }: {
   value: T;
   onValueChange: (value: T) => void;
   options: SegmentedToggleOption<T>[];
+  variant?: "grid" | "pill";
+  /** Yorliq faqat ekran oʻquvchisi uchun (`sr-only`) — icon-only tugmalar uchun. */
+  iconOnly?: boolean;
   className?: string;
+  /** Guruh nomi ekran oʻquvchisi uchun (koʻrinadigan yorliq yoʻq boʻlsa). */
+  "aria-label"?: string;
 }) {
+  /* Har bir nusxaga oʻz layoutId'si. Bitta sahifada ikkita toggle boʻlsa
+     va id umumiy boʻlsa, fon ular ORASIDA sirpanib ketardi. */
+  const pillId = React.useId();
+  const isPill = variant === "pill";
+
   return (
+    <LazyMotion features={loadDomMax}>
     <ToggleGroup
       type="single"
-      variant="outline"
+      variant={isPill ? undefined : "outline"}
       value={value}
       onValueChange={(v) => v && onValueChange(v as T)}
+      aria-label={ariaLabel}
       className={cn(
-        "grid w-full gap-1 rounded-lg data-[variant=outline]:h-auto",
-        className
+        /* Pill — toolbar boshqaruvi: 36px (`h-9`) va boshqaruv radiusi
+           (`rounded-lg`), yonidagi `size-9` tugmalar bilan bir qatorda. */
+        isPill
+          ? "h-9 w-fit gap-0.5 rounded-lg border border-border p-0.5"
+          : "grid w-full gap-1 rounded-lg data-[variant=outline]:h-auto",
+        className,
       )}
-      style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}
+      style={
+        isPill
+          ? undefined
+          : { gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }
+      }
     >
       {options.map((opt) => (
         <ToggleGroupItem
           key={opt.value}
           value={opt.value}
           className={cn(
-            "gap-1.5 px-3 py-2 text-sm font-medium data-[variant=outline]:h-auto",
-            "data-[state=off]:text-muted-foreground",
-            opt.hint ? "flex-col items-start text-left" : "flex-row items-center justify-center"
+            "relative gap-1.5 text-sm text-muted-foreground",
+            /* Faol fonni `motion` beradi — primitivning oʻz foni boʻshatiladi.
+               twMerge `data-[state=on]:bg-*` ni shu bilan almashtiradi,
+               `!important` kerak emas. */
+            "data-[state=on]:bg-transparent data-[state=on]:text-background",
+            isPill
+              ? "h-full rounded-md px-3 py-0"
+              : cn(
+                  "px-3 py-2 font-medium data-[variant=outline]:h-auto",
+                  opt.hint
+                    ? "flex-col items-start text-left"
+                    : "flex-row items-center justify-center",
+                ),
           )}
         >
-          <span className="flex items-center gap-1.5">
+          {value === opt.value && (
+            <m.span
+              layoutId={pillId}
+              className={cn(
+                "absolute inset-0 z-0 rounded-md bg-foreground",
+              )}
+              transition={{ type: "tween", duration: 0.2, ease: "easeOut" }}
+            />
+          )}
+          <span className="relative z-10 flex items-center gap-1.5">
             {opt.icon}
-            {opt.label}
+            <span className={iconOnly ? "sr-only" : undefined}>{opt.label}</span>
           </span>
-          {opt.hint && <span className="text-[11px] opacity-75">{opt.hint}</span>}
+          {opt.hint && (
+            <span className="relative z-10 text-tag opacity-75">
+              {opt.hint}
+            </span>
+          )}
         </ToggleGroupItem>
       ))}
     </ToggleGroup>
+    </LazyMotion>
   );
 }

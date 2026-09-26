@@ -19,10 +19,14 @@ import { useClassStore } from "@/store/useClassStore";
    store'lardagi mount-gate kabi), bu maqbul.
 
    fallbackToStore:
-     false (default) — URL boʻsh boʻlsa `null` (hech narsa tanlanmagan;
-       grades/students/lessons/standards 50/50 boʻsh holatidan boshlanadi).
-     true — URL boʻsh boʻlsa store default'iga qaytadi (attendance kabi doim
-       bitta sinf ochiq turishi kerak boʻlgan sahifalar uchun).
+     true — URL boʻsh boʻlsa oxirgi tanlangan sinfdan (store) davom etadi.
+       Sinfga bogʻlangan ish maydonlari shuni ishlatadi: yon menyudan kirganda
+       oʻqituvchi har safar qaytadan sinf tanlashi kerak boʻlmasin.
+     false (default) — URL boʻsh boʻlsa `null`. Sinf «kontekst» emas, balki
+       FILTR boʻlgan sahifalar uchun: vazifalarda `classId` sahifa rejimini
+       almashtiradi (sinf koʻrinishi ⇄ «Bugun» roʻyxati), statistikada esa
+       tanlangan sinfni qayta bosish uni bekor qiladi — store'ga qaytish
+       bekor qilishni umuman imkonsiz qilardi.
    ════════════════════════════════════════════════════════════════════ */
 /** `history.replaceState` Next router'dan oʻtmaydi — `useSearchParams()`
     buni sezmaydi. Boshqa daraxtdagi (masalan header breadcrumb) tinglovchilar
@@ -32,12 +36,67 @@ const CLASS_ID_PARAM_EVENT = "classid-param-change";
 /** `?classId=` yozish — komponent holatidan mustaqil (breadcrumb kabi
     boshqa daraxtdagi yozuvchilar uchun ham ishlatiladi). `useClassIdParam`
     hook'i shu funksiyani chaqiradi, faqat ustiga React holatini qoʻshadi. */
-export function setClassIdParam(id: string | null) {
+export function setUrlParam(key: string, value: string | null) {
   const url = new URL(window.location.href);
-  if (id) url.searchParams.set("classId", id);
-  else url.searchParams.delete("classId");
+  if (value) url.searchParams.set(key, value);
+  else url.searchParams.delete(key);
   window.history.replaceState(null, "", url);
   window.dispatchEvent(new Event(CLASS_ID_PARAM_EVENT));
+}
+
+export function setClassIdParam(id: string | null) {
+  setUrlParam("classId", id);
+}
+
+/** Ixtiyoriy query param'ni React holati sifatida oʻqish/yozish —
+    `useClassIdParam` bilan bir xil mexanizm (replaceState + umumiy event),
+    lekin sinfga bogʻlanmagan. Sahifa ichidagi «ikkinchi daraja» tanlovlar
+    (boʻlim, tab, davr) shu orqali URL'da yashaydi va sahifa unmount boʻlib
+    qayta ochilganda tiklanadi.
+
+    ⚠️ Mount'da URL bir kadr kechikib oʻqiladi (`useClassIdParam` kabi) —
+    dastlabki renderda qiymat `null` boʻladi. Shuning uchun mount'da
+    ishlaydigan tozalash effektlari «tanlanmagan» holatni haqiqiy deb
+    bilmasligi kerak, aks holda URL'dan endi kelayotgan qiymatni oʻchirib
+    yuboradi (darslar sahifasidagi `prevClassIdRef` naqshiga qarang).
+
+    Uchinchi qiymat — `hydrated`: URL oʻqilganmi. Param'siz natija NOTOʻGʻRI
+    boʻladigan joylarda shart (oʻquvchi profili: param yetib kelgunicha
+    oʻquvchi tasodifiy guruhda topilib, davomat ham oʻsha guruhdan oʻqilardi).
+    Bunday joylar `hydrated` boʻlgunicha yuklanish holatini koʻrsatsin.
+
+    `watchKey` — Next router orqali sahifa almashganda qayta oʻqish uchun
+    (masalan `usePathname()` natijasi). Hech qachon qayta mount boʻlmaydigan
+    komponentlarga kerak: router navigatsiyasi na `popstate`, na bizning
+    umumiy event'imizni chiqaradi. */
+export function useUrlParam(
+  key: string,
+  watchKey?: string
+): [string | null, (value: string | null) => void, boolean] {
+  const [value, setValue] = useState<string | null>(null);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    const read = () => setValue(new URLSearchParams(window.location.search).get(key));
+    read();
+    setHydrated(true);
+    window.addEventListener(CLASS_ID_PARAM_EVENT, read);
+    window.addEventListener("popstate", read);
+    return () => {
+      window.removeEventListener(CLASS_ID_PARAM_EVENT, read);
+      window.removeEventListener("popstate", read);
+    };
+  }, [key, watchKey]);
+
+  const set = useCallback(
+    (next: string | null) => {
+      setValue(next);
+      setUrlParam(key, next);
+    },
+    [key]
+  );
+
+  return [value, set, hydrated];
 }
 
 export function useClassIdParam(
@@ -57,7 +116,10 @@ export function useClassIdParam(
     return () => window.removeEventListener(CLASS_ID_PARAM_EVENT, read);
   }, []);
 
-  const classId = urlId || (fallbackToStore ? storeClassId : null);
+  // `storeClassId` boʻsh satr boʻlishi mumkin («tanlanmagan») — uni `null`ga
+  // normallashtiramiz, aks holda chaqiruvchilar boʻsh satrni haqiqiy sinf id'si
+  // deb qabul qilishardi.
+  const classId = urlId || (fallbackToStore ? storeClassId || null : null);
 
   const setClassId = useCallback(
     (id: string | null) => {
@@ -78,16 +140,5 @@ export function useClassIdParam(
     ham qayta oʻqilishi uchun (masalan `usePathname()` natijasi) — chunki bu
     komponent layout darajasida doimiy, hech qachon qayta mount boʻlmaydi. */
 export function useClassIdParamValue(watchKey?: string): string | null {
-  const [id, setId] = useState<string | null>(null);
-  useEffect(() => {
-    const read = () => setId(new URLSearchParams(window.location.search).get("classId"));
-    read();
-    window.addEventListener(CLASS_ID_PARAM_EVENT, read);
-    window.addEventListener("popstate", read);
-    return () => {
-      window.removeEventListener(CLASS_ID_PARAM_EVENT, read);
-      window.removeEventListener("popstate", read);
-    };
-  }, [watchKey]);
-  return id;
+  return useUrlParam("classId", watchKey)[0];
 }

@@ -1,8 +1,8 @@
 import { useTranslations } from "next-intl";
-import { CircleCheck, CalendarCheck, CalendarX, PencilLine, type LucideIcon } from "lucide-react";
+import { CircleCheck, CalendarCheck, CalendarX, PencilLine, FileCheck, type LucideIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { LessonStatus } from "@/lib/lessons-data";
+import { isTaught, type Lesson, type LessonStatus } from "@/lib/lessons-data";
 
 /**
  * Mavzu holati — YAGONA rang/ikonka/yorliq manbai (avval `NextLessonsCard`
@@ -54,7 +54,7 @@ export function LessonStatusBadge({ status, className }: { status: LessonStatus;
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 bg-background/85 px-1.5 py-0.5 text-[10px] font-semibold text-foreground/75 shadow-sm backdrop-blur-sm",
+        "inline-flex items-center gap-1 bg-background/85 px-1.5 py-0.5 text-micro font-semibold text-foreground/75 shadow-sm backdrop-blur-sm",
         className
       )}
     >
@@ -64,7 +64,9 @@ export function LessonStatusBadge({ status, className }: { status: LessonStatus;
   );
 }
 
-/** Mavzu holati — TOʻLIQ badge (ikonka + rangli fon), `ClassBadge` bilan bir qatorda turishga moslangan (h-[18px]). */
+/** Mavzu holati — TOʻLIQ badge (ikonka + rangli fon), `ClassBadge` bilan bir
+    qatorda turishga moslangan: balandlik va matn AYNAN oʻsha yerdan olinadi
+    (`h-5` / 11px). `ClassBadge` oʻlchami oʻzgarsa, bu ham ergashadi. */
 export function LessonStatusPill({ status, className }: { status: LessonStatus; className?: string }) {
   const t = useTranslations("LessonsPage");
   const Icon = STATUS_ICON[status];
@@ -77,10 +79,55 @@ export function LessonStatusPill({ status, className }: { status: LessonStatus; 
   return (
     <Badge
       variant="secondary"
-      className={cn("h-[18px] gap-1 rounded-full border-transparent px-1.5 text-[11px] font-semibold leading-none", STATUS_PILL_CLASS[status], className)}
+      className={cn("h-5 gap-1 rounded-full border-transparent px-2 text-tag font-semibold leading-none", STATUS_PILL_CLASS[status], className)}
     >
       <Icon className="size-3" />
       {label[status]}
     </Badge>
+  );
+}
+
+const PILL = "h-5 gap-1 rounded-full border-transparent px-2 text-tag font-semibold leading-none";
+
+/** Dars sikli — «Dars rejasi» va «Oʻtildi» (ikki MUSTAQIL belgi, `isTaught`).
+    Hech biri boʻlmasa hech narsa chizilmaydi: kartadagi sana matni yetarli. */
+export function LessonCyclePills({ lesson, className }: { lesson: Lesson; className?: string }) {
+  const t = useTranslations("LessonCycle");
+  const taught = isTaught(lesson);
+  const plan = !!lesson.planReady;
+  if (!plan && !taught) return null;
+  return (
+    <span className={cn("inline-flex items-center gap-1", className)}>
+      {plan && (
+        <Badge variant="secondary" className={cn(PILL, "bg-info/10 text-info")}>
+          <FileCheck className="size-3" />
+          {t("planReady")}
+        </Badge>
+      )}
+      {taught && (
+        <Badge variant="secondary" className={cn(PILL, "bg-success/10 text-success")}>
+          <CircleCheck className="size-3" />
+          {t("taught")}
+        </Badge>
+      )}
+    </span>
+  );
+}
+
+/** Jadval bloki burchagi uchun — bitta, eng muhim belgi (oʻtildi > reja). */
+export function LessonCycleBadge({ lesson, className }: { lesson: Lesson; className?: string }) {
+  const t = useTranslations("LessonCycle");
+  const taught = isTaught(lesson);
+  if (!lesson.planReady && !taught) return null;
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 bg-background/85 px-1.5 py-0.5 text-micro font-semibold text-foreground/75 shadow-sm backdrop-blur-sm",
+        className
+      )}
+    >
+      <span className={cn("size-1.5 shrink-0 rounded-full", taught ? "bg-success" : "bg-info")} />
+      {taught ? t("taught") : t("planReady")}
+    </span>
   );
 }

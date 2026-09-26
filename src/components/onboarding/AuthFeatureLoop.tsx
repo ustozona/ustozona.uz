@@ -63,7 +63,7 @@ export function AuthFeatureLoop({
               exit={{ y: -CARD_STEP, opacity: 0, scale: 0.85 }}
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
               className={cn(
-                "absolute left-0 top-0 flex w-full items-center gap-4 rounded-xl border-2 p-4.5 text-left transition-colors duration-500",
+                "absolute left-0 top-0 flex w-full items-center gap-4 rounded-xl border-2 p-4 text-left transition-colors duration-500",
                 isActive && "shadow-xs"
               )}
               style={{
@@ -79,8 +79,8 @@ export function AuthFeatureLoop({
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-[15px] font-semibold leading-tight">{f.title}</p>
-                <p className="text-[13px] text-muted-foreground mt-1">{f.desc}</p>
-                <div className="mt-2.5 h-1 overflow-hidden rounded-full bg-muted">
+                <p className="text-xs text-muted-foreground mt-1">{f.desc}</p>
+                <div className="mt-2 h-1 overflow-hidden rounded-full bg-muted">
                   <motion.div
                     className="h-full rounded-full"
                     style={{ backgroundColor: tints.solid }}

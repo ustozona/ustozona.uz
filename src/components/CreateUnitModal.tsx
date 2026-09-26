@@ -13,6 +13,7 @@ import { classColor } from "@/lib/grades-data";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { ClassSwatch } from "@/components/ClassSwatch";
+import { ClassChip } from "@/components/ClassChip";
 import { ChevronDownIcon, Lock } from "lucide-react";
 
 export type CreateUnitValues = { name: string; classIds: string[]; description: string };
@@ -81,22 +82,9 @@ export default function CreateUnitModal({
                   {selected.length === 0 ? (
                     <span className="text-muted-foreground">{t("selectClassPlaceholder")}</span>
                   ) : (
-                    selected.map((c) => {
-                      const hex = CLASS_COLOR_HEX[classColor(c)];
-                      return (
-                        <span
-                          key={c.id}
-                          className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium"
-                          style={{
-                            backgroundColor: `color-mix(in srgb, ${hex} 12%, transparent)`,
-                            color: `color-mix(in srgb, ${hex} 55%, var(--foreground))`,
-                          }}
-                        >
-                          <ClassSwatch hex={hex} className="size-2" />
-                          {c.name}
-                        </span>
-                      );
-                    })
+                    selected.map((c) => (
+                      <ClassChip key={c.id} color={classColor(c)} name={c.name} />
+                    ))
                   )}
                 </div>
                 <ChevronDownIcon
@@ -104,7 +92,7 @@ export default function CreateUnitModal({
                 />
               </button>
               {pickerOpen && (
-                <div className="mt-1 rounded-md border border-border bg-popover p-1 shadow-md max-h-[200px] overflow-y-auto">
+                <div className="mt-1 rounded-md border border-border bg-popover p-1 shadow-md max-h-[200px] scrollbar-hover overflow-y-auto">
                   <div className="space-y-0.5">
                     {selectableClasses.map((c) => {
                       const hex = CLASS_COLOR_HEX[classColor(c)];
@@ -116,10 +104,10 @@ export default function CreateUnitModal({
                           tabIndex={0}
                           onClick={() => toggleClass(c.id)}
                           onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleClass(c.id); } }}
-                          className="flex items-center gap-2.5 w-full rounded-md px-2 py-2 text-sm text-left cursor-pointer hover:bg-muted transition-colors outline-none focus-visible:bg-muted"
+                          className="flex items-center gap-2 w-full rounded-md px-2 py-2 text-sm text-left cursor-pointer hover:bg-muted transition-colors outline-none focus-visible:bg-muted"
                         >
                           <Checkbox checked={checked} className="pointer-events-none" />
-                          <ClassSwatch hex={hex} className="size-2" />
+                          <ClassSwatch hex={hex} />
                           <span className="truncate">{c.name}</span>
                         </div>
                       );

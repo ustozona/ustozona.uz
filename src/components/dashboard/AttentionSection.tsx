@@ -238,7 +238,7 @@ export function AttentionSection({ now }: { now: Date }) {
                             asChild
                             variant="outline"
                             size="sm"
-                            className="h-6 rounded-full px-2.5 text-xs font-medium"
+                            className="h-6 rounded-full px-3 text-xs font-medium"
                           >
                             <Link href={a.href}>{a.label}</Link>
                           </Button>
@@ -260,7 +260,7 @@ export function AttentionSection({ now }: { now: Date }) {
             </div>
           )}
           {hiddenCount > 0 && (
-            <p className="border-t border-border/60 py-2.5 text-center text-xs text-muted-foreground">
+            <p className="border-t border-border/60 py-3 text-center text-xs text-muted-foreground">
               {t("moreSignals", { count: hiddenCount })}
             </p>
           )}

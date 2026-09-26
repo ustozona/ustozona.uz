@@ -16,9 +16,11 @@
     "standards": "Standards",
     "tasks": "Tasks",
     "changelog": "Changelog",
+    "help": "Help",
     "feedback": "Feedback",
     "settings": "Settings",
     "assignments": "Assignments",
+    "resources": "Library",
     "baholash": "Baholash",
     "blog": "Blog"
   },
@@ -34,10 +36,12 @@
     "timetable": "Timetable",
     "planner": "Planner",
     "lessons": "Lessons",
+    "resources": "Library",
     "attendance": "Attendance",
     "behavior": "Behavior",
     "grades": "Gradebook",
     "gradesHelp": "Help",
+    "help": "Help",
     "statistics": "Statistics",
     "standards": "Standards",
     "tasks": "Tasks",
@@ -49,7 +53,8 @@
     "adminUsers": "Users",
     "adminSchools": "Schools",
     "adminFeedback": "Feedback",
-    "adminAudit": "Audit log"
+    "adminAudit": "Audit log",
+    "adminAi": "Ustozona AI"
   },
   "GlobalCommandPalette": {
     "search": "Search",
@@ -64,7 +69,6 @@
   "HeaderBreadcrumb": {
     "notFound": "Not found",
     "searchClassPlaceholder": "Search class…",
-    "myClassesHeading": "Classes",
     "searchStudentPlaceholder": "Search student…"
   },
   "HeaderAccountMenu": {
@@ -103,6 +107,9 @@
     "dismissWarning": "Dismiss warning",
     "month": "Month",
     "quarter": "Quarter",
+    "year": "Year",
+    "noYearLessonDaysTitle": "No lesson days this school year",
+    "noYearLessonDaysDescription": "No lessons are scheduled for this class this school year. Check the timetable and school year settings.",
     "showAll": "Show all",
     "needsAttentionCount": "Needs attention ({count})",
     "today": "Today",
@@ -127,7 +134,16 @@
     "noAttentionStudents": "No students need attention.",
     "noStudentsInClass": "This class has no students.",
     "studentCount": "{count} students",
-    "note": "Note"
+    "note": "Note",
+    "orphanTitle": "{count} attendance records no longer match the timetable",
+    "orphanDescription": "The lesson days changed. The records are still saved, but they no longer appear in the table.",
+    "orphanReview": "Review",
+    "orphanKeep": "Keep them",
+    "orphanDialogTitle": "Records that no longer match the timetable",
+    "orphanDialogDescription": "Attendance was marked on these dates, but they are no longer lesson days.",
+    "orphanRecordsOnDate": "{count} records",
+    "orphanDelete": "Delete all",
+    "orphanClose": "Close"
   },
   "SettingsPage": {
     "title": "Settings",
@@ -158,7 +174,7 @@
     "schoolLabel": "Institution / School",
     "schoolPlaceholder": "e.g. School No. 24",
     "subjectLabel": "Subject",
-    "subjectPlaceholder": "e.g. English",
+    "subjectPlaceholder": "Choose a subject",
     "birthDateLabel": "Date of birth",
     "optional": "(optional)",
     "toastImageOnly": "Please upload an image file.",
@@ -258,7 +274,13 @@
     "sheetStudents": "Students",
     "sheetClasses": "Classes",
     "sheetLessons": "Lessons",
-    "sheetTasks": "Tasks"
+    "sheetTasks": "Tasks",
+    "emailTitle": "Helpful emails",
+    "emailDescription": "Emails from Ustozona",
+    "emailToggleTitle": "Getting-started emails",
+    "emailToggleDescription": "Short emails that help you get started. Security emails such as password reset are not affected — they are always sent.",
+    "emailToastSaved": "Saved",
+    "emailToastError": "Could not save"
   },
   "BellSection": {
     "title": "Shifts and bell schedule",
@@ -737,8 +759,8 @@
   "ArticleFeedback": {
     "thanks": "Thanks for your feedback!",
     "wasHelpful": "Was this article helpful?",
-    "yes": "Yes",
-    "no": "No"
+    "moreQuestions": "Have another question?",
+    "contactLink": "Contact us here"
   },
   "ArticleToc": {
     "tableOfContents": "Contents"
@@ -759,12 +781,12 @@
   "StudentsPage": {
     "sortLabels": {
       "name": "Name",
+      "lastName": "Surname",
       "grade": "Average grade",
       "attendance": "Attendance"
     },
     "status": {
       "active": "Enrolled",
-      "away": "On leave",
       "archived": "Withdrawn"
     },
     "statusFilterAll": "All",
@@ -775,12 +797,12 @@
     "searchPlaceholder": "Search by name or ID…",
     "filterAria": "Filter by status",
     "filterByStatus": "By status",
-    "filterChip": "Status: {label}",
     "sortButton": "Sort: {label}",
     "sortMenuLabel": "Sort",
     "sortGrade": "Average grade (lowest first)",
     "sortAttendance": "Attendance (lowest first)",
     "sortName": "Name (A–Z)",
+    "sortLastName": "Surname (A–Z)",
     "exportAria": "Export",
     "exportToast": "Student list exported",
     "newStudent": "New student",
@@ -790,12 +812,16 @@
     "emptyFilteredDescription": "Try adjusting the filter or search.",
     "emptyDescription": "Add your first student or import a ready-made list.",
     "viewProfile": "View profile",
+    "previewPanel": "Student card",
     "edit": "Edit",
     "addNote": "Add note",
     "statusLabel": "Status",
     "delete": "Delete",
-    "markAway": "Mark as away",
+    "markArchived": "Mark as withdrawn",
     "markActive": "Mark as active",
+    "archiveDialogTitle": "Mark student as withdrawn?",
+    "archiveDialogDescription": "{name} moves to the withdrawn list and disappears from the current roster. Grades and attendance history are kept — you can restore them at any time.",
+    "confirmArchive": "Yes, withdrawn",
     "toastCreated": "Student added",
     "toastImported": "{count} students added",
     "toastDeleted": "Student deleted",
@@ -827,6 +853,7 @@
     "viewCardAria": "Card view",
     "viewTableAria": "Table view",
     "tableColName": "Full name",
+    "tableColSurname": "Surname",
     "tableColId": "ID",
     "tableColGrade": "Grade",
     "tableColAttendance": "Attendance",
@@ -1167,6 +1194,18 @@
     "deleteDialogWithStudents": "“{name}”, its {count} students, and all their grades will be permanently deleted. This action cannot be undone.",
     "deleteDialogWithoutStudents": "“{name}” and all related data will be permanently deleted. This action cannot be undone.",
     "deleteDialogBulk": "{count} classes ({students} students) and all their related data will be permanently deleted. This action cannot be undone.",
+    "detachDialogTitle": "Remove from your list?",
+    "detachDialogOne": "“{name}” will leave your list. The class, its students and their grades stay with your colleagues — nothing is deleted.",
+    "detachDialogBulk": "{count} classes will leave your list. Your colleagues teach them too, so the classes, students and grades stay.",
+    "detachConfirm": "Remove",
+    "detachToast": "“{name}” removed from your list",
+    "detachBulkToast": "{count} classes removed from your list",
+    "deleteDialogMixed": "{deleted} classes will be permanently deleted. The other {detached} are taught by your colleagues too — those only leave your list.",
+    "deleteMixedToast": "{deleted} classes deleted, {detached} removed from your list",
+    "blockedDialogTitle": "This class can’t be deleted",
+    "blockedDialogOne": "A colleague also teaches “{name}”, and you are its owner. Remove them from the class first, or transfer ownership to them.",
+    "blockedDialogBulk": "Colleagues also teach {count} of these classes, and you are their owner. Remove them from those classes first, or transfer ownership.",
+    "close": "Close",
     "deleteBulkToast": "{count} classes deleted",
     "archiveBulkToast": "{count} classes archived",
     "selectedCount": "{count} selected",
@@ -1223,7 +1262,6 @@
     "sortGrade": "Average grade",
     "sortAttendance": "Attendance",
     "statusActive": "Enrolled",
-    "statusAway": "On leave",
     "statusArchived": "Left",
     "toastCreated": "Student added",
     "toastImported": "{count} students added",
@@ -1239,7 +1277,7 @@
     "emptyTitle": "No students in this class yet",
     "emptyFilteredDescription": "Try a different search.",
     "emptyDescription": "Add some students.",
-    "markAway": "Mark as on leave",
+    "markArchived": "Mark as withdrawn",
     "markActive": "Mark as active",
     "fullProfileAria": "Full profile",
     "viewProfile": "View profile",
@@ -1283,7 +1321,7 @@
     "cancel": "Cancel",
     "save": "Save",
     "deleteUnitDialogTitle": "Delete unit",
-    "deleteUnitDialogDescription": "“{unit}” will be deleted. Its lessons won't be deleted — they'll just become unassigned. You can undo this shortly after.",
+    "deleteUnitDialogDescription": "“{unit}” and the lessons inside it will be deleted — scheduled lessons are removed from the timetable too. You can undo this shortly after.",
     "delete": "Delete",
     "noUnitSelectedTitle": "No unit selected",
     "noUnitSelectedDescription": "Select a unit to view its lessons.",
@@ -1291,6 +1329,13 @@
     "editAria": "Edit",
     "searchAria": "Search",
     "sortAria": "Sort",
+    "reorderMenuItem": "Reorder",
+    "reorderHint": "Drag or press ↑ ↓",
+    "reorderMoved": "{count} moved",
+    "reorderDone": "Done",
+    "reorderDrag": "Drag",
+    "reorderUp": "Move up",
+    "reorderDown": "Move down",
     "newLesson": "New lesson",
     "listViewAria": "List",
     "calendarViewAria": "Calendar",
@@ -1299,15 +1344,44 @@
     "deleteLessonAria": "Delete",
     "deleteLessonDialogTitle": "Delete lesson",
     "deleteLessonDialogDescription": "This lesson and all of its content in the editor will be permanently deleted. This action cannot be undone.",
-    "lessonDeletedToast": "Lesson deleted"
+    "lessonDeletedToast": "Lesson deleted",
+    "deleteUnitKeepLessons": "Keep the lessons — move them to “No unit”",
+    "deleteUnitImpact": "This unit holds {lessons, plural, one {# lesson} other {# lessons}} with {sessions, plural, one {# slot} other {# slots}} on the timetable."
   },
   "LessonsPage": {
     "statusCompleted": "Completed",
     "statusScheduled": "Scheduled",
     "statusUnscheduled": "Unscheduled",
+    "classMeta": "{units} units · {lessons} topics",
+    "classCoverage": "Coverage: {pct}%",
+    "moveToNewUnit": "To a new unit…",
+    "lessonMovedToUnit": "“{lesson}” → {unit}",
+    "lessonsMovedToUnit": "{count} topics → {unit}",
+    "lessonsSearchPlaceholder": "Search topics…",
+    "lessonsSearchEmpty": "No topics match “{q}”",
+    "classUnitsTip": "{count} units",
+    "classLessonsTip": "{count} topics · {taught} taught",
     "statusDraft": "Draft",
-    "unitDeletedToast": "\"{unit}\" was deleted",
-    "undo": "Undo",
+    "unitDeletedToast": "\"{unit}\" was deleted",
+    "undo": "Undo",
+    "selectAria": "Select",
+    "selectMenuItem": "Select",
+    "reorderMenuItem": "Reorder",
+    "reorderHint": "Drag or press ↑ ↓",
+    "reorderMoved": "{count} moved",
+    "reorderDone": "Done",
+    "reorderDrag": "Drag",
+    "reorderUp": "Move up",
+    "reorderDown": "Move down",
+    "selectAll": "Select all",
+    "bulkDeleteUnitsTitle": "Delete the selected units?",
+    "bulkDeleteUnitsDescription": "{units, plural, one {# unit} other {# units}} and the {lessons, plural, one {# lesson} other {# lessons}} inside them will be deleted. You can undo this right away from the toast.",
+    "bulkDeleteLessonsTitle": "Delete the selected lessons?",
+    "bulkDeleteLessonsDescription": "{lessons, plural, one {# lesson} other {# lessons}} will be deleted. You can undo this right away from the toast.",
+    "bulkUnitsDeletedToast": "Deleted {units, plural, one {# unit} other {# units}} and {lessons, plural, one {# lesson} other {# lessons}}",
+    "bulkLessonsDeletedToast": "Deleted {lessons, plural, one {# lesson} other {# lessons}}",
+    "selectedCount": "{count, plural, one {# selected} other {# selected}}",
+    "bulkDeleteSessions": "{sessions, plural, one {# timetable slot} other {# timetable slots}} will be removed as well.",
     "newLessonToast": "New lesson created",
     "editUnit": "Edit",
     "deleteUnit": "Delete",
@@ -1335,7 +1409,7 @@
     "cancel": "Cancel",
     "save": "Save",
     "deleteUnitDialogTitle": "Delete unit",
-    "deleteUnitDialogDescription": "\"{unit}\" will be deleted. Its lessons won't be removed — they'll just become unassigned. You can undo this shortly after.",
+    "deleteUnitDialogDescription": "“{unit}” and the lessons inside it will be deleted — scheduled lessons are removed from the timetable too. You can undo this shortly after.",
     "delete": "Delete",
     "noUnitSelectedTitle": "No unit selected",
     "noUnitSelectedDescription": "Select a unit to view its lessons.",
@@ -1347,18 +1421,29 @@
     "lessonsEmptyTitle": "No lessons yet",
     "lessonsEmptyDescription": "Add the first lesson to this unit.",
     "deleteLessonAria": "Delete",
+    "moveLesson": "Move",
     "deleteLessonDialogTitle": "Delete lesson",
     "deleteLessonDialogDescription": "This lesson and all its editor content will be permanently deleted. This action cannot be undone.",
-    "lessonDeletedToast": "Lesson deleted"
+    "lessonDeletedToast": "Lesson deleted",
+    "deleteUnitKeepLessons": "Keep the lessons — move them to “No unit”",
+    "deleteUnitImpact": "This unit holds {lessons, plural, one {# lesson} other {# lessons}} with {sessions, plural, one {# slot} other {# slots}} on the timetable."
   },
   "TimetablePage": {
+    "scheduleSavedToast": "Schedule updated",
+    "pendingSubtitle": "The old schedule is still in effect",
+    "discardedToast": "{count} changes discarded",
+    "undo": "Undo",
+    "discardConfirmTitle": "Discard the changes?",
+    "discardConfirmDescription": "{count} changes will be lost and the schedule returns to its last applied state.",
+    "pendingChanges": "{count} changes not saved",
+    "applyChanges": "Save",
+    "discardChanges": "Discard",
     "unknownClass": "Unknown class",
     "versionExistsError": "A version already exists for this date",
     "newVersionToast": "New schedule version — from {date}",
     "exportEmptyError": "Schedule is empty, nothing to export",
     "exportSuccessToast": "Schedule exported",
     "classRemovedToast": "Class removed from schedule",
-    "undo": "Undo",
     "notScheduled": "Not scheduled",
     "classesTitle": "Classes",
     "add": "Add",
@@ -1962,6 +2047,9 @@
       "tuzatildi": "Fixed"
     },
     "routes": {
+      "help": "Help center",
+      "baholash": "Baholash",
+      "blog": "Blog",
       "assignments": "Assignments",
       "planner": "Planner",
       "dashboard": "Home",
@@ -1980,6 +2068,30 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "doska-uslublar": {
+        "title": "Doska: pick a look and build your own panel",
+        "body": "Under Appearance in the menu, choose one of three styles: Calm, the clearest on a projector; Playful, bright and fun for younger classes; or Board, with paper notes and magnets on a green board. The panel can sit at the bottom, left or right — handy when you stand beside an interactive board. Pin the tools you use from the All window; everything else stays there."
+      },
+      "doska-qulay-boshqaruv": {
+        "title": "A friendlier Doska: any time on the timer, undo for everything, controls within reach",
+        "body": "When you add a timer you pick the time right away (1–15 minutes or the ± buttons), tap it to start, and a bell rings when time is up; every widget’s settings open right next to it under “Settings”. A widget or screen deleted by accident comes back with “Undo”, and you can lock a widget in place or bring it full screen with “Spotlight”. All controls now sit at the bottom, easy to reach on an interactive board, and the menu has “Cover the screen” and “Ring the bell” to get the class’s attention."
+      },
+      "doska-gildirak": {
+        "title": "Wheel on the Doska: pick who answers, fairly",
+        "body": "Add the «Wheel» from the Doska’s bottom panel, type your students’ names with the pencil button and click the wheel — it spins and picks one student. In «Everyone once» mode a picked student leaves the wheel, so there’s no more «why always me?!»; when everyone has had a turn, you start a new round. If a student isn’t ready, press «Later» — they go back on the wheel and will come up again."
+      },
+      "sahna-uslubi": {
+        "title": "A new look for presentations and quizzes: fonts, styles and coloured answers",
+        "body": "In the editor's «Theme» panel, choose a font (Nunito, Rubik, Montserrat, Onest) and a stage style — «Classic» or «Modern» — and both students' phones and the Board use it. Answer options are now coloured, with a shape and a number, so in a computer lab students can answer with the 1–6 keys. When the answer is revealed, the correct one turns green and a wrong pick turns red, while the Board shows question progress and a timer bar. In homework, students see their result right after each question."
+      },
+      "taqdimot-doskada": {
+        "title": "Interactive presentations: slides, questions and live lessons — in one place",
+        "body": "When creating an assignment in the Gradebook, choose «Automatic» → «Presentation». Build slides from ready layouts (title, list, image, video, quote) or import your existing PowerPoint and PDF files, then place tests, polls, word clouds and open questions between them. In class, start a «Live session» from the Board: students join with a QR code or PIN, every screen moves with you when you change the slide, and answers grow as live bars on the board. It works without devices too — reveal the answer on the board and award points to teams. Grade open answers later with 0, ½ or 1 and send the results to the Gradebook."
+      },
+      "jamoa-ish-maydoni": {
+        "title": "Schools can now work as a team — several teachers, one shared roster",
+        "body": "In Settings › Team you hand a colleague an invite code. When they join, their classes and students come with them — and before accepting they see the full list of what will move. Every class has an owner who decides who teaches it, and a class can have several teachers. A child’s grades, attendance and notes stay visible only to the teachers who actually teach that child — sharing a school opens nothing on its own."
+      },
       "topshiriq-qoralama-royxatda": {
         "title": "An unfinished assignment now waits in the list instead of disappearing",
         "body": "Closing the editor asks nothing — the draft sits in the Assignments list as a card, and one click continues it. Pressing “+” in another class no longer wipes it: your draft opens instead. The minimise button and the corner tab are no longer needed."
@@ -2356,7 +2468,17 @@
       "tasks-stats-panel": {
         "title": "Tasks — stats panel added on the right",
         "body": "When no task is selected, the right panel now shows planned time, planned tasks, time spent, and completion rate at a glance, plus a shortcut to full statistics."
+      },
+      "ish-reja-yuklash": {
+        "title": "Upload your work plan — topics are placed on your lesson days automatically",
+        "body": "No more creating topics one by one. Inside a unit, choose «New lesson» → «Upload Excel» to upload your work plan file, or paste a list of topics — all lessons are created at once. If your timetable is set up, topics are assigned to your upcoming lessons in order, skipping holidays. Units can be added from a list the same way.",
+        "cta": "Learn how to upload a work plan"
       }
+    },
+    "cta": {
+      "help": "Read the guide",
+      "blog": "View on blog",
+      "try": "Try it"
     }
   },
   "StandardsView": {
@@ -2450,6 +2572,7 @@
     "customSetsCount": "{count} custom sets",
     "noCustomSetsYet": "No custom sets yet. Enter a name above and click \"Create\".",
     "importSuccess": "{count} standards imported",
+    "importDomainsInferred": "{count} objectives had their content area guessed from the code — please check",
     "importNoStandards": "No standards found in the file",
     "importReadError": "Could not read the file",
     "editAria": "Edit",
@@ -2482,7 +2605,9 @@
   "YearProgress": {
     "ariaLabel": "Academic year progress: {year}",
     "quarterWeek": "{quarter} · week {week}/{weeks}",
-    "quarterUntil": "{name} — until {date}"
+    "quarterUntil": "{name} — until {date}",
+    "quarterEndDate": "until {date}",
+    "weekOfYear": "week {week}/{weeks}"
   },
   "QueueSection": {
     "title": "Tasks",
@@ -2502,8 +2627,11 @@
     "dueToday": "Today",
     "dueTomorrow": "Tomorrow",
     "footerDone": "Today: {done}/{total} done",
-    "emptyTitle": "All caught up",
-    "emptyDescription": "The queue is empty — add a task or take a break."
+    "emptyTitle": "No tasks yet",
+    "emptyDescription": "Type in the field above to add a task for today.",
+    "emptyWeekTitle": "This week is clear",
+    "emptyWeekDescription": "{count, plural, one {# more task} other {# more tasks}} coming up later.",
+    "quickAddPlaceholder": "Add a task for today"
   },
   "TodayRail": {
     "title": "Today's lessons",
@@ -2528,6 +2656,7 @@
     "showSunday": "Show Sunday",
     "hideSunday": "Hide Sunday",
     "attendanceAction": "Attendance",
+    "startPresentation": "Start presentation",
     "gradesAction": "Gradebook"
   },
   "AttentionSection": {
@@ -2568,9 +2697,18 @@
     "unknownClass": "Unknown class",
     "untitledTopic": "(untitled topic)",
     "tomorrow": "Tomorrow",
+    "inDays": "in {count} days",
     "durationSuffix": "{count} min",
     "emptyTitle": "No upcoming lessons",
-    "emptyDescription": "Nothing planned yet — check the timetable."
+    "emptyDescription": "Nothing planned yet — check the timetable.",
+    "noTopic": "No topic assigned",
+    "addTopic": "Add topic",
+    "addTopicTooltip": "Create a new topic and open the editor",
+    "link": "Link",
+    "linkTooltip": "Link an existing topic to this lesson",
+    "thisWeek": "This week",
+    "weekProgressAria": "{done} of {total} lessons this week have a topic",
+    "holidayRow": "{day} — {name}"
   },
   "DashboardPage": {
     "unknownClass": "Unknown class",
@@ -2770,7 +2908,6 @@
   },
   "SignupForm": {
     "title": "Get started for free",
-    "subtitle": "No credit card required. You'll be up and running in a minute.",
     "continueWithGoogle": "Continue with Google",
     "orWithEmail": "or with email",
     "firstNameLabel": "First name",
@@ -2787,14 +2924,19 @@
     "signIn": "Sign in",
     "googleNotConfigured": "Google sign-in isn't configured yet.",
     "errors": {
+      "required": "This field is required.",
       "userAlreadyExists": "An account with this email already exists.",
       "passwordTooShort": "Password must be at least 8 characters.",
       "passwordTooLong": "Password is too long.",
       "invalidEmail": "That email address doesn't look right.",
       "generic": "Something went wrong signing up. Please try again."
     },
-    "continueWithTelegram": "Continue with Telegram",
-    "telegramHint": "Fastest way — name and account linking are automatic"
+    "passwordStrength": {
+      "weak": "Weak",
+      "medium": "Medium",
+      "strong": "Strong"
+    },
+    "continueWithTelegram": "Continue with Telegram"
   },
   "ForgotPasswordPage": {
     "title": "Forgot your password?",
@@ -2868,7 +3010,7 @@
       "schoolLabel": "School / institution",
       "schoolPlaceholder": "e.g. School No. 24",
       "subjectLabel": "Main subject",
-      "subjectPlaceholder": "e.g. English",
+      "subjectPlaceholder": "Choose a subject",
       "birthDateLabel": "Date of birth"
     },
     "yearStep": {
@@ -2974,6 +3116,14 @@
     "standards": "Standards",
     "addStandard": "Add standard",
     "removeStandard": "Remove",
+    "materials": "Presentations & tests",
+    "addMaterial": "Attach a presentation or test",
+    "searchMaterial": "Search…",
+    "noMaterials": "No presentations or tests yet",
+    "removeMaterial": "Detach",
+    "kindDeck": "Presentation",
+    "kindTest": "Test",
+    "materialsHint": "Ready on the Dashboard and Board on lesson day",
     "taught": "Taught",
     "selectClassFirst": "Select a class first",
     "searchStandard": "Search standards…",
@@ -2994,6 +3144,7 @@
     "textColor": "Text color",
     "highlightColor": "Highlight color",
     "clearColor": "Clear color",
+    "blockStyle": "Style",
     "paragraph": "Normal text",
     "heading1": "Heading 1",
     "heading2": "Heading 2",
@@ -3024,6 +3175,12 @@
     "link": "Link",
     "linkApply": "Add",
     "insertImage": "Insert image",
+    "insertVideo": "Add video",
+    "videoApply": "Insert",
+    "videoHint": "Paste a YouTube or Instagram link. A link pasted into an empty line becomes a video by itself.",
+    "videoNotRecognized": "Link not recognized — paste a YouTube or Instagram link",
+    "imageUploadFailed": "Could not upload the image",
+    "captionPlaceholder": "Image caption (optional)",
     "insertCallout": "Insert callout",
     "changeCalloutType": "Change type",
     "insertNotionCallout": "Emoji block",
@@ -3126,37 +3283,36 @@
     "pastMidnightWarning": "Lessons run past midnight — check the start time or number of lessons."
   },
   "EffectiveDateDialog": {
-    "title": "When should the new lesson schedule take effect?",
-    "description": "Lesson and grade history before that date will be kept on the previous schedule.",
+    "title": "When should the change take effect?",
+    "description": "Which days these edits apply to.",
+    "pickTitle": "When should the new schedule start?",
+    "pickDescription": "A new schedule version is created from the chosen date.",
     "close": "Close",
     "options": {
-      "monday": {
-        "title": "From next Monday",
-        "caption": "The new schedule takes effect on '{date}'. Until then, lessons follow the old schedule."
+      "new": {
+        "title": "From today",
+        "caption": "Earlier lessons stay on the old schedule."
       },
-      "today": {
-        "title": "Starting today",
-        "caption": "Starts on '{date}'. Past days' history is not affected."
-      },
-      "custom": {
-        "title": "From another date…",
-        "caption": "Takes effect on '{date}'",
-        "pickFromCalendar": "Pick a date from the calendar."
-      },
-      "inPlace": {
-        "title": "Fix a mistake",
-        "caption": "No new schedule is created, changes apply to all days."
+      "fix": {
+        "title": "From the start — fix a mistake",
+        "caption": "All lessons are shown with the new schedule."
       }
     },
+    "attendanceWarning": "This may affect attendance marks on past lessons.",
+    "effectiveDateLabel": "Start date",
     "dateAlreadyTaken": "A schedule already exists for this date",
-    "effectiveDateLabel": "Effective date",
-    "pickDate": "Pick a date",
-    "dateAlreadyTakenFull": "A schedule already exists for this date.",
     "pastDateWarning": "This is a past date — history from this day onward will also show the new schedule.",
-    "noteLabel": "Note about the changes (optional)",
-    "notePlaceholder": "For example: Class 7-B moved to Friday",
     "cancel": "Cancel",
     "save": "Save"
+  },
+  "SubjectPicker": {
+    "placeholder": "Choose a subject",
+    "search": "Search subjects…",
+    "empty": "No subjects found",
+    "mySubjects": "My subjects",
+    "suggested": "Recommended",
+    "addCustom": "Add \"{value}\" as a subject",
+    "clear": "Clear selection"
   },
   "ClassFormModal": {
     "createTitle": "Create new class",
@@ -3167,7 +3323,7 @@
     "pickColor": "Pick color",
     "gradeValue": "Grade {grade}",
     "subject": "Subject",
-    "subjectPlaceholder": "e.g. Mathematics",
+    "subjectPlaceholder": "Choose a subject",
     "cancel": "Cancel",
     "create": "Create",
     "save": "Save",
@@ -3188,6 +3344,7 @@
       "undo": "Undo"
     },
     "title": "Classes",
+    "selectClass": "Choose a class",
     "addClass": "Add class",
     "add": "Add",
     "emptyTitle": "No classes yet",
@@ -3219,7 +3376,8 @@
     "submit": "Create unit"
   },
   "LessonsServerSync": {
-    "saveError": "Lessons weren't saved to the server"
+    "saveError": "Lessons weren't saved to the server",
+    "deleteError": "The deletion did not go through on the server — please try again"
   },
   "SettingsDialogContent": {
     "close": "Close"
@@ -3270,27 +3428,15 @@
         },
         "1": {
           "title": "Your day's command center",
-          "body": "The greeting chips are clickable: checks lead to the gradebook, the attendance counter to the attendance page. The thin bar below tracks the school year — hover the season marks to see quarter dates."
+          "body": "This card shows your day's status: on your first visit — a greeting with today's status (how many lessons, when the next one starts); after that — a quote, which you can click to manage your own. During the greeting, a thin bar below tracks the school year — hover the season marks to see quarter dates."
         },
         "2": {
           "title": "Work queue",
-          "body": "Tasks, ungraded work, and upcoming assessments share one queue. Use “Today” in the header to widen the horizon (week or all), and “+ Task” adds one right here."
+          "body": "Grading tasks are grouped by due date — overdue, today, and this coming week. Check the box to mark one done, click a row to jump straight to that class's gradebook; if there are more than fit, a “View more” link appears below."
         },
         "3": {
           "title": "Today's lessons",
-          "body": "Switch between list and timeline — your choice is remembered. Past lessons fade, the current one stands out; after the last lesson a day-summary card appears where you can manage your own quotes."
-        },
-        "4": {
-          "title": "Week strip",
-          "body": "Picking a day changes only the lessons panel — the work queue keeps looking at today. A dot under a day means a lesson is planned."
-        },
-        "5": {
-          "title": "Guide hub",
-          "body": "Forgot how a section works? Click this button — you can replay any page's guide at any time."
-        },
-        "6": {
-          "title": "Your feedback matters",
-          "body": "Found a bug or have a suggestion? Send it straight to the team from here — you can attach a screenshot too."
+          "body": "Lessons sit on a time axis, sized to their duration. Past lessons fade, the current one stands out; after the last lesson, a card appears confirming the day is done and showing when tomorrow's first lesson starts. Picking a day above changes only this panel — the work queue keeps looking at today; a dot under a day means a lesson is planned."
         }
       }
     },
@@ -3299,17 +3445,13 @@
       "steps": {
         "0": {
           "title": "It all starts here",
-          "body": "First create a new class: enter its name, subject, and a distinguishing color. Every other section (schedule, students, gradebook, attendance) links back to these classes."
+          "body": "First create a new class: enter its name, subject, and a distinguishing color (or use the arrow next to it to import from Excel). Every other section (schedule, students, gradebook, attendance) links back to these classes."
         },
         "1": {
           "title": "Class card",
           "body": "Each card shows the number of students, topics, and assignments at a glance. Click a card to open the full class page."
         },
         "2": {
-          "title": "Switch the view",
-          "body": "You can view your classes as a grid or a list — pick whichever view suits you best."
-        },
-        "3": {
           "title": "Overall stats",
           "body": "This section totals up all classes, students, lessons, and assignments. These numbers update automatically as you add new classes."
         }
@@ -3329,10 +3471,6 @@
         "2": {
           "title": "Student details",
           "body": "Review the student's class, contact details, and quick actions without leaving the page. Click “View profile” for full attendance, grades, notes, and their personal portfolio."
-        },
-        "3": {
-          "title": "Filter by status",
-          "body": "Sort students by status (active, on leave, archived) — handy for focusing on the students who need attention."
         }
       }
     },
@@ -3392,6 +3530,40 @@
         "2": {
           "title": "Your lessons",
           "body": "Create individual lessons inside each unit. Every lesson card shows its status and date."
+        }
+      }
+    },
+    "assignments": {
+      "label": "Assignments",
+      "steps": {
+        "0": {
+          "title": "Your classes",
+          "body": "Pick a class to see its assignments."
+        },
+        "1": {
+          "title": "Assignment list",
+          "body": "Assignments are grouped by category. Each card shows its status (scheduled, completed) and due date."
+        },
+        "2": {
+          "title": "New assignment",
+          "body": "Pick a ready-made test from the bank, or create a new assignment from scratch — test, presentation, or a plain grade column."
+        }
+      }
+    },
+    "resources": {
+      "label": "Materials",
+      "steps": {
+        "0": {
+          "title": "New material",
+          "body": "Use this button to create a test, lesson, or other material. Each type opens its own editor."
+        },
+        "1": {
+          "title": "Filter by type",
+          "body": "Filter materials by type (test, lesson) or by draft status."
+        },
+        "2": {
+          "title": "Materials list",
+          "body": "All the materials you have created appear here, with the class they were used in and when they were last edited."
         }
       }
     },
@@ -3781,6 +3953,24 @@
     "discardCancel": "Keep editing",
     "discardConfirm": "Discard"
   },
+  "MaterialKinds": {
+    "test": "Test",
+    "testHint": "A set of questions — live or self-paced",
+    "lesson": "Lesson",
+    "lessonHint": "A full lesson document with text, images and formulas",
+    "deck": "Presentation",
+    "deckHint": "Slides with questions inside them",
+    "video": "Video",
+    "videoHint": "Questions asked during the video",
+    "flashcard": "Flashcard",
+    "flashcardHint": "Question on the front, answer on the back",
+    "testShort": "A set of questions",
+    "lessonShort": "A full document",
+    "deckShort": "Slides",
+    "videoShort": "Video with questions",
+    "flashcardShort": "Front and back cards",
+    "soon": "Coming soon"
+  },
   "AssignmentsPage": {
     "status_today": "Today",
     "statusHint_today": "Happens today — no grades entered yet.",
@@ -3794,7 +3984,15 @@
     "deleteSetFailed": "Could not delete the test",
     "attachNewTest": "Build a new test",
     "attachExisting": "Pick an existing test",
+    "contentCreate": "Create",
+    "contentAttach": "Attach",
+    "gradingModeLabel": "Grading method",
+    "gradingManual": "Manual",
+    "gradingAuto": "Automatic",
     "attachExistingTitle": "Which test should be attached?",
+    "attachFromThisClass": "Created in this class",
+    "attachFromLibrary": "From library",
+    "attachOriginNoClass": "no class",
     "attachExistingDescription": "Tests built for this class or taken from the bank. The one you pick is linked to this gradebook column.",
     "attachedTitle": "Test attached",
     "setAlreadyUsed": "Also used by another assignment",
@@ -3863,11 +4061,7 @@
     "statusHint_planned": "The date has not arrived yet.",
     "statusHint_grading": "{graded} of {total} students graded.",
     "statusHint_done": "All graded — {graded} of {total}.",
-    "contentLabel": "Content",
     "kindManual": "Grade column",
-    "noContentTitle": "No content attached",
-    "noContentDescription": "This is a gradebook column: scores for paper work, an oral check or anything done in class go here. You can attach a test if you want.",
-    "moreKindsSoon": "Slides, video, reading and flashcards are coming soon.",
     "questionCount": "{count} questions",
     "runSession": "Session",
     "detachTest": "Detach test",
@@ -3931,6 +4125,9 @@
   },
   "ImportClassesModal": {
     "title": "Import classes",
+    "titleAdd": "Add class",
+    "choiceSingleTitle": "Single class",
+    "choiceSingleDescription": "Pick grade, letter and subject.",
     "close": "Close",
     "back": "Back",
     "review": "Review",
@@ -3957,5 +4154,797 @@
     "newBadge": "New",
     "removeRowAria": "Remove",
     "submit": "Add {count} classes"
+  },
+  "Landing": {
+    "common": {
+      "register": "Sign up",
+      "login": "Log in",
+      "freeNote": "Free for teachers. No bank card required."
+    },
+    "nav": {
+      "top": "Home",
+      "features": "Features",
+      "products": "Products",
+      "pricing": "Pricing",
+      "faq": "FAQ",
+      "blog": "Blog",
+      "menu": "Menu",
+      "doska": "Board",
+      "jurnal": "Gradebook",
+      "baholash": "Assessment",
+      "enterCode": "Enter code",
+      "enterCodeShort": "Code"
+    },
+    "legal": {
+      "terms": "Terms of use",
+      "privacy": "Privacy policy"
+    },
+    "social": {
+      "telegram": "Telegram"
+    },
+    "hero": {
+      "badge": "New: interactive presentations and live lessons",
+      "titleLine1": "Plan, teach and assess your lessons — Ustozona",
+      "titleHighlight": "handles the rest",
+      "subtitle": "Upload your scheme of work — topics are laid out across your lessons day by day. In class you run presentations and quizzes: on phones, QR cards or paper. Results go into the gradebook — you see right away who needs help.",
+      "taskPrompt": "What are you doing in class today?",
+      "tasks": [
+        {
+          "label": "Set a timer",
+          "hint": "No sign-up needed"
+        },
+        {
+          "label": "Calm the class",
+          "hint": "With the traffic light"
+        },
+        {
+          "label": "Run a quiz",
+          "hint": "Phone, QR card or paper"
+        },
+        {
+          "label": "Show a presentation",
+          "hint": "Slides and live questions"
+        },
+        {
+          "label": "Take attendance",
+          "hint": "Whole class in one click"
+        },
+        {
+          "label": "Plan a lesson",
+          "hint": "With the AI assistant"
+        }
+      ],
+      "roleTeacher": "Teacher",
+      "roleStudent": "Student"
+    },
+    "pricing": {
+      "badge": "Pricing",
+      "heading": "Free for teachers",
+      "desc": "Everything you need to prepare, teach and assess lessons is free for teachers. We will announce paid plans openly and in advance.",
+      "plans": [
+        {
+          "name": "For schools",
+          "status": "Coming soon",
+          "descp": "Extra tools for school administration and parents.",
+          "price": "Coming soon",
+          "cta": "Get notified",
+          "features": [
+            "Admin dashboard",
+            "School-wide reports",
+            "Telegram mini app for parents"
+          ]
+        },
+        {
+          "name": "For teachers",
+          "status": "Available",
+          "descp": "Enough for all three stages of a lesson. No bank card required.",
+          "price": "0 soʻm",
+          "cta": "Sign up",
+          "features": [
+            "Electronic gradebook and 10+ grading scales",
+            "Attendance and automatic behaviour points",
+            "Import your scheme of work from Excel",
+            "AI assistant (with a daily limit)",
+            "Online quizzes, paper test scanner, QR cards",
+            "Board and interactive presentations",
+            "Work together with colleagues",
+            "Unlimited classes and students"
+          ]
+        },
+        {
+          "name": "Pro",
+          "status": "Coming soon",
+          "descp": "For teachers with many classes and lessons.",
+          "price": "Coming soon",
+          "cta": "Join the waitlist",
+          "features": [
+            "Higher AI limit",
+            "Advanced mastery reports",
+            "Priority support"
+          ]
+        }
+      ]
+    },
+    "cta": {
+      "headingLine1": "Your next lesson in Ustozona:",
+      "headingLine2": "prepare it, teach it, assess it",
+      "desc": "Sign in with Google or Telegram in one click. Add your class, upload your scheme of work — and you are ready for tomorrow's lesson.",
+      "ctaLabel": "Sign up for free",
+      "trust": "Free · No card needed · 7 languages"
+    },
+    "faq": {
+      "heading": "Got questions? We have answers",
+      "items": [
+        {
+          "question": "Does this replace the official e-gradebook?",
+          "answer": "No. Ustozona is your personal work tool. You prepare term grades, attendance and behaviour reports here, then copy the finished numbers into the official system. No more calculator work."
+        },
+        {
+          "question": "Does it work on a phone?",
+          "answer": "The teacher panel is designed for computers and laptops. Students join quizzes and presentations from their own phones, and you check paper tests with your phone camera. Nothing to install — everything runs in the browser."
+        },
+        {
+          "question": "How do I run a quiz if students have no phones?",
+          "answer": "There are three ways. QR cards: each student turns their card to show an answer and you scan the class with your phone camera. Paper test: print the answer sheets and check them with the camera. Or split the class into teams in a presentation and award points on the board."
+        },
+        {
+          "question": "I already have slides — can I use them?",
+          "answer": "Yes. Import your PowerPoint (PPTX) or PDF file and add quizzes, polls and word clouds between the slides. In class you start a live session from the Board — students join with a QR code or PIN. Especially handy for open lessons."
+        },
+        {
+          "question": "Do I have to re-enter my scheme of work by hand?",
+          "answer": "No. Upload your scheme of work from an Excel file or paste the list of topics. Lessons are created at once and laid out day by day according to your timetable, skipping holidays."
+        },
+        {
+          "question": "Do I need to sign up to use the Board?",
+          "answer": "No. Tools like the timer, traffic light and clock work right away without signing up. Presentations, quizzes and saved results need an account — they connect to your gradebook."
+        },
+        {
+          "question": "I grade on a 100-point scale — will it work for me?",
+          "answer": "Of course. There are more than 10 grading scales: 5-point, 100-point, percentage, letter grades and more. Pick yours and set the category weights once."
+        },
+        {
+          "question": "Is it really all free?",
+          "answer": "Yes, it is free for teachers: no bank card is asked, and there is no limit on classes or students. Later there will be paid plans for schools and with extended features — we will announce them openly and in advance."
+        },
+        {
+          "question": "How do I learn to use the system?",
+          "answer": "The first time you sign in, an interactive guide walks you through step by step. The help center has articles for every section. Post your suggestions on the feedback board — other teachers vote and the team reviews them."
+        }
+      ],
+      "subtitle": "The questions teachers ask most.",
+      "contactPrompt": "Didn't find your answer?",
+      "contactCta": "Message us on Telegram"
+    },
+    "footer": {
+      "tagline": "A teacher's work before, during and after the lesson — in one place.",
+      "pagesTitle": "Pages",
+      "productsTitle": "Products",
+      "moreInfoTitle": "More information",
+      "contactTitle": "Get in touch",
+      "contactNote": "For questions and suggestions, write to us on Telegram.",
+      "telegramAria": "Our Telegram channel",
+      "copyright": "© {year} Ustozona. All rights reserved."
+    },
+    "products": {
+      "badge": "Products",
+      "heading": "For every stage of the lesson",
+      "desc": "Everything is connected. Four work today; the parent app and the admin panel are on the way.",
+      "mainTitle": "Ustozona",
+      "mainStatus": "Available",
+      "mainDesc": "Teacher panel: gradebook, attendance, behaviour, timetable, scheme of work and AI lesson planning.",
+      "mainCta": "See features",
+      "detailCta": "Learn more",
+      "statusLive": "Available",
+      "statusSoon": "Coming soon",
+      "taglines": {
+        "blog": "Articles written by teachers: experience, methods, lesson ideas. You can write too.",
+        "baholash": "Online quizzes, a paper test scanner and QR cards — results go into the gradebook.",
+        "doska": "Classroom screen: timer, traffic light and live presentations. The timer and traffic light work even without signing in.",
+        "shogird": "Telegram app for parents: their child's grades, attendance and behaviour.",
+        "boshqaruv": "A panel for school administration and school-wide reports."
+      }
+    },
+    "cookie": {
+      "text": "We use cookies to improve your experience on the site. By continuing, you agree to this.",
+      "reject": "Decline",
+      "accept": "Accept"
+    },
+    "what": {
+      "heading": "What's inside Ustozona?",
+      "tabs": [
+        {
+          "label": "Gradebook",
+          "question": "Do you find out too late which student is falling behind?",
+          "summary": "Gradebook, attendance, behaviour, timetable and lesson plans — your daily work in one place.",
+          "cta": "Try the gradebook",
+          "facts": [
+            {
+              "lead": "“Needs attention” list",
+              "text": "the home page shows who needs help based on attendance, behaviour and falling grades."
+            },
+            {
+              "lead": "Attendance in one click",
+              "text": "if the whole class is present, click the date column once."
+            },
+            {
+              "lead": "Scheme of work from Excel or Word",
+              "text": "topics are laid out day by day according to the timetable, skipping holidays."
+            },
+            {
+              "lead": "AI lesson plan",
+              "text": "builds exercises and quiz questions to fit the lesson length. Student names are never sent to the AI."
+            }
+          ]
+        },
+        {
+          "label": "Assessment",
+          "question": "Still checking test sheets by hand?",
+          "summary": "Whichever way you run it, results go into one gradebook — and you decide which test counts towards the grade.",
+          "cta": "About Assessment",
+          "facts": [
+            {
+              "lead": "Live quiz",
+              "text": "students join from their own phones with a PIN or QR code."
+            },
+            {
+              "lead": "Classroom without phones",
+              "text": "students hold up QR cards and the camera reads every answer at once."
+            },
+            {
+              "lead": "Paper test",
+              "text": "print the answer sheets and check them with your phone camera."
+            },
+            {
+              "lead": "Homework",
+              "text": "with a deadline; students see their result after every question."
+            }
+          ]
+        },
+        {
+          "label": "Presentation",
+          "question": "Are students getting bored in class?",
+          "summary": "Showing slides and checking understanding — in one presentation.",
+          "cta": "About presentations",
+          "facts": [
+            {
+              "lead": "From PowerPoint and PDF",
+              "text": "no need to rebuild your existing slides."
+            },
+            {
+              "lead": "Questions between slides",
+              "text": "quiz, poll, word cloud or open answer."
+            },
+            {
+              "lead": "Live session",
+              "text": "students join from their phones with a QR code or PIN."
+            },
+            {
+              "lead": "Opens on the Board",
+              "text": "the presentation sits on the classroom screen next to the timer and traffic light."
+            }
+          ]
+        },
+        {
+          "label": "Board",
+          "question": "Hard to keep the class in order?",
+          "summary": "Built for projectors and large screens — readable from the back of the room.",
+          "cta": "Open the Board",
+          "facts": [
+            {
+              "lead": "Timer and clock",
+              "text": "the whole class sees the exercise time on the big screen."
+            },
+            {
+              "lead": "Traffic light",
+              "text": "“work quietly”, “whisper”, “talk freely” — no need to repeat the rules each time."
+            },
+            {
+              "lead": "Text and sticky notes",
+              "text": "write the task and reminders on the board."
+            },
+            {
+              "lead": "No sign-up",
+              "text": "the timer, traffic light and clock open instantly."
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "StandardTagPicker": {
+    "label": "Standards measured",
+    "add": "Standard",
+    "searchPlaceholder": "Search by code or text…",
+    "empty": "Nothing found",
+    "noDomain": "No content area",
+    "remove": "Remove {code}",
+    "orphanHint": "This standard was removed from its set",
+    "hint": "Results from this assignment count as evidence for these standards."
+  },
+  "StudentStandards": {
+    "title": "Standards mastery",
+    "radarHint": "Overview by content area",
+    "notAssessed": "Not assessed",
+    "needMore": "{have} evidence points, at least {need} needed",
+    "evidence": "{count} evidence points"
+  },
+  "StandardsGap": {
+    "title": "Gap report",
+    "subtitle": "Mismatch between lesson plan and assessment.",
+    "problemCount": "{count} need attention",
+    "draftRestored": "Unfinished draft restored — the standard was not attached.",
+    "attach": "Assignment",
+    "status": {
+      "untested": "Taught but never measured",
+      "untaught": "Measured but never taught"
+    },
+    "hint": {
+      "untested": "You covered these in lessons, but no assignment measures them — there is no evidence of mastery.",
+      "untaught": "These are measured by assignments, but no lesson is marked as having covered them."
+    }
+  },
+  "IshRejaImport": {
+    "title": "New lesson",
+    "classesLabel": "Link to classes",
+    "colTopic": "Topic",
+    "topicPlaceholder": "Topic name",
+    "deleteRow": "Delete row",
+    "back": "Back",
+    "next": "Next",
+    "confirm": "Add {count} lessons",
+    "savedToast": "{count} lessons added",
+    "step": {
+      "topics": "Enter topics for «{unit}» or upload a file.",
+      "schedule": "Lessons are queued into the next free periods of the timetable.",
+      "choice": "How would you like to add lessons to «{unit}»?"
+    },
+    "pastePlaceholder": "1. Adding, editing and moving text\n2. Changing font type, size and color\n3. Adding images and borders to a document",
+    "pasteHint": "One topic per line. Term separators and numbering are handled automatically.",
+    "cancel": "Cancel",
+    "scheduleFrom": "From {date}",
+    "schedulePickDate": "Pick a date",
+    "presetNext": "Next lesson",
+    "presetFirst": "First lesson",
+    "noSlot": "No slot",
+    "presetFree": "First free lesson",
+    "listLabel": "{count} topics",
+    "listEmpty": "Paste a topic list or upload a file on the left — reorder it here",
+    "choice": {
+      "singleTitle": "Single lesson",
+      "singleDescription": "Create the lesson in the editor.",
+      "pasteTitle": "Paste",
+      "pasteDescription": "Paste a topic list from Word/Excel.",
+      "fileTitle": "Upload Excel",
+      "fileDescription": "Upload a work plan file (.xlsx, .xls)."
+    },
+    "undo": "Undo",
+    "undoneToast": "Import undone",
+    "duplicateBadge": "Exists",
+    "templateExample1": "Getting to know the computer",
+    "templateExample2": "Text editor",
+    "templateExample3": "Test",
+    "statLessons": "Lessons",
+    "statStart": "Starts",
+    "statEnd": "Ends",
+    "statFit": "School year",
+    "statFits": "Fits",
+    "statMissing": "{count} don't fit",
+    "timelineNew": "{unit} · {count} lessons",
+    "queueStart": "Queue starts:",
+    "queueHintFree": "Continues where previous units end; holidays and taken periods are skipped.",
+    "queueHintDate": "Free periods from this day; taken periods are skipped.",
+    "showDates": "Show each lesson date ({count})",
+    "saveUndated": "Save without dates"
+  },
+  "UnitImport": {
+    "title": "New unit",
+    "cancel": "Cancel",
+    "confirm": "Create {count} units",
+    "savedToast": "{count} units created",
+    "classesLabel": "Link to classes",
+    "classesPlaceholder": "Select a class…",
+    "namePlaceholder": "Unit name",
+    "deleteRow": "Delete row",
+    "listLabel": "{count} units",
+    "description": "Type, paste or upload unit names from Excel.",
+    "sourcePaste": "Paste",
+    "pastePlaceholder": "Introduction to algebra\nLinear equations\nQuadratic equations",
+    "pasteHint": "One unit per line. Numbering and duplicates are removed automatically.",
+    "listEmpty": "Type unit names or upload a file on the left — reorder them here",
+    "choiceDescription": "How would you like to add units?",
+    "back": "Back",
+    "choice": {
+      "singleTitle": "Single unit",
+      "singleDescription": "Enter name, classes and description manually.",
+      "pasteTitle": "Paste",
+      "pasteDescription": "Paste a list from Word/Excel.",
+      "fileTitle": "Upload Excel",
+      "fileDescription": "Upload an .xlsx or .xls file."
+    },
+    "undo": "Undo",
+    "undoneToast": "Import undone",
+    "duplicateBadge": "Exists"
+  },
+  "ImportSource": {
+    "emaktabSheet": "eMaktab: {info}",
+    "emaktabDetected": "eMaktab export recognised — {count} topics (header rows skipped)",
+    "errorEmpty": "No data found in the file",
+    "errorRead": "Couldn't read the file. Choose .xlsx, .xls or .csv.",
+    "dropTitle": "Choose a file or drop it here",
+    "replaceFile": "Replace",
+    "dropHint": {
+      "topics": "Excel or CSV — work plan file",
+      "units": "Excel or CSV — list of units"
+    },
+    "pasteLabel": {
+      "topics": "Topic list",
+      "units": "Unit list"
+    },
+    "sheet": "Sheet",
+    "template": "Download sample file",
+    "templateFile": {
+      "topics": "work-plan-sample.xlsx",
+      "units": "units-sample.xlsx"
+    },
+    "templateName": {
+      "topics": "Topic",
+      "units": "Unit name"
+    },
+    "templateHours": "Hours",
+    "skipped": "{count} rows skipped",
+    "rowReason": "Row {row} · {reason}",
+    "reason": {
+      "separator": "term separator",
+      "total": "total row",
+      "number": "number only"
+    },
+    "restore": "Add",
+    "expanded": "{count} topics repeated by hours",
+    "duplicates": {
+      "topics": "{count} topics already in the unit — skipped",
+      "units": "{count} units already exist — skipped"
+    },
+    "duplicatesSkip": {
+      "topics": "{count} topics already in the unit — skip them",
+      "units": "{count} units already exist — skip them"
+    },
+    "mapped": {
+      "topics": "Topics taken from the «{name}» column.",
+      "units": "Units taken from the «{name}» column."
+    },
+    "mappedWithHours": "Topics taken from «{name}», hours from «{hours}».",
+    "showTable": "Not right? Show in table",
+    "tableTitle": "Assign columns",
+    "closeTable": "Close",
+    "setHeader": "Use this row as header",
+    "role": {
+      "topics": "Topic",
+      "units": "Unit name",
+      "hours": "Hours",
+      "none": "Not used"
+    },
+    "tableHelp": "Click a column name to mark it as «Topic» or «Hours». Click a row number to use that row as the header. Struck-through rows are skipped.",
+    "expandHoursShort": "2+ hours → a lesson per hour"
+  },
+  "LessonCycle": {
+    "planReady": "Lesson plan",
+    "taught": "Taught",
+    "pillNone": "No lesson plan",
+    "pillDraft": "In progress",
+    "markPlanButton": "Mark plan as ready",
+    "planReadyShort": "Planned",
+    "askPlanReady": "Is the lesson plan ready?",
+    "askPlanReadyDesc": "There's text, but it isn't marked ready.",
+    "yesReady": "Yes, ready",
+    "later": "Later",
+    "planStateReady": "Lesson plan ready",
+    "planStateDraft": "Lesson plan — in progress",
+    "planStateNone": "No lesson plan yet",
+    "standardsChip": "Standards: {count}",
+    "materialsChip": "Materials: {count}",
+    "markPlanReady": "Lesson plan ready",
+    "unmarkPlanReady": "Plan not ready",
+    "markTaught": "Mark as taught",
+    "unmarkTaught": "Mark as not taught",
+    "section": "Lesson status",
+    "planReadyLabel": "Lesson plan ready",
+    "taughtLabel": "Lesson taught",
+    "askTaught": "Taught?",
+    "statusSection": "Status",
+    "taughtByClass": "Taught in classes",
+    "askTaughtBanner": "The lesson time has passed. Was it taught?",
+    "yesTaught": "Yes, taught",
+    "bumpNext": "Move to next lesson",
+    "bump": "Push to next lesson",
+    "bumpedToast": "{count} topics pushed by one lesson",
+    "bumpNoSlot": "No free slot for the last topic — it's now undated",
+    "bumpNothing": "This topic isn't scheduled — nothing to push",
+    "undo": "Undo"
+  },
+  "Doska": {
+    "widgets": {
+      "clock": "Clock",
+      "timer": "Timer",
+      "trafficLight": "Stoplight",
+      "text": "Text",
+      "stickyNote": "Note",
+      "shape": "Shape",
+      "presentation": "Slides",
+      "wheel": "Wheel"
+    },
+    "toolbar": {
+      "duplicate": "{widget} — duplicate",
+      "remove": "{widget} — delete",
+      "duplicateShort": "Duplicate",
+      "removeShort": "Delete",
+      "settings": "{widget} — settings",
+      "settingsShort": "Settings",
+      "lock": "{widget} — lock",
+      "lockShort": "Lock",
+      "unlock": "{widget} — unlock",
+      "unlockShort": "Unlock",
+      "spotlight": "{widget} — spotlight",
+      "spotlightShort": "Spotlight"
+    },
+    "bar": {
+      "clear": "Clear",
+      "background": "Backdrop",
+      "home": "Ustozona home",
+      "fullscreen": "Full screen",
+      "showControls": "Show controls",
+      "hideControls": "Hide controls",
+      "prevScreen": "Previous screen",
+      "nextScreen": "Next screen",
+      "addScreen": "Add screen",
+      "undo": "Undo",
+      "redo": "Redo",
+      "screenNumber": "Screen {n}",
+      "menu": "Menu",
+      "proFeature": "Paid feature"
+    },
+    "guestNote": {
+      "text": "This screen is saved in this browser. <link>Sign in</link> to connect your class list.",
+      "dismiss": "Dismiss note"
+    },
+    "notice": {
+      "widgetRemoved": "{widget} deleted",
+      "screenCleared": "Screen cleared",
+      "screenRemoved": "Screen deleted",
+      "undo": "Undo",
+      "inkCleared": "Ink cleared",
+      "saveFailed": "The screen is not being saved.",
+      "saveFailedHint": "Browser storage is full — clear the ink or delete a screen you no longer need."
+    },
+    "settings": {
+      "title": "{widget} settings",
+      "close": "Close",
+      "instant": "Changes apply right away · Esc to close"
+    },
+    "timer": {
+      "start": "Start",
+      "pause": "Pause",
+      "reset": "Reset",
+      "addMinute": "Add a minute",
+      "finished": "Time’s up",
+      "time": "Time",
+      "minutes": "{n} min",
+      "less": "Less",
+      "more": "More",
+      "view": "Display",
+      "viewDigits": "Digits",
+      "viewDisk": "Disk",
+      "viewBoth": "Both",
+      "whenDone": "When time is up",
+      "sound": "Play a sound"
+    },
+    "trafficLight": {
+      "red": "Silent",
+      "amber": "Whisper",
+      "green": "Talk",
+      "labelSection": "Label",
+      "showLabel": "Show the state in words"
+    },
+    "clock": {
+      "view": "Display",
+      "showSeconds": "Show seconds"
+    },
+    "shapeSettings": {
+      "shape": "Shape",
+      "view": "Display",
+      "labels": "Letters at the corners (A, B, C)"
+    },
+    "spotlight": {
+      "exit": "Shrink"
+    },
+    "curtain": {
+      "title": "Attention!",
+      "hint": "Tap anywhere to continue"
+    },
+    "menu": {
+      "deckName": "Screen name",
+      "unsaved": "Not saved",
+      "localOnly": "{n, plural, one {# screen} other {# screens}} · this browser only",
+      "curtain": "Cover the screen",
+      "bell": "Ring the bell",
+      "newScreen": "New screen",
+      "connectClass": "Connect class list",
+      "clearScreen": "Clear screen",
+      "removeScreen": "Delete this screen",
+      "removeScreenLocked": "This screen has a locked widget — unlock it first",
+      "promoTitle": "Keep your work",
+      "promoBody": "Your screens are saved to your account, your class list connects, and the student you call on is recorded in the gradebook.",
+      "promoCta": "See the features",
+      "appearance": "Appearance",
+      "saveImage": "Save as image",
+      "savingImage": "Preparing…",
+      "saveImageFailed": "Couldn't save the image — try again"
+    },
+    "catalog": {
+      "open": "All",
+      "title": "All tools",
+      "hint": "Tap a tool to place it on the screen. The pin keeps it on the panel.",
+      "full": "The panel is full ({max}). Unpin one to add another.",
+      "pin": "Pin {tool} to the panel",
+      "unpin": "Unpin {tool} from the panel",
+      "categories": {
+        "time": "Time",
+        "class": "Class",
+        "writing": "Writing",
+        "media": "Media"
+      },
+      "descriptions": {
+        "clock": "Current time",
+        "timer": "Countdown with sound",
+        "trafficLight": "Noise level",
+        "text": "Heading or task",
+        "stickyNote": "Colored note",
+        "shape": "Geometric shapes",
+        "presentation": "Questions and answers",
+        "wheel": "Pick a random name"
+      }
+    },
+    "appearance": {
+      "title": "Appearance",
+      "back": "Back",
+      "style": "Style",
+      "styles": {
+        "sokin": {
+          "name": "Calm",
+          "note": "Clean and clear — reads well on a projector"
+        },
+        "oyinchoq": {
+          "name": "Playful",
+          "note": "Bright and fun — for younger classes"
+        },
+        "doska": {
+          "name": "Board",
+          "note": "Paper and magnets — suits a green board"
+        }
+      },
+      "dock": "Panel position",
+      "dockLeft": "Left",
+      "dockBottom": "Bottom",
+      "dockRight": "Right"
+    },
+    "backgrounds": {
+      "chalkboard-green": "Green chalkboard",
+      "chalkboard-black": "Blackboard",
+      "whiteboard": "Whiteboard",
+      "grid-paper": "Grid paper",
+      "dot-paper": "Dot paper",
+      "notebook": "Notebook page",
+      "husnixat": "Handwriting practice",
+      "dusk": "Dusk",
+      "shakllar": "Colorful shapes"
+    },
+    "shapes": {
+      "triangle": "Triangle",
+      "right-triangle": "Right triangle",
+      "rectangle": "Rectangle",
+      "parallelogram": "Parallelogram",
+      "trapezoid": "Trapezoid",
+      "rhombus": "Rhombus",
+      "circle": "Circle",
+      "pentagon": "Pentagon",
+      "hexagon": "Hexagon"
+    },
+    "wheel": {
+      "spin": "Spin the wheel",
+      "hint": "Click to spin",
+      "editList": "Edit list",
+      "backToWheel": "Back to wheel",
+      "soundOn": "Mute",
+      "soundOff": "Unmute",
+      "counter": "{asked} / {total}",
+      "counterLabel": "{asked} of {total} picked",
+      "again": "Again",
+      "later": "Later",
+      "close": "Close",
+      "roundDone": "Everyone’s had a turn!",
+      "roundDoneHint": "All {total} names came up once.",
+      "newRound": "New round",
+      "listTitle": "Names",
+      "listHint": "One name per line",
+      "samplesHint": "Sample names are spinning now. Type your own list.",
+      "mode": "Picking",
+      "modeOnce": "Everyone once",
+      "modeOnceHint": "A picked student leaves the wheel. When everyone has had a turn, a new round begins.",
+      "modeRepeat": "Allow repeats",
+      "modeRepeatHint": "A picked student stays on the wheel and can come up again.",
+      "asked": "Picked",
+      "returnToPool": "Put {name} back on the wheel",
+      "resetRound": "Put everyone back",
+      "sound": "Sound",
+      "speed": "Speed",
+      "speedShort": "Fast",
+      "speedMedium": "Medium",
+      "speedLong": "Slow",
+      "sampleNames": [
+        "Ali",
+        "Emma",
+        "Liam",
+        "Sofia",
+        "Noah",
+        "Mia",
+        "Omar",
+        "Zara"
+      ],
+      "tooMany": "The wheel holds up to {max} names — the rest won’t appear.",
+      "connectClass": "Use class list",
+      "connectGuest": "Sign in to connect your class list from the gradebook.",
+      "login": "Sign in",
+      "connectFree": "Taking the class list from the gradebook is a Pro feature.",
+      "aboutPro": "About Pro",
+      "chooseClass": "Which class?",
+      "noClasses": "You don’t have any classes yet.",
+      "loading": "Loading…",
+      "loadFailed": "Couldn’t load the list.",
+      "fromClass": "{className} list",
+      "disconnect": "Disconnect",
+      "absentToggle": "{name} — absent today",
+      "absentHint": "Tap a student who is absent today — they won’t appear on the wheel.",
+      "suggestConnect": "If your class is in the gradebook, you don’t need to type names by hand.",
+      "rosterUnavailable": "The class list is available only on Pro, when you’re signed in.",
+      "rosterLocked": "List locked",
+      "rosterFailed": "List didn’t load",
+      "retry": "Try again"
+    },
+    "ink": {
+      "toolbar": "Ink tools",
+      "pen": "Pen",
+      "marker": "Marker",
+      "eraser": "Eraser",
+      "select": "Select",
+      "clear": "Clear",
+      "clearLabel": "Clear all ink",
+      "color": "Color",
+      "size": "Thickness",
+      "sizes": {
+        "thin": "Thin",
+        "medium": "Medium",
+        "thick": "Thick"
+      },
+      "colors": {
+        "autoLight": "Black",
+        "autoDark": "White",
+        "red": "Red",
+        "blue": "Blue",
+        "green": "Green",
+        "orange": "Orange",
+        "violet": "Violet",
+        "yellow": "Yellow",
+        "pink": "Pink"
+      },
+      "penOnly": "Pen only",
+      "laser": "Laser",
+      "erasePartial": "Partial",
+      "lasso": "Lasso",
+      "ruler": "Ruler",
+      "protractor": "Protractor",
+      "rotate": "Rotate",
+      "hideGuide": "Hide: {guide}",
+      "deleteSelection": "Delete"
+    }
   }
 }

@@ -4,7 +4,8 @@ import { useMemo, useState, useCallback } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { BookOpen, ArrowLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, ChevronRight } from "lucide-react";
+import { classIcon } from "@/lib/class-icons";
 import { Card } from "@/components/ui/card";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -18,6 +19,8 @@ import { useMounted } from "@/lib/use-mounted";
 import { type ClassIdentity } from "@/lib/class-id";
 import { cn } from "@/lib/utils";
 import { OverviewSection } from "./OverviewSection";
+import { ClassTeachersCard } from "@/components/classes/ClassTeachersCard";
+import { ClassParentCard } from "@/components/classes/ClassParentCard";
 import { OverviewSidebar } from "./OverviewSidebar";
 import { LessonsSection } from "./LessonsSection";
 import { StudentsSection } from "./StudentsSection";
@@ -43,6 +46,7 @@ export default function ClassDetail({ identity, initialSection }: Props) {
 
   const hex = CLASS_COLOR_HEX[identity.color];
   const tints = useMemo(() => classTints(identity.color), [identity.color]);
+  const ClassIcon = classIcon(identity.icon);
 
   /* ── Jonli statistika — Darslar (useLessonStore) va Baholar (useGradesStore)
      bilan bir manbadan. Mount'gacha nol — SSR/hydratsiya mosligi uchun. ── */
@@ -112,7 +116,7 @@ export default function ClassDetail({ identity, initialSection }: Props) {
           <div className="shrink-0 border-b border-border px-5 py-4">
             <div className="flex items-center gap-3">
               <div className="size-11 rounded-xl shrink-0 flex items-center justify-center" style={tints.iconBg}>
-                <BookOpen className="size-5" style={tints.iconText} />
+                <ClassIcon className="size-5" style={tints.iconText} />
               </div>
               <div className="min-w-0">
                 <h2 className="text-base font-bold text-foreground leading-tight truncate">{identity.name}</h2>
@@ -124,18 +128,18 @@ export default function ClassDetail({ identity, initialSection }: Props) {
             <div className="flex items-center gap-8 mt-5 px-1 mb-2">
               <div>
                 <p className="text-2xl font-bold leading-none tabular-nums text-foreground">{stats.students}</p>
-                <p className="text-[11px] text-muted-foreground mt-1.5 uppercase tracking-wider font-semibold">{t("studentsUnit")}</p>
+                <p className="text-label text-muted-foreground mt-1.5 uppercase tracking-wider font-semibold">{t("studentsUnit")}</p>
               </div>
               <div>
                 <p className="text-2xl font-bold leading-none tabular-nums text-foreground">{stats.lessons}</p>
-                <p className="text-[11px] text-muted-foreground mt-1.5 uppercase tracking-wider font-semibold">{t("lessonsUnit")}</p>
+                <p className="text-label text-muted-foreground mt-1.5 uppercase tracking-wider font-semibold">{t("lessonsUnit")}</p>
               </div>
             </div>
 
             {/* Progress */}
             <div className="mt-5 space-y-2 px-1">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground font-medium uppercase tracking-wider text-[10px]">{t("masteredLabel")}</span>
+                <span className="text-muted-foreground font-medium uppercase tracking-wider text-micro">{t("masteredLabel")}</span>
                 <span className="font-bold tabular-nums text-foreground">{stats.progress}%</span>
               </div>
               <div className="h-1.5 bg-muted rounded-full overflow-hidden">
@@ -167,7 +171,7 @@ export default function ClassDetail({ identity, initialSection }: Props) {
                     <div className="min-w-0 flex-1">
                       <p
                         className={cn(
-                          "text-[13px] font-medium leading-tight truncate transition-colors",
+                          "text-sm font-medium leading-tight truncate transition-colors",
                           isActive ? "text-foreground" : "text-foreground/70 group-hover:text-foreground"
                         )}
                       >
@@ -221,7 +225,18 @@ export default function ClassDetail({ identity, initialSection }: Props) {
 
         <div className="min-h-0 flex-1">
         {section === "overview" ? (
-          <OverviewSection identity={identity} />
+          /* ⭐ «Kim dars beradi» va «Maʼmuriy sinf» ATAYLAB shu yerda —
+             oʻng yon ustunda EMAS. Ustun `hidden xl:flex` bilan yopiq:
+             1280px dan tor ekranda (noutbuk, yonma-yon ochilgan ikki
+             oyna) panellar butunlay yoʻqolardi va oʻqituvchi hamkasbini
+             darsga biriktira olmasdi. Bular sinfning asosiy maʼlumoti,
+             kontekstli vidjet emas — oʻng ustunda kalendar va eslatma
+             qoladi, ular haqiqatan yordamchi. */
+          <div className="flex h-full min-h-0 flex-col gap-6">
+            <OverviewSection identity={identity} />
+            <ClassTeachersCard classId={identity.id} />
+            <ClassParentCard classId={identity.id} />
+          </div>
         ) : section === "lessons" ? (
           <LessonsSection identity={identity} />
         ) : section === "students" ? (

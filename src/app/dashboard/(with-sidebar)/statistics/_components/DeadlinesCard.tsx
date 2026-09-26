@@ -11,7 +11,7 @@ export function DeadlinesCard({ deadlines }: { deadlines: UpcomingDeadline[] }) 
     <div>
       <div className="space-y-2">
         {deadlines.map((d) => (
-          <div key={d.assignmentId} className="flex items-center gap-2.5 text-sm">
+          <div key={d.assignmentId} className="flex items-center gap-2 text-sm">
             <CalendarClock className="size-3.5 text-muted-foreground shrink-0" />
             <span className="truncate flex-1 text-foreground/90">{d.title}</span>
             {d.topicName && <TypographyMuted className="text-xs shrink-0">{d.topicName}</TypographyMuted>}

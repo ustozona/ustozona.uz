@@ -38,6 +38,48 @@ export const MONTHS_UZ_SHORT: readonly string[] = [
 ];
 
 /**
+ * Toʻliq sana: "2026-yil 29-avgust".
+ *
+ * Oʻzbek tilidagi rasmiy tartib — yil oldinda, keyin kun va oy. Nashr
+ * sanasi kabi bir marta oʻqiladigan, aniqlik talab qiladigan joylar uchun
+ * (`toLocaleDateString("uz-UZ")` "29/08/2026" beradi — bu qaysi raqam kun,
+ * qaysi biri oy ekanini oʻquvchiga topishtirib qoʻyadi).
+ *
+ * Roʻyxatlarda esa `timeAgoUz` afzal — u yerda "qaysi biri yangiroq"
+ * degan savol muhim, aniq sana emas.
+ */
+export function formatFullDateUz(value: Date | string): string {
+  const d = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(d.getTime())) return "";
+  return `${d.getFullYear()}-yil ${d.getDate()}-${MONTHS_UZ[d.getMonth()].toLowerCase()}`;
+}
+
+/**
+ * Nisbiy vaqt: "hozir / 5 daq oldin / 3 soat oldin / 2 kun oldin / 12 avg".
+ *
+ * Nega nisbiy: takrorlanuvchi aniq sanalar (`2026-08-11` yetti marta)
+ * koʻzga ilashmaydi — roʻyxatda «qaysi biri yangiroq» degan savol
+ * muhim, aniq sana emas. Bir haftadan oshgach aniq kunga oʻtiladi,
+ * chunki «47 kun oldin» ni odam baribir sanaga aylantirib oʻylaydi.
+ * Aniq sanani chaqiruvchi `title` (tooltip) da koʻrsatsin.
+ *
+ * ⚠️ Bu funksiya `NotificationsBell` dagi mahalliy nusxadan koʻchirildi —
+ * u yerda `MONTHS_SHORT` ham qaytadan yozilgan edi. Yagona manba shu yer.
+ */
+export function timeAgoUz(value: Date | string): string {
+  const d = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(d.getTime())) return "";
+  const min = Math.floor((Date.now() - d.getTime()) / 60_000);
+  if (min < 1) return "hozir";
+  if (min < 60) return `${min} daq oldin`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr} soat oldin`;
+  const day = Math.floor(hr / 24);
+  if (day < 7) return `${day} kun oldin`;
+  return `${d.getDate()} ${MONTHS_UZ_SHORT[d.getMonth()]}`;
+}
+
+/**
  * `yyyy-mm-dd` → "Dushanba, 14-sentabr" — hafta kuni bilan.
  * Muddat/sana maydonlarida ishlatiladi: oʻqituvchi kunni sana emas, hafta
  * kuni boʻyicha eslaydi ("dushanbagacha"), shuning uchun kun nomi oldinda.

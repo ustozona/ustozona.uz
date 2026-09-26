@@ -1,5 +1,3 @@
-import * as XLSX from "xlsx";
-
 import { displayClassName, parseClassName } from "@/lib/class-naming";
 
 /** Bitta tahrirlanadigan oʻquvchi qatori.
@@ -118,6 +116,9 @@ function readHeader(row: unknown[]): ColumnMap | null {
  *  0-ustun ism, 1-ustun familiya: `downloadSampleCsv()` aynan shu
  *  faylni beradi, yaʼni standart hujjatlashtirilgan. */
 export async function parseSpreadsheetFile(file: File): Promise<ParsedStudent[]> {
+  // xlsx (~400 kB) faqat jadval fayli tanlanganda yuklanadi — bu modul
+  // Oʻquvchilar sahifasining boshlangʻich paketiga kiradi.
+  const XLSX = await import("xlsx");
   const buf = await file.arrayBuffer();
   const workbook = XLSX.read(buf, { type: "array" });
   const sheet = workbook.Sheets[workbook.SheetNames[0]];

@@ -126,7 +126,7 @@ function LegendItem({ className, style, label }: { className?: string; style?: R
   return (
     <span className="flex items-center gap-1.5">
       <span className={`size-2.5 rounded-[3px] border ${className ?? ""}`} style={style} />
-      <span className="text-[11px] text-muted-foreground">{label}</span>
+      <span className="text-tag text-muted-foreground">{label}</span>
     </span>
   );
 }
@@ -142,7 +142,7 @@ function ShiftCard({ label, icon: Icon, cfg }: {
 
   return (
     <div className="space-y-4 p-5">
-      <div className="flex items-center gap-2.5">
+      <div className="flex items-center gap-3">
         <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted">
           <Icon className="size-4 text-muted-foreground" />
         </div>
@@ -215,7 +215,7 @@ function ShiftAgenda({ cfg, slots, endMin }: {
                 backgroundColor: SKY.badge.backgroundColor,
               }}
             >
-              <span className="text-[13px] font-medium" style={SKY.textStrong}>
+              <span className="text-sm font-medium" style={SKY.textStrong}>
                 {t("lessonHourLabel", { index: s.index })}
               </span>
               <span className="text-xs opacity-80" style={SKY.textStrong}>

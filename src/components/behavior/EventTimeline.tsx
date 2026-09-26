@@ -52,7 +52,7 @@ function AutoChip({ source }: { source: string }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <span className="ml-1.5 inline-flex shrink-0 items-center rounded-full border border-border bg-muted/60 px-1.5 py-px align-middle text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+        <span className="ml-1.5 inline-flex shrink-0 items-center rounded-full border border-border bg-muted/60 px-1.5 py-px align-middle text-micro font-medium uppercase tracking-wide text-muted-foreground">
           {t("autoBadge")}
         </span>
       </TooltipTrigger>
@@ -155,10 +155,10 @@ function StudentHoverBody({ info, classHex }: { info: StudentHoverInfo; classHex
       </div>
       <Separator />
       <div className="flex items-center gap-1.5">
-        <span className="rounded-full bg-success/10 px-2.5 py-1 text-xs font-semibold tabular-nums text-success">
+        <span className="rounded-full bg-success/10 px-3 py-1 text-xs font-semibold tabular-nums text-success">
           {t("hoverEarned", { count: info.earned })}
         </span>
-        <span className="rounded-full bg-destructive/10 px-2.5 py-1 text-xs font-semibold tabular-nums text-destructive">
+        <span className="rounded-full bg-destructive/10 px-3 py-1 text-xs font-semibold tabular-nums text-destructive">
           {t("hoverLost", { count: info.lost })}
         </span>
       </div>
@@ -247,7 +247,7 @@ function DeleteReasonField({
             type="button"
             onClick={() => onChange(value === r ? "" : r)}
             className={cn(
-              "rounded-full border px-2.5 py-1 text-xs transition-colors",
+              "rounded-full border px-3 py-1 text-xs transition-colors",
               value === r
                 ? "border-primary bg-primary/10 text-primary"
                 : "border-border text-muted-foreground hover:bg-muted"
@@ -362,7 +362,7 @@ export function EventTimeline({
 
   /* Bir vaqtda birga berilgan (Sinf/tanlangan guruh) eventlarni bitta
      qatorga birlashtiradi — aks holda har oʻquvchi uchun takroriy qator
-     chiqadi (ClassDojo'da uchraydigan taniqli muammo). */
+     chiqadi (koʻnikma-asosli xulq tizimlarida uchraydigan taniqli muammo). */
   type Row = { kind: "single"; event: BehaviorEvent } | { kind: "group"; key: string; events: BehaviorEvent[] };
   const toRows = (list: BehaviorEvent[]): Row[] => {
     const rows: Row[] = [];
@@ -444,7 +444,7 @@ export function EventTimeline({
                 return (
                   <div
                     key={key}
-                    className="group/row rounded-xl border border-border/60 bg-card px-3.5 py-3 shadow-sm"
+                    className="group/row rounded-xl border border-border/60 bg-card px-4 py-3 shadow-sm"
                   >
                     <div className="flex items-start gap-3">
                       <span className="relative mt-0.5 inline-flex shrink-0">
@@ -452,7 +452,7 @@ export function EventTimeline({
                         <span
                           className={cn(
                             "absolute -top-1 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full border border-card px-0.5",
-                            "text-[10px] font-bold tabular-nums leading-none",
+                            "text-micro font-bold tabular-nums leading-none",
                             positive
                               ? "bg-success text-success-foreground"
                               : "bg-destructive text-destructive-foreground"
@@ -570,13 +570,13 @@ export function EventTimeline({
               }
 
               return (
-                <div key={key} className="group flex items-center gap-3 py-2.5">
+                <div key={key} className="group flex items-center gap-3 py-3">
                   <span className="relative inline-flex shrink-0">
                     <BehaviorEmoji code={e.emoji} label={e.name} className="size-8" />
                     <span
                       className={cn(
                         "absolute -top-1 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full border border-card px-0.5",
-                        "text-[10px] font-bold tabular-nums leading-none",
+                        "text-micro font-bold tabular-nums leading-none",
                         positive
                           ? "bg-success text-success-foreground"
                           : "bg-destructive text-destructive-foreground"

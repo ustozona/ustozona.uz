@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { stageFontOf, type StageFontId } from "@/lib/stage-fonts";
+import { stageStyleOf, type StageStyleId } from "@/lib/stage-styles";
 import { useTranslations } from "next-intl";
 import { createPortal } from "react-dom";
 import { Check, Loader2, Minus, X } from "lucide-react";
@@ -21,9 +23,13 @@ import QuestionStrip from "./builder/QuestionStrip";
 import BuilderRail, { type BuilderPanel } from "./builder/BuilderRail";
 import ThemesPanel from "./builder/ThemesPanel";
 import { newQuestion, type DraftQuestion } from "./builder/types";
+import { toast } from "sonner";
+import { uploadEditorImageAction } from "@/server/actions/uploads";
+import { MAX_PDF_PAGES, pdfToImages } from "@/lib/pdf-to-images";
+import { MAX_PPTX_SLIDES, pptxToSlides } from "@/lib/pptx-to-slides";
 
 /**
- * Toʻplam builder — Kahoot uslubidagi uch ustunli muharrir: chapda
+ * Toʻplam builder — viktorina-uslub uch ustunli muharrir: chapda
  * savollar tasmasi, markazda kanvas, oʻngda xossalar paneli.
  *
  * Toʻplam bu yerda HUJJAT: savollar uning ichida yashaydi. Butun
@@ -35,6 +41,7 @@ export default function SetBuilderOverlay({
   classId,
   setId,
   initialTitle,
+  firstShape = "mcq",
   onClose,
   onSaved,
 }: {
@@ -44,6 +51,8 @@ export default function SetBuilderOverlay({
   /** Yangi toʻplam uchun boshlangʻich nom — topshiriq nomi bilan bir
       xil boʻlishi kerak (foydalanuvchi ikki marta yozmasin). */
   initialTitle?: string;
+  /** Yangi toʻplamning birinchi elementi: test savoli yoki slayd (taqdimot). */
+  firstShape?: DraftQuestion["shape"];
   onClose: () => void;
   onSaved: (set: ActivitySetRow) => void;
 }) {
@@ -58,8 +67,11 @@ export default function SetBuilderOverlay({
   const setIdRef = useRef(setId);
   const [title, setTitle] = useState(() => (setId ? "" : initialTitle ?? ""));
   const [stageTheme, setStageTheme] = useState("violet");
+  const [stageFont, setStageFont] = useState<StageFontId>(stageFontOf(null).id);
+  const [stageStyle, setStageStyle] = useState<StageStyleId>(stageStyleOf(null).id);
   const [questions, setQuestions] = useState<DraftQuestion[]>(() =>
-    setId ? [] : [newQuestion("mcq")]
+    // Taqdimot sarlavha slaydidan boshlanadi — birinchi ekran mavzu nomi.
+    setId ? [] : [firstShape === "slide" ? { ...newQuestion("slide"), slideLayout: "title" } : newQuestion(firstShape)]
   );
   const [activeKey, setActiveKey] = useState<string | null>(null);
   const [panel, setPanel] = useState<BuilderPanel>("properties");
@@ -92,9 +104,11 @@ export default function SetBuilderOverlay({
         return;
       }
       const loaded: DraftQuestion[] = draft.questions.map((q) => ({ ...q, key: crypto.randomUUID() }));
-      const config = draft.set.config as { stageTheme?: string };
+      const config = draft.set.config as { stageTheme?: string; stageFont?: string; stageStyle?: string };
       setTitle(draft.set.title);
       setStageTheme(config.stageTheme ?? "violet");
+      setStageFont(stageFontOf(config.stageFont).id);
+      setStageStyle(stageStyleOf(config.stageStyle).id);
       setQuestions(loaded.length > 0 ? loaded : [newQuestion("mcq")]);
       setLoading(false);
     });
@@ -130,6 +144,149 @@ export default function SetBuilderOverlay({
     setActiveKey(created.key);
   }
 
+  /* ── TAQDIMOT IMPORTI (docs/taqdimot-spec.md, 2-qavat) ──
+     Bitta tugma, ikki yoʻl — fayl turiga qarab:
+       • PDF  → har sahifa rasm, «Katta media» slaydi (koʻrinish aniq,
+                matn tahrirlanmaydi);
+       • PPTX → sarlavha, matn va asosiy rasm ajratilib maketga
+                joylanadi (matn tahrirlanadi, jadval/diagramma koʻchmaydi).
+     Slaydlar joriy elementdan KEYIN qoʻyiladi: oʻqituvchi sarlavha
+     slaydini tuzib, keyin tayyor taqdimotini ulaydi. Import qilingan
+     slaydlar orasiga savol qoʻshish — bizning asosiy afzalligimiz. */
+  const importInputRef = useRef<HTMLInputElement>(null);
+  const [importProgress, setImportProgress] = useState<{ done: number; total: number } | null>(null);
+
+  /** Tayyor slaydlarni joriy elementdan keyin qoʻyadi. */
+  function insertSlides(slides: DraftQuestion[]) {
+    setQuestions((prev) => {
+      // Yangi toʻplamdagi boʻsh boshlangʻich element saqlanib qolmasin.
+      const blank = (q: DraftQuestion) =>
+        !q.title.trim() && !q.stem.trim() && !q.imageUrl &&
+        !q.options.some((o) => o.text.trim()) && !q.pairs.some((p) => p.left.trim());
+      const base = prev.length === 1 && blank(prev[0]) ? [] : prev;
+      const at = base.findIndex((q) => q.key === activeKey);
+      const insertAt = at < 0 ? base.length : at + 1;
+      return [...base.slice(0, insertAt), ...slides, ...base.slice(insertAt)];
+    });
+    if (slides[0]) setActiveKey(slides[0].key);
+  }
+
+  /** Rasmlarni bir vaqtda koʻpi bilan `limit` tadan yuklaydi — ketma-ket
+      60 ta server soʻrovi maktab internetida bir daqiqadan oshardi, hammasini
+      birdan yuborish esa sust tarmoqni boʻgʻib qoʻyadi. Tartib saqlanadi. */
+  async function uploadAll(
+    dataUrls: (string | undefined)[],
+    upload: (dataUrl: string) => Promise<string>,
+    onDone: () => void,
+    limit = 4,
+  ): Promise<{ urls: (string | undefined)[]; failed: number }> {
+    const out: (string | undefined)[] = new Array(dataUrls.length);
+    let next = 0;
+    let failed = 0;
+    const worker = async () => {
+      while (next < dataUrls.length) {
+        const i = next++;
+        const src = dataUrls[i];
+        // Bitta rasm xatosi (masalan, 2 MB dan katta) butun importni
+        // bekor qilmasin — slayd rasmsiz qoladi, qolganlari saqlanadi.
+        try {
+          out[i] = src ? await upload(src) : undefined;
+        } catch {
+          out[i] = undefined;
+          if (src) failed++;
+        }
+        onDone();
+      }
+    };
+    await Promise.all(Array.from({ length: Math.min(limit, dataUrls.length) }, worker));
+    return { urls: out, failed };
+  }
+
+  async function importPresentation(file: File) {
+    const isPptx = /\.pptx$/i.test(file.name);
+    const isPdf = /\.pdf$/i.test(file.name) || file.type === "application/pdf";
+    if (!isPptx && !isPdf) {
+      toast.error("Bu fayl turi qoʻllab-quvvatlanmaydi", {
+        description: "PDF yoki PPTX yuklang. Eski .ppt faylni PowerPointda PPTX yoki PDF qilib saqlang.",
+      });
+      return;
+    }
+
+    setImportProgress({ done: 0, total: 0 });
+    let failedImages = 0;
+    let notStored = false;
+    const upload = async (dataUrl: string) => {
+      const { url, stored } = await uploadEditorImageAction(dataUrl);
+      if (!stored) notStored = true;
+      return url;
+    };
+
+    try {
+      // Tahlil — ishning yarmi, rasmlarni yuklash — ikkinchi yarmi.
+      const half = (done: number, total: number) => setImportProgress({ done, total: total * 2 });
+      const slides: DraftQuestion[] = [];
+      let notes: string[] = [];
+
+      if (isPdf) {
+        const { images, totalPages } = await pdfToImages(file, half);
+        let uploaded = 0;
+        const { urls, failed } = await uploadAll(images, upload, () =>
+          setImportProgress({ done: images.length + ++uploaded, total: images.length * 2 }),
+        );
+        failedImages = failed;
+        for (const url of urls) {
+          slides.push({ ...newQuestion("slide"), slideLayout: "media", imageUrl: url });
+        }
+        if (totalPages > MAX_PDF_PAGES) {
+          notes = [`PDF da ${totalPages} sahifa bor — birinchi ${MAX_PDF_PAGES} tasi olindi.`];
+        }
+      } else {
+        const { slides: parsed, lossy, totalSlides } = await pptxToSlides(file, half);
+        let uploaded = 0;
+        const { urls, failed } = await uploadAll(
+          parsed.map((p) => p.imageDataUrl),
+          upload,
+          () => setImportProgress({ done: parsed.length + ++uploaded, total: parsed.length * 2 }),
+        );
+        failedImages = failed;
+        parsed.forEach((p, i) => {
+          slides.push({
+            ...newQuestion("slide"),
+            slideLayout: p.layout,
+            title: p.title,
+            stem: p.body,
+            imageUrl: urls[i],
+          });
+        });
+        if (totalSlides > MAX_PPTX_SLIDES) {
+          notes.push(`Faylda ${totalSlides} slayd bor — birinchi ${MAX_PPTX_SLIDES} tasi olindi.`);
+        }
+        if (lossy) {
+          notes.push("Jadval, diagramma va qoʻshimcha rasmlar koʻchmadi — aynan koʻrinish kerak boʻlsa, PDF qilib import qiling.");
+        }
+      }
+
+      if (failedImages > 0) {
+        notes.push(`${failedImages} ta rasm juda katta boʻlgani uchun yuklanmadi — ularni slaydga qoʻlda qoʻshing.`);
+      }
+      insertSlides(slides);
+      toast.success(`${slides.length} ta slayd qoʻshildi`, {
+        description: notes.length ? notes.join(" ") : "Endi slaydlar orasiga savol qoʻshishingiz mumkin.",
+      });
+      if (notStored) {
+        toast.warning("Rasmlar saqlagichga yuklanmadi", {
+          description: "Koʻp sahifali taqdimot saqlanmasligi mumkin — administratorga xabar bering.",
+        });
+      }
+    } catch {
+      toast.error("Faylni oʻqib boʻlmadi", {
+        description: "Fayl buzilmaganini va parol bilan himoyalanmaganini tekshiring.",
+      });
+    } finally {
+      setImportProgress(null);
+    }
+  }
+
   function duplicateQuestion(key: string) {
     setQuestions((prev) => {
       const index = prev.findIndex((q) => q.key === key);
@@ -158,7 +315,7 @@ export default function SetBuilderOverlay({
     return questions.map((q, index) => ({
       activityId: q.activityId,
       shape: q.shape,
-      title: (q.title.trim() || q.stem.trim() || `${index + 1}-savol`).slice(0, 200),
+      title: (q.title.trim() || q.stem.trim() || `${index + 1}-${q.shape === "slide" ? "slayd" : "savol"}`).slice(0, 200),
       stem: q.stem.trim(),
       options: q.options.filter((o) => o.text.trim()).map((o) => ({ ...o, text: o.text.trim() })),
       pairs: q.pairs
@@ -168,6 +325,16 @@ export default function SetBuilderOverlay({
       pointsMode: q.pointsMode,
       multiSelect: q.multiSelect,
       answerLayout: q.answerLayout,
+      ...(q.shape === "text" ? { sampleAnswer: q.sampleAnswer } : {}),
+      ...(q.shape === "slide"
+        ? {
+            slideLayout: q.slideLayout,
+            slideHeading: q.title.trim(),
+            slideBg: q.slideBg,
+            imageUrl: q.imageUrl,
+            videoUrl: q.videoUrl?.trim() || undefined,
+          }
+        : {}),
     }));
   }
 
@@ -185,6 +352,8 @@ export default function SetBuilderOverlay({
         title: cleanTitle,
         purpose: "summative",
         stageTheme,
+        stageFont,
+        stageStyle,
         questions: buildPayload(),
       });
       setIdRef.current = draft.set.id;
@@ -212,7 +381,7 @@ export default function SetBuilderOverlay({
     setSaving(true);
     try {
       const draft = await persist(cleanTitle);
-      savedSnapshotRef.current = JSON.stringify({ title: cleanTitle, questions: buildPayload(), stageTheme });
+      savedSnapshotRef.current = JSON.stringify({ title: cleanTitle, questions: buildPayload(), stageTheme, stageFont, stageStyle });
       onSaved(draft.set);
       onClose();
     } catch (e) {
@@ -230,7 +399,7 @@ export default function SetBuilderOverlay({
     if (loading) return;
     const cleanTitle = title.trim();
     if (!cleanTitle) return;
-    const sig = JSON.stringify({ title: cleanTitle, questions: buildPayload(), stageTheme });
+    const sig = JSON.stringify({ title: cleanTitle, questions: buildPayload(), stageTheme, stageFont, stageStyle });
     if (sig === savedSnapshotRef.current) return;
     const timer = setTimeout(async () => {
       setAutosaving(true);
@@ -252,7 +421,7 @@ export default function SetBuilderOverlay({
     }, 2000);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [title, questions, stageTheme, loading]);
+  }, [title, questions, stageTheme, stageFont, stageStyle, loading]);
 
   /* Yopishni soʻraydi: nom hali kiritilmagan boʻlsa avtosaqlash ishlamagan
      boʻladi — shu bitta holatda "chindan ham tashlaymizmi?" soʻraladi. */
@@ -289,6 +458,12 @@ export default function SetBuilderOverlay({
 
         <div className="ml-auto flex shrink-0 items-center gap-2">
           {error && <span className="max-w-xs truncate text-sm text-destructive">{error}</span>}
+          {importProgress && (
+            <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Loader2 className="size-3.5 animate-spin" />
+              Import: {importProgress.total ? Math.round((importProgress.done / importProgress.total) * 100) : 0}%
+            </span>
+          )}
           {!error && autosaving && (
             <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <Loader2 className="size-3.5 animate-spin" /> {t("saving")}
@@ -329,7 +504,7 @@ export default function SetBuilderOverlay({
         <div
           className="grid min-h-0 flex-1"
           style={{
-            // Oxirgi ustun — doimiy reyl (Kahoot'dagi vertikal panel):
+            // Oxirgi ustun — doimiy reyl (viktorina-uslub vertikal panel):
             // xossalar yopilganda ham rejim tanlash koʻrinib turadi.
             gridTemplateColumns: sidePanelOpen
               ? "13.75rem 1fr 18rem 4rem"
@@ -341,6 +516,7 @@ export default function SetBuilderOverlay({
             activeKey={activeKey}
             onSelect={setActiveKey}
             onAdd={addQuestion}
+            onImport={() => importInputRef.current?.click()}
             onDuplicate={duplicateQuestion}
             onRemove={removeQuestion}
           />
@@ -349,6 +525,8 @@ export default function SetBuilderOverlay({
             <QuestionCanvas
               question={active}
               stageTheme={stageTheme}
+              stageFont={stageFont}
+              stageStyle={stageStyle}
               onChange={patchActive}
             />
           ) : (
@@ -361,6 +539,10 @@ export default function SetBuilderOverlay({
             <ThemesPanel
               value={stageTheme}
               onChange={setStageTheme}
+              font={stageFont}
+              onFontChange={setStageFont}
+              stageStyle={stageStyle}
+              onStageStyleChange={setStageStyle}
               onClose={() => setPanel(null)}
             />
           )}
@@ -384,6 +566,18 @@ export default function SetBuilderOverlay({
       )}
     </div>
 
+    <input
+      ref={importInputRef}
+      type="file"
+      accept=".pdf,.pptx,application/pdf,application/vnd.openxmlformats-officedocument.presentationml.presentation"
+      className="hidden"
+      onChange={(e) => {
+        const file = e.target.files?.[0];
+        e.target.value = "";
+        if (file && !importProgress) void importPresentation(file);
+      }}
+    />
+
     {/* Kichraytirilgan yorliq — bosilsa quruvchi oʻsha holatida qaytadi.
         z-[49]: quruvchining oʻzidan (48) baland, shuning uchun ostidagi
         test roʻyxati koʻrinib turganda ham ustida qalqib turadi. */}
@@ -391,7 +585,7 @@ export default function SetBuilderOverlay({
       <button
         type="button"
         onClick={() => setMinimized(false)}
-        className="fixed bottom-4 left-4 z-[49] flex max-w-xs items-center gap-2.5 rounded-xl border border-border bg-card px-3.5 py-2.5 shadow-lg transition-colors hover:bg-muted/50"
+        className="fixed bottom-4 left-4 z-[49] flex max-w-xs items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 shadow-lg transition-colors hover:bg-muted/50"
       >
         <SectionIcon className="size-8 shrink-0">
           <FileCheck2 />

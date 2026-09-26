@@ -4,10 +4,8 @@ import * as React from "react";
 import { useRelationsStore } from "@/lib/relations-store";
 import { useHydrateStore } from "@/hooks/useHydrateStore";
 import { createServerSync } from "@/lib/sync/create-server-sync";
-import {
-  fetchRelationsAction,
-  saveRelationsAction,
-} from "@/server/actions/relations";
+import { bootstrapSlice } from "@/lib/sync/bootstrap-client";
+import { saveRelationsAction } from "@/server/actions/relations";
 
 /* Relations store ↔ server koʻprigi (renderi yoʻq).
    Kichik juftlar roʻyxati — diff'siz snapshot rejimi. */
@@ -18,8 +16,11 @@ function selectSnapshot(s: RelationsState) {
   return { links: s.links };
 }
 
+/** Mount hydration umumiy bootstrap javobidan oʻqiladi (bitta soʻrov). */
+const fetchSlice = bootstrapSlice("relations");
+
 export default function RelationsServerSync() {
-  const hydrated = useHydrateStore(useRelationsStore, fetchRelationsAction);
+  const hydrated = useHydrateStore(useRelationsStore, fetchSlice);
 
   React.useEffect(() => {
     if (!hydrated) return;

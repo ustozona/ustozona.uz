@@ -17,12 +17,14 @@ import {
   Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem,
 } from "@/components/ui/command";
 import { ClassSwatch } from "@/components/ClassSwatch";
+import { cn } from "@/lib/utils";
 import { ROUTE_LABEL_KEYS } from "@/lib/route-labels";
 import { CLASS_SECTIONS } from "@/app/dashboard/classes/[id]/_components/sections";
 import { useGradesStore } from "@/store/useGradesStore";
 import { locateStudent } from "@/lib/student-profile";
 import { classColor } from "@/lib/grades-data";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
+import { subjectLabel } from "@/lib/standards-data";
 import { useClassIdParamValue, setClassIdParam } from "@/hooks/useClassIdParam";
 import { Check, ChevronsUpDown } from "lucide-react";
 
@@ -45,10 +47,11 @@ function useBreadcrumbs(): Crumb[] {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const classDataMap = useGradesStore((s) => s.classDataMap);
-  // Statistika sahifasi ?classId=ni router.replace EMAS, xom
-  // history.replaceState orqali yozadi (useClassIdParam) — useSearchParams()
-  // buni sezmaydi, shuning uchun alohida jonli hook orqali oʻqiladi.
-  const statsClassId = useClassIdParamValue(pathname);
+  // `?classId=` router.replace EMAS, xom history.replaceState orqali yoziladi
+  // (useClassIdParam) — useSearchParams() buni sezmaydi, shuning uchun alohida
+  // jonli hook orqali oʻqiladi. Sinf boʻgʻini ham, oʻquvchi boʻgʻinining guruh
+  // konteksti ham shundan oladi.
+  const classIdParam = useClassIdParamValue(pathname);
 
   return React.useMemo(() => {
     const segments = pathname.split("/").filter(Boolean); // ["dashboard", ...]
@@ -68,7 +71,7 @@ function useBreadcrumbs(): Crumb[] {
 
       if (prevSegment === "students" && segments[i]) {
         const studentId = decodeURIComponent(segments[i]);
-        const location = locateStudent(classDataMap, studentId);
+        const location = locateStudent(classDataMap, studentId, classIdParam);
         if (location) {
           crumbs.push({
             kind: "student-class-switcher",
@@ -99,13 +102,13 @@ function useBreadcrumbs(): Crumb[] {
     // Statistika/O'quvchilar sahifasida ?classId= sinf tanlovi — yo'l bo'g'ini
     // emas, shuning uchun query-parametrdan alohida o'qiladi (sinf detali
     // sahifasidagi kabi qidiriladigan switcher sifatida).
-    if ((pathname === "/dashboard/statistics" || pathname === "/dashboard/students") && statsClassId) {
-      const name = classDataMap[statsClassId]?.info?.name ?? statsClassId;
-      crumbs.push({ kind: "stats-class-switcher", href: `${pathname}?classId=${statsClassId}`, label: name, classId: statsClassId });
+    if ((pathname === "/dashboard/statistics" || pathname === "/dashboard/students") && classIdParam) {
+      const name = classDataMap[classIdParam]?.info?.name ?? classIdParam;
+      crumbs.push({ kind: "stats-class-switcher", href: `${pathname}?classId=${classIdParam}`, label: name, classId: classIdParam });
     }
 
     return crumbs;
-  }, [pathname, searchParams, classDataMap, tSections, statsClassId]);
+  }, [pathname, searchParams, classDataMap, tSections, classIdParam]);
 }
 
 /* ── Umumiy: qidiruvli tanlovchi boʻgʻin (Popover+Command, StudentProfile
@@ -137,7 +140,7 @@ function SwitcherCrumb({
           }
           aria-current={isLast ? "page" : undefined}
         >
-          {swatchHex && <ClassSwatch hex={swatchHex} className="shrink-0" />}
+          {swatchHex && <ClassSwatch hex={swatchHex} />}
           <span className="max-w-[10rem] truncate sm:max-w-[16rem]">{label}</span>
           <ChevronsUpDown className="size-3.5 shrink-0 text-muted-foreground transition-colors group-hover:text-foreground" />
         </button>
@@ -184,17 +187,22 @@ function ClassSwitcherCrumb({
   return (
     <SwitcherCrumb label={label} isLast={isLast} placeholder={t("searchClassPlaceholder")} swatchHex={swatchHex}>
       {(close) => (
-        <CommandGroup heading={t("myClassesHeading")}>
+        <CommandGroup>
           {classes.map((c) => (
             <CommandItem
               key={c.id}
-              value={`${c.name} ${c.subject ?? ""}`}
+              value={`${c.name} ${subjectLabel(c.subject)}`}
               onSelect={() => { close(); if (c.id !== classId) go(c.id); }}
             >
+              <Check
+                className={cn("size-4 shrink-0", c.id !== classId && "opacity-0")}
+                style={{ color: CLASS_COLOR_HEX[classColor(c)] }}
+              />
               <ClassSwatch hex={CLASS_COLOR_HEX[classColor(c)]} />
-              <span className="truncate">{c.name}</span>
-              {c.subject && <span className="truncate text-muted-foreground">· {c.subject}</span>}
-              {c.id === classId && <Check className="ml-auto size-4" />}
+              <span className="max-w-[65%] shrink-0 truncate" title={c.name}>{c.name}</span>
+              {c.subject && (
+                <span className="min-w-0 flex-1 truncate pl-2 text-right text-muted-foreground">{subjectLabel(c.subject)}</span>
+              )}
             </CommandItem>
           ))}
         </CommandGroup>
@@ -227,17 +235,22 @@ function StatsClassSwitcherCrumb({
   return (
     <SwitcherCrumb label={label} isLast={isLast} placeholder={t("searchClassPlaceholder")} swatchHex={swatchHex}>
       {(close) => (
-        <CommandGroup heading={t("myClassesHeading")}>
+        <CommandGroup>
           {classes.map((c) => (
             <CommandItem
               key={c.id}
-              value={`${c.name} ${c.subject ?? ""}`}
+              value={`${c.name} ${subjectLabel(c.subject)}`}
               onSelect={() => { close(); if (c.id !== classId) setClassIdParam(c.id); }}
             >
+              <Check
+                className={cn("size-4 shrink-0", c.id !== classId && "opacity-0")}
+                style={{ color: CLASS_COLOR_HEX[classColor(c)] }}
+              />
               <ClassSwatch hex={CLASS_COLOR_HEX[classColor(c)]} />
-              <span className="truncate">{c.name}</span>
-              {c.subject && <span className="truncate text-muted-foreground">· {c.subject}</span>}
-              {c.id === classId && <Check className="ml-auto size-4" />}
+              <span className="max-w-[65%] shrink-0 truncate" title={c.name}>{c.name}</span>
+              {c.subject && (
+                <span className="min-w-0 flex-1 truncate pl-2 text-right text-muted-foreground">{subjectLabel(c.subject)}</span>
+              )}
             </CommandItem>
           ))}
         </CommandGroup>
@@ -271,20 +284,25 @@ function StudentClassSwitcherCrumb({
   return (
     <SwitcherCrumb label={label} isLast={isLast} placeholder={t("searchClassPlaceholder")} swatchHex={swatchHex}>
       {(close) => (
-        <CommandGroup heading={t("myClassesHeading")}>
+        <CommandGroup>
           {classes.map((c) => (
             <CommandItem
               key={c.id}
-              value={`${c.name} ${c.subject ?? ""}`}
+              value={`${c.name} ${subjectLabel(c.subject)}`}
               onSelect={() => {
                 close();
                 router.push(`/dashboard/students?classId=${encodeURIComponent(c.id)}`);
               }}
             >
+              <Check
+                className={cn("size-4 shrink-0", c.id !== classId && "opacity-0")}
+                style={{ color: CLASS_COLOR_HEX[classColor(c)] }}
+              />
               <ClassSwatch hex={CLASS_COLOR_HEX[classColor(c)]} />
-              <span className="truncate">{c.name}</span>
-              {c.subject && <span className="truncate text-muted-foreground">· {c.subject}</span>}
-              {c.id === classId && <Check className="ml-auto size-4" />}
+              <span className="max-w-[65%] shrink-0 truncate" title={c.name}>{c.name}</span>
+              {c.subject && (
+                <span className="min-w-0 flex-1 truncate pl-2 text-right text-muted-foreground">{subjectLabel(c.subject)}</span>
+              )}
             </CommandItem>
           ))}
         </CommandGroup>
@@ -304,17 +322,23 @@ function StudentSwitcherCrumb({
 }) {
   const t = useTranslations("HeaderBreadcrumb");
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const classDataMap = useGradesStore((s) => s.classDataMap);
+  const classIdParam = useClassIdParamValue(pathname);
   const location = React.useMemo(
-    () => locateStudent(classDataMap, studentId),
-    [classDataMap, studentId]
+    () => locateStudent(classDataMap, studentId, classIdParam),
+    [classDataMap, studentId, classIdParam]
   );
 
   const go = (id: string) => {
+    const params = new URLSearchParams();
     const tab = searchParams.get("tab");
-    const q = tab ? `?tab=${tab}` : "";
-    router.push(`/dashboard/students/${encodeURIComponent(id)}${q}`);
+    if (tab) params.set("tab", tab);
+    // Guruh konteksti qoʻshni oʻquvchiga ham koʻchadi — roʻyxat oʻsha guruhdan.
+    if (classIdParam) params.set("classId", classIdParam);
+    const q = params.toString();
+    router.push(`/dashboard/students/${encodeURIComponent(id)}${q ? `?${q}` : ""}`);
   };
 
   if (!location) {
@@ -331,14 +355,17 @@ function StudentSwitcherCrumb({
               value={r.name}
               onSelect={() => { close(); if (r.id !== studentId) go(r.id); }}
             >
+              <Check
+                className={cn("size-4 shrink-0", r.id !== studentId && "opacity-0")}
+                style={{ color: location.hex }}
+              />
               <div
-                className="flex size-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold text-white"
+                className="flex size-7 shrink-0 items-center justify-center rounded-full text-tag font-semibold text-white"
                 style={{ backgroundColor: location.hex }}
               >
                 {r.initials}
               </div>
               <span className="truncate">{r.name}</span>
-              {r.id === studentId && <Check className="ml-auto size-4" />}
             </CommandItem>
           ))}
         </CommandGroup>

@@ -94,7 +94,7 @@ export const TaskRow = forwardRef<
       className={cn(
         // Focus To-Do qator tili: default — nozik pastki chiziq; hover — yumshoq
         // yumaloq fon (chiziq yashirinadi); tanlangan — turgʻun muted fon.
-        "@container group relative flex min-h-10 w-full cursor-pointer items-start gap-2.5 rounded-lg px-2.5 py-2 text-left outline-none transition-colors duration-fast",
+        "@container group relative flex min-h-10 w-full cursor-pointer items-start gap-2 rounded-lg px-3 py-2 text-left outline-none transition-colors duration-fast",
         "border-b border-border/40 last:border-b-0",
         "hover:border-transparent hover:bg-muted/60",
         "focus-visible:ring-2 focus-visible:ring-ring",
@@ -115,7 +115,7 @@ export const TaskRow = forwardRef<
         )}
       />
       {/* Tor qatorda ustun (sarlavha → meta), keng qatorda yonma-yon. */}
-      <div className="flex min-w-0 flex-1 flex-col gap-1 @[26rem]:flex-row @[26rem]:items-start @[26rem]:gap-2.5">
+      <div className="flex min-w-0 flex-1 flex-col gap-1 @[26rem]:flex-row @[26rem]:items-start @[26rem]:gap-3">
         <span
           className={cn(
             "min-w-0 flex-1 text-left text-sm break-words whitespace-normal transition-colors duration-base",
@@ -131,7 +131,7 @@ export const TaskRow = forwardRef<
             {(task.tags ?? []).slice(0, 2).map((tag) => (
               <span
                 key={tag}
-                className={cn("shrink-0 rounded-full border px-2 py-0.5 text-[11px] font-medium", TAG_PILL_CLASS)}
+                className={cn("shrink-0 rounded-full border px-2 py-0.5 text-tag font-medium", TAG_PILL_CLASS)}
               >
                 {tag}
               </span>
@@ -439,7 +439,7 @@ function TaskGroup({
       {label && (
         <div
           className={cn(
-            "px-2 pb-1 pt-2 text-[11px] font-medium uppercase tracking-wider",
+            "px-2 pb-1 pt-2 text-label font-medium uppercase tracking-wider",
             overdue ? "text-destructive" : "text-muted-foreground"
           )}
         >
@@ -464,6 +464,8 @@ function TaskGroup({
             onToggleStatus={() => onToggleStatus(task.id)}
             onClick={() => onSelectTask(task.id)}
             onKeyDown={(e) => {
+              // Ichki checkbox'dan koʻtarilgan tugmalar uning oʻziga qoladi.
+              if (e.target !== e.currentTarget) return;
               if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
                 onSelectTask(task.id);
@@ -686,7 +688,7 @@ function QuickAddRow({
     <div
       ref={containerRef}
       className={cn(
-        "relative mx-4 mb-0.5 flex flex-col gap-2 rounded-lg border border-border bg-background px-3 py-2.5 shadow-sm transition-colors",
+        "relative mx-4 mb-0.5 flex flex-col gap-2 rounded-lg border border-border bg-background px-3 py-3 shadow-sm transition-colors",
         tight ? "mt-2" : "mt-3"
       )}
     >

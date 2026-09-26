@@ -2,12 +2,17 @@
    drizzle-kit ham (drizzle.config.ts), db client ham shu fayldan oʻqiydi. */
 
 export * from "./auth";
+export * from "./workspaces";
 export * from "./teachers";
+export * from "./workspace-members";
+export * from "./workspace-invites";
+export * from "./workspace-audit";
 export * from "./classes";
 export * from "./grades";
 export * from "./attendance";
 export * from "./relations";
 export * from "./planning";
+export * from "./school-timetable";
 export * from "./standards";
 export * from "./notes";
 export * from "./notifications";
@@ -17,8 +22,9 @@ export * from "./student-notes";
 export * from "./tasks";
 export * from "./admin";
 export * from "./ai-usage";
-export * from "./schools";
 export * from "./identity";
 export * from "./cross-platform";
 export * from "./assess";
 export * from "./blog";
+export * from "./email-activation";
+export * from "./telegram";

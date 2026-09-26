@@ -1,14 +1,12 @@
 "use client";
 
 import { ArrowUp, ArrowDown, ChevronRight } from "lucide-react";
-import { Area, AreaChart } from "recharts";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { Progress } from "@/components/ui/progress";
-import { ChartContainer, type ChartConfig } from "@/components/ui/chart";
+import { Sparkline } from "@/components/ui/sparkline";
 import { TypographyMuted } from "@/components/ui/typography";
 import { cn } from "@/lib/utils";
 
-const SPARKLINE_CONFIG = { value: { label: "" } } satisfies ChartConfig;
 
 /**
  * Statistik koʻrsatkich kartasi — Tremor "KPI Cards" (Card 6) asosida,
@@ -102,7 +100,7 @@ export function StatCard({
       )}
     >
       <div className="flex items-center justify-between gap-2">
-        <div className="flex min-w-0 items-center gap-2.5">
+        <div className="flex min-w-0 items-center gap-3">
           {Icon && (
             <SectionIcon className={cn("rounded-full", iconClassName)}>
               <Icon />
@@ -148,26 +146,7 @@ export function StatCard({
             <TypographyMuted className={cn("truncate text-xs", subClassName)}>{sub}</TypographyMuted>
           )}
         </div>
-        {sparkline && sparkline.length > 1 && (
-          <ChartContainer config={SPARKLINE_CONFIG} className="h-8 w-16 shrink-0 aspect-auto">
-            <AreaChart data={sparkline.map((v, i) => ({ i, value: v }))} margin={{ top: 2, right: 0, left: 0, bottom: 0 }}>
-              <defs>
-                <linearGradient id="statCardSparkFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={toneHex} stopOpacity={0.35} />
-                  <stop offset="100%" stopColor={toneHex} stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <Area
-                type="monotone"
-                dataKey="value"
-                stroke={toneHex}
-                strokeWidth={1.5}
-                fill="url(#statCardSparkFill)"
-                isAnimationActive={false}
-              />
-            </AreaChart>
-          </ChartContainer>
-        )}
+        {sparkline && sparkline.length > 1 && <Sparkline values={sparkline} color={toneHex} />}
       </div>
 
       {progress !== undefined && (
@@ -179,7 +158,13 @@ export function StatCard({
         />
       )}
 
-      {sub && !subInline && <TypographyMuted className={cn("truncate text-xs", subClassName)}>{sub}</TypographyMuted>}
+      {/* `truncate` EMAS — yorliq bilan bir xil sabab: izoh odatda raqam
+          qanday oʻqilishini aytadi («soʻrov ketgan, provayder javob
+          bermagan») va tor kartada «soʻrov ketgan, prov…» boʻlib
+          qolardi. `line-clamp-2` — sigʻsa bir qator, sigʻmasa ikkinchisi. */}
+      {sub && !subInline && (
+        <TypographyMuted className={cn("line-clamp-2 text-xs", subClassName)}>{sub}</TypographyMuted>
+      )}
     </div>
   );
 }

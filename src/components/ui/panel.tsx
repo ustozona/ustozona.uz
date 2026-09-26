@@ -2,7 +2,7 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 import { SectionIcon } from "@/components/ui/section-icon"
-import { CardTitle } from "@/components/ui/card"
+import { CardDescription, CardTitle } from "@/components/ui/card"
 import { TypographyMuted } from "@/components/ui/typography"
 
 /**
@@ -30,6 +30,13 @@ type PanelHeaderProps = Omit<React.ComponentProps<"div">, "title"> & {
   icon?: React.ReactNode
   title?: React.ReactNode
   count?: React.ReactNode
+  /**
+   * Sarlavha ostidagi izoh — raqam yoki roʻyxat qanday oʻqilishini aytadi
+   * («Oxirgi 30 kun seanslari boʻyicha»). Ilgari bu slot yoʻq edi va har
+   * panel uni `children` bilan qoʻlda qayta yozardi (`StaffLoadPanel`,
+   * `LedgerRail`, admin panellari).
+   */
+  description?: React.ReactNode
   /** Markazga joylashtiriladigan ixtiyoriy element (masalan koʻrinish toggle). */
   center?: React.ReactNode
   /** Oʻngdagi amallar (qidiruv, sort, CTA). */
@@ -49,6 +56,7 @@ function PanelHeader({
   icon,
   title,
   count,
+  description,
   center,
   actions,
   divider = true,
@@ -60,7 +68,7 @@ function PanelHeader({
     <div
       data-slot="panel-header"
       className={cn(
-        "grid min-h-16 shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-3 px-5 py-4",
+        "grid min-h-16 shrink-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 px-5 py-4",
         divider && "border-b border-border",
         className
       )}
@@ -68,17 +76,23 @@ function PanelHeader({
     >
       {children ?? (
         <>
-          <div className="flex min-w-0 items-center gap-2.5 justify-self-start">
+          <div className="flex min-w-0 items-center gap-3 justify-self-start">
             {icon && <SectionIcon className="shrink-0">{icon}</SectionIcon>}
-            <div className="flex min-w-0 items-baseline gap-1.5">
-              <CardTitle className="truncate">{title}</CardTitle>
-              {count != null && (
-                <TypographyMuted className="shrink-0 text-sm">{count}</TypographyMuted>
-              )}
+            <div className="flex min-w-0 flex-col gap-1">
+              <div className="flex min-w-0 items-baseline gap-1.5">
+                <CardTitle className="truncate">{title}</CardTitle>
+                {count != null && (
+                  <TypographyMuted className="shrink-0 text-sm">{count}</TypographyMuted>
+                )}
+              </div>
+              {description && <CardDescription>{description}</CardDescription>}
             </div>
           </div>
           <div className="justify-self-center">{center}</div>
-          <div className="flex items-center gap-2 justify-self-end">{actions}</div>
+          {/* `ml-auto` — gridʼda `justify-self-end` bilan bir xil natija;
+              header `flex flex-wrap` qilinganda esa pastga oʻralgan amallar
+              chapga yopishmay, oʻngda qoladi. */}
+          <div className="ml-auto flex flex-wrap items-center gap-2 justify-self-end">{actions}</div>
         </>
       )}
     </div>
@@ -95,7 +109,7 @@ function PanelBody({
     <div
       data-slot="panel-body"
       className={cn(
-        "min-h-0 flex-1 overflow-y-auto",
+        "min-h-0 flex-1 scrollbar-hover overflow-y-auto",
         inset ? "px-5 py-5" : "p-0",
         className
       )}

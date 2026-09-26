@@ -72,9 +72,6 @@ const TOUR_STRUCTURE: readonly TourStructure[] = [
       { target: '[data-tour="home-overview"]', placement: "right" },
       { target: '[data-tour="home-queue"]', placement: "right" },
       { target: '[data-tour="home-schedule"]', placement: "left" },
-      { target: '[data-tour="home-week"]', placement: "left" },
-      { target: '[data-tour="header-guide"]', placement: "bottom" },
-      { target: '[data-tour="header-feedback"]', placement: "bottom" },
     ],
   },
   {
@@ -93,7 +90,6 @@ const TOUR_STRUCTURE: readonly TourStructure[] = [
     steps: [
       { target: '[data-tour="classes-add"]', placement: "bottom" },
       { target: '[data-tour="classes-list"]', placement: "left" },
-      { target: '[data-tour="classes-view-toggle"]', placement: "bottom" },
       { target: '[data-tour="classes-stats"]', placement: "left" },
     ],
   },
@@ -104,7 +100,6 @@ const TOUR_STRUCTURE: readonly TourStructure[] = [
       { target: '[data-tour="students-classes"]', placement: "right" },
       { target: '[data-tour="students-list"]', placement: "left" },
       { target: '[data-tour="students-preview"]', placement: "left" },
-      { target: '[data-tour="students-filter"]', placement: "bottom" },
     ],
   },
   {
@@ -122,8 +117,26 @@ const TOUR_STRUCTURE: readonly TourStructure[] = [
     route: "/dashboard/lessons",
     steps: [
       { target: '[data-tour="lessons-classes"]', placement: "right", id: "lessons-classes" },
-      { target: '[data-tour="lessons-units"]', placement: "right" },
+      { target: '[data-tour="lessons-units"]', placement: "left" },
       { target: '[data-tour="lessons-list"]', placement: "left" },
+    ],
+  },
+  {
+    id: "assignments",
+    route: "/dashboard/assignments",
+    steps: [
+      { target: '[data-tour="assignments-classes"]', placement: "right" },
+      { target: '[data-tour="assignments-list"]', placement: "left" },
+      { target: '[data-tour="assignments-create"]', placement: "bottom", align: "end" },
+    ],
+  },
+  {
+    id: "resources",
+    route: "/dashboard/resources",
+    steps: [
+      { target: '[data-tour="resources-create"]', placement: "bottom", align: "end" },
+      { target: '[data-tour="resources-tabs"]', placement: "bottom" },
+      { target: '[data-tour="resources-list"]', placement: "top" },
     ],
   },
   {

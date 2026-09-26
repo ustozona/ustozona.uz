@@ -1,6 +1,6 @@
 import { boolean, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { user } from "./auth";
-import { schools } from "./schools";
+import { workspaces } from "./workspaces";
 
 /* ════════════════════════════════════════════════════════════════════
    TEACHERS — har bir oʻqituvchining domen-profili.
@@ -17,8 +17,17 @@ export const teachers = pgTable("teachers", {
     .references(() => user.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
+  /** ⚠️ Profil uchun ERKIN MATN — koʻrsatish uchun, xolos.
+      ⛔ Guruhlash/ruxsat uchun HECH QACHON ishlatilmaydi: uni har kim
+      istalgancha yozadi ("30", "23-MAKTAB", boʻsh…), demak ishonch
+      chegarasi boʻla olmaydi. Yagona hokimiyat — `workspace_members`. */
   school: text("school"),
-  schoolId: text("school_id").references(() => schools.id, { onDelete: "set null" }),
+  /** Oʻqituvchi hozir qaysi maydonda ishlayapti (maydon almashtirgichi).
+      null = shaxsiy maydoni. Aʼzolik `workspace_members` da — bu faqat
+      "oxirgi tanlov" xotirasi, ruxsat manbai EMAS. */
+  activeWorkspaceId: text("active_workspace_id").references(() => workspaces.id, {
+    onDelete: "set null",
+  }),
   subject: text("subject"),
   /** "YYYY-MM-DD" — ixtiyoriy, tugʻilgan kun tabrigi/chegirma uchun. */
   birthDate: text("birth_date"),

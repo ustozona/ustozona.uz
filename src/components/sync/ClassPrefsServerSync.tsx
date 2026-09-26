@@ -4,10 +4,8 @@ import * as React from "react";
 import { useClassStore } from "@/store/useClassStore";
 import { useHydrateStore } from "@/hooks/useHydrateStore";
 import { createServerSync } from "@/lib/sync/create-server-sync";
-import {
-  fetchClassPrefsAction,
-  saveClassPrefsAction,
-} from "@/server/actions/class-prefs";
+import { bootstrapSlice } from "@/lib/sync/bootstrap-client";
+import { saveClassPrefsAction } from "@/server/actions/class-prefs";
 
 /* Class prefs (selectedClassId + journalScale) ↔ server koʻprigi.
    teachers.prefs.classPrefs hujjati — diff'siz snapshot rejimi.
@@ -22,8 +20,11 @@ function selectSnapshot(s: ClassState) {
   };
 }
 
+/** Mount hydration umumiy bootstrap javobidan oʻqiladi (bitta soʻrov). */
+const fetchSlice = bootstrapSlice("classPrefs");
+
 export default function ClassPrefsServerSync() {
-  const hydrated = useHydrateStore(useClassStore, fetchClassPrefsAction);
+  const hydrated = useHydrateStore(useClassStore, fetchSlice);
 
   React.useEffect(() => {
     if (!hydrated) return;

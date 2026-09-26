@@ -34,6 +34,11 @@ export type Lesson = {
   assignmentClassIds?: string[];
   /** Bogʻlangan standartlar (ID/yorliqlar) */
   standards?: string[];
+  /** Darsda oʻtkaziladigan taqdimot/testlar — `activity_sets.id` (R276).
+   *  Dars kuni Dashboard kartasida «▶ Boshlash» va Doska'dagi Taqdimot
+   *  vidjetida tayyor turadi. Toʻplamning oʻzi emas, faqat havola:
+   *  `lessons.data` JSONB ichida, migratsiyasiz. */
+  setIds?: string[];
   /** ── Koʻp-sinf (Model A: bitta dars, koʻp sinf) ──
    *  Dars biriktirilgan barcha sinflar. Boʻsh/aniqlanmagan boʻlsa `classId` (legacy)
    *  yagona aʼzolik sifatida ishlatiladi. Manba: shu maydon (mavjud boʻlsa). */
@@ -42,9 +47,89 @@ export type Lesson = {
   unitByClass?: Record<string, string | null>;
   /** Har bir sinf uchun alohida rejalashtirish: classId → sessiyalar massivi (koʻp sana). */
   scheduleByClass?: Record<string, LessonSession[]>;
+  /** ── Dars sikli — ikki MUSTAQIL belgi (`status` dan alohida) ──
+   *  `status` jadvalga qoʻyilganlikni bildirardi va import qilinganda hamma
+   *  mavzu «Rejalashtirilgan» boʻlib qolardi. Endi koʻrinadigan holat shu
+   *  ikkisidan: reja tayyormi va dars oʻtildimi. `lessons.data` JSONB
+   *  ichida, migratsiyasiz. */
+  /** Dars rejasi tayyor — oʻqituvchi oʻzi belgilaydi. */
+  planReady?: boolean;
+  /** Qoʻlda tanlangan «tayyor emas» holati. Yoʻq boʻlsa — matndan avtomatik. */
+  planStatus?: "none" | "draft";
+  /** Koʻp sinfli mavzuning sinf boʻyicha tartibi (tartiblash rejimida yoziladi).
+      Yoʻq boʻlsa umumiy `number` ishlatiladi. */
+  orderByClass?: Record<string, number>;
+  /** Dars oʻtilgan kun ("YYYY-MM-DD"); yoʻq/null — oʻtilmagan. */
+  taughtAt?: string | null;
+  /** Koʻp sinfli mavzuda har sinf alohida oʻtiladi: sinf → oʻtilgan kun (null — oʻtilmagan).
+      `taughtAt` bunda faqat hamma sinfda oʻtilganda toʻldiriladi. */
+  taughtByClass?: Record<string, string | null>;
+  /** Sinf → «Oʻtildi» belgisining reviziyasi: belgi shu sinfda har
+      oʻzgarganda yangi tasodifiy token (`withTaughtRev`). Vaqt emas — ikki
+      qurilma soati farq qilsa ham taqqoslash buzilmaydi. Vazifa oʻzi koʻrgan
+      tokenni saqlaydi (`Task.taughtRevSeen`); reconciler shu bilan dars
+      belgisi yoki vazifa holatidan qaysi biri yangiroq ekanini ajratadi. */
+  taughtRevByClass?: Record<string, string>;
   /** Oxirgi tahrir vaqti (ISO) — muharrir headerida nisbiy koʻrsatiladi. */
   updatedAt?: string;
 };
+
+/** Mavzuning shu sinfdagi tartib kaliti va shu boʻyicha taqqoslovchi. */
+export function lessonOrderFor(l: Lesson, classId: string | null | undefined): number {
+  return (classId ? l.orderByClass?.[classId] : undefined) ?? l.number;
+}
+export const byLessonOrder = (classId: string | null | undefined) => (a: Lesson, b: Lesson) =>
+  lessonOrderFor(a, classId) - lessonOrderFor(b, classId);
+
+/** Dars oʻtilganmi. Eski «Tugallandi» (`status: "Completed"`) mavzular ham
+    oʻtilgan hisoblanadi — maʼlumot koʻchirilmaydi. */
+export function isTaught(l: Lesson, classId?: string | null): boolean {
+  if (classId && l.taughtByClass && classId in l.taughtByClass) return l.taughtByClass[classId] != null;
+  return l.taughtAt != null || (l.taughtAt === undefined && l.status === "Completed");
+}
+
+function newTaughtRev(): string {
+  const rnd = typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID().slice(0, 8)
+    : Math.random().toString(36).slice(2, 10);
+  return `${Date.now().toString(36)}-${rnd}`;
+}
+
+/** `before → after` oʻtishida «Oʻtildi» holati haqiqatan oʻzgargan har aʼzo
+    sinfga yangi reviziya yozadi. Store'dagi har yozuv (setTaught, updateLesson,
+    setStatus) shundan oʻtadi — muharrirdagi «Bekor qilish» ham belgi
+    oʻzgarishi hisoblanadi. Holat oʻzgarmagan sinf tokeni tegilmaydi. */
+export function withTaughtRev(before: Lesson, after: Lesson): Lesson {
+  let revs: Record<string, string> | undefined;
+  for (const c of lessonClassIds(after)) {
+    if (isTaught(before, c) === isTaught(after, c)) continue;
+    revs ??= { ...after.taughtRevByClass };
+    revs[c] = newTaughtRev();
+  }
+  return revs ? { ...after, taughtRevByClass: revs } : after;
+}
+
+/** Ikki reviziya bir xilmi (`undefined` va `null` — «token yoʻq», teng). */
+export function sameRev(a: string | null | undefined, b: string | null | undefined): boolean {
+  return (a ?? null) === (b ?? null);
+}
+
+/** Qoralama chegarasi: muharrir matnida shuncha soʻz boʻlsa, reja «boshlangan». */
+export const PLAN_DRAFT_MIN_WORDS = 20;
+
+/** Dars rejasi holati: «tayyor» faqat qoʻlda (`planReady`); `planStatus`
+    qoʻlda tanlangan boʻlsa — u; aks holda matnda
+    `PLAN_DRAFT_MIN_WORDS` va undan koʻp soʻz boʻlsa — «qoralama». Soʻz
+    soni harfdan ishonchliroq: «test» kabi yozuvlar chegaradan oʻtmaydi. */
+export type LessonPlanState = "none" | "draft" | "ready";
+
+export function lessonPlanState(l: Lesson): LessonPlanState {
+  if (l.planReady) return "ready";
+  if (l.planStatus) return l.planStatus;
+  const text = (l.content ?? "").replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ");
+  const words = text.split(/\s+/).filter((w) => /[\p{L}\p{N}]/u.test(w)).length;
+  return words >= PLAN_DRAFT_MIN_WORDS ? "draft" : "none";
+}
 
 /** Dars sessiyasi — bitta sana + vaqt oraligʻi. */
 export type LessonSession = { date: string; startMin: number; endMin: number };
@@ -84,6 +169,17 @@ export function unitIdForClass(l: Lesson, classId: string): string | null {
   const ids = lessonClassIds(l);
   if (ids[0] === classId) return l.unitId ?? null;
   return null;
+}
+
+/** Dars TEGISHLI boʻlgan barcha boʻlim idʼlari (har sinf boʻyicha + legacy).
+    Boʻlim oʻchirilganda qaysi darslar taʼsirlanishini aniqlash uchun yagona
+    manba: faqat `unitId` ga qaralsa koʻp-sinfli darslar eʼtibordan chetda
+    qolib, oʻchirilgan boʻlimga «osilib» qolardi. */
+export function lessonUnitIds(l: Lesson): string[] {
+  const out = new Set<string>();
+  if (l.unitId) out.add(l.unitId);
+  for (const uid of Object.values(l.unitByClass ?? {})) if (uid) out.add(uid);
+  return [...out];
 }
 
 export const UNITS: Unit[] = [

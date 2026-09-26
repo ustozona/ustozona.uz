@@ -52,7 +52,7 @@ export function LessonChip({
       {done ? (
         <Check className="size-3 shrink-0" strokeWidth={3} style={{ color: hex }} />
       ) : (
-        <ClassSwatch hex={hex} className="size-2 shrink-0" />
+        <ClassSwatch hex={hex} />
       )}
       <span className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">{title}</span>
       {/* Hover zonasi — ikkala variant ham AYNAN shu geometriyada VA AYNAN

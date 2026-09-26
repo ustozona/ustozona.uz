@@ -20,7 +20,9 @@ import {
 import { TypographyLabel, TypographyMuted } from "@/components/ui/typography";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { TrendChart, BloomRadar, AttendanceDonut, AttendanceTracker, ATT_COLORS } from "./charts";
+import StandardsPanel from "./StandardsPanel";
 import { GlowBadge } from "@/components/shadcn-space/badge/glow-badge";
+import { ClassSwatch } from "@/components/ClassSwatch";
 import {
   GraduationCap, CalendarCheck, CalendarRange, TrendingUp, ClipboardCheck, Layers, ChevronDown, Brain,
   Check, X, Clock, FileText,
@@ -56,7 +58,7 @@ function CategoryBar({ row, mounted }: { row: TopicBreakdown; mounted: boolean }
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center gap-2">
-        <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: row.hex }} />
+        <ClassSwatch hex={row.hex} />
         <span className="truncate text-sm font-medium">{row.topic.name}</span>
         <span className="ml-auto text-sm font-semibold tabular-nums">
           {pct === null ? "—" : `${pct}%`}
@@ -68,7 +70,7 @@ function CategoryBar({ row, mounted }: { row: TopicBreakdown; mounted: boolean }
         className="**:data-[slot=progress-indicator]:duration-1000"
         style={{ backgroundColor: `color-mix(in srgb, ${row.hex} 16%, transparent)` }}
       />
-      <TypographyMuted className="text-[11px]">
+      <TypographyMuted className="text-tag">
         {row.count === 0
           ? t("categoryShareUngraded", { weight: row.topic.weightPercent })
           : t("categoryShareGraded", { weight: row.topic.weightPercent, count: row.count })}
@@ -178,7 +180,7 @@ export default function OverviewTab({ profile }: { profile: StudentProfile }) {
 
         {/* Toifa boʻyicha — ulush + baholar soni bilan barlar */}
         <div className="flex flex-col rounded-xl bg-card p-5 border border-border/50 shadow-sm lg:col-span-1">
-          <div className="mb-4 flex items-center gap-2.5">
+          <div className="mb-4 flex items-center gap-3">
             <SectionIcon><Layers /></SectionIcon>
             <CardTitle>{t("byCategory")}</CardTitle>
           </div>
@@ -194,7 +196,7 @@ export default function OverviewTab({ profile }: { profile: StudentProfile }) {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         {/* Davomat — donut + oraliq + legend */}
         <div className="flex flex-col rounded-xl bg-card p-5 border border-border/50 shadow-sm">
-          <div className="mb-4 flex items-center gap-2.5">
+          <div className="mb-4 flex items-center gap-3">
             <SectionIcon><CalendarCheck /></SectionIcon>
             <CardTitle>{t("attendanceCard")}</CardTitle>
             <GranularityDropdown value={attGran} onChange={setAttGran} options={ATTENDANCE_GRANULARITIES} />
@@ -208,7 +210,7 @@ export default function OverviewTab({ profile }: { profile: StudentProfile }) {
               return (
                 <Tooltip key={s.key}>
                   <TooltipTrigger asChild>
-                    <div className="flex cursor-default items-center gap-2.5">
+                    <div className="flex cursor-default items-center gap-3">
                       <span
                         className="flex size-8 shrink-0 items-center justify-center rounded-lg"
                         style={{ backgroundColor: `color-mix(in srgb, ${color} 18%, transparent)` }}
@@ -230,12 +232,15 @@ export default function OverviewTab({ profile }: { profile: StudentProfile }) {
           </div>
         </div>
 
-        {/* Blum darajalari — radar. Hali haqiqiy maʼlumot yoʻq (soxta demo
-            qiymatlar) — shuning uchun sarlavha aniq qoladi, faqat tanadagi
-            grafik+legend bulutlanadi; "Tez orada" (GlowBadge, landing
-            pricing-02 bilan bir xil) sarlavha yonida — markazda muallaq emas. */}
+        {/* ⚠️ Blum radari — SOXTA (demo qiymatlar) va ATAYLAB shunday qoladi.
+            Uning oʻrnini bosuvchi HAQIQIY koʻrinish pastdagi
+            `StandardsPanel`: oʻqlar Bloom emas, MAZMUN SOHALARI. Sabab
+            pedagogik, UX emas — umumiy «tahlil qilish» koʻnikmasi fandan
+            ajralgan holda mavjud emas (docs/standards-page-spec.md §13.4).
+            Bu blok standart teglash keng tarqalgach butunlay olib
+            tashlanadi. */}
         <div className="relative flex flex-col rounded-xl bg-card p-5 border border-border/50 shadow-sm lg:col-span-2">
-          <div className="mb-2 flex items-center gap-2.5">
+          <div className="mb-2 flex items-center gap-2">
             <SectionIcon><Brain /></SectionIcon>
             <CardTitle>{t("bloomLevels")}</CardTitle>
             <GlowBadge tone="pending" className="ml-auto">{t("comingSoon")}</GlowBadge>
@@ -246,7 +251,7 @@ export default function OverviewTab({ profile }: { profile: StudentProfile }) {
               <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1.5">
                 {bloom.map((l) => (
                   <div key={l.id} className="flex items-center gap-2 text-sm">
-                    <span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: location.hex }} />
+                    <ClassSwatch hex={location.hex} />
                     <span className="truncate text-muted-foreground">{l.label}</span>
                     <span className="ml-auto font-semibold tabular-nums">{l.value}%</span>
                   </div>
@@ -258,9 +263,17 @@ export default function OverviewTab({ profile }: { profile: StudentProfile }) {
         </div>
       </div>
 
+      {/* Standartlar oʻzlashtirishi — radar (soha) + bar roʻyxati (standart).
+          Teglangan topshiriq boʻlmasa panel oʻzini chizmaydi. */}
+      <StandardsPanel
+        classId={location.classId}
+        studentId={profile.id}
+        hex={location.hex}
+      />
+
       {/* Davomat tracker — segment lenta (butun oʻquv yili, kun-ma-kun) */}
       <div className="flex flex-col rounded-xl bg-card p-5 border border-border/50 shadow-sm">
-        <div className="mb-1 flex items-center gap-2.5">
+        <div className="mb-1 flex items-center gap-2">
           <SectionIcon><CalendarRange /></SectionIcon>
           <CardTitle>{t("attendanceStrip")}</CardTitle>
           <TypographyMuted className="ml-auto">{t("attendanceStripDays", { count: attendance.allDays.length })}</TypographyMuted>

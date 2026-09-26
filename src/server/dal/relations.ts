@@ -1,8 +1,9 @@
 import "server-only";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/server/db/client";
-import { studentRelations, students } from "@/server/db/schema";
+import { studentRelations } from "@/server/db/schema";
 import { requireTeacher } from "@/server/session";
+import { visibleStudentIds } from "@/server/workspace";
 
 /* ════════════════════════════════════════════════════════════════════
    RELATIONS DAL — relations-store (qarindoshlik)'ning server tomoni.
@@ -32,12 +33,8 @@ export async function saveRelations(links: string[]): Promise<void> {
   const teacher = await requireTeacher();
   const tid = teacher.id;
 
-  // Faqat oʻz oʻquvchilari orasidagi juftlar qabul qilinadi.
-  const ownRows = await db
-    .select({ id: students.id })
-    .from(students)
-    .where(eq(students.teacherId, tid));
-  const own = new Set(ownRows.map((r) => r.id));
+  // Faqat oʻzi oʻqitadigan oʻquvchilar orasidagi juftlar qabul qilinadi.
+  const own = new Set(await visibleStudentIds("data"));
 
   const wanted = new Set<string>();
   for (const link of links) {

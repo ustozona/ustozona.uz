@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, GitCompareArrows, ListChecks } from "lucide-react";
+import { ChartBar, ChevronDown, Cloud, GitCompareArrows, ListChecks, PenLine, Presentation } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { SHAPE_LABEL, type DraftQuestion } from "./types";
 
-/* Savol turi tanlagichi — select emas, KARTOCHKALI panel (Kahoot naqshi).
+/* Savol turi tanlagichi — select emas, KARTOCHKALI panel.
 
    Nega: savol turi — muharrirning eng katta qarori (butun kanvas
    oʻzgaradi), va turlar soni oʻsib boradi. Kartochka ikonka bilan
@@ -26,7 +26,22 @@ const TYPES: ReadonlyArray<{
     items: [
       { id: "mcq", icon: ListChecks },
       { id: "pairs", icon: GitCompareArrows },
+      { id: "text", icon: PenLine },
     ],
+  },
+  {
+    /* Toʻgʻri javobi yoʻq — sinf fikrini yigʻadi, baholanmaydi. */
+    group: "Fikr yigʻish",
+    items: [
+      { id: "poll", icon: ChartBar },
+      { id: "wordcloud", icon: Cloud },
+    ],
+  },
+  {
+    /* Slayd savol emas — baholanmaydi. Bitta slayd qoʻshilishi bilan
+       toʻplam taqdimotga aylanadi (`container_kind` hisoblanadi, R276). */
+    group: "Maʼlumot berish",
+    items: [{ id: "slide", icon: Presentation }],
   },
 ];
 

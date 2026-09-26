@@ -104,7 +104,7 @@ export default function GradesSettingsModal() {
           </DialogClose>
         </div>
 
-        <div className="flex max-h-[70vh] flex-col gap-5 overflow-y-auto scrollbar-thin p-6">
+        <div className="flex max-h-[70vh] flex-col gap-5 scrollbar-hover overflow-y-auto scrollbar-thin p-6">
           <ScaleControls
             value={draft}
             onChange={(p) => setDraft({ ...draft, ...p })}

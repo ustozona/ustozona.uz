@@ -10,7 +10,7 @@ import { useTranslations } from "next-intl";
 import { initialsOf, type FeedbackReply } from "@/store/useFeedbackStore";
 import { formatFeedbackAgo, formatFeedbackFull, useMonthsShort, useRelativeT } from "./feedback-meta";
 import { QuoteBlock } from "./QuoteBlock";
-import { EmojiText } from "@/components/ui/emoji-text";
+import { RichFeedbackText } from "@/components/feedback/rich-feedback-text";
 import { ReactionChips, QuickReactionBar } from "./ReactionBar";
 
 /* Suhbatdagi bitta javob qatori — top-level va ichki javoblar bir xil. */
@@ -57,7 +57,7 @@ export default function ReplyRow({ reply: r, flashId, onToggleReaction, onReply,
           {r.isOfficial && (
             <>
               <Star className="size-3.5 shrink-0 fill-amber-400 text-amber-400" />
-              <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
+              <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-micro font-semibold text-primary">
                 {t("official")}
               </span>
             </>
@@ -73,7 +73,7 @@ export default function ReplyRow({ reply: r, flashId, onToggleReaction, onReply,
         </div>
         {r.quote && <QuoteBlock quote={r.quote} className="mt-1.5" onJump={onJump} />}
         <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-foreground/90 selection:bg-primary/25">
-          <EmojiText text={r.body} />
+          <RichFeedbackText text={r.body} />
         </p>
         {r.reactions && r.reactions.length > 0 && (
           <div className="mt-2">
@@ -85,7 +85,7 @@ export default function ReplyRow({ reply: r, flashId, onToggleReaction, onReply,
           <button
             type="button"
             onClick={onReply}
-            className="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground transition-colors hover:text-foreground"
+            className="inline-flex items-center gap-1 text-tag font-semibold text-muted-foreground transition-colors hover:text-foreground"
           >
             <CornerUpLeft className="size-3" />
             {t("reply")}

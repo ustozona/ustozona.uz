@@ -11,6 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ColorPickerButton } from "@/components/ui/color-picker-button";
+import { SubjectPicker } from "@/components/SubjectPicker";
+import { subjectLabel } from "@/lib/standards-data";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChevronDownIcon, GraduationCap } from "lucide-react";
@@ -108,7 +110,7 @@ export function ClassFormModal({
             {/* IDENTIFIKATOR BLOKI — ikonka + hisoblangan nom + rang. Ikonkaning
                 OʻZI tanlagich tugmasi (Notion/Linear naqshi), shu bois alohida
                 "ikonka tanlash" tugmasi kerak emas. */}
-            <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 px-3.5 py-3">
+            <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 px-4 py-3">
               <Popover open={isIconPickerOpen} onOpenChange={setIsIconPickerOpen}>
                 <PopoverTrigger asChild>
                   {/* hover: faqat fon toʻqroq boʻladi. Fon inline `style` emas, CSS
@@ -166,7 +168,7 @@ export function ClassFormModal({
                   {previewName || t("namePreviewExample", { example: "5-A" })}
                 </p>
                 <p className="truncate text-xs text-muted-foreground">
-                  {subject.trim() || t("previewNoSubject")}
+                  {subjectLabel(subject) || t("previewNoSubject")}
                 </p>
               </div>
 
@@ -191,7 +193,7 @@ export function ClassFormModal({
                     </span>
                     <ChevronDownIcon className="size-4 shrink-0 opacity-50" />
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-[180px] max-h-[260px] overflow-y-auto">
+                  <DropdownMenuContent className="w-[180px] max-h-[260px] scrollbar-hover overflow-y-auto">
                     <DropdownMenuRadioGroup value={grade === null ? "" : String(grade)} onValueChange={handleGradeChange}>
                       {/* "Darajasiz" — holat emas, TANLOV: toʻgarak kabi guruhlar. */}
                       <DropdownMenuRadioItem value="">{t("noGrade")}</DropdownMenuRadioItem>
@@ -252,9 +254,18 @@ export function ClassFormModal({
               </div>
             )}
 
+            {/* Fan katalogdan tanlanadi — erkin matn emas. Roʻyxatda yoʻq
+                fan (toʻgarak, tayyorlov kursi) uchun erkin nom saqlash
+                yoʻli qoladi. */}
             <div className="space-y-2">
               <Label htmlFor="cfm-subject">{t("subject")}</Label>
-              <Input id="cfm-subject" value={subject} onChange={(e) => setSubject(e.target.value)} placeholder={t("subjectPlaceholder")} />
+              <SubjectPicker
+                id="cfm-subject"
+                suggestProfileSubject
+                value={subject}
+                onChange={setSubject}
+                placeholder={t("subjectPlaceholder")}
+              />
             </div>
           </div>
         </ScrollArea>

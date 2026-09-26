@@ -59,7 +59,7 @@ export function GenderDonutChart({
                 const item = payload[0] as { value: number; payload: { gender: string } };
                 const pct = item.payload.gender === "male" ? boysPct : girlsPct;
                 return (
-                  <div className="rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl">
+                  <div className="rounded-lg border border-border/50 bg-background px-3 py-1.5 text-xs shadow-xl">
                     <span className="font-semibold tabular-nums">{item.value}</span>
                     {unitLabel && <span className="text-muted-foreground"> {unitLabel}</span>}
                     <span className="text-muted-foreground"> ({pct}%)</span>

@@ -1,0 +1,561 @@
+"use client";
+
+import * as React from "react";
+import { toast } from "sonner";
+import { unwrap } from "@/lib/action-result";
+import { subjectLabel } from "@/lib/standards-data";
+import { Copy, Crown, LogOut, MoreHorizontal, Plus, Shield, UserMinus } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  acceptWorkspaceInviteAction,
+  createWorkspaceInviteAction,
+  getWorkspaceAuditAction,
+  getWorkspaceInvitesAction,
+  getWorkspaceMembersAction,
+  leaveWorkspaceAction,
+  previewWorkspaceInviteAction,
+  removeWorkspaceMemberAction,
+  revokeWorkspaceInviteAction,
+  transferWorkspaceOwnershipAction,
+} from "@/server/actions/workspace";
+import { SettingsCard } from "./SettingsShared";
+import { DuplicateStudentsCard } from "./DuplicateStudentsCard";
+
+/* ════════════════════════════════════════════════════════════════════
+   JAMOA — hamkasblar va taklif kodlari (admin-lite kirish nuqtasi).
+
+   ⚠️ Bu boʻlim `/dashboard/settings` da, `/admin` da EMAS. `/admin` —
+   Ustozona jamoasining PLATFORMA paneli, butunlay boshqa oʻq
+   (docs/ish-maydoni-arxitektura.md §11.1).
+
+   ⭐ Yakka oʻqituvchi bu yerda «maktab» soʻzini koʻrmaydi: u faqat
+   «Hamkasbni taklif qilish» tugmasini koʻradi. Maydon tushunchasi
+   hamkasb qoʻshilgandan KEYIN paydo boʻladi (§1).
+   ════════════════════════════════════════════════════════════════════ */
+
+type Member = {
+  teacherId: string;
+  name: string;
+  email: string;
+  role: string;
+  isMe: boolean;
+};
+
+type Invite = {
+  id: string;
+  code: string;
+  role: string;
+  expiresAt: Date;
+  usedAt: Date | null;
+  usedByName: string | null;
+  revokedAt: Date | null;
+};
+
+const ROLE_LABEL: Record<string, string> = {
+  owner: "Egasi",
+  admin: "Maʼmuriyat",
+  teacher: "Oʻqituvchi",
+};
+
+const AUDIT_LABEL: Record<string, string> = {
+  "student.merge": "oʻquvchi yozuvlarini birlashtirdi",
+  "class_teacher.add": "darsga oʻqituvchi biriktirdi",
+  "class_teacher.remove": "darsdan oʻqituvchi chiqardi",
+  "class.transfer_ownership": "sinf egaligini oʻtkazdi",
+  "workspace.transfer_ownership": "maydon egaligini oʻtkazdi",
+  "member.remove": "aʼzoni jamoadan chiqardi",
+  "member.leave": "jamoadan chiqdi",
+  "class.set_parent": "guruhni maʼmuriy sinfga ulash oʻzgardi",
+};
+
+type AuditItem = {
+  id: string;
+  actorName: string;
+  action: string;
+  targetLabel: string | null;
+  createdAt: Date;
+};
+
+export default function TeamSection() {
+  const [members, setMembers] = React.useState<Member[] | null>(null);
+  const [invites, setInvites] = React.useState<Invite[] | null>(null);
+  const [audit, setAudit] = React.useState<AuditItem[] | null>(null);
+  const [code, setCode] = React.useState("");
+  const [confirming, setConfirming] = React.useState<{
+    workspaceName: string;
+    invitedByName: string;
+    role: string;
+    movingClasses: { id: string; name: string; subject: string | null }[];
+    movingStudentCount: number;
+    leavingWorkspaceName: string | null;
+  } | null>(null);
+  const [leaving, setLeaving] = React.useState(false);
+  /* Ikkala amal ham qaytarilmas — tasdiqsiz bajarilmaydi. */
+  const [transferTo, setTransferTo] = React.useState<Member | null>(null);
+  const [removeTarget, setRemoveTarget] = React.useState<Member | null>(null);
+  const [pending, startTransition] = React.useTransition();
+
+  const load = React.useCallback(() => {
+    getWorkspaceMembersAction()
+      .then((r) => setMembers(unwrap(r)))
+      .catch(() => setMembers([]));
+    /* Taklif roʻyxati faqat adminga ochiq — oddiy oʻqituvchida bu
+       chaqiruv rad etiladi va roʻyxat shunchaki koʻrinmaydi. */
+    getWorkspaceInvitesAction()
+      .then((r) => setInvites(unwrap(r)))
+      .catch(() => setInvites(null));
+    getWorkspaceAuditAction()
+      .then((r) => setAudit(unwrap(r)))
+      .catch(() => setAudit(null));
+  }, []);
+
+  React.useEffect(load, [load]);
+
+  const me = members?.find((m) => m.isMe);
+  const canInvite = me?.role === "owner" || me?.role === "admin";
+  const isSolo = (members?.length ?? 1) <= 1;
+
+  /* Qatorda qaysi amal koʻrinadi. Qoidalar serverdagi bilan bir xil
+     (dal/workspace-roles.ts) — bu yerdagisi faqat qulaylik uchun:
+     hokimiyat baribir serverda. */
+  const rowActions = (m: Member) => {
+    if (m.isMe || !canInvite) return [];
+    const out: {
+      key: string;
+      label: string;
+      icon: React.ReactNode;
+      destructive?: boolean;
+      run: () => void;
+    }[] = [];
+    if (me?.role === "owner" && m.role !== "owner") {
+      out.push({
+        key: "transfer",
+        label: "Egalikni oʻtkazish",
+        icon: <Crown className="size-4" />,
+        run: () => setTransferTo(m),
+      });
+    }
+    // Egani chiqarib boʻlmaydi; adminni faqat ega chiqaradi.
+    if (m.role !== "owner" && (m.role !== "admin" || me?.role === "owner")) {
+      out.push({
+        key: "remove",
+        label: "Jamoadan chiqarish",
+        icon: <UserMinus className="size-4" />,
+        destructive: true,
+        run: () => setRemoveTarget(m),
+      });
+    }
+    return out;
+  };
+
+  const transfer = (m: Member) => {
+    setTransferTo(null);
+    startTransition(async () => {
+      try {
+        unwrap(await transferWorkspaceOwnershipAction({ teacherId: m.teacherId }));
+        toast.success(`Egalik ${m.name} ga oʻtdi`);
+        load();
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Oʻtkazib boʻlmadi");
+      }
+    });
+  };
+
+  const removeMember = (m: Member) => {
+    setRemoveTarget(null);
+    startTransition(async () => {
+      try {
+        unwrap(await removeWorkspaceMemberAction({ teacherId: m.teacherId }));
+        toast.success(`${m.name} jamoadan chiqarildi`);
+        load();
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Chiqarib boʻlmadi");
+      }
+    });
+  };
+
+  const createInvite = (role: "admin" | "teacher") => {
+    startTransition(async () => {
+      try {
+        const created = unwrap(await createWorkspaceInviteAction({ role }));
+        await navigator.clipboard.writeText(created).catch(() => {});
+        toast.success(`Kod: ${created}`, { description: "Nusxalandi — hamkasbingizga bering" });
+        load();
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Kod yaratilmadi");
+      }
+    });
+  };
+
+  const checkCode = () => {
+    startTransition(async () => {
+      try {
+        setConfirming(unwrap(await previewWorkspaceInviteAction({ code })));
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Kod notoʻgʻri");
+      }
+    });
+  };
+
+  const accept = () => {
+    setConfirming(null);
+    startTransition(async () => {
+      try {
+        unwrap(await acceptWorkspaceInviteAction({ code }));
+        setCode("");
+        toast.success("Jamoaga qoʻshildingiz");
+        load();
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Qoʻshilib boʻlmadi");
+      }
+    });
+  };
+
+  const leave = () => {
+    setLeaving(false);
+    startTransition(async () => {
+      try {
+        unwrap(await leaveWorkspaceAction());
+        toast.success("Jamoadan chiqdingiz");
+        load();
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Chiqib boʻlmadi");
+      }
+    });
+  };
+
+  /* Server faqat FAOL kodlarni qaytaradi — "muddati oʻtdimi" render
+     paytida hisoblanmaydi (DAL izohi). */
+  const activeInvites = invites ?? [];
+
+  return (
+    <div className="space-y-4">
+      <SettingsCard
+        title="Hamkasblar"
+        description={
+          isSolo
+            ? "Hozircha yolgʻiz ishlayapsiz. Hamkasbingizni taklif qilsangiz, oʻquvchilar roʻyxati umumiy boʻladi — har biringiz ismlarni qaytadan yozmaysiz."
+            : "Bir xil oʻquvchilar ustida ishlaydigan oʻqituvchilar. Kim qaysi darsni oʻtishi sinf sahifasida belgilanadi."
+        }
+      >
+        <div className="flex flex-col gap-1">
+          {(members ?? []).map((m) => (
+            <div
+              key={m.teacherId}
+              className="flex items-center gap-2 rounded-md px-2 py-2 hover:bg-muted/50"
+            >
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                  <span className="truncate text-sm text-foreground">{m.name}</span>
+                  {m.isMe ? <Badge variant="secondary">Siz</Badge> : null}
+                </div>
+                <span className="truncate text-xs text-muted-foreground">{m.email}</span>
+              </div>
+              {m.role === "owner" ? (
+                <Crown className="size-3.5 shrink-0 text-muted-foreground" />
+              ) : null}
+              {m.role === "admin" ? (
+                <Shield className="size-3.5 shrink-0 text-muted-foreground" />
+              ) : null}
+              <span className="shrink-0 text-xs text-muted-foreground">
+                {ROLE_LABEL[m.role] ?? m.role}
+              </span>
+              {rowActions(m).length > 0 ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-7 shrink-0"
+                      aria-label={m.name + " — amallar"}
+                      disabled={pending}
+                    >
+                      <MoreHorizontal className="size-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {rowActions(m).map((a) => (
+                      <DropdownMenuItem
+                        key={a.key}
+                        variant={a.destructive ? "destructive" : "default"}
+                        onSelect={a.run}
+                      >
+                        {a.icon}
+                        {a.label}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : null}
+            </div>
+          ))}
+        </div>
+
+        {canInvite ? (
+          <div className="flex flex-wrap gap-2 border-t border-border pt-4">
+            <Button variant="outline" disabled={pending} onClick={() => createInvite("teacher")}>
+              <Plus className="size-4" />
+              Oʻqituvchini taklif qilish
+            </Button>
+            <Button variant="ghost" disabled={pending} onClick={() => createInvite("admin")}>
+              <Shield className="size-4" />
+              Maʼmuriyat huquqi bilan
+            </Button>
+          </div>
+        ) : null}
+      </SettingsCard>
+
+      {canInvite && activeInvites.length > 0 ? (
+        <SettingsCard
+          title="Faol kodlar"
+          description="Har kod bir marta ishlaydi va 7 kundan keyin oʻz-oʻzidan kuchini yoʻqotadi."
+        >
+          <div className="flex flex-col gap-1">
+            {activeInvites.map((i) => (
+              <div key={i.id} className="flex items-center gap-2 rounded-md px-2 py-2">
+                <code className="font-mono text-sm tracking-widest text-foreground">
+                  {i.code}
+                </code>
+                <span className="text-xs text-muted-foreground">
+                  {ROLE_LABEL[i.role] ?? i.role}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="ml-auto size-7"
+                  aria-label="Nusxalash"
+                  onClick={() => {
+                    void navigator.clipboard.writeText(i.code);
+                    toast.success("Nusxalandi");
+                  }}
+                >
+                  <Copy className="size-3.5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7"
+                  disabled={pending}
+                  onClick={() =>
+                    startTransition(async () => {
+                      try {
+                        unwrap(await revokeWorkspaceInviteAction({ inviteId: i.id }));
+                        toast.success("Kod bekor qilindi");
+                        load();
+                      } catch (e) {
+                        toast.error(e instanceof Error ? e.message : "Bekor qilinmadi");
+                      }
+                    })
+                  }
+                >
+                  Bekor qilish
+                </Button>
+              </div>
+            ))}
+          </div>
+        </SettingsCard>
+      ) : null}
+
+      {/* Dublikat yoʻq boʻlsa oʻzi koʻrinmaydi. */}
+      <DuplicateStudentsCard />
+
+      <SettingsCard
+        title="Taklif kodi bilan qoʻshilish"
+        description="Hamkasbingiz bergan kodni kiriting."
+      >
+        <div className="flex flex-wrap gap-2">
+          <Input
+            value={code}
+            onChange={(e) => setCode(e.target.value.toUpperCase())}
+            placeholder="ABCD2345"
+            className="max-w-48 font-mono tracking-widest"
+            maxLength={16}
+          />
+          <Button disabled={pending || code.trim().length < 4} onClick={checkCode}>
+            Tekshirish
+          </Button>
+        </div>
+      </SettingsCard>
+
+      {canInvite && audit && audit.length > 0 ? (
+        <SettingsCard
+          title="Faoliyat tarixi"
+          description="Jamoa aʼzoligi va oʻquvchi yozuvlariga tegishli oxirgi amallar."
+        >
+          <div className="flex flex-col gap-1">
+            {audit.map((a) => (
+              <div key={a.id} className="flex items-baseline gap-2 py-1 text-xs">
+                <span className="text-foreground">{a.actorName}</span>
+                <span className="text-muted-foreground">
+                  {AUDIT_LABEL[a.action] ?? a.action}
+                </span>
+                {a.targetLabel ? (
+                  <span className="truncate text-muted-foreground">— {a.targetLabel}</span>
+                ) : null}
+                <span className="ml-auto shrink-0 text-muted-foreground">
+                  {a.createdAt.toLocaleDateString("uz-UZ")}
+                </span>
+              </div>
+            ))}
+          </div>
+        </SettingsCard>
+      ) : null}
+
+      {!isSolo && me?.role === "owner" ? (
+        <SettingsCard
+          title="Jamoadan chiqish"
+          description="Maydon egasi toʻgʻridan-toʻgʻri chiqa olmaydi."
+        >
+          <p className="text-caption">
+            Har maydonda kamida bitta ega boʻlishi kerak — aks holda sinf va oʻquvchilarni
+            boshqaradigan odam qolmaydi. Yuqoridagi roʻyxatdan egalikni hamkasbingizga
+            oʻtkazing; shundan keyin bu yerda «Chiqish» tugmasi paydo boʻladi.
+          </p>
+        </SettingsCard>
+      ) : null}
+
+      {!isSolo && me?.role !== "owner" ? (
+        <SettingsCard
+          title="Jamoadan chiqish"
+          description="Siz shaxsiy maydoningizga qaytasiz."
+          destructive
+        >
+          <p className="text-caption">
+            ⚠️ Sinflar va oʻquvchilar jamoada QOLADI — ular umumiy yozuvlar. Siz qoʻygan
+            baholar ham oʻchmaydi, lekin ularni koʻra olmaysiz.
+          </p>
+          <Button variant="destructive" disabled={pending} onClick={() => setLeaving(true)}>
+            <LogOut className="size-4" />
+            Chiqish
+          </Button>
+        </SettingsCard>
+      ) : null}
+
+      <AlertDialog open={confirming !== null} onOpenChange={(v) => !v && setConfirming(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>«{confirming?.workspaceName}» ga qoʻshilasizmi?</AlertDialogTitle>
+            {/* ⭐ Matn emas, ROʻYXAT: qabul qaytarilmas, demak oʻqituvchi
+                aynan nima koʻchishini koʻrishi kerak (§10.6). */}
+            <AlertDialogDescription asChild>
+              <div className="space-y-3">
+                <p>
+                  Taklif qildi: {confirming?.invitedByName}. Rol:{" "}
+                  {ROLE_LABEL[confirming?.role ?? ""] ?? confirming?.role}.
+                </p>
+
+                {confirming && confirming.movingClasses.length > 0 ? (
+                  <div className="rounded-md border border-border p-3">
+                    <p className="mb-2 font-medium text-foreground">
+                      Quyidagilar siz bilan birga koʻchadi:
+                    </p>
+                    <ul className="space-y-0.5">
+                      {confirming.movingClasses.map((c) => (
+                        <li key={c.id}>
+                          {c.name}
+                          {c.subject ? " · " + subjectLabel(c.subject) : ""}
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="mt-2">
+                      … va {confirming.movingStudentCount} oʻquvchi. Hamkasblar ular bilan
+                      birga ishlay oladi.
+                    </p>
+                  </div>
+                ) : (
+                  <p>Koʻchadigan sinf yoʻq — jamoaga boʻsh qoʻshilasiz.</p>
+                )}
+
+                {confirming?.leavingWorkspaceName ? (
+                  <p className="text-destructive">
+                    ⚠️ Siz «{confirming.leavingWorkspaceName}» dan chiqasiz. U yerdagi sinf
+                    va oʻquvchilar oʻsha jamoada QOLADI — ularni koʻra olmaysiz.
+                  </p>
+                ) : null}
+
+                <p>⚠️ Bu amalni orqaga qaytarib boʻlmaydi.</p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+            <AlertDialogAction onClick={accept}>Qoʻshilaman</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={leaving} onOpenChange={setLeaving}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Jamoadan chiqasizmi?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Sinflar va oʻquvchilar jamoada qoladi. Siz boʻsh shaxsiy maydoningizga
+              qaytasiz.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+            <AlertDialogAction onClick={leave}>Chiqish</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={transferTo !== null} onOpenChange={(v) => !v && setTransferTo(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Egalikni {transferTo?.name} ga oʻtkazasizmi?</AlertDialogTitle>
+            <AlertDialogDescription>
+              U maydonning egasi boʻladi: hamkasb taklif qila oladi, aʼzolarni chiqara
+              oladi. Siz «Maʼmuriyat» boʻlib qolasiz — oʻzingizni orqaga qaytara
+              olmaysiz, buni faqat yangi ega qila oladi.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+            <AlertDialogAction onClick={() => transferTo && transfer(transferTo)}>
+              Oʻtkazish
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={removeTarget !== null} onOpenChange={(v) => !v && setRemoveTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{removeTarget?.name} jamoadan chiqarilsinmi?</AlertDialogTitle>
+            <AlertDialogDescription>
+              U oʻz shaxsiy maydoniga qaytadi va bu yerdagi hech narsani koʻrmaydi.
+              Sinflar, oʻquvchilar va u qoʻygan baholar jamoada QOLADI — hech narsa
+              oʻchmaydi. Kerak boʻlsa uni yangi kod bilan qayta taklif qilasiz.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+            <AlertDialogAction onClick={() => removeTarget && removeMember(removeTarget)}>
+              Chiqarish
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}

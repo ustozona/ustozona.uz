@@ -87,7 +87,7 @@ export function WeekStrip({
           >
             <span
               className={cn(
-                "text-[11px] font-medium leading-none",
+                "text-tag font-medium leading-none",
                 isSelected
                   ? "text-primary-foreground/70"
                   : isToday

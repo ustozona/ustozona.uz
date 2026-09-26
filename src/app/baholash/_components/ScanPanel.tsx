@@ -589,11 +589,11 @@ function SheetCard({
           ))}
         </select>
 
-        <Badge variant="outline" className="text-[10px] text-muted-foreground">
+        <Badge size="sm" variant="outline" className="text-muted-foreground">
           {answered}/{gradable} javob
         </Badge>
         {sheet.alreadyEntered && (
-          <Badge variant="outline" className="text-[10px] text-muted-foreground">
+          <Badge size="sm" variant="outline" className="text-muted-foreground">
             allaqachon kiritilgan
           </Badge>
         )}

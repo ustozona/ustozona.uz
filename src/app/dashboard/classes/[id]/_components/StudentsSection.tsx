@@ -36,17 +36,20 @@ import {
 import { Illustration } from "@/components/ui/illustration";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import {
-  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuLabel, DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {
-  Users, User, Plus, Search, ArrowUpDown, TrendingUp, CalendarCheck, Phone, MessageCircle,
-  ExternalLink,
+  Users, User, Plus, UserPlus, Search, ArrowUpDown, TrendingUp, CalendarCheck, Phone,
+  MessageCircle, ExternalLink, MoreHorizontal, ArrowRightLeft,
 } from "lucide-react";
+import { AddFromRosterDialog } from "@/components/students/AddFromRosterDialog";
+import { MoveStudentsDialog } from "@/components/students/MoveStudentsDialog";
 import type { ClassIdentity } from "@/lib/class-id";
+import { useCollator } from "@/lib/use-collator";
 
 /* ── Tiplar va yordamchilar (students sahifasi bilan bir xil mantiq) ── */
-type Status = "active" | "away" | "archived";
+type Status = "active" | "archived";
 type StudentRow = {
   id: string;
   name: string;
@@ -74,14 +77,13 @@ function computeGrade(data: ClassData | undefined, studentId: string): number {
 
 const STATUS_PILL_STYLE: Record<Status, { cls: string; dot: string }> = {
   active: { cls: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20", dot: "bg-emerald-500" },
-  away: { cls: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-400 dark:border-amber-800", dot: "bg-amber-500" },
   archived: { cls: "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800/60 dark:text-slate-400 dark:border-slate-700", dot: "bg-slate-400" },
 };
 
 function statusPillLabels(t: (key: string) => string): Record<Status, string> {
-  return { active: t("statusActive"), away: t("statusAway"), archived: t("statusArchived") };
+  return { active: t("statusActive"), archived: t("statusArchived") };
 }
-const badgeBase = "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border whitespace-nowrap";
+const badgeBase = "inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold border whitespace-nowrap";
 
 function makeInitials(firstName: string, lastName: string): string {
   const a = firstName.trim()[0] ?? "";
@@ -100,8 +102,10 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("grade");
-  const [statusOverride, setStatusOverride] = useState<Record<string, Status>>({});
   const [createOpen, setCreateOpen] = useState(false);
+  const [rosterOpen, setRosterOpen] = useState(false);
+  const [moveTargets, setMoveTargets] = useState<{ id: string; name: string }[]>([]);
+  const compare = useCollator();
 
   // Jonli manbalar — Baholar jurnali va Davomat bilan bir xil store
   // (server-backed). Hydration'gacha roʻyxat boʻsh boʻlib turadi.
@@ -109,6 +113,11 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
   const updateClass = useGradesStore((s) => s.updateClass);
   const liveGrades = useGradesStore((s) => s.classDataMap[classId]);
   const storedRecords = useAttendanceStore((s) => s.recordsByClass[classId]);
+  /* Koʻchirish faqat DARAJALI sinfdan. Darajasiz guruhda (toʻgarak,
+     qoʻshimcha dars) band koʻrsatilmaydi — server `assertSameGrade` da
+     baribir rad etadi. */
+  const canMove = liveGrades?.info.grade != null;
+
   const attendanceStatuses = useAttendanceStore((s) => s.statuses);
   const calendar = useCalendarStore((s) => s.calendar);
   const versions = useTimetableStore((s) => s.versions);
@@ -168,9 +177,9 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
       studentId: `ID-${1001 + i}`,
       grade: computeGrade(data, s.id),
       attendance: weightedRate(records, s.id, statusWeights(attendanceStatuses), lessonDates)?.pct ?? null,
-      status: (statusOverride[s.id] ?? s.status ?? "active") as Status,
+      status: (s.status ?? "active") as Status,
     }));
-  }, [classId, statusOverride, mounted, liveGrades, storedRecords, attendanceStatuses, calendar, versions]);
+  }, [classId, mounted, liveGrades, storedRecords, attendanceStatuses, calendar, versions]);
 
   const students = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -178,15 +187,13 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
       ? allStudents.filter((s) => s.name.toLowerCase().includes(q) || s.studentId.toLowerCase().includes(q))
       : allStudents;
     list = [...list];
-    if (sortKey === "name") list.sort((a, b) => a.name.localeCompare(b.name));
+    if (sortKey === "name") list.sort((a, b) => compare(a.name, b.name));
     else if (sortKey === "grade") list.sort((a, b) => a.grade - b.grade);
     else list.sort((a, b) => (a.attendance ?? Infinity) - (b.attendance ?? Infinity));
     return list;
-  }, [allStudents, search, sortKey]);
+  }, [allStudents, search, sortKey, compare]);
 
   const selectedStudent = students.find((s) => s.id === selectedStudentId) ?? null;
-  const toggleStatus = (id: string, current: Status) =>
-    setStatusOverride((prev) => ({ ...prev, [id]: current === "active" ? "away" : "active" }));
 
   const toolbarBtn = "size-9 shadow-none";
 
@@ -198,12 +205,12 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
         style={{ flexGrow: selectedStudent ? 3 : 5, flexBasis: 0 }}
       >
         {/* Header / toolbar */}
-        <div className="flex min-h-16 shrink-0 items-center gap-2.5 border-b border-border px-5 py-4">
+        <div className="flex min-h-16 shrink-0 items-center gap-3 border-b border-border px-5 py-4">
           <SectionIcon><Users /></SectionIcon>
           <CardTitle className="truncate">{t("title")}</CardTitle>
           <TypographyMuted className="hidden shrink-0 text-sm md:inline">({students.length})</TypographyMuted>
 
-          <div className="ml-auto flex shrink-0 items-center gap-1.5 md:gap-2.5">
+          <div className="ml-auto flex shrink-0 items-center gap-1.5 md:gap-2">
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="outline" size="icon" className={cn(toolbarBtn, search.trim() && "ring-2 ring-primary ring-offset-2")}>
@@ -235,6 +242,19 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
                 </DropdownMenuRadioGroup>
               </DropdownMenuContent>
             </DropdownMenu>
+
+            {/* Mavjud bolani qoʻshish — YANGI yaratmasdan. Ikki holatda
+                kerak: (a) hamkasb allaqachon kiritgan 6-A bolalarini oʻz
+                fan guruhiga olish, (b) oʻz oʻquvchisini toʻgarakka ham
+                qoʻshish. Ikkalasida ham bola BITTA yozuv boʻlib qoladi. */}
+            <Button
+              variant="outline"
+              onClick={() => setRosterOpen(true)}
+              title="Roʻyxatdan qoʻshish"
+            >
+              <UserPlus className="size-4 @[640px]:mr-1" />
+              <span className="hidden @[640px]:inline">Roʻyxatdan</span>
+            </Button>
 
             <Button className="font-semibold" onClick={() => setCreateOpen(true)}>
               <Plus className="size-4 @[640px]:mr-1" />
@@ -294,15 +314,36 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
                             <TrendingUp className="size-3 shrink-0" />
                             {s.grade}%
                           </span>
-                          <button
-                            type="button"
-                            onClick={(e) => { e.stopPropagation(); toggleStatus(s.id, s.status); }}
-                            title={s.status === "active" ? t("markAway") : t("markActive")}
-                            className={cn(badgeBase, "shrink-0 cursor-pointer transition-all hover:opacity-80 active:scale-95", pill.cls)}
-                          >
+                          <span className={cn(badgeBase, "shrink-0", pill.cls)}>
                             <span className={cn("size-1.5 shrink-0 rounded-full", pill.dot)} />
                             {pill.label}
-                          </button>
+                          </span>
+                          {canMove && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <button
+                                type="button"
+                                aria-label="Oʻquvchi amallari"
+                                onClick={(e) => e.stopPropagation()}
+                                className="flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:bg-black/5 hover:text-foreground group-hover:opacity-100 dark:hover:bg-white/10"
+                              >
+                                <MoreHorizontal className="size-4" />
+                              </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem
+                                className="cursor-pointer gap-2"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setMoveTargets([{ id: s.id, name: s.name }]);
+                                }}
+                              >
+                                <ArrowRightLeft className="size-4 text-muted-foreground" />
+                                Boshqa sinfga koʻchirish
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -324,7 +365,6 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
               className={identity.name}
               hex={hex}
               tint={tint}
-              onToggleStatus={() => toggleStatus(selectedStudent.id, selectedStudent.status)}
               onViewProfile={() => openProfile(selectedStudent.id)}
             />
           </div>
@@ -338,19 +378,31 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
         onCreate={handleCreate}
         onImport={handleImport}
       />
+
+      <AddFromRosterDialog
+        open={rosterOpen}
+        onOpenChange={setRosterOpen}
+        classId={classId}
+      />
+
+      <MoveStudentsDialog
+        open={moveTargets.length > 0}
+        onOpenChange={(v) => { if (!v) setMoveTargets([]); }}
+        fromClassId={classId}
+        students={moveTargets}
+      />
     </div>
   );
 }
 
 /* ── Preview kartasi (students sahifasidagi dizayn) ── */
 function PreviewCard({
-  student, className, hex, tint, onToggleStatus, onViewProfile,
+  student, className, hex, tint, onViewProfile,
 }: {
   student: StudentRow;
   className: string;
   hex: string;
   tint: (pct: number) => string;
-  onToggleStatus: () => void;
   onViewProfile: () => void;
 }) {
   const t = useTranslations("StudentsSection");
@@ -381,10 +433,10 @@ function PreviewCard({
         <div className="flex min-h-full flex-col px-6 pb-6">
           <div className="mb-4 space-y-2 text-center">
             <div className="flex justify-center">
-              <button type="button" onClick={onToggleStatus} className={cn(badgeBase, "cursor-pointer transition-all hover:opacity-80 active:scale-95", pill.cls)}>
+              <span className={cn(badgeBase, pill.cls)}>
                 <span className={cn("size-1.5 rounded-full", pill.dot)} />
                 {pill.label}
-              </button>
+              </span>
             </div>
             <CardTitle className="text-xl">{student.name}</CardTitle>
             <TypographyMuted className="text-sm">{student.studentId}</TypographyMuted>
@@ -405,7 +457,7 @@ function PreviewCard({
 
           <div>
             <TypographyLabel className="mb-3 block">{t("contactLabel")}</TypographyLabel>
-            <div className="flex flex-col items-start gap-2.5 rounded-lg border border-dashed border-border p-4">
+            <div className="flex flex-col items-start gap-3 rounded-lg border border-dashed border-border p-4">
               <div className="flex items-center gap-2 text-muted-foreground">
                 <User className="size-4" />
                 <TypographyMuted>{t("noContact")}</TypographyMuted>

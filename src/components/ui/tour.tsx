@@ -1059,12 +1059,47 @@ function TourStep(props: TourStepProps) {
 
       window.addEventListener("resize", onResize);
       window.addEventListener("scroll", onScroll, { passive: true });
+
+      /* Nishon oʻzi CSS orqali kengayib-torayishi mumkin (mas. dashboard
+         ustunlari `grid-template-columns` animatsiyasi bilan qadam bosqichi
+         almashganda qayta boʻlinadi — [[dashboard-columns-primitive]]).
+         Window `resize` bu holatni ushlamaydi, shuning uchun nishonning
+         oʻzini ResizeObserver bilan kuzatamiz — aks holda maska animatsiya
+         boshlanish daqiqasidagi eski oʻlchamda "qotib qoladi". */
+      const resizeObserver = new ResizeObserver(() => {
+        updateMask(store, targetElement, context.spotlightPadding);
+      });
+      resizeObserver.observe(targetElement);
+
+      /* Nishon oʻzi oʻlchamini oʻzgartirmasdan ham joyidan siljishi mumkin —
+         mas. yuqorisiga banner (TourDemoBanner) qoʻshilsa, butun sahifa
+         pastga suriladi. ResizeObserver buni ushlamaydi (nishonning oʻzi
+         resize boʻlmadi), window `resize` ham yoʻq (viewport oʻzgarmadi).
+         `document.body` daraxtidagi har qanday qoʻshilish/oʻchirishni
+         kuzatib, bitta rAF ichida qayta hisoblaymiz. */
+      let mutationRafId: number | null = null;
+      const mutationObserver = new MutationObserver(() => {
+        if (mutationRafId !== null) return;
+        mutationRafId = requestAnimationFrame(() => {
+          mutationRafId = null;
+          if (targetElement) {
+            updateMask(store, targetElement, context.spotlightPadding);
+          }
+        });
+      });
+      mutationObserver.observe(document.body, { childList: true, subtree: true });
+
       return () => {
         window.removeEventListener("resize", onResize);
         window.removeEventListener("scroll", onScroll);
         if (rafId !== null) {
           cancelAnimationFrame(rafId);
         }
+        if (mutationRafId !== null) {
+          cancelAnimationFrame(mutationRafId);
+        }
+        resizeObserver.disconnect();
+        mutationObserver.disconnect();
       };
     }
   }, [open, targetElement, isCurrentStep, store, context.spotlightPadding]);

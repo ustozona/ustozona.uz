@@ -4,6 +4,7 @@ import { db } from "@/server/db/client";
 import { feedback } from "@/server/db/schema";
 import { requireTeacher } from "@/server/session";
 import { notifyAdmins } from "./notify";
+import { feedbackExcerpt } from "@/lib/feedback-link-markup";
 import {
   type EmojiReaction,
   type FeedbackItem,
@@ -29,10 +30,7 @@ import {
 export type FeedbackPayload = { items: FeedbackItem[] };
 
 /** Bildirishnoma tanasi uchun qisqartma. */
-function excerpt(text: string): string {
-  const t = text.trim();
-  return t.length > 120 ? `${t.slice(0, 117)}…` : t;
-}
+const excerpt = feedbackExcerpt;
 
 type StoredReaction = { emoji: string; count: number; reactorIds: string[] };
 type StoredReply = Omit<FeedbackReply, "reactions"> & { reactions?: StoredReaction[] };
@@ -188,6 +186,7 @@ export async function addFeedbackReply(id: string, input: NewFeedbackReplyInput)
   const item = row.data as StoredFeedback;
   const reply: StoredReply = {
     id: crypto.randomUUID(),
+    authorId: teacher.id,
     author: teacher.name,
     authorAvatarUrl: teacher.avatarUrl ?? undefined,
     isOfficial: false,

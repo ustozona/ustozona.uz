@@ -9,7 +9,6 @@ import {
   ArrowRight,
   ArrowLeft,
   Check,
-  BookOpen,
   Users,
   User,
   School,
@@ -21,11 +20,11 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DateKeyPicker } from "@/components/ui/date-key-picker";
 import { BirthDatePicker } from "@/components/ui/birth-date-picker";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
+import { SubjectPicker } from "@/components/SubjectPicker";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { AppleEmoji } from "@/components/ui/apple-emoji";
 import { Illustration } from "@/components/ui/illustration";
@@ -231,7 +230,7 @@ export default function OnboardingWizard() {
             indikator markazidan absolyut oʻtadi. Faol qadam halqasi indikatorda
             (ring), butun qator emas. Orqaga qaytish uchun bosiladi, oldinga
             sakrash taqiqlangan (disabled) — odatiy oqim footerdagi tugmalar. */}
-        <StepperNav className="w-60 shrink-0 justify-center gap-0 overflow-y-auto border-r border-border bg-muted/40 px-6 py-8">
+        <StepperNav className="w-60 shrink-0 justify-center gap-0 scrollbar-hover overflow-y-auto border-r border-border bg-muted/40 px-6 py-8">
           {STEPS.map((s, i) => (
             <StepperItem
               key={s.id}
@@ -260,7 +259,7 @@ export default function OnboardingWizard() {
           ))}
         </StepperNav>
 
-        <StepperPanel className="min-w-0 min-h-0 flex-1 overflow-y-auto px-6 py-6">
+        <StepperPanel className="min-w-0 min-h-0 flex-1 scrollbar-hover overflow-y-auto px-6 py-6">
           {/* ── 0: Xush kelibsiz ── */}
           <StepperContent value="welcome">
             <div className="flex flex-col gap-5 text-center animate-in fade-in-50 duration-base">
@@ -320,17 +319,16 @@ export default function OnboardingWizard() {
                       </InputGroup>
                     </Field>
                     <Field label={t("profileStep.subjectLabel")} htmlFor="ob-subject">
-                      <InputGroup>
-                        <InputGroupAddon>
-                          <BookOpen className="size-4" />
-                        </InputGroupAddon>
-                        <InputGroupInput
-                          id="ob-subject"
-                          value={subject}
-                          onChange={(e) => setSubject(e.target.value)}
-                          placeholder={t("profileStep.subjectPlaceholder")}
-                        />
-                      </InputGroup>
+                      {/* Fan katalogdan tanlanadi — erkin matn emas. Roʻyxatda
+                          yoʻq fan uchun erkin nom saqlash yoʻli qoladi.
+                          Tanlagich sinf modali va Sozlamalar > Profil bilan
+                          bitta komponent. */}
+                      <SubjectPicker
+                        id="ob-subject"
+                        value={subject}
+                        onChange={setSubject}
+                        placeholder={t("profileStep.subjectPlaceholder")}
+                      />
                     </Field>
                   </div>
                   <Field label={t("profileStep.birthDateLabel")} htmlFor="ob-birth-date">

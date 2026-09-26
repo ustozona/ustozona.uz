@@ -138,8 +138,10 @@ export const EventCard = forwardRef<HTMLDivElement | HTMLButtonElement, EventCar
               onClick={(e) => e.stopPropagation()}
               style={filled ? tints.textOnSolid : tints.textOnTint}
               className={cn(
-                "group/title flex min-w-0 items-center gap-1 font-bold leading-tight underline-offset-[3px] hover:underline focus-visible:underline focus-visible:outline-none",
-                resolvedDensity === "micro" ? "text-xs" : "text-sm",
+                "group/title flex min-w-0 items-center gap-1 underline-offset-[3px] hover:underline focus-visible:underline focus-visible:outline-none",
+                // TIPOGRAFIKA — rol orqali (DESIGN.md §3): sarlavha 15/600, eng past
+                // blokda 12/600. Qoʻlda oʻlcham/vazn yozilmaydi.
+                resolvedDensity === "micro" ? "text-caption font-semibold" : "text-title-sm",
                 titleClassName,
               )}
             >
@@ -151,8 +153,10 @@ export const EventCard = forwardRef<HTMLDivElement | HTMLButtonElement, EventCar
               title={title}
               style={filled ? tints.textOnSolid : tints.textOnTint}
               className={cn(
-                "min-w-0 truncate font-bold leading-tight",
-                resolvedDensity === "micro" ? "text-xs" : "text-sm",
+                "min-w-0 truncate",
+                // TIPOGRAFIKA — rol orqali (DESIGN.md §3): sarlavha 15/600, eng past
+                // blokda 12/600. Qoʻlda oʻlcham/vazn yozilmaydi.
+                resolvedDensity === "micro" ? "text-caption font-semibold" : "text-title-sm",
                 titleClassName,
               )}
             >
@@ -163,7 +167,7 @@ export const EventCard = forwardRef<HTMLDivElement | HTMLButtonElement, EventCar
           {resolvedDensity === "compact" && subtitle != null && (
             <span
               style={filled ? tints.textOnSolidMuted : tints.textOnTintMuted}
-              className="shrink-0 truncate text-xs"
+              className="shrink-0 truncate text-caption"
             >
               {subtitle}
             </span>
@@ -172,7 +176,7 @@ export const EventCard = forwardRef<HTMLDivElement | HTMLButtonElement, EventCar
         {resolvedDensity === "cozy" && subtitle != null && (
           <span
             style={filled ? tints.textOnSolidMuted : tints.textOnTintMuted}
-            className="relative flex min-w-0 items-center gap-1.5 truncate text-xs"
+            className="relative flex min-w-0 items-center gap-1.5 truncate text-caption"
           >
             {subtitle}
           </span>
@@ -188,3 +192,22 @@ export const EventCard = forwardRef<HTMLDivElement | HTMLButtonElement, EventCar
     );
   },
 );
+
+/** Kartadagi fan + vaqt qatori — YAGONA tartib: sinf nomi (sarlavha), fan,
+    vaqt. Baland kartada fan va vaqt alohida qatorda; past kartada `·` bilan
+    bitta qatorga yigʻiladi. */
+export const STACKED_SUBTITLE_MIN_H = 84;
+
+export function EventSubtitle({ subject, time, height }: { subject?: string; time: string; height: number }) {
+  return subject && height >= STACKED_SUBTITLE_MIN_H ? (
+    <span className="flex min-w-0 flex-col">
+      <span className="truncate">{subject}</span>
+      <span className="truncate tabular-nums">{time}</span>
+    </span>
+  ) : (
+    <span className="truncate">
+      {subject ? `${subject} · ` : ""}
+      <span className="tabular-nums">{time}</span>
+    </span>
+  );
+}

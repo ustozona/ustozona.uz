@@ -1,5 +1,7 @@
 import { create } from "zustand";
-import type { Unit, Lesson, LessonStatus, LessonSession } from "@/lib/lessons-data";
+import type { SessionMove } from "@/lib/lesson-shift";
+import { isTaught, lessonClassIds, lessonSessions, lessonUnitIds, withTaughtRev, type Unit, type Lesson, type LessonStatus, type LessonSession, type LessonPlanState } from "@/lib/lessons-data";
+import { todayKey } from "@/lib/date-keys";
 
 /* ════════════════════════════════════════════════════════════════════
    MAVZU BANKI — server-backed store (6-bosqich migratsiyasi)
@@ -16,6 +18,13 @@ const MON_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "
 
 function uid(prefix: string) {
   return `${prefix}-${Math.random().toString(36).slice(2, 9)}`;
+}
+/** Sinf xaritasigacha oʻtilgan (eski) mavzuda sinfning oʻtilgan kuni yozilmagan —
+    shu sinfning bugungacha boʻlgan oxirgi sessiyasi, u ham boʻlmasa bugun. */
+function legacyTaughtDay(l: Lesson, classId: string): string {
+  const today = todayKey();
+  const past = lessonSessions(l).filter((x) => x.classId === classId && x.date <= today).map((x) => x.date).sort();
+  return past.at(-1) ?? today;
 }
 function fmtDisplayDate(dateKey: string): string {
   const [, m, d] = dateKey.split("-").map(Number);
@@ -56,6 +65,15 @@ function scheduleMapOf(l: Lesson): Record<string, LessonSession[]> {
   return {};
 }
 
+/** `orderedIds` dagi elementlarga `number = oʻrin + 1`; qiymati oʻzgarmaganlar aynan oʻsha obyekt qoladi. */
+function renumber<T extends { id: string; number: number }>(items: T[], orderedIds: string[]): T[] {
+  const pos = new Map(orderedIds.map((id, i) => [id, i + 1]));
+  return items.map((it) => {
+    const n = pos.get(it.id);
+    return n === undefined || n === it.number ? it : { ...it, number: n };
+  });
+}
+
 /* ── Pure selektorlar ── */
 export function unitsForClass(units: Unit[], classId: string): Unit[] {
   return units.filter((u) => u.classId === classId).sort((a, b) => a.number - b.number);
@@ -80,7 +98,17 @@ interface LessonState {
 
   addUnit: (data: { classId: string; title: string; description?: string }) => string;
   updateUnit: (id: string, patch: Partial<Omit<Unit, "id">>) => void;
-  deleteUnit: (id: string) => void;
+  /** Boʻlimni oʻchirish. `withLessons` (standart: rost) — ichidagi darslar
+      ham oʻchadi (jadvaldagi sessiyalari bilan). `false` — darslar saqlanib,
+      «Boʻlimsiz» ga oʻtadi. */
+  deleteUnit: (id: string, opts?: { withLessons?: boolean }) => void;
+  /** Tartiblash rejimi «Tayyor»: berilgan guruh (bitta sinf boʻlimlari yoki
+      bitta boʻlim mavzulari) `number` i roʻyxat tartibida 1..n qilib yoziladi.
+      Oʻzgarmagan qatorlar tegilmaydi — sinxron diff faqat surilganlarni yuboradi. */
+  reorderUnits: (orderedIds: string[]) => void;
+  /** `classId` — qaysi sinf koʻrinishida tartiblandi: koʻp sinfli mavzuda tartib
+      `orderByClass[classId]` ga yoziladi, umumiy `number` ga tegilmaydi. */
+  reorderLessons: (orderedIds: string[], classId: string) => void;
   /** Oʻchirilgan boʻlimni (va unga tegishli boʻlgan darslar boʻlim-bogʻlanishini) qaytarish — undo uchun. */
   restoreUnit: (unit: Unit, lessonIds: string[]) => void;
 
@@ -91,13 +119,27 @@ interface LessonState {
   scheduleLesson: (id: string, dateKey: string, startMin: number, endMin: number) => void;
   unscheduleLesson: (id: string) => void;
   setStatus: (id: string, status: LessonStatus) => void;
+  /** Dars rejasi tayyor belgisi. */
+  setPlanReady: (id: string, ready: boolean) => void;
+  setPlanState: (id: string, state: LessonPlanState) => void;
+  /** Oʻtildi (`dateKey`) / oʻtilmagan (`null`). Eski `status` ham moslanadi —
+      progress chiziqlari va boshqa isteʼmolchilar hali `Completed` ni oʻqiydi. */
+  /** `classId` berilsa va mavzu koʻp sinfli boʻlsa — faqat shu sinfda belgilanadi. */
+  setTaught: (id: string, dateKey: string | null, classId?: string | null) => void;
 
   /** Bitta sessiyani boshqa sana/vaqtga koʻchirish (planner drag/tahrir). */
   moveSession: (id: string, classId: string, oldDate: string, oldStartMin: number, newDate: string, newStartMin: number, newEndMin: number) => void;
+  /** Surish dvigateli (`@/lib/lesson-shift`) natijasini BITTA holat oʻzgarishida
+      qoʻllash: har darsda `from` lar olinib, `to` lar qoʻshiladi (toʻplam
+      sifatida — bitta darsning ketma-ket sessiyalari ham toʻgʻri siljiydi). */
+  applySessionMoves: (classId: string, moves: SessionMove[]) => void;
   /** Berilgan sinfdagi aynan bitta sessiyani olib tashlash (bankka qaytarish). */
   unscheduleSession: (id: string, classId: string, date: string, startMin: number) => void;
   /** Oʻchirilgan darsni TOʻLIQ (content/standards/scheduleByClass bilan) qaytarish. */
   restoreLesson: (lesson: Lesson) => void;
+  /** Aʼzo BOʻLMAGAN sinflarga tegishli jadval yozuvlarini tozalash. Nechta
+      yozuv olib tashlangani qaytadi (0 = holat izchil, store tegilmaydi). */
+  pruneOrphanSessions: () => number;
 
   /* ── Koʻp-sinf (Model A) ── */
   /** Darsning aʼzo sinflarini oʻrnatish; boʻlim/jadval xaritalari tozalanadi (endi yoʻq sinflar uchun). */
@@ -123,11 +165,38 @@ export const useLessonStore = create<LessonState>()(
         set((s) => ({ units: [...s.units, { id, classId, number: nextNumber, title, description }] }));
         return id;
       },
+      reorderUnits: (orderedIds) => set((s) => ({ units: renumber(s.units, orderedIds) })),
+      reorderLessons: (orderedIds, classId) => set((s) => {
+        const pos = new Map(orderedIds.map((id, i) => [id, i + 1]));
+        return {
+          lessons: s.lessons.map((l) => {
+            const n = pos.get(l.id);
+            if (n === undefined) return l;
+            if (lessonClassIds(l).length > 1) {
+              return l.orderByClass?.[classId] === n ? l : { ...l, orderByClass: { ...l.orderByClass, [classId]: n } };
+            }
+            return n === l.number ? l : { ...l, number: n };
+          }),
+        };
+      }),
       updateUnit: (id, patch) => set((s) => ({ units: s.units.map((u) => (u.id === id ? { ...u, ...patch } : u)) })),
-      deleteUnit: (id) => set((s) => ({
-        units: s.units.filter((u) => u.id !== id),
-        lessons: s.lessons.map((l) => (l.unitId === id ? { ...l, unitId: null } : l)),
-      })),
+      deleteUnit: (id, opts) => set((s) => {
+        const withLessons = opts?.withLessons ?? true;
+        const lessons: Lesson[] = [];
+        for (const l of s.lessons) {
+          if (!lessonUnitIds(l).includes(id)) { lessons.push(l); continue; }
+          // Dars BOSHQA boʻlimga ham tegishli (koʻp-sinf) boʻlsa oʻchmaydi —
+          // faqat shu boʻlim bogʻlanishi uziladi, aks holda boshqa sinfning
+          // rejasi ham qoʻshimcha yoʻqotishga uchrardi.
+          const linkedElsewhere = lessonUnitIds(l).some((uid) => uid !== id);
+          if (withLessons && !linkedElsewhere) continue;
+          const unitByClass = l.unitByClass
+            ? Object.fromEntries(Object.entries(l.unitByClass).map(([cid, uid]) => [cid, uid === id ? null : uid]))
+            : l.unitByClass;
+          lessons.push({ ...l, unitId: l.unitId === id ? null : l.unitId, unitByClass });
+        }
+        return { units: s.units.filter((u) => u.id !== id), lessons };
+      }),
       restoreUnit: (unit, lessonIds) => set((s) => ({
         units: s.units.some((u) => u.id === unit.id) ? s.units : [...s.units, unit],
         lessons: s.lessons.map((l) => (lessonIds.includes(l.id) ? { ...l, unitId: unit.id } : l)),
@@ -140,7 +209,7 @@ export const useLessonStore = create<LessonState>()(
         return id;
       },
       updateLesson: (id, patch) => set((s) => ({
-        lessons: s.lessons.map((l) => (l.id === id ? { ...l, ...patch, updatedAt: new Date().toISOString() } : l)),
+        lessons: s.lessons.map((l) => (l.id === id ? withTaughtRev(l, { ...l, ...patch, updatedAt: new Date().toISOString() }) : l)),
       })),
       deleteLesson: (id) => set((s) => ({ lessons: s.lessons.filter((l) => l.id !== id) })),
 
@@ -156,7 +225,36 @@ export const useLessonStore = create<LessonState>()(
           scheduledDate: undefined, startMin: undefined, endMin: undefined, date: undefined, time: undefined,
         } : l),
       })),
-      setStatus: (id, status) => set((s) => ({ lessons: s.lessons.map((l) => (l.id === id ? { ...l, status } : l)) })),
+      setStatus: (id, status) => set((s) => ({ lessons: s.lessons.map((l) => (l.id === id ? withTaughtRev(l, { ...l, status }) : l)) })),
+      setPlanState: (id, state) => set((s) => ({ lessons: s.lessons.map((l) => (l.id === id ? { ...l, planReady: state === "ready", planStatus: state === "ready" ? undefined : state } : l)) })),
+      setPlanReady: (id, ready) => set((s) => ({ lessons: s.lessons.map((l) => (l.id === id ? { ...l, planReady: ready } : l)) })),
+      setTaught: (id, dateKey, classId) => set((s) => ({
+        lessons: s.lessons.map((l) => {
+          if (l.id !== id) return l;
+          const ids = lessonClassIds(l);
+          let taughtAt = dateKey;
+          let taughtByClass: Record<string, string | null> | undefined;
+          // Sinf xaritasi bir marta paydo boʻlgach (bitta sinfga qaytgan mavzuda ham)
+          // `isTaught` avval shundan oʻqiydi — yozuv ham shu yerga tushishi shart,
+          // aks holda eskirgan yozuv belgini «qaytarib» turardi.
+          if (ids.length > 1 || l.taughtByClass) {
+            // Joriy holat har sinf uchun aniq yoziladi, keyin faqat kerakli sinf(lar) oʻzgaradi.
+            taughtByClass = {};
+            for (const c of ids) {
+              const prev = l.taughtByClass && c in l.taughtByClass
+                ? l.taughtByClass[c]
+                : isTaught(l) ? (l.taughtAt ?? legacyTaughtDay(l, c)) : null;
+              taughtByClass[c] = !classId || c === classId ? dateKey : prev;
+            }
+            const vals = ids.map((c) => taughtByClass![c]);
+            if (vals.length) taughtAt = vals.every((v) => v != null) ? (vals as string[]).sort().at(-1)! : null;
+          }
+          const status: LessonStatus = taughtAt
+            ? "Completed"
+            : anySessions(scheduleMapOf(l)) ? "Scheduled" : "Unscheduled";
+          return withTaughtRev(l, { ...l, taughtAt, ...(taughtByClass ? { taughtByClass } : {}), status });
+        }),
+      })),
 
       moveSession: (id, classId, oldDate, oldStartMin, newDate, newStartMin, newEndMin) => set((s) => ({
         lessons: s.lessons.map((l) => {
@@ -177,6 +275,37 @@ export const useLessonStore = create<LessonState>()(
         }),
       })),
 
+      applySessionMoves: (classId, moves) => set((s) => {
+        const byLesson = new Map<string, SessionMove[]>();
+        for (const m of moves) byLesson.set(m.lessonId, [...(byLesson.get(m.lessonId) ?? []), m]);
+        return {
+          lessons: s.lessons.map((l) => {
+            const ms = byLesson.get(l.id);
+            if (!ms) return l;
+            const base = scheduleMapOf(l);
+            const arr = [...(base[classId] ?? [])];
+            // `to` faqat `from` haqiqatan topilgan (yoki sanasizdan kelgan) boʻlsa qoʻshiladi —
+            // eskirgan koʻchish (kechikkan undo) sessiyani ikkilantirmasin.
+            for (const m of ms) {
+              if (m.from) {
+                const i = arr.findIndex((x) => x.date === m.from!.date && x.startMin === m.from!.startMin);
+                if (i < 0) continue;
+                arr.splice(i, 1);
+              }
+              if (m.to && !arr.some((x) => x.date === m.to!.date && x.startMin === m.to!.startMin)) arr.push({ ...m.to });
+            }
+            arr.sort((a, b) => a.date.localeCompare(b.date) || a.startMin - b.startMin);
+            const scheduleByClass = { ...base };
+            if (arr.length) scheduleByClass[classId] = arr; else delete scheduleByClass[classId];
+            const has = anySessions(scheduleByClass);
+            const status: LessonStatus = !has && l.status === "Scheduled" ? "Unscheduled"
+              : has && l.status === "Unscheduled" ? "Scheduled" : l.status;
+            const primary = (l.classIds && l.classIds[0]) || l.classId;
+            return { ...l, scheduleByClass, status, ...(classId === primary ? legacyScheduleFields(scheduleByClass[primary]) : {}) };
+          }),
+        };
+      }),
+
       unscheduleSession: (id, classId, date, startMin) => set((s) => ({
         lessons: s.lessons.map((l) => {
           if (l.id !== id) return l;
@@ -196,6 +325,40 @@ export const useLessonStore = create<LessonState>()(
       restoreLesson: (lesson) => set((s) => (
         s.lessons.some((l) => l.id === lesson.id) ? s : { lessons: [...s.lessons, lesson] }
       )),
+
+      /* Aʼzolik (`classIds`) — yagona haqiqat: dars roʻyxatlari, «Ulash»
+         nomzodlari, boʻlim filtri — hammasi shundan oʻqiydi. `scheduleByClass`
+         da aʼzo boʻlmagan sinf qolib ketsa, dars HECH QAYSI roʻyxatda
+         koʻrinmaydi, lekin plannerda kunga ulangan holda turaveradi —
+         foydalanuvchi uni oʻchira olmaydi (2026-09-18 kuzatuvi). Bu yerda
+         shunday yozuvlar bir marta, hydration'dan keyin tozalanadi. */
+      pruneOrphanSessions: () => {
+        let removed = 0;
+        const lessons = get().lessons.map((l) => {
+          const map = l.scheduleByClass;
+          if (!map) return l;
+          const members = new Set(lessonClassIds(l));
+          const orphanKeys = Object.keys(map).filter((cid) => !members.has(cid));
+          if (!orphanKeys.length) return l;
+          const next = { ...map };
+          for (const cid of orphanKeys) {
+            removed += next[cid]?.length ?? 0;
+            delete next[cid];
+          }
+          // Xarita boʻshab qolsa `lessonSessions()` legacy maydonlardan
+          // sessiya SINTEZ qiladi — aʼzo boʻlmagan sinf shu yoʻl bilan
+          // plannerga qaytib chiqmasin.
+          const legacyOrphan = !anySessions(next) && !!l.classId && !members.has(l.classId);
+          return {
+            ...l,
+            scheduleByClass: next,
+            ...(legacyOrphan ? legacyScheduleFields(undefined) : {}),
+            status: (anySessions(next) ? l.status : "Unscheduled") as LessonStatus,
+          };
+        });
+        if (removed) set({ lessons });
+        return removed;
+      },
 
       /* ── Koʻp-sinf (Model A) ──
          classIds[0] = "asosiy" sinf; legacy maydonlar (classId/unitId/scheduledDate/

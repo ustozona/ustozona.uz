@@ -1,6 +1,6 @@
 import Header from "@/components/Header";
 import ImpersonationBanner from "@/components/ImpersonationBanner";
-import { AppSidebar } from "@/components/app-sidebar";
+import AppSidebarServer from "@/components/app-sidebar-server";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import DashboardShellWrapper from "@/components/DashboardShellWrapper";
 import WorkspaceBackground from "@/components/WorkspaceBackground";
@@ -89,11 +89,16 @@ export default function DashboardLayout({
           Bu naqsh allaqachon yozilgan va ishlaydi. */}
       <TourProvider />
       <AssignmentEditorHost />
-      <AppSidebar />
+      <AppSidebarServer />
       <SidebarInset className="min-h-0 overflow-hidden">
         <ImpersonationBanner />
         <Header />
-        <div className="relative flex-1 min-w-0 min-h-0 overflow-hidden">
+        {/* Scroll siyosati: `lg+` da kontent maydoni mixlangan va scroll
+            panellar ICHIDA qoladi (desktop maketining asosi). `< lg` da
+            panellar ustma-ust tushadi va sigʻmaydi — shu sabab vertikal
+            scroll shu oʻramga oʻtadi, sahifa qobiqlari esa tabiiy balandlik
+            oladi (`DashboardPage.tsx` dagi `max-lg:` qoidalari). */}
+        <div className="relative flex-1 min-w-0 min-h-0 overflow-hidden max-lg:overflow-y-auto">
           <WorkspaceBackground />
           <DashboardShellWrapper>{children}</DashboardShellWrapper>
         </div>

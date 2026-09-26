@@ -13,9 +13,9 @@ import type { TimetableEvent } from "@/lib/timetable";
 
 export function makeTimetableTourDemo(): { classes: TimetableClass[]; events: TimetableEvent[] } {
   const classes: TimetableClass[] = [
-    { id: "demo-tt-1", name: "Matematika 7-A", color: "sky" as ClassColor, subject: "Matematika" },
-    { id: "demo-tt-2", name: "Ona tili 8-B", color: "green" as ClassColor, subject: "Ona tili" },
-    { id: "demo-tt-3", name: "Fizika 9-A", color: "amber" as ClassColor, subject: "Fizika" },
+    { id: "demo-tt-1", name: "7-A", color: "sky" as ClassColor, subject: "Matematika" },
+    { id: "demo-tt-2", name: "8-B", color: "green" as ClassColor, subject: "Ona tili" },
+    { id: "demo-tt-3", name: "9-A", color: "amber" as ClassColor, subject: "Fizika" },
   ];
 
   const events: TimetableEvent[] = [

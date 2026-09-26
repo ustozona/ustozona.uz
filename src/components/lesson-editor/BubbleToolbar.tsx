@@ -6,7 +6,7 @@ import {
   Bold, Italic, Underline as UnderlineIcon, Strikethrough, Highlighter,
   SubscriptIcon, SuperscriptIcon, Link2,
 } from "lucide-react";
-import { Btn, Div, TEXT_COLORS } from "./EditorToolbar";
+import { Btn, Div, BUBBLE_COLORS } from "./EditorToolbar";
 
 /** Matn tanlanganda chiqadigan qisqa formatlash paneli (Notion/Medium uslubi). */
 export default function BubbleToolbar({ editor }: { editor: Editor }) {
@@ -29,7 +29,7 @@ export default function BubbleToolbar({ editor }: { editor: Editor }) {
         else editor.chain().focus().extendMarkRange("link").setLink({ href: url.trim() }).run();
       }}><Link2 className="size-4" /></Btn>
       <Div />
-      {TEXT_COLORS.slice(0, 5).map((c) => (
+      {BUBBLE_COLORS.map((c) => (
         <button key={c} type="button" title={c} onClick={() => editor.chain().focus().setColor(c).run()}
           className="size-5 rounded-full shrink-0 mx-0.5" style={{ backgroundColor: c }}
         />

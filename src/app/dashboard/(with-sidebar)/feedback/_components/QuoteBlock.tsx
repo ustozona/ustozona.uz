@@ -3,10 +3,11 @@
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import type { ReplyQuote } from "@/store/useFeedbackStore";
+import { stripLinkMarkup } from "@/lib/feedback-link-markup";
 
 /** Iqtibos matni uchun qisqartma (quote excerpt). */
 export function excerptOf(text: string, max = 120) {
-  const trimmed = text.replace(/\s+/g, " ").trim();
+  const trimmed = stripLinkMarkup(text).replace(/\s+/g, " ").trim();
   return trimmed.length > max ? `${trimmed.slice(0, max)}…` : trimmed;
 }
 
@@ -21,8 +22,8 @@ export function QuoteBlock({
   const t = useTranslations("FeedbackQuoteBlock");
   const inner = (
     <>
-      <p className="text-[11px] font-semibold text-primary/90">{quote.author}</p>
-      <p className="line-clamp-2 text-[11px] leading-snug text-muted-foreground">{quote.excerpt}</p>
+      <p className="text-tag font-semibold text-primary/90">{quote.author}</p>
+      <p className="line-clamp-2 text-tag leading-snug text-muted-foreground">{quote.excerpt}</p>
     </>
   );
 

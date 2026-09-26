@@ -33,7 +33,15 @@ export async function GET(request: Request) {
   }
 
   try {
-    const content = await getSessionContent(token);
+    const full = await getSessionContent(token);
+    /* Slaydlar oʻyin qobigʻiga YUBORILMAYDI: qobiq savol oʻyini, u faqat
+       mcq/pairs qadamini taniydi va notanish `slide` da buzilishi mumkin.
+       Taqdimot slaydlari Ustozona ekranida (PlayView) va Doskada koʻrinadi. */
+    // Soʻrovnoma va soʻz buluti ham — qobiqda ularning ekrani yoʻq.
+    const content = {
+      ...full,
+      steps: full.steps.filter((step) => step.kind === "mcq" || step.kind === "pairs"),
+    };
     return corsJson(request, { ok: true, content });
   } catch (err) {
     return corsJson(request, errorBody(err), { status: errorStatus(err) });

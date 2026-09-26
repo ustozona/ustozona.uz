@@ -23,12 +23,9 @@ import type {
 } from "@/lib/student-profile";
 
 // Davomat semantik ranglari (yagona joy)
-export const ATT_COLORS = {
-  present: "#22c55e",
-  absent: "#ef4444",
-  late: "#f59e0b",
-  excused: "#0ea5e9",
-} as const;
+// Ranglar `@/lib/attendance-colors` ga koʻchdi — diagrammasiz modul.
+import { ATT_COLORS } from "@/lib/attendance-colors";
+export { ATT_COLORS };
 
 // ─── Baho dinamikasi (area + gradient) ───────────────────────────────────────
 
@@ -140,23 +137,52 @@ export function TrendChart({ points, color }: { points: TrendPoint[]; color: str
   );
 }
 
-// ─── Blum darajalari (radar) ─────────────────────────────────────────────────
+// ─── Radar ───────────────────────────────────────────────────────────────────
 
-export function BloomRadar({ levels, hex }: { levels: BloomBreakdown[]; hex: string }) {
+/**
+ * Profil radari — bitta komponent, ikki chaqiruvchi.
+ *
+ * Asosiy ishlatilishi: oʻqlar MAZMUN SOHALARI (Reading, Algoritm va
+ * dasturlash…). Bloom darajalari oʻq sifatida ATAYLAB ishlatilmaydi —
+ * umumiy «tahlil qilish» yoki «tanqidiy fikrlash» koʻnikmasi fanning
+ * oʻzidan ajralgan holda mavjud emas, shuning uchun Bloom oʻqli radar
+ * oʻqituvchini «koʻnikmani bilimdan ajratib oʻrgatish mumkin» degan xato
+ * tasavvurga yetaklaydi (docs/standards-page-spec.md §13.4). Bloom oʻz
+ * oʻrnida qoladi — test muvozanati asbobi sifatida.
+ *
+ * Radar OʻLCHOV asbobi emas, «gestalt profil»: qayerga qarash kerakligini
+ * koʻrsatadi. Aniq qaror yonidagi bar roʻyxatidan chiqadi («ikki yon
+ * koʻzgu», §13.3).
+ */
+export function ProfileRadar({
+  axes,
+  hex,
+}: {
+  /** Oʻqlar — tartibi MUHIM, radar shakli shunga bogʻliq (§11.4). */
+  axes: { label: string; value: number }[];
+  hex: string;
+}) {
   const t = useTranslations("StudentCharts");
-  const data = levels.map((l) => ({ level: l.label, value: l.value }));
   const config = { value: { label: t("achievement"), color: hex } } satisfies ChartConfig;
 
   return (
     <ChartContainer config={config} className="mx-auto aspect-square max-h-[250px] w-full">
-      <RadarChart data={data}>
+      <RadarChart data={axes}>
         <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-        <PolarAngleAxis dataKey="level" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
+        <PolarAngleAxis dataKey="label" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
         <PolarGrid />
         <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
         <Radar dataKey="value" fill="var(--color-value)" fillOpacity={0.6} />
       </RadarChart>
     </ChartContainer>
+  );
+}
+
+/** ⚠️ VAQTINCHA — soxta demo maʼlumot ustida ishlaydi va `ProfileRadar`
+    oʻrnini bosgach olib tashlanadi (yuqoridagi izohga qarang). */
+export function BloomRadar({ levels, hex }: { levels: BloomBreakdown[]; hex: string }) {
+  return (
+    <ProfileRadar axes={levels.map((l) => ({ label: l.label, value: l.value }))} hex={hex} />
   );
 }
 
@@ -232,7 +258,7 @@ export function AttendanceDonut({ summary }: { summary: AttendanceWindow }) {
                     <tspan
                       x={viewBox.cx}
                       y={(viewBox.cy ?? 0) + 24}
-                      className="fill-muted-foreground text-[11px] font-medium uppercase tracking-wider"
+                      className="fill-muted-foreground text-label font-medium uppercase tracking-wider"
                     >
                       {t("attendanceLabel")}
                     </tspan>

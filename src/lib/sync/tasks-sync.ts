@@ -1,5 +1,6 @@
 import type { Task } from "@/lib/tasks-data";
-import { emptyTasksBatch, isEmptyTasksBatch, type TasksBatch, type TaskUpsert } from "./tasks-batch";
+import { emptyTasksBatch, isEmptyTasksBatch } from "./tasks-batch-shape";
+import type { TasksBatch, TaskUpsert } from "./tasks-batch";
 
 /* Tasks diff — {items} (prev, next) → batch | null. student-notes-sync
    bilan bir xil: id boʻyicha, reference oʻzgargan element upsert;

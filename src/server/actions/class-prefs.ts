@@ -17,7 +17,9 @@ const journalScaleSchema = z.object({
 });
 
 const classPrefsSchema = z.object({
-  selectedClassId: z.string().min(1).max(200),
+  // Boʻsh satr ruxsat etilgan — «hali hech narsa tanlanmagan» holati
+  // ([[useClassStore]]); `min(1)` boʻlsa sync shu holatni saqlay olmasdi.
+  selectedClassId: z.string().max(200),
   journalScale: journalScaleSchema,
   journalScaleByClass: z.record(z.string(), journalScaleSchema).optional(),
 });

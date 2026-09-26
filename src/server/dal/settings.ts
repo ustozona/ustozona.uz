@@ -4,6 +4,7 @@ import { db } from "@/server/db/client";
 import { account, teachers, user } from "@/server/db/schema";
 import { requireTeacher } from "@/server/session";
 import { displayEmail } from "@/lib/placeholder-email";
+import { normalizeSubject } from "@/lib/standards-data";
 import {
   normalizeBackgroundScale,
   type AppLanguage,
@@ -114,7 +115,9 @@ export async function getSettings(): Promise<SettingsPayload> {
       avatarUrl: teacher.avatarUrl || authUser?.image || "",
       avatarColor: prefs.avatarColor ?? "orange",
       school: teacher.school ?? "",
-      subject: teacher.subject ?? "",
+      // Eski yozuvda fan nomi saqlangan boʻlishi mumkin — katalog kodiga
+      // oʻgiriladi, shunda tanlagich uni tanlangan holda koʻrsatadi.
+      subject: normalizeSubject(teacher.subject) ?? "",
       birthDate: teacher.birthDate ?? "",
       provider: acc?.providerId === "google" ? "google" : "email",
     },

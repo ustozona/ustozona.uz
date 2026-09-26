@@ -24,7 +24,7 @@ import { classTints } from "@/lib/class-colors";
 import { useGradesStore } from "@/store/useGradesStore";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ClassFormModal } from "@/components/ClassFormModal";
-import type { ClassIconKey } from "@/lib/class-icons";
+import { classIcon, type ClassIconKey } from "@/lib/class-icons";
 import {
   Empty,
   EmptyHeader,
@@ -36,6 +36,8 @@ import {
 import { Illustration } from "@/components/ui/illustration";
 import { useClassPanelStats, type Page } from "@/hooks/useClassPanelStats";
 import type { ClassInfo } from "@/lib/grades-data";
+import { useIsBelow } from "@/hooks/use-mobile";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 type Props = {
   page: Page;
@@ -61,9 +63,22 @@ export default function ClassListPanel({
   const updateClass = useGradesStore((s) => s.updateClass);
   const selected = liveClasses.find((c) => c.id === selectedClassId);
   const tints = selected ? classTints(classColor(selected)) : undefined;
+  const SelectedIcon = classIcon(selected?.icon);
 
   const stats = useClassPanelStats(page, selectedClassId);
   const showStats = !!(selected && tints && stats);
+
+  /* Mobil (`< lg`): panel ustun sifatida sigʻmaydi — oʻrniga tanlangan sinfni
+     koʻrsatuvchi toʻliq kenglikdagi trigger va chapdan chiquvchi Sheet.
+     Chegara `lg` — `DashboardColumn hideBelow="lg"` bilan bir xil, aks holda
+     768–1023px oraligʻida ikkalasi ham yoʻqoladi. */
+  const isCompact = useIsBelow("lg");
+  const [sheetOpen, setSheetOpen] = useState(false);
+  /** Sinf tanlangach mobil Sheet oʻzini yopadi (sahifada qoʻshimcha ish yoʻq). */
+  const handleSelect = (id: string) => {
+    onSelect(id);
+    setSheetOpen(false);
+  };
 
   // onAddClass berilmasa (koʻp sahifada shunday) — panel oʻzi sinf yaratish
   // modalini boshqaradi, "Sinflar" boʻlimiga sakrash oʻrniga.
@@ -112,8 +127,7 @@ export default function ClassListPanel({
     });
   };
 
-  return (
-    <div className="h-full flex flex-col">
+  const panel = (
       <div className="bg-card rounded-xl border border-border flex flex-col overflow-hidden min-w-0 min-h-0 h-full">
         {/* Header */}
         <div className={cn(panelHeaderClass, "items-center justify-between gap-3")}>
@@ -167,21 +181,34 @@ export default function ClassListPanel({
                 const isSelected = cls.id === selectedClassId;
                 const color = classColor(cls);
                 const rowTints = classTints(color);
+                const RowIcon = classIcon(cls.icon);
 
                 // Karta pasporti v2: BITTA andoza — tanlov faqat tint fon +
-                // 3px rail + qalinroq matn orqali; geometriya (balandlik,
-                // ikonka) oʻzgarmaydi (morf yoʻq).
+                // 1px sinf rangi chegarasi + toʻla gradient doira + qalinroq
+                // matn orqali (rail yoʻq); geometriya (balandlik, doira)
+                // oʻzgarmaydi (morf yoʻq). Glif doirasi tinch holatda tint
+                // fon + rangli glif (`.list-row--glyph`).
                 return (
                   <ContextMenu key={cls.id}>
                     <ContextMenuTrigger asChild>
                       <button
-                        onClick={() => onSelect(cls.id)}
-                        style={isSelected ? { ["--card-accent" as string]: rowTints.solid, ...rowTints.tint } : undefined}
-                        className="list-row group w-full"
+                        onClick={() => handleSelect(cls.id)}
+                        style={{
+                          ["--card-accent" as string]: rowTints.solid,
+                          // Chegara inline — sinf rangining oʻzi (100%), 1px.
+                          ...(isSelected ? { ...rowTints.tint, border: `1px solid ${rowTints.solid}` } : {}),
+                        }}
+                        className="list-row list-row--glyph group w-full"
                         data-active={isSelected || undefined}
                         aria-current={isSelected || undefined}
                       >
-                        <span className="size-2.5 rounded-[4px] shrink-0" style={rowTints.dot} />
+                        <span
+                          data-slot="class-glyph"
+                          style={isSelected ? rowTints.gradientTile : undefined}
+                          aria-hidden="true"
+                        >
+                          <RowIcon />
+                        </span>
                         <span className={cn(
                           "text-sm truncate flex-1 transition-colors",
                           isSelected ? "font-semibold text-foreground" : "text-foreground/70 group-hover:text-foreground"
@@ -221,7 +248,7 @@ export default function ClassListPanel({
                 className="relative group/icon size-9 rounded-full shrink-0 flex items-center justify-center text-white overflow-hidden"
                 style={tints!.gradientTile}
               >
-                <GraduationCap
+                <SelectedIcon
                   className="relative size-4 transition-opacity duration-fast group-hover/icon:opacity-0"
                   aria-hidden="true"
                 />
@@ -251,7 +278,7 @@ export default function ClassListPanel({
                   {stats!.items.map((item, i) => (
                     <div key={i} className="flex-1 min-w-0 px-3 first:pl-0 last:pr-0 text-center">
                       <p className="text-xs text-muted-foreground truncate">{item.label}:</p>
-                      <p className="text-sm font-bold tabular-nums text-foreground mt-1">{t("countSuffix", { value: item.value })}</p>
+                      <p className="text-sm font-bold tabular-nums text-foreground mt-1">{typeof item.value === "number" ? t("countSuffix", { value: item.value }) : item.value}</p>
                     </div>
                   ))}
                 </div>
@@ -274,7 +301,12 @@ export default function ClassListPanel({
           </div>
         )}
       </div>
+  );
 
+  /* Modallar Sheet'dan TASHQARIDA: sinf yaratish/tahrirlash oynasi ochilganda
+     Sheet yopilishi mumkin, modal esa ochiq qolishi shart. */
+  const modals = (
+    <>
       {internalModalOpen && (
         <ClassFormModal
           mode="create"
@@ -322,6 +354,60 @@ export default function ClassListPanel({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+    </>
+  );
+
+  if (isCompact) {
+    return (
+      <>
+        {/* Trigger — `select` koʻrinishida: tanlangan sinf rangi + nomi.
+            40px balandlik ATAYLAB (toolbar standarti 36px emas): bu mobil
+            barmoq nishoni, DESIGN.md dagi hujjatlangan deviatsiya. */}
+        <button
+          type="button"
+          onClick={() => setSheetOpen(true)}
+          aria-haspopup="dialog"
+          aria-expanded={sheetOpen}
+          className="flex h-10 w-full min-w-0 shrink-0 items-center gap-2 rounded-md border border-border bg-card px-3 text-sm transition-colors hover:bg-muted"
+        >
+          {selected && tints ? (
+            <>
+              <SelectedIcon className="size-4 shrink-0" style={tints.iconText} aria-hidden="true" />
+              <span className="min-w-0 flex-1 truncate text-left font-medium text-foreground">
+                {selected.name}
+              </span>
+            </>
+          ) : (
+            <>
+              <GraduationCap className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+              <span className="min-w-0 flex-1 truncate text-left text-muted-foreground">
+                {t("selectClass")}
+              </span>
+            </>
+          )}
+          <ChevronDown className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+        </button>
+
+        {/* Sarlavha faqat skrin-rider uchun va yopish tugmasi yoʻq —
+            `Sidebar`ning mobil Sheet'i bilan bir xil naqsh (qoplama bosiladi). */}
+        <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+          <SheetContent side="left" showCloseButton={false} className="w-[88vw] gap-0 p-3 sm:max-w-sm">
+            <SheetHeader className="sr-only">
+              <SheetTitle>{t("title")}</SheetTitle>
+            </SheetHeader>
+            {panel}
+          </SheetContent>
+        </Sheet>
+
+        {modals}
+      </>
+    );
+  }
+
+  return (
+    <div className="h-full flex flex-col">
+      {panel}
+      {modals}
     </div>
   );
 }

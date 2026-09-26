@@ -11,6 +11,11 @@
 @import "../styles/components.css";
 @import "../styles/push-button.css";
 @import "../styles/quiz-stage.css";
+@import "../styles/doska.css";
+
+/* Tashqi bloklar arxivi — ilovaga ulanmagan asl kod, klasslari CSS'ga
+   tushmasin (docs/tashqi-bloklar/README.md). */
+@source not "../../docs/tashqi-bloklar";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -453,64 +458,183 @@
 
 /* ─────────────────────────────────────────────
    Tipografika shkalasi — YAGONA MANBA
-   Utility klasslar (Tailwind v4 / shadcn uslubi). Inline ishlatish uchun
-   qulay; React komponentlari (Typography*) shu qiymatlarga mos. Doimo
-   tokenlardan (--foreground / --muted-foreground) foydalaning, xom rang yoʻq.
-   Hujjat: docs/design-system.md
+   Rollar Tailwind tokeni: `text-caption` bitta klass bilan oʻlcham,
+   qator balandligi, vazn va harf oraligʻini BIRGA beradi, variantlar
+   ishlaydi (`md:text-title`), va utility boʻlgani uchun yonidagi
+   `font-medium` / `leading-relaxed` / `text-foreground` uni USTIDAN
+   yozadi. Oʻlcham `--typo-*` dan oʻqiladi — sirt (surfaces.css) va
+   `.readable-scale` shu orqali qayta oʻlchaydi.
+   Hujjat: DESIGN.md §3, docs/dizayn-token-standartlashtirish.md
    ───────────────────────────────────────────── */
+@theme inline {
+  /* Mikro — 10px / 600. FAQAT zich toʻr kataklari (dars jadvali: 1200
+     katak, eni ~30px) va 20px dan kichik idish belgisi (hisoblagich,
+     initsial). Pastki chegara — undan kichik matn yoʻq. DESIGN.md §3. */
+  --text-micro: var(--typo-micro, 0.625rem);
+  --text-micro--line-height: 1.2;
+  --text-micro--font-weight: 600;
 
-/* Sahifa sarlavhasi — 24px / 700 */
-.heading-page {
-  font-size: var(--typo-page, 1.5rem);
-  line-height: 1.2;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: var(--foreground);
+  /* Teg — 11px, vaznsiz (joyida tanlanadi). Badge, chip, pill, ixcham
+     meta. `ClassBadge` va `LessonStatusPill` shu oʻlchamda. */
+  --text-tag: var(--typo-tag, 0.6875rem);
+  --text-tag--line-height: 1.4;
+
+  /* Yorliq — 11px / 500, UPPERCASE (pastdagi components qatlami) */
+  --text-label: var(--typo-label, 0.6875rem);
+  --text-label--line-height: 1.4;
+  --text-label--font-weight: 500;
+  --text-label--letter-spacing: 0.05em;
+
+  /* Izoh, meta — 12px / 400 */
+  --text-caption: var(--typo-caption, 0.75rem);
+  --text-caption--line-height: 1.4;
+  --text-caption--font-weight: 400;
+
+  /* Ilova asosiy matni — 14px / 400 */
+  --text-body: var(--typo-body, 0.875rem);
+  --text-body--line-height: 1.5;
+  --text-body--font-weight: 400;
+
+  /* Uzun oʻqiladigan matn — 16px / 400 */
+  --text-reading: var(--typo-reading, 1rem);
+  --text-reading--line-height: 1.6;
+  --text-reading--font-weight: 400;
+
+  /* Karta sarlavhasi, ism — 15px / 600 */
+  --text-title-sm: var(--typo-small, 0.9375rem);
+  --text-title-sm--line-height: 1.3;
+  --text-title-sm--font-weight: 600;
+  --text-title-sm--letter-spacing: -0.01em;
+
+  /* Panel / boʻlim sarlavhasi — 18px / 600 (CardTitle bilan bir xil) */
+  --text-title: var(--typo-section, 1.125rem);
+  --text-title--line-height: 1.3;
+  --text-title--font-weight: 600;
+  --text-title--letter-spacing: -0.015em;
+
+  /* Sahifa sarlavhasi — 24px / 700 */
+  --text-headline: var(--typo-page, 1.5rem);
+  --text-headline--line-height: 1.2;
+  --text-headline--font-weight: 700;
+  --text-headline--letter-spacing: -0.02em;
 }
 
-/* Boʻlim / panel sarlavhasi — 18px / 600 (CardTitle bilan bir xil) */
-.heading-section {
-  font-size: var(--typo-section, 1.125rem);
-  line-height: 1.3;
-  font-weight: 600;
-  letter-spacing: -0.015em;
-  color: var(--foreground);
+/* Rolga kirmaydigan qoʻshimchalar va eski nomlar. `components`
+   qatlamida — shuning uchun istalgan utility (`text-foreground`,
+   `normal-case`, `font-medium`) ularni ustidan yozadi.
+   Rang rolning qismi emas; `.text-caption` dagi muted rang — koʻchish
+   davridagi meros, yangi kodda `text-caption text-muted-foreground`. */
+@layer components {
+  .text-micro { font-variant-numeric: tabular-nums; }
+  .text-label { text-transform: uppercase; color: var(--muted-foreground); }
+  .text-caption { color: var(--muted-foreground); }
+  .text-body { color: var(--foreground); }
+
+  /* Eski nomlar → rollar. Yangi kodda rol nomini ishlating. */
+  .heading-page { @apply text-headline; color: var(--foreground); }
+  .heading-section { @apply text-title; color: var(--foreground); }
+  .heading-small { @apply text-title-sm; color: var(--foreground); }
 }
 
-/* Kichik sarlavha (karta ichidagi ism va h.k.) — 15px / 600 */
-.heading-small {
-  font-size: var(--typo-small, 0.9375rem);
-  line-height: 1.3;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: var(--foreground);
+/* ─────────────────────────────────────────────
+   Landing (marketing) shkalasi — FAQAT landing qatlami (bosh sahifa
+   bloklari, mahsulot va yuridik sahifalar). Ilova shkalasi 24px da
+   tugaydi, landing esa biroz kattaroq, lekin zich gapiradi.
+   Hujjat va qaysi element qaysi qadamda: docs/landing-design.md §3.
+
+   MODULLI va SUYUQ: baza 16px, qadam n = 16 × nisbatⁿ.
+   • ≥ 1440px ekranda nisbat 1.2 (Minor Third) — blog/yordam oʻqish
+     shkalasi bilan bir xil nisbat. Sarlavhalar zich, mazmun oldinda.
+   • 320px ekranda nisbat 1.125 (Major Second) — telefonda farq
+     yumshaydi, katta qadam ham ekranga sigʻadi.
+   • Oraliqda clamp() chiziqli oʻtadi — breakpoint sakrashi yoʻq.
+
+   Tarix: 2026-09-19 da avval 1.333 (Perfect Fourth) qurildi — hero
+   67px, boʻlim sarlavhasi 50px boʻldi. Landing mahsulotning oʻzini
+   (kartalar, rasmlar) koʻrsatadigan zich tuzilishga oʻtgach, sarlavha
+   ikkinchi darajaga tushdi va shkala Minor Third ga almashtirildi.
+
+   Qadam        320px   1440px   Qator  Harf oraligʻi
+   landing-1    18.0    19.2     1.4     0
+   landing-2    20.3    23.0     1.35   -0.01em
+   landing-3    22.8    27.6     1.3    -0.015em
+   landing-4    25.6    33.2     1.25   -0.02em
+   landing-5    28.8    39.8     1.2    -0.02em
+   landing-6    32.4    47.8     1.15   -0.025em
+
+   Vazn tokenda YOʻQ — joyida `font-semibold` / `font-medium` yoziladi
+   (`font-bold` ni scripts/check-design-tokens.mjs darvozasi toʻsadi).
+   Qiymatlar formulasi: min = 16·1.125ⁿ, max = 16·1.2ⁿ, 320→1440px.
+   ───────────────────────────────────────────── */
+@theme inline {
+  --text-landing-1: clamp(1.125rem, 1.104rem + 0.107vw, 1.2rem);
+  --text-landing-1--line-height: 1.4;
+
+  --text-landing-2: clamp(1.266rem, 1.216rem + 0.249vw, 1.44rem);
+  --text-landing-2--line-height: 1.35;
+  --text-landing-2--letter-spacing: -0.01em;
+
+  --text-landing-3: clamp(1.424rem, 1.337rem + 0.435vw, 1.728rem);
+  --text-landing-3--line-height: 1.3;
+  --text-landing-3--letter-spacing: -0.015em;
+
+  --text-landing-4: clamp(1.602rem, 1.467rem + 0.674vw, 2.074rem);
+  --text-landing-4--line-height: 1.25;
+  --text-landing-4--letter-spacing: -0.02em;
+
+  --text-landing-5: clamp(1.802rem, 1.606rem + 0.98vw, 2.488rem);
+  --text-landing-5--line-height: 1.2;
+  --text-landing-5--letter-spacing: -0.02em;
+
+  --text-landing-6: clamp(2.027rem, 1.753rem + 1.37vw, 2.986rem);
+  --text-landing-6--line-height: 1.15;
+  --text-landing-6--letter-spacing: -0.025em;
 }
 
-/* Asosiy matn — 14px / 400 */
-.text-body {
-  font-size: var(--typo-body, 0.875rem);
-  line-height: 1.5;
-  font-weight: 400;
-  color: var(--foreground);
+/* ─────────────────────────────────────────────
+   Mahsulot tablari (landing, ProductTabs.tsx) — gidratatsiyadan OLDIN.
+   `/#doska` bilan kelgan odam JS yuklanguncha ham Doska panelini koʻrsin:
+   boʻlim boshidagi langar `:target` boʻladi, boʻlim uni `:has()` bilan
+   sezadi. `data-hydrated` qoʻyilgach bu qoidalar oʻchadi — tabni React
+   boshqaradi (u ham langarni oʻqiydi). Jurnal — standart tab, unga qoida
+   kerak emas. Faol tugma JS kelguncha neytral turadi: notoʻgʻri tab
+   (Jurnal) belgilangan koʻrinmasin.
+   `:has()` ni bilmaydigan eski brauzerda qoida shunchaki ishlamaydi —
+   avvalgidek JS kelgach tab almashadi.
+   ───────────────────────────────────────────── */
+[data-product-tabs]:not([data-hydrated]):is(:has(#baholash:target), :has(#taqdimot:target), :has(#doska:target)) [data-tab-panel] {
+  display: none;
 }
-
-/* Kichik izoh / muted — 12px / 400 */
-.text-caption {
-  font-size: var(--typo-caption, 0.75rem);
-  line-height: 1.4;
-  font-weight: 400;
+[data-product-tabs]:not([data-hydrated]):has(#baholash:target) [data-tab-panel="baholash"],
+[data-product-tabs]:not([data-hydrated]):has(#taqdimot:target) [data-tab-panel="taqdimot"],
+[data-product-tabs]:not([data-hydrated]):has(#doska:target) [data-tab-panel="doska"] {
+  display: grid;
+}
+[data-product-tabs]:not([data-hydrated]):is(:has(#baholash:target), :has(#taqdimot:target), :has(#doska:target)) [data-tab-trigger="jurnal"] {
+  border-color: var(--border);
+  background-color: transparent;
   color: var(--muted-foreground);
 }
 
-/* Yorliq (UPPERCASE) — 11px / 500 */
-.text-label {
-  font-size: var(--typo-label, 0.6875rem);
-  line-height: 1.4;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--muted-foreground);
+/* Modulli oʻqish shkalasi (Minor Third, nisbat 1.2, baza 16px) — FAQAT
+   Yordam markazi va blog maqola sahifalarida, kontent ustuniga
+   qoʻyiladigan `.readable-scale` sinfi orqali faollashadi. Yuqoridagi
+   `--typo-*` oʻzgaruvchilarni shu doira ichida qayta belgilaydi;
+   fallback (0.875rem va h.k.) global standart boʻlib qolaveradi —
+   boshqa hech qanday sahifa oʻzgarmaydi. Manba: typescale.com (Minor
+   Third, 1.2). Qadamlar: 16 → 19.2 → 23.04 → 27.65 → 33.18 → 39.81px. */
+.readable-scale {
+  --typo-caption: 0.833rem; /* 13.33px — (-1)-qadam, kirish/lead matn (defaultdan kichik) */
+  --typo-body: 1rem;       /* 16px — 0-qadam, asosiy matn */
+  --typo-small: 1.2rem;    /* 19.2px — 1-qadam */
+  --typo-section: 1.44rem; /* 23.04px — 2-qadam, boʻlim sarlavhasi (h2) */
+  --typo-page: 2.074rem;   /* 33.18px — 4-qadam, maqola sarlavhasi (h1) */
 }
+.readable-scale.readable-scale-lg {
+  --typo-page: 2.986rem;   /* 47.78px — 6-qadam, blog post sarlavhasi */
+}
+/* Telefon varianti pastda, `.blog-prose` qoidalaridan KEYIN — bir xil
+   oʻzillikdagi qoida faqat keyin kelsa ustun chiqadi. */
 
 /* Scrollbar */
 .scrollbar-thin {
@@ -523,6 +647,40 @@
   background: var(--border);
   border-radius: 2px;
 }
+
+/* Native (`overflow-auto`) scrollbar — faqat hover paytida koʻrinadi.
+   Radix ScrollArea (`ui/scroll-area.tsx`, `type="scroll"`) dagi xatti-
+   harakat bilan bir xil maqsad, lekin native scrollbar ishlatiladigan
+   joylar uchun (masalan `SidebarContent`).
+
+   ⛔ KENGLIKNI HOVERDA OʻZGARTIRMANG. `scrollbar-width: none` → `thin`
+   (yoki `::-webkit-scrollbar { width }` ni oʻzgartirish) LAYOUTni surib
+   yuboradi — sidebar tugmalari hoverda "sakraydi". `scrollbar-gutter:
+   stable` ham buni QUTQARMAYDI, chunki gutter kengligi aynan
+   `scrollbar-width`dan hisoblanadi: `none` → 0px, `thin` → ~8px.
+
+   Toʻgʻri yoʻl (GitHub / VS Code naqshi): kenglik DOIM bir xil
+   (`thin` + qatʼiy `::-webkit-scrollbar` width), faqat THUMB RANGI
+   shaffofdan koʻrinadiganga oʻtadi. Shunda scrollbar "overlay" kabi
+   tuyuladi — kontent kengligi hech qachon oʻzgarmaydi. */
+.scrollbar-hover {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  scrollbar-gutter: stable;
+}
+.scrollbar-hover::-webkit-scrollbar { width: 8px; height: 8px; }
+.scrollbar-hover::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-hover::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+.scrollbar-hover:hover,
+.scrollbar-hover:focus-within {
+  scrollbar-color: var(--border) transparent;
+}
+.scrollbar-hover:hover::-webkit-scrollbar-thumb,
+.scrollbar-hover:focus-within::-webkit-scrollbar-thumb { background: var(--border); }
 
 /* ─────────────────────────────────────────────
    Jurnal (Kundalik) — rich text kontenti
@@ -663,14 +821,18 @@
   .card-interactive,
   .class-card,
   .list-card,
-  .list-card-icon {
+  .list-card-icon,
+  .list-row,
+  .list-row--dot-ring [data-slot="class-swatch"],
+  .list-row--glyph [data-slot="class-glyph"] {
     transition: none;
   }
   .card-interactive:hover,
   .card-interactive:active,
   .class-card:hover,
   .list-card:active,
-  .list-card:hover:not([data-active="true"]) .list-card-icon {
+  .list-card:hover:not([data-active="true"]) .list-card-icon,
+  .list-row:active {
     transform: none;
   }
 }
@@ -746,6 +908,11 @@
               border-color var(--transition-duration-fast) var(--ease-standard),
               box-shadow var(--transition-duration-fast) var(--ease-standard),
               transform var(--transition-duration-fast) var(--ease-standard);
+  /* Hover VA active BIR XIL chegara rangini ishlatadi (`ClassListPanel`
+     faol qatoridagi `softBorder` — 22% aralashma) — qiymat BITTA joyda
+     eʼlon qilinadi, aks holda ikki qoida orasida qoʻlda qaytarilib,
+     birini oʻzgartirib ikkinchisini unutish xavfi tugʻilardi. */
+  --list-card-border-tint: color-mix(in oklch, var(--card-accent, var(--primary)) 22%, var(--border));
 }
 .list-card:focus-visible {
   outline: none;
@@ -759,18 +926,17 @@
 .list-card:active {
   transform: scale(0.985);
 }
+/* Hover = `ClassListPanel` faol qatori bilan AYNAN bir xil rang retsepti
+   (tint 7% fon + softBorder 22% chegara) va bir xil chegara QALINLIGI (1px —
+   inset "qalinlashtiruvchi" halqa yoʻq). Hover'ni tanlovdan ajratib turadigan
+   narsa rang emas, HARAKAT: koʻtarilish soyasi + ikonka scale(1.08). */
 .list-card:hover:not([data-active="true"]) {
-  border-color: color-mix(in oklch, var(--card-accent, var(--primary)) 55%, var(--border));
-  background-color: color-mix(in oklch, var(--card-accent, var(--primary)) 4%, var(--card));
-  /* Qalinroq (~1.5px) chegara taassuroti — border-width EMAS (u padding'ni yeb,
-     kontentni 1px siljitib qoʻyardi). Inset box-shadow border-radius'ga har
-     doim toʻliq mos keladi va box-model'ga sira tegmaydi. */
-  box-shadow: inset 0 0 0 0.5px color-mix(in oklch, var(--card-accent, var(--primary)) 55%, var(--border)),
-              0 4px 14px -4px rgb(0 0 0 / 0.10);
+  border-color: var(--list-card-border-tint);
+  background-color: color-mix(in oklch, var(--card-accent, var(--primary)) 7%, var(--card));
+  box-shadow: 0 4px 14px -4px rgb(0 0 0 / 0.10);
 }
 .dark .list-card:hover:not([data-active="true"]) {
-  box-shadow: inset 0 0 0 0.5px color-mix(in oklch, var(--card-accent, var(--primary)) 55%, var(--border)),
-              0 4px 14px -2px rgb(0 0 0 / 0.5);
+  box-shadow: 0 4px 14px -2px rgb(0 0 0 / 0.5);
 }
 .list-card-icon {
   transition: transform var(--transition-duration-base) var(--ease-standard);
@@ -778,22 +944,19 @@
 .list-card:hover:not([data-active="true"]) .list-card-icon {
   transform: scale(1.08);
 }
-/* Active: 3px chap rail. Fon rangi inline `style` bilan beriladi. */
-.list-card[data-active="true"]::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  width: 3px;
-  background-color: var(--card-accent, var(--primary));
-  z-index: 10;
+/* Active: toʻliq chegara (chap rail oʻrniga). Fon rangi inline `style`
+   bilan beriladi. Chegara — `--list-card-border-tint` (hover bilan bitta
+   manba, yuqorida eʼlon qilingan). */
+.list-card[data-active="true"] {
+  border-color: var(--list-card-border-tint);
 }
 
 /* ─────────────────────────────────────────────
    QATOR TILI (list-row) — zich ro'yxatlar uchun.
    Modallar, chap nav panellari, dropdownlar.
-   Morf yo'q. Hover = bg-muted, Active = tint + 3px rail.
+   Morf yo'q. Hover = bg-muted. Active = tint fon + rangli chegara
+   (`softBorder`, inline beriladi) + koʻrsatkich. Koʻrsatkich ikki xil:
+   standart — chekka 3px rail; `--dot-ring` modifikatori — nuqta halqasi.
    ───────────────────────────────────────────── */
 .list-row {
   position: relative;
@@ -806,7 +969,12 @@
   text-align: left;
   cursor: pointer;
   background-color: transparent;
-  transition: background-color var(--transition-duration-fast) var(--ease-standard);
+  /* Chegara BARCHA qatorlarda mavjud (shaffof) — tanlanganda rang beriladi.
+     Faqat active'da qoʻshilsa qator 2px kengayib, matn siljib ketardi. */
+  border: 1px solid transparent;
+  transition: background-color var(--transition-duration-fast) var(--ease-standard),
+              border-color var(--transition-duration-fast) var(--ease-standard),
+              transform var(--transition-duration-fast) var(--ease-standard);
   overflow: hidden;
 }
 .list-row:focus-visible {
@@ -828,6 +996,79 @@
   width: 3px;
   background-color: var(--card-accent, var(--primary));
   z-index: 10;
+}
+.list-row:disabled {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* Variant D — nuqta halqasi: chekka-rail butunlay olib tashlanadi, tanlangan
+   holat sinf nuqtasining oʻzida (yorugʻ halqa) va tint fonda ifodalanadi.
+   `.list-row`ning standart chekka-rail'iga alternativa — faqat shu klass
+   qoʻshilgan qatorlarda ishlaydi (`ClassSwatch`ning `data-slot` belgisi
+   orqali topiladi). */
+.list-row--dot-ring[data-active="true"]::before {
+  content: none;
+}
+.list-row--dot-ring [data-slot="class-swatch"] {
+  transition: box-shadow var(--transition-duration-fast) var(--ease-standard);
+}
+.list-row--dot-ring[data-active="true"] [data-slot="class-swatch"] {
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--card-accent, var(--primary)) 35%, var(--background));
+}
+
+/* Sinf glifi — tint doira. Nuqta oʻrnida 36px doira (`size-9`, 18px glif —
+   `SectionIcon` default oʻlchami; shakli Karta pasporti v2 iconboxʼi kabi
+   doira) ichida sinf ikonkasi: tinch holatda sinf rangining
+   18% tint foni + rangli glif, tanlanganda doira toʻyinadi — toʻla gradient
+   (`classTints().gradientTile` inline) + oq glif. Rail yoʻq — tanlov doirada,
+   qatorning tint fonida va 1px sinf rangi chegarasida (inline, TSX). Doira
+   oʻlchami holatlar orasida oʻzgarmaydi (morf
+   yoʻq); vertikal padding 8px — qator 52px. `--card-accent` qatorga
+   doim beriladi. */
+.list-row--glyph {
+  padding-block: 0.5rem;
+}
+/* Hover — kulrang `--muted` emas, sinf rangining yengil tinti. Tanlangan
+   holatdan (7% + 1px sinf rangi chegarasi) ochroq va chegarasiz, ikkisi adashmaydi.
+   `.list-row:hover` bilan bir xil specificity, keyinroq eʼlon qilingani uchun ustun. */
+.list-row--glyph:hover:not([data-active="true"]) {
+  background-color: color-mix(in oklch, var(--card-accent, var(--primary)) 5%, var(--background));
+}
+.list-row--glyph[data-active="true"]::before {
+  content: none;
+}
+.list-row--glyph [data-slot="class-glyph"] {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 9999px; /* doira — Karta pasporti v2 iconbox shakli */
+  color: var(--card-accent, var(--primary));
+  background-color: color-mix(in oklch, var(--card-accent, var(--primary)) 18%, var(--background));
+  transition: color var(--transition-duration-fast) var(--ease-standard),
+              transform var(--transition-duration-base) var(--ease-standard);
+}
+/* Hover-harakat — BITTA: faqat doira biroz kattalashadi (qator oʻzi
+   siljimaydi, fon rangi oʻzgarishi harakat emas). */
+.list-row--glyph:is(:hover, :focus-visible) [data-slot="class-glyph"] {
+  transform: scale(1.08);
+}
+/* Reduced-motion — shu yerda, hover qoidasidan KEYIN: yuqoridagi umumiy
+   reduced-motion bloki fayl boshida turadi va teng specificity'da yutqazadi. */
+@media (prefers-reduced-motion: reduce) {
+  .list-row--glyph:is(:hover, :focus-visible) [data-slot="class-glyph"] {
+    transform: none;
+  }
+}
+.list-row--glyph [data-slot="class-glyph"] svg {
+  width: 1.125rem; /* 18px — `SectionIcon` default bilan bir xil */
+  height: 1.125rem;
+}
+.list-row--glyph[data-active="true"] [data-slot="class-glyph"] {
+  color: white;
 }
 
 /* ─────────────────────────────────────────────
@@ -894,17 +1135,75 @@
    (`.lesson-prose.blog-prose p`) SHART — pastroqdagi `.lesson-prose p`
    qoidasi bir xil oʻzillik (specificity) bilan keyin kelgani uchun uni
    bosib ketardi. */
-.blog-prose { font-size: 1.25rem; }
-.lesson-prose.blog-prose p { font-size: 1.25rem; line-height: 1.75; margin: 0.85rem 0; }
-.lesson-prose.blog-prose h1 { font-size: 2.25rem; }
-.lesson-prose.blog-prose h2 { font-size: 1.5rem; }
-.lesson-prose.blog-prose h3 { font-size: 1.25rem; }
+/* Qadamlar `.readable-scale` bilan bir xil Minor Third (1.2) shkalasidan:
+   p/h3 = 1-qadam (19.2px), h2 = 3-qadam (27.65px), h1 = 4-qadam (33.18px). */
+/* ⚠️ KONTEYNER qoidasi ham QOʻSH SINF bilan yozilishi SHART. Ilgari bu
+   `.blog-prose { font-size: 1.2rem }` edi — bir xil oʻzillik (0,1,0) bilan
+   pastroqdagi `.lesson-prose { font-size: 0.875rem }` KEYIN kelgani uchun
+   uni jimgina bosib ketardi. Natijada blogda konteyner 14px boʻlib qolar,
+   va oʻz font-size'ini eʼlon qilmagan HAMMA element (callout sarlavhasi,
+   `pre`, `li`) tana matnidan (19.2px) kichik chiqardi. */
+.lesson-prose.blog-prose { font-size: 1.2rem; }
+.lesson-prose.blog-prose p { font-size: 1.2rem; line-height: 1.75; margin: 0.85rem 0; }
+.lesson-prose.blog-prose h1 { font-size: 2.074rem; }
+.lesson-prose.blog-prose h2 { font-size: 1.728rem; }
+.lesson-prose.blog-prose h3 { font-size: 1.2rem; }
+/* Nashr koʻrinishi: kontent birinchi/oxirgi elementining tashqi boʻshligʻi
+   olib tashlanadi — ustunning oʻz `pt-8`/`mt-8` va tagidagi hoshiya
+   ajratuvchi vazifasini bajaradi, element margini ustiga qoʻshilib
+   sarlavha bilan matn orasida ortiqcha boʻshliq qoldirmasin.
+   `:not(.ProseMirror)` — muharrir maydonining oʻzida birinchi xatboshi
+   margini tegilmasin (kursor uchun tabiiy boʻshliq). */
+.lesson-prose.blog-prose:not(.ProseMirror) > :first-child { margin-top: 0; }
+.lesson-prose.blog-prose:not(.ProseMirror) > :last-child { margin-bottom: 0; }
 .blog-prose .ProseMirror { min-height: 40vh; }
+/* Callout — sarlavha qatori tana matni bilan mutanosib boʻlishi uchun
+   (ikon qutisi ham shu oʻlchamdan oziqlanadi). Obsidian uslubidagi
+   `.callout` sarlavhasi `1em` (meros) orqali oʻz-oʻzidan 1.2rem boʻladi;
+   Emojili blok (`.notion-callout`) esa oʻz oʻlchamini qatʼiy eʼlon
+   qilgani uchun bu yerda qayta beriladi. */
+.lesson-prose.blog-prose .callout { --callout-title-lh: 1.9rem; }
+.lesson-prose.blog-prose .notion-callout { --callout-fs: 1.2rem; --callout-lh: 1.9rem; }
 
-/* Blog sarlavhasi — serif (src/app/blog/layout.tsx qamrovi), faqat
-   sarlavha va matn tanasi; badge/tugma/UI xromi DM Sans'da qoladi. */
-.blog-title,
-.blog-prose { font-family: var(--font-blog-serif), Georgia, serif; }
+/* ── TELEFON: bir xil shkala, kichikroq NISBAT ────────────────────────────
+   Typescale (typescale.com) da RESPONSIVE boʻlimi bor — «Min-width 767px /
+   Font-size / Scale». Shkalani olganimizda u boʻsh qoldirilgan edi, yaʼni
+   mobil holat hech qachon sozlanmagan: natijada maqola sarlavhasi telefonda
+   ham 47.78px boʻlib qolar, 375px enli ekranda uzun oʻzbekcha soʻz
+   («tayyorgarligimizni») bir qatorga sigʻmasdi.
+
+   ⛔ Bitta sarlavhani sakratib kichraytirish YECHIM EMAS — u zinapoyani
+   sindiradi (maqola sarlavhasi bilan matn ichidagi h1 tenglashib qolishi
+   mumkin). Toʻgʻri usul — Typescale'ning oʻzi taklif qiladigani: BAZA
+   oʻzgarmaydi (16px), NISBAT pasayadi. Shunda katta oʻlchamlar koʻp,
+   kichiklari oz qisqaradi va ierarxiya butun qoladi.
+
+     1.200 (Minor Third)  →  1.125 (Major Second)
+     16 → 18 → 20.25 → 22.78 → 25.63 → 28.83 → 32.44px
+
+   Natija Medium va Substack bilan bir joyda: maqola sarlavhasi telefonda
+   ≈32px, tana matni 18px. Chegara 767px — Typescale'dagi qiymatning oʻzi. */
+@media (max-width: 767px) {
+  .readable-scale {
+    --typo-caption: 0.889rem; /* 14.2px  — (-1)-qadam */
+    --typo-body: 1rem;        /* 16px    — 0-qadam */
+    --typo-small: 1.125rem;   /* 18px    — 1-qadam */
+    --typo-section: 1.266rem; /* 20.3px  — 2-qadam */
+    --typo-page: 1.602rem;    /* 25.6px  — 4-qadam */
+  }
+  .readable-scale.readable-scale-lg {
+    --typo-page: 2.027rem;    /* 32.4px  — 6-qadam, maqola sarlavhasi */
+  }
+  .lesson-prose.blog-prose { font-size: 1.125rem; }
+  .lesson-prose.blog-prose p { font-size: 1.125rem; line-height: 1.7; }
+  .lesson-prose.blog-prose h1 { font-size: 1.602rem; } /* 4-qadam */
+  .lesson-prose.blog-prose h2 { font-size: 1.424rem; } /* 3-qadam */
+  .lesson-prose.blog-prose h3 { font-size: 1.125rem; } /* 1-qadam */
+  /* Callout qatori ham tana bilan mutanosib qoladi */
+  .lesson-prose.blog-prose .callout { --callout-title-lh: 1.8rem; }
+  .lesson-prose.blog-prose .notion-callout { --callout-fs: 1.125rem; --callout-lh: 1.8rem; }
+}
+
 /* Baza matn oʻlchami 16px → 14px (mutanosib): container'ga font-size
    berilgan — h1/h2/h3/p bundan mustasno (`rem` ROOT'ga bogʻliq, containerga
    emas, shuning uchun ular pastda ALOHIDA qayta hisoblangan), lekin li/
@@ -944,7 +1243,21 @@
 .lesson-prose ol { list-style: decimal; padding-left: 1.5rem; margin: 0.5rem 0; }
 .lesson-prose li { margin: 0.2rem 0; line-height: 1.6; }
 .lesson-prose li > p { margin: 0; }
-.lesson-prose blockquote { border-left: 3px solid var(--border); padding-left: 1rem; color: var(--muted-foreground); margin: 0.8rem 0; }
+/* Iqtibos — chap chekkasi matn ustuni bilan BIR VERTIKALDA boshlanadi.
+   ⛔ `margin-left` (Word'dagi Tab/"Quote" chekinishi) ATAYLAB YOʻQ: u bir
+   marta qoʻshilib, rad etilgan. Sabab — bizda iqtibos yagona blok emas,
+   callout bloklari bilan yonma-yon yashaydi va ular chekkadan boshlanadi;
+   iqtibos surilganda ikki blok turi qoʻshni turganda chap qirra sinib,
+   ustun "titrab" koʻrinardi. Chegara koʻrsatkichi (chap chiziq) oʻzi
+   yetarli ajratuvchi belgi.
+   Yuqori/quyi boʻshliq esa oddiy xatboshiniki (0.4rem) dan kattaroq —
+   iqtibos atrofidagi matndan nafas bilan ajralishi kerak. */
+.lesson-prose blockquote {
+  border-left: 3px solid var(--border);
+  margin: 1.1rem 0;
+  padding-left: 1rem;
+  color: var(--muted-foreground);
+}
 .lesson-prose a { color: var(--primary); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
 .lesson-prose code { font-family: var(--font-mono), monospace; font-size: 0.875em; background: var(--muted); padding: 0.1em 0.35em; border-radius: 0.3rem; }
 .lesson-prose pre { background: oklch(0.21 0.006 285.9); color: oklch(0.96 0 0); font-family: var(--font-mono), monospace; padding: 1rem 1.1rem; border-radius: 0.6rem; overflow-x: auto; margin: 0.8rem 0; font-size: 0.875em; line-height: 1.5; }
@@ -953,6 +1266,76 @@
 /* Hujjatga qoʻyilgan rasmlar (blok surat) — emoji sprite'lar bundan mustasno,
    ular matn ichidagi inline belgi, blok-rasm boʻshliqlarini olmasligi kerak. */
 .lesson-prose img:not(.apple-emoji-img) { max-width: 100%; height: auto; border-radius: 0.6rem; margin: 0.8rem 0; }
+
+/* ── Rasm + izoh (`<figure>` / `<figcaption>`) ────────────────────────────
+   Izoh tipografikasi — jahon amaliyoti: u matn oqimidan PASTROQ darajada
+   turishi kerak, shuning uchun bu prozadagi YAGONA joy boʻlib, matn tana
+   matnidan ataylab KICHIK qilinadi (Medium ≈0.67em, NYT ≈0.78em, Notion
+   ≈0.87em — hammasi bir yoʻnalishda). Qolgan uch belgi ham izchil: xira
+   rang, zichroq qator oraligʻi (1.45) va rasm ostida MARKAZLASHTIRISH
+   (Medium/Substack/WordPress standarti).
+
+   `max(0.8em, 0.75rem)` — nisbat konteksga ergashadi (blogda 1.2rem tanadan
+   ≈15px, darsda 0.875rem tanadan ≈12px), lekin 12px dan pastga tushmaydi:
+   sof nisbat dars muharririda izohni oʻqib boʻlmas darajaga olib kelardi. */
+.lesson-prose .editor-figure { margin: 1.2rem 0; }
+/* ⚠️ `width: 100%` EMAS: u kichik rasmni (logotip, kesilgan diagramma)
+   ustun kengligiga majburan choʻzib, rastrni bulanib ketguncha kattalashtirar
+   edi. `max-width` faqat toshib ketishning oldini oladi, oʻz oʻlchamiga
+   tegmaydi; markazlashtirish `margin-inline: auto` bilan. */
+.lesson-prose .editor-figure img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+.lesson-prose .editor-figcaption {
+  margin-top: 0.5rem;
+  font-size: max(0.8em, 0.75rem);
+  line-height: 1.45;
+  color: var(--muted-foreground);
+  text-align: center;
+  text-wrap: pretty;
+}
+/* Izohsiz rasm — nashr qilingan sahifada figcaption BUTUNLAY yigʻiladi.
+   Muharrirda ProseMirror boʻsh matn blokiga `<br>` qoʻshadi, shuning uchun
+   `:empty` u yerda mos KELMAYDI va izoh maydoni bosiladigan boʻlib qolaveradi
+   (aynan kerak). Nashr qilingan HTML'da esa element rostdan boʻsh — busiz
+   har bir izohsiz rasm ostida ≈30px tushuntirib boʻlmaydigan boʻshliq
+   qolardi (Placeholder plagini u yerda yoʻq, matn ham chiqmaydi). */
+.lesson-prose .editor-figcaption:empty { display: none; }
+/* MUHARRIRDA esa hech qachon yigʻilmaydi — izohsiz rasmga izoh yozish uchun
+   bosiladigan joy qolishi kerak. Odatda ProseMirror boʻsh matn blokiga
+   `<br class="ProseMirror-trailingBreak">` qoʻshgani uchun yuqoridagi
+   `:empty` bu yerda baribir mos kelmaydi, lekin bu qoida uni kafolatlaydi. */
+.ProseMirror .editor-figcaption:empty {
+  display: block;
+  min-height: 1.45em;
+}
+/* Yuklanayotgan rasm oʻrni (image-paste-extension.ts widget dekoratsiyasi) */
+.lesson-prose .editor-image-uploading {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+  border: 2px solid var(--border);
+  border-top-color: var(--muted-foreground);
+  border-radius: 50%;
+  animation: editor-image-uploading-spin 700ms linear infinite;
+}
+@keyframes editor-image-uploading-spin {
+  to { transform: rotate(360deg); }
+}
+/* Boʻsh izoh — xira namuna. `.is-empty` Placeholder kengaytmasidan TASHQI
+   elementga (`<figure>`) tushadi, `data-placeholder` esa figcaption'ning
+   oʻzida (figure-extension.ts renderHTML) — CSS `attr()` faqat oʻz
+   elementidan oʻqiy olgani uchun ikkisi shu yerda juftlashadi. */
+.lesson-prose .editor-figure.is-empty .editor-figcaption::before {
+  content: attr(data-placeholder);
+  color: var(--muted-foreground);
+  opacity: 0.55;
+  pointer-events: none;
+}
 .lesson-prose hr { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
 
 /* Sahifa chegarasi (PageBreak) — kesik chiziq; chop etishda haqiqiy varaq boʻlinishi. */
@@ -981,6 +1364,50 @@
   .lesson-prose [data-page-break]::after { display: none; }
 }
 
+/* ── Video embed (havola bilan qoʻyilgan YouTube/Instagram bloki) ──
+
+   Bazada saqlangan shakl — iframe EMAS, fasad placeholderi:
+       <div data-video-embed …><a href=…>URL</a></div>
+   Klientda VideoEmbedHydrator uni React fasadiga almashtiradi. Bu
+   yerdagi qoidalar IKKI holatga xizmat qiladi:
+     1. yuksaltirilgunga qadar (yoki JS oʻchiq) — ichidagi havola koʻrinadi
+     2. chop etishda (dars A4 PDF) — qogʻozda iframe maʼnosiz, havola oʻqiladi */
+.lesson-prose .video-embed { margin: 1.5rem 0; }
+/* Fasad thumbnail’i — quti balandligini TO‘LIQ egallashi kerak.
+   Yuqoridagi umumiy qoida (`.lesson-prose img:not(.apple-emoji-img)`)
+   o‘zilligi bilan Tailwind’ning `size-full` sinfidan kuchli va rasmga
+   `height: auto` + `margin: 0.8rem 0` beradi: `inset-0` bo‘lgan rasm
+   shu marginlar hisobiga 1.6rem pastroq bo‘lib qolar va videoning
+   tepasi/pastida kulrang chiziq ko‘rinardi. Shuning uchun bu yerda
+   ataylab bekor qilinadi (o‘zillik bir xil, lekin qoida KEYIN turadi). */
+.lesson-prose img.video-embed-thumb { height: 100%; margin: 0; border-radius: 0; }
+.lesson-prose .video-embed-link {
+  display: block;
+  padding: 0.9rem 1rem;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  background: var(--muted);
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+  word-break: break-all;
+}
+/* Yuksaltirilgandan keyin React fasad qoʻyiladi va havola DOMdan
+   chiqib ketadi — bu qoida faqat ehtiyot uchun (bir root ikki marta
+   render qilinsa havola qayta paydo boʻlmasin). */
+.lesson-prose .video-embed .video-embed-frame ~ .video-embed-link { display: none; }
+@media print {
+  .lesson-prose .video-embed-frame { display: none; }
+  .lesson-prose .video-embed::after {
+    content: attr(data-url);
+    display: block;
+    padding: 0.75rem 1rem;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+    font-size: 0.8rem;
+    word-break: break-all;
+  }
+}
+
 /* ── Callout bloklar (Obsidian uslubi — lucide ikonlar, OKLCH ranglar) ──
    Rang YAGONA MANBASI endi callout-extension.ts (CALLOUT_TYPES.color) —
    CalloutView uni `--cl` inline style sifatida DOM'ga uzatadi. Bu yerda
@@ -990,6 +1417,9 @@
    xil qolib ketgan). */
 .lesson-prose .callout {
   --cl: var(--info); /* fallback, odatda inline style bilan qayta yoziladi */
+  /* Sarlavha qatori balandligi — ikon qutisi ham SHU qiymatdan oziqlanadi,
+     shuning uchun u kontekst bilan birga oʻsishi kerak (blog uchun pastda
+     qayta beriladi). */
   --callout-title-lh: 1.5rem;
   position: relative;
   display: grid;
@@ -1039,8 +1469,19 @@
   outline: 2px solid var(--ring);
   outline-offset: 2px;
 }
-/* Sarlavha — TANADAN KICHIK BOʻLMASIN: ilgari 0.92rem (tanadan kichik) edi,
-   bu ierarxiyani teskari qilardi — qalin boʻlsa ham "kichik" koʻrinardi.
+/* Sarlavha — TANA MATNI BILAN TENG OʻLCHAM, farq faqat QALINLIKDA.
+   Bu callout/admonition uchun jahon standarti: Obsidian (`--callout-title-size`
+   standart holda `inherit`), GitHub Alerts, Docusaurus admonition va Notion
+   callout — hammasida sarlavha tana bilan bir xil oʻlchamda, ajralib turishi
+   uchun faqat qalinlik/rang ishlatiladi. Sarlavha hech qachon tanadan
+   KICHIK boʻlmaydi.
+
+   ⚠️ Ilgari bu yerda qatʼiy `0.9375rem` turardi. Dars muharririda tana
+   0.875rem boʻlgani uchun u toʻgʻri koʻrinardi, lekin BLOGDA tana 1.2rem —
+   natijada sarlavha tanadan KICHIK boʻlib, ierarxiya teskari boʻlib
+   qolgandi. `1em` kontekstdan meros oladi: dars = 0.875rem, blog = 1.2rem —
+   ikkala joyda ham oʻz-oʻzidan toʻgʻri, uchinchi kontekst qoʻshilsa ham.
+
    QALINLIK BU YERDA MAJBURIY EMAS: ilgari `font-weight` shu qoidada qattiq
    yozilgan edi, shuning uchun toolbar'dagi haqiqiy Bold (B) tugmasi
    sarlavha matnida hech narsani oʻzgartirmasdi (CSS ustidan majburan
@@ -1049,12 +1490,74 @@
    (EditorToolbar.tsx), foydalanuvchi esa B tugmasi bilan yoqib/oʻchira
    oladi, xuddi oddiy matndagidek. */
 .lesson-prose .callout-title {
-  font-size: 0.9375rem;
+  font-size: 1em;
   line-height: var(--callout-title-lh);
   color: var(--foreground);
 }
+
+/* ── Statik callout (Yordam maqolalari) ───────────────────────────────────
+   Dars muharriridagi Obsidian-uslub `.callout` bilan bir xil vizual til
+   (chap rangli hoshiya + tint fon + ikon ustuni) — lekin tahrirlanmaydigan,
+   Tiptap NodeView'siz statik variant (`.lesson-prose` skopidan mustaqil,
+   chunki yordam maqolalari server komponent, editor bundle yuklanmaydi). */
+.static-callout {
+  --cl: var(--info);
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.5rem 1fr;
+  column-gap: 0.65rem;
+  align-items: start;
+  background: color-mix(in srgb, var(--cl) 6%, var(--card));
+  border-radius: var(--radius-md);
+  padding: 0.9rem 1.1rem;
+}
+.static-callout::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 0.28rem;
+  background: var(--cl);
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+}
+.static-callout-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--cl);
+}
+.static-callout-icon svg { width: 1.05rem; height: 1.05rem; }
+.static-callout-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.5rem;
+  color: var(--foreground);
+}
+.static-callout-body {
+  font-size: var(--typo-body, 0.875rem);
+  line-height: 1.5;
+  color: var(--foreground);
+}
+.static-callout-title + .static-callout-body { margin-top: 0.3rem; }
 .lesson-prose .callout-inner > :nth-child(2) { margin-top: 0.35rem; }
 .lesson-prose .callout-inner > :last-child { margin-bottom: 0; }
+
+/* ── Eski (2026-08-29 tuzatishidan OLDIN saqlangan) callout HTML ───────────
+   Ilgari `renderHTML` faqat `.callout > .callout-title + p` chiqarardi —
+   ikon `<span>` ham, `.callout-inner` oʻrami ham yoʻq. Yuqoridagi grid
+   bunday tuzilmani buzadi (sarlavha 1.5rem'lik ikon ustuniga siqiladi).
+   Bunday post muharrirda ochib qayta saqlansa yangi (toʻliq) HTML'ga
+   oʻtadi; shungacha hech boʻlmasa oʻqilsin — grid bekor qilinadi.
+   Rang (`--cl`) baribir yoʻq → `--info` (koʻk) fallback; ikon yoʻq. */
+.lesson-prose .callout:not(:has(> .callout-inner)) {
+  display: block;
+  padding-left: 1.1rem;
+}
+.lesson-prose .callout:not(:has(> .callout-inner)) > .callout-title {
+  display: block;
+  margin-bottom: 0.35rem;
+}
 
 /* Chop etishda fon/hoshiya ranglari brauzer tomonidan standart tashlab
    yuboriladi (siyoh tejash) — A4 PDF asosiy mahsulot boʻlgani uchun bu
@@ -1172,7 +1675,7 @@
 .lesson-prose .notion-callout-content h1,
 .lesson-prose .notion-callout-content h2,
 .lesson-prose .notion-callout-content h3 {
-  font-size: 0.9375rem;
+  font-size: var(--callout-fs);
   font-weight: 650;
   line-height: var(--callout-lh);
   margin: 0;
@@ -1185,7 +1688,7 @@
    faqat haqiqiy Bold (<strong>) markasi orqali, B tugmasi bilan
    boshqariladi (insertNotionCallout boshlangʻich matnga qoʻyadi). */
 .lesson-prose .notion-callout-title {
-  font-size: 0.9375rem;
+  font-size: var(--callout-fs);
   line-height: var(--callout-lh);
   color: var(--foreground);
 }
@@ -1489,4 +1992,241 @@
 }
 ::view-transition-group(root) {
   animation-duration: var(--magicui-theme-toggle-vt-duration, 400ms);
+}
+/* ═════════════════════════════════════════════
+   SIRT va OHANG — docs/ost-loyihalar-arxitektura.md §A
+   Ikki mustaqil oʻq. Komponent fork qilinmaydi: Tailwind v4
+   da `h-9` → calc(var(--spacing) * 9), `text-sm` → var(--text-sm),
+   yaʼni tokenni qayta belgilash butun daraxtni qayta oʻlchaydi.
+   ═════════════════════════════════════════════ */
+
+/* ── 1-oʻq: sirt (oʻlcham va zichlik) ── */
+
+/* `desk` — standart, qayta belgilanmaydi (14px / 36px) */
+
+/* `stage` — projektor, 5 metrdan oʻqiladi (24px+ / 54px) */
+[data-surface="stage"] {
+  --spacing: 0.375rem; /* 0.25rem → 6px; h-9 = 54px */
+
+  --text-xs: 1rem;
+  --text-sm: 1.25rem;
+  --text-base: 1.5rem;
+  --text-lg: 1.75rem;
+  --text-xl: 2rem;
+  --text-2xl: 2.5rem;
+  --text-3xl: 3rem;
+  --text-4xl: 4rem;
+  --text-5xl: 5rem;
+  --text-6xl: 6rem;
+}
+
+/* `handheld` — telefon, barmoq (17px / 48px) */
+[data-surface="handheld"] {
+  --spacing: 0.333rem; /* h-9 = 48px */
+
+  --text-xs: 0.8125rem;
+  --text-sm: 0.9375rem;
+  --text-base: 1.0625rem;
+  --text-lg: 1.1875rem;
+  --text-xl: 1.375rem;
+}
+
+/* ── 2-oʻq: ohang (xarakter) ── */
+
+/* `serious` — standart, qayta belgilanmaydi */
+
+/* `playful` — sinf ekrani, oʻyin, kviz: yumaloq, toʻyingan, sakraydigan */
+[data-tone="playful"] {
+  --radius: 1.25rem;
+
+  /* Qalin ofset soya — tekis hairline oʻrniga */
+  --tone-shadow: 0 4px 0 var(--tone-shadow-color, oklch(0.7 0.14 70));
+  --tone-shadow-sm: 0 3px 0 var(--tone-shadow-color, oklch(0.7 0.14 70));
+
+  /* Sakraydigan animatsiya */
+  --ease-standard: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --transition-duration-base: 300ms;
+}
+
+/* Tugmalar pill boʻladi — playful ohangda burchak toʻliq yumaloq */
+[data-tone="playful"] [data-slot="button"] {
+  border-radius: 9999px;
+  font-weight: 500;
+}
+
+/* ─────────────────────────────────────────────
+   Toast — sonner'ni dizayn tizimiga sozlash (DESIGN.md §9).
+
+   Yuza = `--popover` token + yumshoq elevation (koʻtarilgan
+   qatlam). Xabar turi RANGLI FON bilan emas, faqat 32px
+   iconbox tintida bilinadi — `richColors` ISHLATILMAYDI.
+
+   Har selektorda `[data-sonner-toaster]` prefiksi bor: sonner
+   uslublarni runtime'da <head>ga inject qiladi, shu prefiks
+   bir zinapoya ustunlik berib bizning qiymatni kafolatlaydi.
+   (`--border-radius` va `--width` esa sonnerʼning `[data-sonner-toaster]`
+   default qiymati bilan teng ustunlikda boʻlgani uchun inline `style`
+   propida — `src/components/ui/sonner.tsx`.)
+
+   Jahon konvensiyasi (Carbon, Material, Atlassian): 16px glif,
+   ikon↔matn 12px, padding 16, sarlavha ~14/600, izoh ~13/400
+   muted (2 qator maks), amal tugmasi PAST urgʻu (ghost).
+   ───────────────────────────────────────────── */
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] {
+  padding: 16px;
+  gap: 12px;
+  align-items: center;
+  background: var(--popover);
+  border-color: var(--border);
+  color: var(--popover-foreground);
+  box-shadow:
+    0 1px 3px 0 rgb(0 0 0 / 0.04),
+    0 8px 24px -6px rgb(0 0 0 / 0.10);
+}
+/* X tugmasi absolyut — faqat u chindan render boʻlganда oʻngdan joy qoldiramiz
+   (sonner: closeButton && !toast.jsx && type !== 'loading') */
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"]:has([data-close-button]) {
+  padding-right: 44px;
+}
+.dark [data-sonner-toaster] [data-sonner-toast][data-styled="true"] {
+  box-shadow:
+    0 1px 3px 0 rgb(0 0 0 / 0.30),
+    0 12px 32px -8px rgb(0 0 0 / 0.55);
+}
+
+/* iconbox — 32px quti, turi rangining tinti (`--popover` ustida OPAQUE —
+   shaffof tint yorugʻ fonda koʻrinmasdi), glif 16px */
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-icon] {
+  width: 32px;
+  height: 32px;
+  margin: 0;
+  border-radius: var(--radius-md);
+  /* sonner `[data-icon]` ga `justify-content: flex-start` beradi — glif
+     qutining chapiga qisilib qoladi. `place-items` uni BEKOR QILMAYDI
+     (u `justify-items`, `justify-content` emas), shuning uchun flex +
+     `justify-content: center` aniq yozilgan. */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted-foreground);
+  background: var(--muted);
+}
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-icon] > svg,
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-icon] svg {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+}
+/* sonner yuklanish loaderi `position:absolute; inset:0` — 32px quti ichida
+   chap-yuqoriga yopishardi; oqimga qaytarib flex markazlashuvga beramiz */
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-icon] .sonner-loading-wrapper {
+  position: relative;
+  inset: auto;
+}
+[data-sonner-toaster] [data-sonner-toast][data-type="success"] [data-icon] {
+  color: var(--success);
+  background: color-mix(in oklch, var(--success) 18%, var(--popover));
+}
+[data-sonner-toaster] [data-sonner-toast][data-type="error"] [data-icon] {
+  color: var(--destructive);
+  background: color-mix(in oklch, var(--destructive) 18%, var(--popover));
+}
+[data-sonner-toaster] [data-sonner-toast][data-type="warning"] [data-icon] {
+  color: var(--warning);
+  background: color-mix(in oklch, var(--warning) 22%, var(--popover));
+}
+[data-sonner-toaster] [data-sonner-toast][data-type="info"] [data-icon] {
+  color: var(--info);
+  background: color-mix(in oklch, var(--info) 18%, var(--popover));
+}
+
+/* matn — `.toast-title` / `.toast-desc` xulq toastida ham ishlatiladi */
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-content] {
+  gap: 1px;
+}
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-title],
+.toast-title {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.006em;
+}
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-description],
+.dark [data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-description],
+.toast-desc {
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.35;
+  color: var(--muted-foreground);
+}
+
+/* amal tugmasi — ghost (past urgʻu). `.toast-action` xulq toasti uchun */
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-button],
+.toast-action {
+  height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--radius-md);
+  font-size: 12.5px;
+  font-weight: 600;
+  background: transparent;
+  color: var(--popover-foreground);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background var(--transition-duration-fast) var(--ease-standard);
+}
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-button]:hover,
+.toast-action:hover {
+  background: var(--muted);
+}
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-cancel],
+.dark [data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-cancel] {
+  background: transparent;
+  color: var(--muted-foreground);
+}
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-cancel]:hover {
+  background: var(--muted);
+}
+
+/* yopish (X) — sonner burchakdagi doiradan ichkariga, oʻngga, vertikal markazga */
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-close-button] {
+  position: absolute;
+  left: auto;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 24px;
+  width: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--muted-foreground);
+  opacity: 1;
+  transition: background var(--transition-duration-fast) var(--ease-standard);
+}
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-close-button]:hover {
+  background: var(--muted);
+  border: 0;
+  color: var(--popover-foreground);
+}
+.dark [data-sonner-toaster] [data-sonner-toast] [data-close-button],
+.dark [data-sonner-toaster] [data-sonner-toast] [data-close-button]:hover {
+  border: 0;
+}
+
+/* xulq "ball berildi" toasti — avtoyopilishgacha qolgan vaqt chizigʻi */
+@keyframes award-toast-progress {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .award-toast-bar {
+    animation: none !important;
+  }
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useCollator } from "@/lib/use-collator";
 import { useTranslations } from "next-intl";
 import { ArrowDown, ArrowUp, ArrowUpDown, ChevronRight, GraduationCap, SearchX } from "lucide-react";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -43,16 +44,17 @@ export function ClassesTable({
 }) {
   const t = useTranslations("StatisticsPage");
   const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" }>({ key: "attendanceAvg", dir: "asc" });
+  const compare = useCollator();
 
   const sorted = useMemo(() => {
     const dirMul = sort.dir === "asc" ? 1 : -1;
     return [...rows].sort((a, b) => {
-      if (sort.key === "name") return a.name.localeCompare(b.name) * dirMul;
+      if (sort.key === "name") return compare(a.name, b.name) * dirMul;
       const av = a[sort.key] ?? -Infinity;
       const bv = b[sort.key] ?? -Infinity;
       return (av - bv) * dirMul;
     });
-  }, [rows, sort]);
+  }, [rows, sort, compare]);
 
   const toggleSort = (key: SortKey) => {
     setSort((prev) =>
@@ -113,7 +115,7 @@ export function ClassesTable({
                     className="group cursor-pointer"
                     onClick={() => onSelect(r.classId)}
                   >
-                    <TableCell className="whitespace-nowrap py-3.5 pl-4 pr-3">
+                    <TableCell className="whitespace-nowrap py-3 pl-4 pr-3">
                       <div className="flex items-center gap-3">
                         <div
                           className="size-11 shrink-0 rounded-full flex items-center justify-center text-white"
@@ -125,21 +127,21 @@ export function ClassesTable({
                       </div>
                     </TableCell>
 
-                    <TableCell className="whitespace-nowrap w-32 px-3 py-3.5">
+                    <TableCell className="whitespace-nowrap w-32 px-3 py-3">
                       <div className="flex items-center gap-1 text-sm text-muted-foreground">
                         <span className="font-semibold text-foreground tabular-nums">{r.studentCount}</span>
                         {t("unitPeople")}
                       </div>
                     </TableCell>
 
-                    <TableCell className="whitespace-nowrap w-20 px-3 py-3.5">
+                    <TableCell className="whitespace-nowrap w-20 px-3 py-3">
                       <div className="flex justify-center">
                         <AttendanceRing pct={r.attendanceAvg} />
                       </div>
                     </TableCell>
 
-                    <TableCell className="whitespace-nowrap w-52 px-3 py-3.5">
-                      <div className="flex items-center gap-2.5">
+                    <TableCell className="whitespace-nowrap w-52 px-3 py-3">
+                      <div className="flex items-center gap-2">
                         <Progress
                           value={r.summativeAvg ?? 0}
                           indicatorColor={scoreColor}
@@ -150,7 +152,7 @@ export function ClassesTable({
                           {r.summativeAvg !== null ? `${Math.round(r.summativeAvg)}%` : "—"}
                         </span>
                         {delta !== null && !stable && (
-                          <span className={cn("flex items-center shrink-0 text-[10px]", delta > 0 ? "text-success" : "text-destructive")}>
+                          <span className={cn("flex items-center shrink-0 text-micro font-normal", delta > 0 ? "text-success" : "text-destructive")}>
                             {delta > 0 ? <ArrowUp className="size-2.5" /> : <ArrowDown className="size-2.5" />}
                             {Math.round(Math.abs(delta))}pp
                           </span>
@@ -158,7 +160,7 @@ export function ClassesTable({
                       </div>
                     </TableCell>
 
-                    <TableCell className="whitespace-nowrap w-24 px-3 py-3.5 text-center">
+                    <TableCell className="whitespace-nowrap w-24 px-3 py-3 text-center">
                       {r.behaviorPositivePct !== null ? (
                         <span className="text-sm font-semibold tabular-nums" style={{ color: scoreBarColor(r.behaviorPositivePct) }}>
                           {Math.round(r.behaviorPositivePct)}%
@@ -168,7 +170,7 @@ export function ClassesTable({
                       )}
                     </TableCell>
 
-                    <TableCell className="whitespace-nowrap px-4 py-3.5">
+                    <TableCell className="whitespace-nowrap px-4 py-3">
                       <ChevronRight className="size-4 text-muted-foreground/40 transition-transform group-hover:translate-x-0.5 group-hover:text-muted-foreground" />
                     </TableCell>
                   </TableRow>

@@ -2,6 +2,7 @@
 
 import { Fragment, useState } from "react";
 import { classTints, CLASS_CARD_INTERACTION, type ClassColor } from "@/lib/class-colors";
+import { ClassSwatch } from "@/components/ClassSwatch";
 import { cn } from "@/lib/utils";
 import type { TimetableEvent } from "@/lib/timetable";
 import type { PeriodRow } from "@/lib/bell-schedule";
@@ -10,6 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
 import { XIcon, Plus, Check } from "lucide-react";
 import { minToHHMM } from "@/lib/calendar-core/date-math";
+import { subjectLabel } from "@/lib/standards-data";
 import { useCalendarFormat } from "@/components/calendar/format";
 import { EventCard } from "@/components/calendar/EventCard";
 
@@ -68,12 +70,12 @@ export default function PeriodGrid({ periods, events, classes, getClass, profile
   ].join(" ");
 
   return (
-    <div className="mx-6 mb-6 mt-2 min-h-0 flex-1 overflow-auto rounded-md border border-border [scrollbar-width:thin]">
+    <div className="mx-6 mb-6 mt-2 min-h-0 flex-1 scrollbar-hover overflow-auto rounded-md border border-border [scrollbar-width:thin]">
       <div className="grid min-h-full min-w-[680px]" style={{ gridTemplateColumns: "6.5rem repeat(6, minmax(0, 1fr))", gridTemplateRows: rowTemplate }}>
         {/* Sarlavha */}
-        <div className="sticky top-0 z-20 border-b border-r border-border/60 bg-background/70 py-2.5 text-center text-[13px] font-semibold text-foreground/70 backdrop-blur-md">{fmt.t("hourHeader")}</div>
+        <div className="sticky top-0 z-20 border-b border-r border-border/60 bg-background/70 py-3 text-center text-sm font-semibold text-foreground/70 backdrop-blur-md">{fmt.t("hourHeader")}</div>
         {WORK_DAYS.map((day, i) => (
-          <div key={day} className={cn("sticky top-0 z-20 truncate border-b border-border/60 bg-background/70 py-2.5 text-center text-sm font-medium text-foreground/80 backdrop-blur-md", i > 0 && "border-l")}>{fmt.dayName(day)}</div>
+          <div key={day} className={cn("sticky top-0 z-20 truncate border-b border-border/60 bg-background/70 py-3 text-center text-sm font-medium text-foreground/80 backdrop-blur-md", i > 0 && "border-l")}>{fmt.dayName(day)}</div>
         ))}
 
         {/* Period qatorlari */}
@@ -82,13 +84,13 @@ export default function PeriodGrid({ periods, events, classes, getClass, profile
           return (
             <Fragment key={`${p.shift}-${p.index}`}>
               {showShiftSep && (
-                <div className="col-span-full border-b border-border bg-muted/40 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                <div className="col-span-full border-b border-border bg-muted/40 px-3 py-1 text-label font-semibold uppercase tracking-wide text-muted-foreground">
                   {fmt.t("secondShift")}
                 </div>
               )}
               <div className="flex flex-col items-center justify-center border-b border-r border-border bg-card/60 px-2 py-2 text-center">
                 <span className="text-xs font-semibold text-foreground">{fmt.t("periodLabel", { index: p.index })}</span>
-                <span className="text-[10px] tabular-nums text-muted-foreground">{minToHHMM(p.startMin)} — {minToHHMM(p.endMin)}</span>
+                <span className="text-micro font-normal tabular-nums text-muted-foreground">{minToHHMM(p.startMin)} — {minToHHMM(p.endMin)}</span>
               </div>
               {WORK_DAYS.map((day, ci) => {
                 const ev = events.find((e) => e.day === day && e.startMin === p.startMin);
@@ -134,7 +136,12 @@ export default function PeriodGrid({ periods, events, classes, getClass, profile
                     key={ev.id}
                     color={cls.color}
                     title={cls.name}
-                    subtitle={`${minToHHMM(ev.startMin)} — ${minToHHMM(ev.endMin)}`}
+                    subtitle={[
+                      subjectLabel(cls.subject),
+                      `${minToHHMM(ev.startMin)} — ${minToHHMM(ev.endMin)}`,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
                     density="micro"
                     interactive={!readOnly}
                     onClick={() => { if (!readOnly) onEditEvent(ev); }}
@@ -210,6 +217,7 @@ function PeriodCell({ event, day, period, classes, getClass, readOnly = false, o
       <PeriodBlock
         color={cls.color}
         name={cls.name}
+        subject={subjectLabel(cls.subject)}
         interactive={!readOnly}
         role={readOnly ? undefined : "button"}
         tabIndex={readOnly ? undefined : 0}
@@ -260,10 +268,13 @@ function PeriodCell({ event, day, period, classes, getClass, readOnly = false, o
   );
 }
 
-/* ─── Toʻyingan blok — jadval katagi (faqat sinf nomi, teksturasiz, tekis rang) ─── */
-function PeriodBlock({ color, name, interactive, actions, role, tabIndex, onClick }: {
+/* ─── Toʻyingan blok — jadval katagi (sinf nomi + fan) ─── */
+function PeriodBlock({ color, name, subject, interactive, actions, role, tabIndex, onClick }: {
   color: ClassColor;
   name: string;
+  /** Fan nomi — bitta sinfda bir necha fan oʻtiladi (masalan «Ona tili» va
+      «Adabiyot» ikkalasi ham 7-A da), nomsiz kataklar ajratib boʻlmasdi. */
+  subject?: string;
   interactive?: boolean;
   actions?: React.ReactNode;
   role?: string;
@@ -280,13 +291,25 @@ function PeriodBlock({ color, name, interactive, actions, role, tabIndex, onClic
          shaffof diagonal tekstura ([[color-system-layers]]). */
       style={tints.gradientSurface}
       className={cn(
-        "group/ev relative flex h-full min-h-[56px] w-full items-center justify-center overflow-hidden rounded-xl p-3 text-center",
+        "group/ev relative flex h-full min-h-[56px] w-full flex-col items-center justify-center gap-0.5 overflow-hidden rounded-xl p-3 text-center",
         interactive && cn("cursor-pointer", CLASS_CARD_INTERACTION),
       )}
     >
-      <span title={name} style={tints.textOnSolid} className="relative truncate text-[15px] font-medium leading-tight">
+      <span
+        title={subject ? `${name} · ${subject}` : name}
+        style={tints.textOnSolid}
+        className="relative max-w-full truncate text-[15px] font-medium leading-tight"
+      >
         {name}
       </span>
+      {subject ? (
+        <span
+          style={tints.textOnSolid}
+          className="relative max-w-full truncate text-tag leading-tight opacity-75"
+        >
+          {subject}
+        </span>
+      ) : null}
       {actions != null && (
         <div className="absolute right-1 top-1 z-10 opacity-0 transition-opacity focus-within:opacity-100 group-hover/ev:opacity-100 [@media(hover:none)]:opacity-100">
           {actions}
@@ -312,10 +335,10 @@ function ClassPicker({ classes, selectedId, onSelect }: {
           {classes.map((c) => {
             const tints = classTints(c.color);
             return (
-              <CommandItem key={c.id} value={`${c.name} ${c.subject ?? ""}`} onSelect={() => onSelect(c.id)} className="gap-2">
-                <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: tints.solid }} />
+              <CommandItem key={c.id} value={`${c.name} ${subjectLabel(c.subject)}`} onSelect={() => onSelect(c.id)} className="gap-2">
+                <ClassSwatch hex={tints.solid} />
                 <span className="font-medium">{c.name}</span>
-                {c.subject && <span className="truncate text-xs text-muted-foreground">{c.subject}</span>}
+                {c.subject && <span className="truncate text-xs text-muted-foreground">{subjectLabel(c.subject)}</span>}
                 {selectedId === c.id && <Check className="ml-auto size-4" />}
               </CommandItem>
             );

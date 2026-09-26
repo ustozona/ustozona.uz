@@ -92,13 +92,13 @@ export function EventPill({
       {time && (
         /* 30px = JetBrains Mono 10px'da "08:50" ning aniq kengligi (0.6em × 5).
            `shrink-0` — nom uzun boʻlsa ham ustun qisqarmasin. */
-        <span style={tints.text} className="w-[30px] shrink-0 font-mono text-[10px] leading-none">
+        <span style={tints.text} className="w-[30px] shrink-0 font-mono text-micro font-normal leading-none">
           {time}
         </span>
       )}
       {filled ? (
         <>
-          <ClassSwatch hex={CLASS_COLOR_HEX[color]} className="size-2" />
+          <ClassSwatch hex={CLASS_COLOR_HEX[color]} />
           <span style={tints.textStrong} className="min-w-0 truncate text-xs font-semibold">
             {label}
           </span>

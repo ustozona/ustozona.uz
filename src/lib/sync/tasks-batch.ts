@@ -25,11 +25,3 @@ export const tasksBatchSchema = z.object({
 
 export type TaskUpsert = z.infer<typeof taskUpsertSchema>;
 export type TasksBatch = z.infer<typeof tasksBatchSchema>;
-
-export function emptyTasksBatch(): TasksBatch {
-  return { tasksUpsert: [], tasksDelete: [] };
-}
-
-export function isEmptyTasksBatch(b: TasksBatch): boolean {
-  return b.tasksUpsert.length === 0 && b.tasksDelete.length === 0;
-}

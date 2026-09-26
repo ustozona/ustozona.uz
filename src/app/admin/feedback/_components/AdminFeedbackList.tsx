@@ -1,8 +1,11 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { SectionIcon } from "@/components/ui/section-icon";
+import { cn } from "@/lib/utils";
+import { useAdminNav, pendingClass } from "../../_components/use-admin-nav";
+import { AdminPanelHeader } from "../../_components/AdminPanelHeader";
+import { AdminPagination } from "../../_components/AdminPagination";
+import { adminHref } from "../../_components/admin-href";
+import { Panel } from "@/components/ui/panel";
 import {
   Select,
   SelectContent,
@@ -17,7 +20,7 @@ import {
   EmptyTitle,
   EmptyDescription,
 } from "@/components/ui/empty";
-import { MessageSquareText, ChevronLeft, ChevronRight } from "lucide-react";
+import { MessageSquareText } from "lucide-react";
 import {
   CATEGORY_META,
   STATUS_META,
@@ -27,10 +30,13 @@ import {
 import type { AdminFeedbackItem } from "@/server/dal/admin/feedback";
 import AdminFeedbackCard from "./AdminFeedbackCard";
 
-/* Admin fikrlar markazi — oʻqituvchi tomonidagi Fikr-mulohaza sahifasi
-   bilan bir xil vizual qobiq (rounded-2xl card + toolbar + karta lentasi),
-   faqat admin ehtiyojiga moslashtirilgan (kompozer/tab yoʻq, Turkum/Holat
-   filtri Select bilan). */
+/* Admin fikrlar markazi — `Panel` + toolbar + karta lentasi. Oʻqituvchi
+   tomonidagi Fikr-mulohaza sahifasi bilan bir xil lenta, faqat admin
+   ehtiyojiga moslashtirilgan (kompozer/tab yoʻq, Turkum/Holat filtri
+   Select bilan). */
+
+const feedbackHref = (status: string, category: string, page = 1) =>
+  adminHref("/admin/feedback", { status, category }, page);
 
 export default function AdminFeedbackList({
   data,
@@ -41,30 +47,23 @@ export default function AdminFeedbackList({
   activeStatus: string;
   activeCategory: string;
 }) {
-  const router = useRouter();
+  /* Filtr/sahifa navigatsiyasi `useTransition` ichida — kutish
+     koʻrinsin (_components/use-admin-nav.ts dagi izoh). */
+  const { pending, go: navigate } = useAdminNav();
   const totalPages = Math.max(1, Math.ceil(data.total / data.pageSize));
 
-  const go = (status: string, category: string, page = 1) => {
-    const params = new URLSearchParams();
-    if (status) params.set("status", status);
-    if (category) params.set("category", category);
-    if (page > 1) params.set("page", String(page));
-    const qs = params.toString();
-    router.push(`/admin/feedback${qs ? `?${qs}` : ""}`);
-  };
+  const go = (status: string, category: string, page = 1) =>
+    navigate(feedbackHref(status, category, page));
 
   return (
     <div className="mx-auto w-full max-w-3xl">
-      <div className="overflow-hidden rounded-xl border border-border bg-card">
-        <div className="flex flex-wrap items-center gap-3 border-b border-border px-3 py-2.5 md:px-4">
-          <SectionIcon>
-            <MessageSquareText />
-          </SectionIcon>
-          <div className="min-w-0">
-            <h2 className="heading-small">Fikrlar markazi</h2>
-            <p className="text-caption text-muted-foreground">{data.total} ta fikr</p>
-          </div>
-          <div className="ml-auto flex gap-1.5">
+      <Panel>
+        <AdminPanelHeader
+          icon={<MessageSquareText />}
+          title="Fikrlar markazi"
+          count={`${data.total} ta fikr`}
+          actions={
+            <>
             <Select
               value={activeCategory || "all"}
               onValueChange={(v) => go(activeStatus, v === "all" ? "" : v)}
@@ -97,11 +96,12 @@ export default function AdminFeedbackList({
                 ))}
               </SelectContent>
             </Select>
-          </div>
-        </div>
+            </>
+          }
+        />
 
         {data.items.length === 0 ? (
-          <div className="p-4 md:p-5">
+          <div className={cn("p-4 md:p-5", pendingClass(pending))}>
             <Empty>
               <EmptyHeader>
                 <EmptyMedia variant="icon">
@@ -115,41 +115,21 @@ export default function AdminFeedbackList({
             </Empty>
           </div>
         ) : (
-          <div className="space-y-3 bg-muted/25 p-3 md:p-4">
+          <div className={cn("space-y-3 bg-muted/25 p-3 md:p-4", pendingClass(pending))}>
             {data.items.map((row) => (
               <AdminFeedbackCard key={row.id} row={row} />
             ))}
           </div>
         )}
 
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between border-t border-border px-3 py-3 md:px-4">
-            <span className="text-caption text-muted-foreground">
-              {data.page}-sahifa / {totalPages}
-            </span>
-            <div className="flex gap-1">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={data.page <= 1}
-                onClick={() => go(activeStatus, activeCategory, data.page - 1)}
-              >
-                <ChevronLeft />
-                Oldingi
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={data.page >= totalPages}
-                onClick={() => go(activeStatus, activeCategory, data.page + 1)}
-              >
-                Keyingi
-                <ChevronRight />
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
+        <AdminPagination
+          page={data.page}
+          totalPages={totalPages}
+          hrefFor={(p) => feedbackHref(activeStatus, activeCategory, p)}
+          onNavigate={navigate}
+          pending={pending}
+        />
+      </Panel>
     </div>
   );
 }

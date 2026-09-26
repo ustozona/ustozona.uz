@@ -3,8 +3,8 @@
 import { Palette, SlidersHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-/* Oʻng chekka reyl — oʻng ustunning rejimini tanlaydi (Kahoot'dagi
-   vertikal panel: Themes / Properties).
+/* Oʻng chekka reyl — oʻng ustunning rejimini tanlaydi (viktorina-uslub
+   platformalarda keng tarqalgan vertikal panel: Mavzular / Xossalar).
 
    Nega alohida ustun: panel yopilganda ham "qayerga qaytish" koʻrinib
    turishi kerak. Bir tugmani qayta bosish panelni yopadi. */
@@ -34,7 +34,7 @@ export default function BuilderRail({ panel, onSelect }: Props) {
             aria-pressed={isActive}
             onClick={() => onSelect(isActive ? null : item.id)}
             className={cn(
-              "flex w-full flex-col items-center gap-1 rounded-lg px-1 py-2 text-[10px] font-medium transition-colors",
+              "flex w-full flex-col items-center gap-1 rounded-lg px-1 py-2 text-micro font-medium transition-colors",
               isActive
                 ? "bg-accent text-accent-foreground"
                 : "text-muted-foreground hover:bg-muted hover:text-foreground"

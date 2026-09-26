@@ -26,11 +26,178 @@ export type ChangelogEntry = {
   title: string;
   /** 1–3 gap; yoʻq boʻlsa yozuv bir qatorli kompakt koʻrinadi. */
   body?: string;
+  /** Katta yangilik uchun skrinshot (`public/` ichidagi yoʻl). */
+  image?: { src: string; alt: string };
+  /** Tugma matni; yoʻq boʻlsa havola turidan: «Qoʻllanmani oʻqish» / «Blogda koʻrish» / «Sinab koʻrish». */
+  cta?: string;
   /** Tegishli sahifa, masalan "/dashboard/behavior". */
   href?: string;
 };
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
+  {
+    id: "doska-qolyozma-3",
+    date: "2026-09-26",
+    type: "yangi",
+    title: "Doskada chizgʻich, transportir va yozuvni surish",
+    body:
+      "Qalam panelidagi «Chizgʻich» va «Transportir» doskaga shaffof asbob qoʻyadi: barmoq bilan surasiz, ikki barmoq yoki tutqich bilan burasiz, qalamni uning cheti boʻylab yurgizsangiz chiziq aniq toʻgʻri tushadi. «Belgilash» bilan yozuvni halqa ichiga oling — keyin uni boshqa joyga suring, rangini yoki qalinligini almashtiring yoki oʻchiring. Dars oxirida menyudagi «Rasm qilib saqlash» doskani rasm qilib yuklab beradi — oʻquvchilarga yuborish yoki keyingi darsda ochish uchun.",
+    href: "/doska",
+  },
+  {
+    id: "doska-qolyozma-2",
+    date: "2026-09-26",
+    type: "yangi",
+    title: "Doskada qalam aqlliroq: toʻgʻri chiziq, lazer va slayd ustiga yozish",
+    body:
+      "Chiziq yoki aylanani chizib, oxirida qalamni bir lahza ushlab turing — u aniq toʻgʻri chiziq, aylana yoki toʻrtburchakka aylanadi; chiziqni qoʻyib yubormaguningizcha burab, uzaytirish mumkin. «Lazer» bilan sinfga kerakli joyni koʻrsatasiz — iz bir soniyada oʻzi soʻnadi va doskada hech narsa qolmaydi. Taqdimot slaydi ustiga yozgan belgingiz shu slayd bilan birga qoladi: keyingisiga oʻtsangiz yashirinadi, qaytsangiz yana chiqadi. Oʻchirgʻichda «Qisman» yoqilsa, butun chiziq emas, faqat tekkan joy oʻchadi.",
+    href: "/doska",
+  },
+  {
+    id: "doska-qolyozma",
+    date: "2026-09-26",
+    type: "yangi",
+    title: "Doskaga endi qoʻlda yozasiz: qalam, marker va oʻchirgʻich",
+    body:
+      "Paneldagi birinchi tugma — «Qalam»ni bosing va doskaning istalgan joyiga — taymer yoki taqdimot ustiga ham — yozing: sekin yozsangiz chiziq qalinlashadi, tez yozsangiz ingichkalashadi. Marker bilan muhim joyni boʻyab qoʻyasiz, oʻchirgʻich tekkan chiziqni butunlay olib tashlaydi; har chiziq «Bekor qilish» bilan qaytadi. Toʻq doskada siyoh oʻzi boʻrga aylanadi, qalamni alohida taniydigan qurilmada esa kaftingiz yozuvni buzmaydi — barmoq bilan vidjetlarni boshqarishda davom etasiz.",
+    href: "/doska",
+  },
+  {
+    id: "doska-uslublar",
+    date: "2026-09-25",
+    type: "yangi",
+    title: "Doskaga oʻzingizga yoqqan uslubni tanlang va panelni oʻzingiz tuzing",
+    body:
+      "Menyudagi «Koʻrinish»da uchta uslubdan birini tanlang: «Sokin» — proyektorda eng aniq, «Oʻyinchoq» — kichik sinflar uchun quvnoq va rangli, «Doska» — yashil doskadagi qogʻoz va magnitlar. Panelni pastda, chap yoki oʻng chetda qoldirish mumkin — interaktiv doska yonida turib ishlasangiz qulay. Kerakli vositalarni «Hammasi» oynasidan panelga qadab qoʻying, qolganlari oʻsha oynada turadi.",
+    href: "/doska",
+  },
+  {
+    id: "doska-qulay-boshqaruv",
+    date: "2026-09-25",
+    type: "yangi",
+    title: "Doska qulaylashdi: taymerga istalgan vaqt, har amal qaytariladi, boshqaruv qoʻl ostida",
+    body:
+      "Taymerni qoʻyganingizda vaqtni darhol tanlaysiz (1–15 daqiqa yoki ± tugmalari), uni bosib boshlaysiz, tugaganda qoʻngʻiroq chalinadi; har vidjetning sozlamasi uning yonida, «Sozlash» tugmasida ochiladi. Tasodifan oʻchirilgan vidjet yoki ekran «Qaytarish» bilan joyiga qaytadi, kerakli vidjetni qulflab qoʻyish yoki «Markazga» bilan butun ekranga chiqarish mumkin. Butun boshqaruv endi pastda — interaktiv doskada qoʻl choʻzmasdan yetasiz; menyuda esa sinf eʼtiborini olish uchun «Ekranni yopish» va «Qoʻngʻiroq chalish» bor.",
+    href: "/doska",
+  },
+  {
+    id: "doska-gildirak",
+    date: "2026-09-25",
+    type: "yangi",
+    title: "Doskada Gʻildirak: kim javob berishini adolatli tanlang",
+    body:
+      "Doskaning pastki panelidan «Gʻildirak»ni qoʻyasiz, qalamcha tugmasi bilan oʻquvchilar ismini yozasiz va gʻildirakni bosasiz — u aylanib, bitta oʻquvchini tanlaydi. «Hamma bir martadan» rejimida soʻralgan bola gʻildirakdan chiqadi, shuning uchun «nega doim men?!» degan gap boʻlmaydi; hamma soʻralgach yangi aylanmani boshlaysiz. Bola tayyor boʻlmasa «Keyinroq»ni bosasiz — u gʻildirakka qaytadi va keyinroq yana chiqadi.",
+    href: "/doska",
+  },
+  {
+    id: "sahna-uslubi",
+    date: "2026-09-19",
+    type: "yangi",
+    title: "Taqdimot va testlar uchun yangi koʻrinish: shrift, uslub va rangli javoblar",
+    body:
+      "Muharrirdagi «Mavzu» panelida shriftni (Nunito, Rubik, Montserrat, Onest) va sahna uslubini — «Klassik» yoki «Zamonaviy» — tanlaysiz: oʻquvchi telefoni ham, Doska ham shu koʻrinishda chiqadi. Javob variantlari endi rangli, shaklli va raqamli — kompyuter sinfida oʻquvchilar 1–6 tugmalari bilan javob beradi. Javob ochilganda toʻgʻrisi yashil, xato tanlov qizil boʻlib chiqadi, Doskada esa savollar progressi va vaqt chizigʻi koʻrinadi. Uyga vazifada oʻquvchi har savoldan keyin natijasini darhol koʻradi.",
+    href: "/dashboard/grades",
+  },
+  {
+    id: "taqdimot-doskada",
+    date: "2026-09-18",
+    type: "yangi",
+    title: "Interaktiv taqdimot: slaydlar, savollar va jonli dars — bitta joyda",
+    body:
+      "Jurnalda topshiriq yaratayotganda «Avtomatik» → «Taqdimot» ni tanlaysiz. Slaydni tayyor maketdan tuzasiz (sarlavha, roʻyxat, rasm, video, iqtibos) yoki mavjud PowerPoint va PDF faylingizni import qilasiz, slaydlar orasiga esa test, soʻrovnoma, soʻz buluti va ochiq javob qoʻyasiz. Darsda Doskadan «Jonli sessiya» ni boshlaysiz: oʻquvchilar QR yoki PIN bilan kiradi, siz slaydni almashtirsangiz hamma ekran birga oʻtadi, javoblar esa doskada jonli ustun boʻlib oʻsadi. Qurilma boʻlmasa ham boʻladi — javobni doskada ochib, sinfni jamoalarga boʻlib ball berasiz. Ochiq javoblarni keyin 0, ½ yoki 1 bilan baholaysiz va natijani jurnalga koʻchirasiz.",
+    href: "/dashboard/grades",
+  },
+  {
+    id: "darslarni-belgilab-ochirish",
+    date: "2026-09-18",
+    type: "yangi",
+    title: "Boʻlim va darslarni belgilab, bir yoʻla oʻchirish",
+    body:
+      "Roʻyxat tepasidagi belgilash tugmasini bosasiz — yoki kartani oʻng tugma bilan bosib «Tanlash» ni tanlaysiz — va kartalardagi doira katakchaga aylanadi. Keraklilarini belgilab, pastda chiqqan panel orqali bir yoʻla oʻchirasiz. Boʻlimlar va darslar alohida tanlanadi, shuning uchun nimani oʻchirayotganingiz doim aniq. Oʻchirishdan oldin nechta dars va jadvaldan nechta yozuv ketishi aytiladi; xato belgilagan boʻlsangiz xabarnomadagi «Bekor qilish» hammasini joyiga qaytaradi. Ilgari darslarni bittalab oʻchirish kerak edi.",
+    href: "/dashboard/lessons",
+  },
+  {
+    id: "ochirish-ishonchli",
+    date: "2026-09-18",
+    type: "tuzatildi",
+    title: "Oʻchirgan darsingiz endi qaytib kelmaydi",
+    body:
+      "Boʻlim yoki darsni oʻchirganingizdan keyin u sahifani yangilaganingizda yana paydo boʻlib qolishi mumkin edi: oʻchirish serverga yetib bormay qolardi va bu haqda hech qanday xabar chiqmasdi. Natijada Rejalashtiruvchida oʻchirilgan darslar kunlarga biriktirilgan holda turaverardi, Materiallar boʻlimida esa ular hamon roʻyxatda edi. Endi oʻchirish serverdan tasdiq oladi — tasdiq kelmasa sizga xato koʻrsatiladi va dars oʻchgan qilib koʻrsatilmaydi.",
+    href: "/dashboard/lessons",
+  },
+  {
+    id: "ish-reja-yuklash",
+    date: "2026-09-17",
+    type: "yangi",
+    title: "Ish rejani yuklang — mavzular darslaringizga kunma-kun oʻzi joylanadi",
+    body:
+      "Endi har mavzuni qoʻlda ochish shart emas. Boʻlim ichida «Yangi dars» → «Excel yuklash» orqali ish reja faylini yuklaysiz yoki mavzular roʻyxatini nusxalab qoʻyasiz — barcha darslar birdaniga yaratiladi. Dars jadvalingiz sozlangan boʻlsa, mavzular navbatdagi darslaringizga ketma-ket biriktiriladi, taʼtil kunlari oʻtkazib yuboriladi. Boʻlimlarni ham xuddi shunday roʻyxat bilan qoʻshish mumkin.",
+    image: { src: "/help/bolim-va-darslar/3-excel-jadval.webp", alt: "Excel ish rejasi jadval koʻrinishida: mavzu va soat ustunlari belgilangan" },
+    href: "/help/bolim-va-darslar",
+    cta: "Ish rejani yuklashni oʻrganish",
+  },
+  {
+    id: "fan-tanlash-royxatdan",
+    date: "2026-09-04",
+    type: "yaxshilandi",
+    title: "Fan endi qoʻlda yozilmaydi — rasmiy roʻyxatdan tanlanadi",
+    body:
+      "Sinf yaratganda fanni yozish oʻrniga roʻyxatdan tanlaysiz. Roʻyxat oʻquv rejadagi fanlardan tuzilgan va yoʻnalishlarga ajratilgan, shuning uchun «Ona tili» va «Adabiyot» endi alohida turadi — ilgari ikkalasi bitta yozuv edi va dars jadvalida qaysi biri ekanini ajratib boʻlmasdi. Endi jadval katagida sinf nomi bilan birga fan ham koʻrinadi. Roʻyxatda yoʻq fan boʻlsa — toʻgarak, tayyorlov kursi yoki maktabingizdagi maxsus dars — nomini yozib «qoʻshish» tugmasini bosasiz; u saqlanadi va keyingi sinflarda roʻyxatdan tanlanadi.",
+    href: "/dashboard/classes",
+  },
+  {
+    id: "blog-qidiruvda-topilishi",
+    date: "2026-09-01",
+    type: "tuzatildi",
+    title: "Maqolalaringiz endi Google va Yandexda topiladi",
+    body:
+      "Shu paytgacha blogdagi maqolalar qidiruv tizimlariga koʻrinmay kelgan: har bir maqola oʻzini bosh sahifaning nusxasi deb tanishtirar edi, shuning uchun Google ularni roʻyxatga olmagan. Tuzatildi — endi har maqola oʻzicha mustaqil sahifa. Bundan tashqari maqola havolasini Telegram yoki ijtimoiy tarmoqqa tashlaganingizda maqolaning oʻz sarlavhasi, tavsifi va muqova rasmi koʻrinadi — avval oʻrniga saytning umumiy tavsifi chiqardi. Yangi maqola nashr qilinganda qidiruv tizimlariga darhol xabar ketadi.",
+    href: "/blog",
+  },
+  {
+    id: "blog-video-embed",
+    date: "2026-09-01",
+    type: "yangi",
+    title: "Maqolaga video qoʻyish — YouTube yoki Instagram havolasini tashlasangiz kifoya",
+    body:
+      "Blog muharririda video tugmasi paydo boʻldi: havolani qoʻyasiz, maqola ichida videoning oʻzi koʻrinadi. Boʻsh qatorga havolani shunchaki nusxalab qoʻysangiz ham video oʻzi qoʻyiladi. Oʻquvchi ▶︎ ni bosmaguncha video yuklanmaydi — maqola tez ochilaveradi, kengaytirib toʻliq ekranda ham koʻrish mumkin.",
+    href: "/blog/studio",
+  },
+  {
+    id: "jamoa-ish-maydoni",
+    date: "2026-08-26",
+    type: "yangi",
+    title: "Endi maktab boʻlib birga ishlash mumkin — bir necha oʻqituvchi, bitta oʻquvchilar roʻyxati",
+    body:
+      "Sozlamalar › Jamoa boʻlimida hamkasbingizga taklif kodi berasiz. U qoʻshilganda sinflari va oʻquvchilari bilan birga keladi — qabul qilishdan oldin nima koʻchishini roʻyxat bilan koʻradi. Har sinfning egasi bor: darsni kim oʻtishini u belgilaydi, bitta sinfga bir necha oʻqituvchi biriktirilishi mumkin. Bola haqidagi baho, davomat va qaydlarni esa faqat oʻsha bolaga dars beradigan oʻqituvchi koʻradi — bir maktabda ishlashning oʻzi hech narsani ochmaydi.",
+    href: "/dashboard/settings",
+  },
+  {
+    id: "help-center-launch",
+    date: "2026-08-26",
+    type: "yangi",
+    title: "Yangi boʻlim: Yordam markazi",
+    body:
+      "Endi ustozona.uz/help sahifasida barcha mavzular boʻyicha qoʻllanma maqolalarni topasiz — chapdan boʻlimni tanlaysiz yoki qidiruvdan foydalanasiz. Har maqola oxirida foydali boʻldimi deb soʻraladi, keyingi mavzuga oʻtish tugmasi ham bor. Hali yozilmagan mavzular \"Tez orada\" deb belgilangan.",
+    href: "/help",
+  },
+  {
+    id: "feedback-slash-internal-links",
+    date: "2026-08-25",
+    type: "yaxshilandi",
+    title: "Fikr-mulohazada ilova ichidagi sahifalarga havola berish oson boʻldi",
+    body:
+      "Xabar yozayotganda \"/\" bossangiz, ilova ichidagi sahifalar roʻyxati chiqadi — tanlasangiz havola oʻzi qoʻshiladi. Rasm biriktirilgan boʻlsa, endi ustiga bosib kattalashtirib koʻrish mumkin.",
+    href: "/dashboard/feedback",
+  },
+  {
+    id: "landing-til-tanlash",
+    date: "2026-08-24",
+    type: "yangi",
+    title: "Bosh sahifa endi 7 tilda — oʻzbekcha (lotin va kirill), qoraqalpoqcha, qirgʻizcha, qozoqcha, ruscha, inglizcha",
+    body:
+      "Ustozona bosh sahifasidagi barcha boʻlimlar tarjima qilindi va yuqori burchakka til tanlagich qoʻshildi. Oʻzbek tilining kirill yozuvi ham qoʻshildi — sozlamalarda ham, bosh sahifada ham tanlash mumkin.",
+  },
   {
     id: "topshiriq-qoralama-royxatda",
     date: "2026-08-16",

@@ -9,14 +9,19 @@ import {
   getMyPostById,
   createPost,
   savePost,
-  setPostStatus,
+  publishPost,
+  unpublishPost,
   deletePost,
   listComments,
   addComment,
+  editComment,
+  deleteComment,
   type BlogPostSummary,
   type BlogPostFull,
   type BlogComment,
 } from "@/server/dal/blog";
+import { pingIndexNow } from "@/server/indexnow";
+import { abs } from "@/lib/site-url";
 
 export async function fetchPublishedPostsAction(): Promise<BlogPostSummary[]> {
   return listPublishedPosts();
@@ -44,30 +49,77 @@ const savePostSchema = z.object({
   id: z.string().min(1),
   title: z.string().max(200),
   excerpt: z.string().max(400),
+  /* ⚠️ Bu chegara ATAYLAB kichik — u yerga base64 SIGʻMASLIGI kerak.
+     Sabab: `listPublishedPosts` bu ustunni HAR BIR nashr qilingan post
+     uchun tanlaydi, yaʼni `/blog` indeks sahifasi barcha muqovalarni bir
+     yoʻla yuklaydi. Base64 muqova ruxsat etilsa, oʻnta postli indeks
+     bir necha megabaytlik HTML'ga aylanardi — hujjat ichiga inline
+     boʻlgani uchun uni alohida keshlab ham boʻlmaydi.
+     Muqova SHU SABABLI faqat haqiqiy URL qabul qiladi; saqlagich
+     sozlanmagan boʻlsa BlogEditor yuklashni rad etadi (`onPickCover`). */
   coverImageUrl: z.string().max(2000).nullable(),
-  content: z.string().max(200_000),
+  /* ⚠️ Ilgari 200_000 edi va bu «Saqlashda xatolik» toast'ining ASOSIY
+     sababi boʻlgan: muharrirga qoʻyilgan rasm base64 data-URL sifatida
+     aynan shu `content` ichiga tushardi (1280px/q0.8 surat ≈ 200 000–
+     530 000 belgi), yaʼni deyarli har qanday foto limitdan oshardi va
+     zod `parse` xato tashlardi. Endi rasm normal holatda Supabase
+     Storage'ga chiqadi va bu yerda faqat qisqa URL qoladi — lekin
+     saqlagich sozlanmagan muhitda base64 fallback ishlaydi, shuning
+     uchun chegara unga ham yetadigan qilib qoʻyildi. */
+  content: z.string().max(4_000_000),
 });
 
+/** Avto-saqlash — FAQAT ishchi ustunlarga. `/blog` (ommaviy) ATAYLAB
+ *  revalidatsiya QILINMAYDI: ommaviy sahifa suratdan oʻqiydi, avto-saqlash
+ *  esa suratga tegmaydi (docs/blog-nashr-modeli.md §4). */
 export async function savePostAction(input: z.infer<typeof savePostSchema>): Promise<{ ok: true }> {
   await savePost(savePostSchema.parse(input));
   revalidatePath("/blog/studio");
-  revalidatePath("/blog");
   return { ok: true };
 }
 
-export async function setPostStatusAction(input: { id: string; status: "draft" | "published" }): Promise<{ ok: true }> {
-  const schema = z.object({ id: z.string().min(1), status: z.enum(["draft", "published"]) });
-  const { id, status } = schema.parse(input);
-  await setPostStatus(id, status);
+/** «Nashr qilish» / «Yangilash» — ishchi nusxani muzlatilgan suratga
+ *  koʻchiradi va ommaviy sahifani yangilaydi. */
+export async function publishPostAction(id: string): Promise<{ ok: true }> {
+  const result = await publishPost(z.string().min(1).parse(id));
   revalidatePath("/blog/studio");
   revalidatePath("/blog");
+  /* Sitemap'da `revalidate = 3600` — busiz yangi maqola bir soatgacha
+     roʻyxatga tushmasdi. Nashr qilish aynan uni oʻzgartiradigan amal. */
+  revalidatePath("/sitemap.xml");
+  if (result) {
+    revalidatePath(`/blog/${result.slug}`);
+    /* Yandex/Bing'ga darhol xabar. Xato tashlamaydi — nashr qilish
+       begona servis tufayli yiqilmaydi. */
+    await pingIndexNow([abs(`/blog/${result.slug}`), abs("/blog")]);
+  }
+  return { ok: true };
+}
+
+/** «Nashrdan olish» — postni arxivga oʻtkazadi, ommaviy sahifa yoʻqoladi. */
+export async function unpublishPostAction(id: string): Promise<{ ok: true }> {
+  const result = await unpublishPost(z.string().min(1).parse(id));
+  revalidatePath("/blog/studio");
+  revalidatePath("/blog");
+  revalidatePath("/sitemap.xml");
+  if (result) {
+    revalidatePath(`/blog/${result.slug}`);
+    /* Oʻchirilgan sahifa uchun ham xuddi shu chaqiruv ishlatiladi:
+       protokolda alohida «delete» yoʻq — robot kelib 404 koʻradi va
+       indeksdan chiqaradi. Aytmasak, oʻlik havola uzoq turib qoladi. */
+    await pingIndexNow([abs(`/blog/${result.slug}`)]);
+  }
   return { ok: true };
 }
 
 export async function deletePostAction(id: string): Promise<{ ok: true }> {
-  await deletePost(z.string().min(1).parse(id));
+  const result = await deletePost(z.string().min(1).parse(id));
   revalidatePath("/blog/studio");
   revalidatePath("/blog");
+  revalidatePath("/sitemap.xml");
+  /* Faqat nashr qilingan post indeksda boʻlgan — qoralamani xabar
+     qilishning maʼnosi yoʻq. */
+  if (result?.wasPublished) await pingIndexNow([abs(`/blog/${result.slug}`)]);
   return { ok: true };
 }
 
@@ -75,15 +127,38 @@ export async function fetchCommentsAction(postId: string): Promise<BlogComment[]
   return listComments(z.string().min(1).parse(postId));
 }
 
+/* `name` ATAYLAB yoʻq — ism endi clientdan emas, sessiyadagi hisobdan
+   olinadi (`dal/blog.ts` → addComment). Uni bu yerda qabul qilish
+   istalgan odamga istalgan nom bilan yozish imkonini qaytarardi. */
 const addCommentSchema = z.object({
   postId: z.string().min(1),
-  name: z.string().min(1).max(80),
   body: z.string().min(1).max(2000),
+  parentId: z.string().min(1).optional(),
 });
 
 export async function addCommentAction(input: z.infer<typeof addCommentSchema>): Promise<BlogComment> {
-  const { postId, name, body } = addCommentSchema.parse(input);
-  const comment = await addComment(postId, name.trim(), body.trim());
-  revalidatePath(`/blog`);
+  const { postId, body, parentId } = addCommentSchema.parse(input);
+  const comment = await addComment(postId, body.trim(), parentId);
+  revalidatePath("/blog/[slug]", "page");
   return comment;
+}
+
+const editCommentSchema = z.object({
+  commentId: z.string().min(1),
+  body: z.string().min(1).max(2000),
+});
+
+export async function editCommentAction(
+  input: z.infer<typeof editCommentSchema>,
+): Promise<{ editedAt: string }> {
+  const { commentId, body } = editCommentSchema.parse(input);
+  const result = await editComment(commentId, body.trim());
+  revalidatePath("/blog/[slug]", "page");
+  return result;
+}
+
+export async function deleteCommentAction(commentId: string): Promise<{ ok: true }> {
+  await deleteComment(z.string().min(1).parse(commentId));
+  revalidatePath("/blog/[slug]", "page");
+  return { ok: true };
 }

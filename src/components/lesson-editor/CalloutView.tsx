@@ -45,7 +45,7 @@ export default function CalloutView({ node, updateAttributes }: NodeViewProps) {
             <Icon aria-hidden="true" />
           </button>
         </PopoverTrigger>
-        <PopoverContent align="start" className="w-56 p-1 max-h-[320px] overflow-y-auto">
+        <PopoverContent align="start" className="w-56 p-1 max-h-[320px] scrollbar-hover overflow-y-auto">
           {CALLOUT_TYPES.map(({ type: optType, icon: OptIcon, color: optColor }) => (
             <button
               key={optType}
@@ -55,7 +55,7 @@ export default function CalloutView({ node, updateAttributes }: NodeViewProps) {
                 setTypeOpen(false);
               }}
               className={cn(
-                "w-full flex items-center gap-2.5 rounded-sm px-2 py-1.5 text-sm text-left",
+                "w-full flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-left",
                 "hover:bg-accent hover:text-accent-foreground transition-colors"
               )}
             >

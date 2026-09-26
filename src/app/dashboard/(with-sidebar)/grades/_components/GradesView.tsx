@@ -14,8 +14,13 @@ import { inRange } from "@/lib/academic-calendar";
 import { todayKey } from "@/lib/date-keys";
 import { useMounted } from "@/lib/use-mounted";
 import GradesTable from "./GradesTable";
-import ReuseModal from "./ReuseModal";
-import NewTopicModal, { type TopicApplyPayload } from "./NewTopicModal";
+import dynamic from "next/dynamic";
+import type { TopicApplyPayload } from "./NewTopicModal";
+
+/* Oynalar faqat ochilganda yuklanadi — NewTopicModal zod va
+   react-hook-form'ni olib keladi, ular jurnal uchun kerak emas. */
+const ReuseModal = dynamic(() => import("./ReuseModal"));
+const NewTopicModal = dynamic(() => import("./NewTopicModal"));
 import { Card } from "@/components/ui/card";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { BookOpen } from "lucide-react";
@@ -76,18 +81,58 @@ export default function GradesView({
   // sanasi yoʻq topshiriq (backfill'dan keyin boʻlmasligi kerak) hamma yilda
   // koʻrinadi. Demo/tur namunasi hamda kalendar sozlanmagan holat filtrsiz.
   const viewData = useMemo(() => {
-    if (!classData || demoClassData) return classData;
+    if (!classData) return classData;
+    // Chiqib ketgan oʻquvchi jurnalda koʻrinmaydi (roster read-only — bahosi
+    // saqlanib qoladi, faqat koʻrinish qatlamidan chiqadi; xulq sahifasi bilan
+    // bir xil naqsh, [[student-status-model]]). Demo/tur namunasida filtrsiz.
+    const activeStudents = demoClassData
+      ? classData.students
+      : classData.students.filter((s) => s.status !== "archived");
+
+    /* Boshqa sinfga KOʻCHGANLAR — joriy roster'da yoʻq, lekin shu sinfda
+       bahosi qolgan. Ular jurnalga qaytariladi, aks holda oʻsha baholar
+       egasiz qolib butunlay koʻrinmay ketardi — koʻchirish maʼlumotni
+       yoʻqotmasligi kerak (docs/oquvchini-kochirish-spec.md §4).
+
+       ⛔ `classData.students` ga qoʻshilmaydi — faqat shu KOʻRINISH
+       qatlamiga. Davomat olish, yangi topshiriq va statistika joriy
+       roʻyxatni oʻqiydi, chiqib ketgan bola u yerlarda chiqmaydi.
+
+       Ikki shart: (1) yozilish koʻrilayotgan yil oynasi boshlangandan
+       keyin yopilgan — undan oldin chiqqan boʻlsa bu yilga aloqasi yoʻq;
+       (2) shu sinfda bahosi bor — bahosiz koʻchgan bola jurnalni
+       behuda toʻldirmaydi. */
+    const formerWithGrades = demoClassData
+      ? []
+      : (classData.formerStudents ?? []).filter((s) => {
+          if (yearRange.start && s.leftAt && s.leftAt < yearRange.start) return false;
+          return classData.grades.some((g) => g.studentId === s.id);
+        });
+
+    /* ⚠️ Uzunlik solishtirish YETARLI EMAS: arxivlangan bitta bola
+       chiqib, koʻchgan bitta bola qoʻshilsa uzunlik oʻzgarmaydi —
+       roʻyxat esa boshqa. Shuning uchun ikki oʻzgarish alohida
+       tekshiriladi. */
+    const rosterChanged =
+      activeStudents.length !== classData.students.length || formerWithGrades.length > 0;
+    const shownStudents = formerWithGrades.length
+      ? [...activeStudents, ...formerWithGrades]
+      : activeStudents;
+    const withActiveStudents = rosterChanged
+      ? { ...classData, students: shownStudents }
+      : classData;
+    if (demoClassData) return withActiveStudents;
     const { start, end } = yearRange;
-    if (!start || !end) return classData;
-    const visible = classData.assignments.filter(
+    if (!start || !end) return withActiveStudents;
+    const visible = withActiveStudents.assignments.filter(
       (a) => !a.date || (a.date >= start && a.date <= end)
     );
-    if (visible.length === classData.assignments.length) return classData;
+    if (visible.length === withActiveStudents.assignments.length) return withActiveStudents;
     const visibleIds = new Set(visible.map((a) => a.id));
     return {
-      ...classData,
+      ...withActiveStudents,
       assignments: visible,
-      grades: classData.grades.filter((g) => visibleIds.has(g.assignmentId)),
+      grades: withActiveStudents.grades.filter((g) => visibleIds.has(g.assignmentId)),
     };
   }, [classData, demoClassData, yearRange]);
 

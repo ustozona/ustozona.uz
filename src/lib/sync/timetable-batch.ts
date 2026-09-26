@@ -23,11 +23,3 @@ export const timetableBatchSchema = z.object({
 
 export type VersionUpsert = z.infer<typeof versionUpsertSchema>;
 export type TimetableBatch = z.infer<typeof timetableBatchSchema>;
-
-export function emptyTimetableBatch(): TimetableBatch {
-  return { versionsUpsert: [], versionsDelete: [] };
-}
-
-export function isEmptyTimetableBatch(b: TimetableBatch): boolean {
-  return b.versionsUpsert.length === 0 && b.versionsDelete.length === 0;
-}

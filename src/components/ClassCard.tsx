@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { classTints, autoClassColor, type ClassColor } from "@/lib/class-colors";
+import { ClassSwatch } from "@/components/ClassSwatch";
 import { cn } from "@/lib/utils";
 import { GraduationCap } from "lucide-react";
 
@@ -42,7 +43,7 @@ export const ClassCard = React.forwardRef<HTMLDivElement, ClassCardProps>(functi
         style={{ ["--card-accent" as string]: tints.solid, ...(selected ? tints.tint : {}), ...style }}
         {...rest}
       >
-        <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: tints.solid }} aria-hidden />
+        <ClassSwatch hex={tints.solid} />
         <span className="flex-1 truncate text-sm text-foreground/70 transition-colors group-hover/cc:text-foreground group-[[data-active=true]]/cc:font-semibold group-[[data-active=true]]/cc:text-foreground">
           {name}
         </span>
@@ -56,7 +57,7 @@ export const ClassCard = React.forwardRef<HTMLDivElement, ClassCardProps>(functi
     <div
       ref={ref}
       className={cn(
-        "list-card group/cc flex w-full cursor-pointer items-center gap-3 p-4 text-left @max-[400px]:gap-2.5 @max-[400px]:p-3",
+        "list-card group/cc flex w-full cursor-pointer items-center gap-3 p-4 text-left @max-[400px]:gap-2 @max-[400px]:p-3",
         className,
       )}
       data-active={selected || undefined}

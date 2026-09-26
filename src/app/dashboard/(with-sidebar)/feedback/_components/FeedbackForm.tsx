@@ -7,7 +7,6 @@ import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Kbd } from "@/components/ui/kbd";
 import { ImagePlus, Send, SearchCheck } from "lucide-react";
 import {
@@ -16,6 +15,7 @@ import {
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useCategoryMeta, CATEGORY_ORDER } from "./feedback-meta";
 import { useImageAttachments, AttachmentPreviewList } from "./attachments";
+import { LinkRichInput, type LinkRichInputHandle } from "@/components/feedback/link-rich-input";
 import type { NewFeedbackFormValue } from "./types";
 import { createFeedbackAction } from "@/server/actions/feedback";
 
@@ -92,7 +92,7 @@ export default function FeedbackForm({
   const router = useRouter();
   const [category, setCategory] = useState<FeedbackCategory>("taklif");
   const [body, setBody] = useState("");
-  const bodyRef = useRef<HTMLTextAreaElement>(null);
+  const bodyRef = useRef<LinkRichInputHandle>(null);
   const attachments = useImageAttachments();
   const submitFeedback = useFeedbackSubmit();
   const allItems = useFeedbackStore((s) => s.items);
@@ -134,18 +134,15 @@ export default function FeedbackForm({
       <div className="flex gap-3">
         {leading}
         <div className="min-w-0 flex-1">
-          <Textarea
+          <LinkRichInput
             ref={bodyRef}
             autoFocus={autoFocus}
             value={body}
-            onChange={(e) => setBody(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Escape") onEscape?.();
-            }}
-            onPaste={attachments.onPaste}
+            onChange={setBody}
+            onEscape={onEscape}
+            onPasteFiles={attachments.onPaste}
             placeholder={t(`placeholder.${category}`)}
             rows={rows}
-            className="resize-none border-none bg-transparent p-0 text-sm shadow-none placeholder:text-muted-foreground/50 focus-visible:ring-0"
           />
         </div>
       </div>
@@ -162,7 +159,7 @@ export default function FeedbackForm({
               type="button"
               onClick={() => setCategory(key)}
               className={cn(
-                "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold transition-colors",
+                "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
                 active ? meta.pill : "border-border text-muted-foreground hover:bg-muted"
               )}
             >
@@ -177,7 +174,7 @@ export default function FeedbackForm({
       {category === "savol" && (
         <p className="mt-2 text-xs text-muted-foreground/70">
           {t("helpHintPrefix")}{" "}
-          <Link href="/dashboard/help" className="font-medium text-primary hover:underline">
+          <Link href="/help" className="font-medium text-primary hover:underline">
             {t("helpLink")}
           </Link>{" "}
           {t("helpHintSuffix")}
@@ -187,7 +184,7 @@ export default function FeedbackForm({
       {/* Shunga oʻxshash fikrlar — dublikatni kamaytirish */}
       {similar.length > 0 && (
         <div className="mt-3 space-y-1.5 rounded-lg border border-border bg-muted/30 p-2">
-          <div className="flex items-center gap-1.5 px-1 text-[11px] font-semibold text-muted-foreground">
+          <div className="flex items-center gap-1.5 px-1 text-tag font-semibold text-muted-foreground">
             <SearchCheck className="size-3.5" />
             {t("similarTitle")}
           </div>

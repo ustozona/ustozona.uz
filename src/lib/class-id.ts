@@ -9,4 +9,10 @@ import type { ClassColor } from "@/lib/class-colors";
    koʻpriklari olib tashlangan.
    ════════════════════════════════════════════════════════════════════ */
 
-export type ClassIdentity = { id: string; name: string; color: ClassColor };
+export type ClassIdentity = {
+  id: string;
+  name: string;
+  color: ClassColor;
+  /** Avatar ikonkasi kaliti — render paytida `classIcon(key)` orqali. */
+  icon?: string;
+};

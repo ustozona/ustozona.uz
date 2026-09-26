@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { manualTaskId, newManualTask, type FocusEntry, type Task, type TaskPriority, type TaskStatus } from "@/lib/tasks-data";
 import { nextDate, type Recurrence } from "@/lib/recurrence";
 import { todayKey } from "@/lib/date-keys";
+import { useLessonStore } from "@/store/useLessonStore";
 
 /* ════════════════════════════════════════════════════════════════════
    VAZIFALAR — server-backed store (grades/behavior/student-notes qolipi).
@@ -16,6 +17,9 @@ import { todayKey } from "@/lib/date-keys";
 
 interface TasksState {
   items: Task[];
+  /** Dars vazifasi holati qoʻlda oʻzgargan sari oshadi — TasksAutoReconciler
+      shuni kuzatib darsga «Oʻtildi»ni darhol yetkazadi (butun `items`ni emas). */
+  lessonTaskEdits: number;
   _hasHydrated: boolean;
   setHasHydrated: (v: boolean) => void;
 
@@ -54,6 +58,7 @@ interface TasksState {
 
 export const useTasksStore = create<TasksState>()((set, get) => ({
   items: [],
+  lessonTaskEdits: 0,
   _hasHydrated: false,
   setHasHydrated: (v) => set({ _hasHydrated: v }),
 
@@ -71,14 +76,24 @@ export const useTasksStore = create<TasksState>()((set, get) => ({
     set((s) => {
       const target = s.items.find((t) => t.id === id);
       const done = status === "done";
+      const src = target?.source.kind === "lesson" ? target.source : null;
+      // Dars vazifasi: holat darsning joriy «Oʻtildi» reviziyasiga nisbatan qoʻyiladi —
+      // reconciler shu bilan vazifani yangiroq deb biladi va darsni unga moslaydi.
+      const rev = src
+        ? { taughtRevSeen: useLessonStore.getState().lessons.find((l) => l.id === src.lessonId)?.taughtRevByClass?.[src.classId] ?? null }
+        : {};
       const items = s.items.map((t) => {
         if (t.id !== id) return t;
         return {
           ...t,
           status,
           completedAt: done ? new Date().toISOString() : null,
-          // Foydalanuvchi qo'lda belgilagani — reconciler shu vazifani qayta ochmaydi.
+          // Qoʻlda belgilangan. Dars vazifasini reconciler faqat dars belgisi
+          // shundan KEYIN oʻzgarsa qayta ochadi (`taughtRevSeen`).
           doneManually: done,
+          ...rev,
+          // Qayta ochilgan — oynadan tashqaridagi dars vazifasi ham oʻchirilmaydi.
+          ...(t.status === "done" && !done ? { reopenedAt: new Date().toISOString() } : {}),
         };
       });
       // Takrorlanuvchi manual vazifa done boʻlsa — keyingi nusxa yaratiladi.
@@ -99,7 +114,7 @@ export const useTasksStore = create<TasksState>()((set, get) => ({
           });
         }
       }
-      return { items };
+      return src ? { items, lessonTaskEdits: s.lessonTaskEdits + 1 } : { items };
     }),
 
   setPriority: (id, priority) =>

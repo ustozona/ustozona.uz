@@ -10,7 +10,7 @@ import { BehaviorEmoji } from "./BehaviorEmoji";
    (musbat = yashil, manfiy = qizil). Balans mount-gate'gacha null —
    bubble koʻrsatilmaydi (SSR mismatch oldini olish).
 
-   Multi-select (ClassDojo UX): hover'da yuqori chap burchakda doiracha
+   Multi-select (oʻquvchi kartochkasi UX): hover'da yuqori chap burchakda doiracha
    chiqadi; doiracha bosilsa tanlash rejimi boshlanadi. Rejimda karta
    bosish ham tanlovni almashtiradi (ball berish emas). */
 
@@ -27,7 +27,7 @@ export function BalanceBubble({
       key={balance}
       className={cn(
         "absolute -top-1 -right-1.5 z-10 flex h-5 min-w-5 items-center justify-center rounded-full border-2 border-card px-1",
-        "text-[11px] font-bold tabular-nums leading-none",
+        "text-tag font-bold tabular-nums leading-none",
         "animate-in zoom-in-50 duration-base",
         balance < 0
           ? "bg-destructive text-destructive-foreground"
@@ -47,7 +47,7 @@ function StreakChip({ streak }: { streak: StreakState }) {
     <span
       className={cn(
         "absolute -bottom-1 -right-1.5 z-10 flex h-5 items-center gap-0.5 rounded-full border-2 border-card bg-card px-1",
-        "text-[10px] font-bold tabular-nums leading-none text-foreground"
+        "text-micro font-bold tabular-nums leading-none text-foreground"
       )}
     >
       <BehaviorEmoji code={streak.paused ? "2744-fe0f" : "1f525"} className="size-3" />
@@ -62,6 +62,7 @@ export function StudentPointCard({
   colorHex,
   balance,
   streak,
+  absentLabel,
   onClick,
   selectionMode = false,
   selected = false,
@@ -74,6 +75,12 @@ export function StudentPointCard({
   balance: number | null;
   /** Joriy davomat seriyasi holati — berilmasa chip chiqmaydi. */
   streak?: StreakState;
+  /** Bugun sinfda boʻlmagan boʻlsa — davomat holati yorligʻi ("Kelmadi"/
+      "Sababli"). Karta soʻniq koʻrinadi, lekin BOSILADI: davomat keyin
+      tuzatilishi yoki oʻquvchi masofadan ish topshirishi mumkin —
+      qulflash oʻqituvchini boshi berk koʻchaga olib boradi. Butun sinfga
+      ball berishda bunday oʻquvchi baribir chiqarib tashlanadi. */
+  absentLabel?: string;
   onClick: () => void;
   /** Tanlash rejimi yoqiq — doirachalar doim koʻrinadi. */
   selectionMode?: boolean;
@@ -84,12 +91,12 @@ export function StudentPointCard({
     <button
       type="button"
       onClick={selectionMode ? onToggleSelect : onClick}
-      className={cn(
-        "group relative flex flex-col items-center gap-2.5 rounded-xl border border-border bg-card px-3 py-4",
-        "cursor-pointer transition-all hover:ring-2 hover:ring-inset hover:ring-primary/30 hover:bg-muted/40",
-        "active:scale-[0.97]",
-        selected && "ring-2 ring-inset ring-primary hover:ring-primary"
-      )}
+      data-active={selected || undefined}
+      className="list-card group relative flex h-32 flex-col items-center justify-center gap-3 px-3 cursor-pointer"
+      style={{
+        ["--card-accent" as string]: colorHex,
+        ...(selected ? { backgroundColor: `color-mix(in oklch, ${colorHex} 7%, var(--card))` } : {}),
+      }}
     >
       {onToggleSelect && (
         /* Button ichida button boʻlmasin — span + stopPropagation. */
@@ -101,19 +108,20 @@ export function StudentPointCard({
           aria-hidden
           className={cn(
             "absolute top-2 left-2 z-10 flex size-5 items-center justify-center rounded-full border transition-opacity",
-            selected
-              ? "border-primary bg-primary text-primary-foreground"
-              : "border-muted-foreground/40 bg-card hover:border-primary",
+            selected ? "text-white" : "border-muted-foreground/40 bg-card",
             selectionMode || selected
               ? "opacity-100"
               : "opacity-0 group-hover:opacity-100"
           )}
+          style={selected ? { backgroundColor: colorHex, borderColor: colorHex } : undefined}
         >
           {selected && <Check className="size-3" strokeWidth={3} aria-hidden />}
         </span>
       )}
-      <span className="relative inline-flex">
-        <Avatar size="lg" className="size-14" style={{ "--avatar-bg": colorHex } as React.CSSProperties}>
+      <span
+        className={cn("list-card-icon relative inline-flex", absentLabel && "opacity-45")}
+      >
+        <Avatar className="size-14" style={{ "--avatar-bg": colorHex } as React.CSSProperties}>
           <AvatarFallback className="bg-[var(--avatar-bg)] text-sm font-semibold text-white">
             {initials}
           </AvatarFallback>
@@ -121,9 +129,19 @@ export function StudentPointCard({
         {balance !== null && balance !== 0 && <BalanceBubble balance={balance} />}
         {streak && <StreakChip streak={streak} />}
       </span>
-      <span className="w-full truncate text-center text-[13px] font-medium leading-tight text-foreground">
+      <span
+        className={cn(
+          "w-full truncate text-center text-sm font-medium leading-tight",
+          absentLabel ? "text-muted-foreground" : "text-foreground"
+        )}
+      >
         {name}
       </span>
+      {absentLabel && (
+        <span className="text-caption -mt-1.5 w-full truncate text-center leading-tight">
+          {absentLabel}
+        </span>
+      )}
     </button>
   );
 }

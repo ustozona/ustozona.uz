@@ -153,7 +153,7 @@ export default function ClassSchedulePicker({
 
       {/* Oʻng — sozlamalar paneli */}
       <div className="w-[240px] shrink-0 border-l border-border p-4 flex flex-col gap-4">
-        <div className="flex-1 min-h-0 flex flex-col gap-3 overflow-y-auto">
+        <div className="flex-1 min-h-0 flex flex-col gap-3 scrollbar-hover overflow-y-auto">
           {selectedDate && (
             <span className="text-sm font-semibold text-foreground">
               {t("daySelected", { date: `${selectedDate.getDate()}-${MONTHS_UZ_SHORT[selectedDate.getMonth()]}` })}
@@ -171,7 +171,7 @@ export default function ClassSchedulePicker({
                     className="w-full rounded-lg border border-border px-3 py-2 text-left hover:bg-muted transition-colors"
                   >
                     <span className="flex items-center gap-1.5 text-sm font-medium text-foreground">
-                      <ClassSwatch hex={hex} className="size-2.5 shrink-0" /> {nameOf(s.classId)}
+                      <ClassSwatch hex={hex} /> {nameOf(s.classId)}
                     </span>
                     <span className="block text-xs text-muted-foreground mt-0.5">{fmtClock(s.startMin)} – {fmtClock(s.endMin)}</span>
                   </button>
@@ -189,7 +189,7 @@ export default function ClassSchedulePicker({
                 style={{ borderColor: hexOf(draft.classId), backgroundColor: `color-mix(in srgb, ${hexOf(draft.classId)} 8%, transparent)` }}
               >
                 <span className="flex items-center gap-1.5 text-sm font-semibold" style={{ color: hexOf(draft.classId) }}>
-                  <ClassSwatch hex={hexOf(draft.classId)} className="size-2.5 shrink-0" /> {nameOf(draft.classId)}
+                  <ClassSwatch hex={hexOf(draft.classId)} /> {nameOf(draft.classId)}
                 </span>
               </button>
             ) : !hasTimetable ? (
@@ -206,7 +206,7 @@ export default function ClassSchedulePicker({
                         ? { borderColor: hex, backgroundColor: `color-mix(in srgb, ${hex} 12%, transparent)`, color: hex }
                         : { borderColor: "var(--border)" }}
                     >
-                      <ClassSwatch hex={hex} className="size-2 shrink-0" /> {nameOf(id)}
+                      <ClassSwatch hex={hex} /> {nameOf(id)}
                     </button>
                   );
                 })}

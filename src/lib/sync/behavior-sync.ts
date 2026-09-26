@@ -6,15 +6,14 @@ import type {
   BehaviorReward,
   BehaviorSkill,
 } from "@/lib/behavior-data";
-import {
-  emptyBehaviorBatch,
-  isEmptyBehaviorBatch,
-  type AutoSettingsUpsert,
-  type BehaviorBatch,
-  type EventUpsert,
-  type RedemptionUpsert,
-  type RewardUpsert,
-  type SkillUpsert,
+import { emptyBehaviorBatch, isEmptyBehaviorBatch } from "./behavior-batch-shape";
+import type {
+  AutoSettingsUpsert,
+  BehaviorBatch,
+  EventUpsert,
+  RedemptionUpsert,
+  RewardUpsert,
+  SkillUpsert,
 } from "./behavior-batch";
 
 /* ════════════════════════════════════════════════════════════════════

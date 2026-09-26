@@ -4,6 +4,7 @@ import { useMemo, useState, type CSSProperties } from "react";
 import { useTranslations } from "next-intl";
 import type { StudentProfile, AssignmentRow } from "@/lib/student-profile";
 import { TOPIC_COLOR_HEX, topicTints, type TopicColor } from "@/lib/grades-data";
+import { ClassSwatch } from "@/components/ClassSwatch";
 import { cn } from "@/lib/utils";
 import { gradeBadgeClass } from "@/lib/score-colors";
 import { Input } from "@/components/ui/input";
@@ -97,7 +98,7 @@ export default function AssignmentsTab({ profile }: { profile: StudentProfile })
   return (
     <Card className={panelCardClass}>
       {/* Toolbar — qotib turadi */}
-      <div className="flex shrink-0 items-center gap-2.5 border-b border-border/60 p-4">
+      <div className="flex shrink-0 items-center gap-3 border-b border-border/60 p-4">
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -130,10 +131,7 @@ export default function AssignmentsTab({ profile }: { profile: StudentProfile })
               <DropdownMenuRadioItem value="all">{t("filterAll")}</DropdownMenuRadioItem>
               {topics.map((topic) => (
                 <DropdownMenuRadioItem key={topic.id} value={topic.id}>
-                  <span
-                    className="mr-2 size-2 rounded-full"
-                    style={{ backgroundColor: topicHex(topic.color) }}
-                  />
+                  <ClassSwatch hex={topicHex(topic.color)} className="mr-2" />
                   {topic.name}
                 </DropdownMenuRadioItem>
               ))}
@@ -288,13 +286,13 @@ function AssignmentItem({
             </div>
           </div>
           {graded ? (
-            <div className="flex shrink-0 items-center gap-2.5">
+            <div className="flex shrink-0 items-center gap-2">
               <span className="text-sm font-medium text-muted-foreground tabular-nums">
                 {score}/{assignment.maxScore}
               </span>
               <span
                 className={cn(
-                  "inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold tabular-nums",
+                  "inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold tabular-nums",
                   gradeBadgeClass(pct as number)
                 )}
               >
@@ -302,11 +300,11 @@ function AssignmentItem({
               </span>
             </div>
           ) : status === "missing" ? (
-            <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-400">
+            <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-semibold text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-400">
               <X className="size-3.5" /> {t("missing")}
             </span>
           ) : (
-            <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
+            <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
               <Minus className="size-3.5" /> {t("ungraded")}
             </span>
           )}

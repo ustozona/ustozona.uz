@@ -15,19 +15,19 @@ export function TopicMasteryCard({ rows }: { rows: TopicMasteryRow[] }) {
       {rows.length === 0 ? (
         <StatEmpty icon={Layers} title={t("notEnoughData")} />
       ) : (
-        <div className="space-y-2.5">
+        <div className="space-y-3">
           {rows.map((r) => (
             <div key={r.topicId} className="space-y-1">
               <div className="flex items-center justify-between text-xs gap-2">
                 <span className="flex items-center gap-1.5 text-foreground/80 min-w-0 truncate">
                   {r.name}
                   {r.isFormative && (
-                    <span className="shrink-0 rounded-full bg-info/15 px-1.5 py-0.5 text-[10px] font-medium text-info">
+                    <span className="shrink-0 rounded-full bg-info/15 px-1.5 py-0.5 text-micro font-medium text-info">
                       {t("formativeChip")}
                     </span>
                   )}
                   {r.lowCount > 0 && (
-                    <span className="shrink-0 rounded-full bg-warning/15 px-1.5 py-0.5 text-[10px] font-medium text-warning">
+                    <span className="shrink-0 rounded-full bg-warning/15 px-1.5 py-0.5 text-micro font-medium text-warning">
                       {t("topicLow", { count: r.lowCount })}
                     </span>
                   )}

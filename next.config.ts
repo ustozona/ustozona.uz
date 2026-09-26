@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
+import { SERVER_ACTION_BODY_LIMIT } from "./src/lib/upload-config";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
@@ -44,6 +45,15 @@ const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
       allowedOrigins: ["ustozona.uz", "www.ustozona.uz"],
+      /* Standart chegara 1 MB — muharrirga rasm qoʻyilganda unga urilardi
+         (`server/actions/uploads.ts` dagi izohga qarang).
+
+         ⚠️ Bu chegara BARCHA Server Action'ga tegadi, shuning uchun u
+         "yetarlicha katta" emas, HISOBLANGAN boʻlishi kerak: qiymat
+         `src/lib/upload-config.ts` da rasm chegarasi + base64 shishishidan
+         keltirib chiqariladi. Qoʻlda kattaroq son yozilsa, bitta muharrir
+         yoʻli uchun butun ilovaning qabul qiladigan tanasi kengayadi. */
+      bodySizeLimit: SERVER_ACTION_BODY_LIMIT,
     },
   },
 };

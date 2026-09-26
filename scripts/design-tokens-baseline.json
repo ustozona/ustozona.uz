@@ -1,0 +1,174 @@
+{
+  "src/app/admin/ai/page.tsx": {
+    "space-arbitrary": 1
+  },
+  "src/app/admin/feedback/_components/AdminFeedbackCard.tsx": {
+    "space-arbitrary": 1
+  },
+  "src/app/blog/[slug]/page.tsx": {
+    "text-px": 1
+  },
+  "src/app/blog/studio/_components/BlogEditor.tsx": {
+    "font-bold": 1
+  },
+  "src/app/dashboard/(with-sidebar)/assignments/_components/AssignmentEditorOverlay.tsx": {
+    "font-bold": 2
+  },
+  "src/app/dashboard/(with-sidebar)/assignments/_components/test/builder/ThemesPanel.tsx": {
+    "font-bold": 1
+  },
+  "src/app/dashboard/(with-sidebar)/assignments/page.tsx": {
+    "text-px": 1
+  },
+  "src/app/dashboard/(with-sidebar)/attendance/_components/AttendanceView.tsx": {
+    "font-bold": 4
+  },
+  "src/app/dashboard/(with-sidebar)/feedback/_components/FeedbackCard.tsx": {
+    "space-arbitrary": 1
+  },
+  "src/app/dashboard/(with-sidebar)/grades/_components/AssignmentTooltip.tsx": {
+    "font-bold": 1
+  },
+  "src/app/dashboard/(with-sidebar)/grades/_components/GradesTable.tsx": {
+    "font-bold": 6
+  },
+  "src/app/dashboard/(with-sidebar)/grades/_components/NewTopicModal.tsx": {
+    "font-bold": 1
+  },
+  "src/app/dashboard/(with-sidebar)/grades/help/page.tsx": {
+    "space-arbitrary": 1
+  },
+  "src/app/dashboard/(with-sidebar)/lessons/page.tsx": {
+    "font-bold": 3
+  },
+  "src/app/dashboard/(with-sidebar)/standards/_components/AddStandardModal.tsx": {
+    "font-bold": 1
+  },
+  "src/app/dashboard/(with-sidebar)/standards/_components/StandardsView.tsx": {
+    "font-bold": 1
+  },
+  "src/app/dashboard/(with-sidebar)/statistics/_components/CompletionDonutChart.tsx": {
+    "font-bold": 1
+  },
+  "src/app/dashboard/(with-sidebar)/statistics/_components/GenderDonutChart.tsx": {
+    "font-bold": 1
+  },
+  "src/app/dashboard/(with-sidebar)/students/[id]/_components/OverviewTab.tsx": {
+    "font-bold": 1
+  },
+  "src/app/dashboard/(with-sidebar)/students/[id]/_components/StudentProfile.tsx": {
+    "font-bold": 2
+  },
+  "src/app/dashboard/(with-sidebar)/students/[id]/_components/charts.tsx": {
+    "space-arbitrary": 1,
+    "font-bold": 1
+  },
+  "src/app/dashboard/(with-sidebar)/students/page.tsx": {
+    "space-arbitrary": 1
+  },
+  "src/app/dashboard/(with-sidebar)/tasks/_components/TasksStatsPanel.tsx": {
+    "text-px": 1,
+    "font-bold": 1
+  },
+  "src/app/dashboard/classes/[id]/_components/ClassDetail.tsx": {
+    "font-bold": 4
+  },
+  "src/app/dashboard/classes/[id]/_components/LessonsSection.tsx": {
+    "font-bold": 3
+  },
+  "src/app/dashboard/classes/page.tsx": {
+    "font-bold": 3
+  },
+  "src/app/dashboard/planner/_components/PlannerView.tsx": {
+    "font-bold": 4
+  },
+  "src/app/help/_components/HelpNav.tsx": {
+    "space-arbitrary": 1
+  },
+  "src/app/play/[code]/_components/PlayView.tsx": {
+    "font-bold": 1
+  },
+  "src/components/ClassCard.tsx": {
+    "text-px": 1
+  },
+  "src/components/ClassListPanel.tsx": {
+    "font-bold": 2
+  },
+  "src/components/StatCard.tsx": {
+    "text-px": 2,
+    "font-bold": 1
+  },
+  "src/components/StatTile.tsx": {
+    "font-bold": 1
+  },
+  "src/components/behavior/AutoPointsEditor.tsx": {
+    "font-bold": 1
+  },
+  "src/components/behavior/BehaviorDonut.tsx": {
+    "font-bold": 1
+  },
+  "src/components/behavior/EventTimeline.tsx": {
+    "font-bold": 2
+  },
+  "src/components/behavior/SkillCard.tsx": {
+    "font-bold": 2
+  },
+  "src/components/behavior/SkillFormDialog.tsx": {
+    "font-bold": 1
+  },
+  "src/components/behavior/StudentDialog.tsx": {
+    "font-bold": 2
+  },
+  "src/components/behavior/StudentPointCard.tsx": {
+    "font-bold": 2
+  },
+  "src/components/behavior/award-toast.tsx": {
+    "font-bold": 1
+  },
+  "src/components/doska/DoskaShell.tsx": {
+    "space-arbitrary": 1
+  },
+  "src/components/jadval/SheetGrid.tsx": {
+    "font-bold": 3
+  },
+  "src/components/lesson-editor/AiAssistantPanel.tsx": {
+    "font-bold": 1
+  },
+  "src/components/lesson-editor/DetailsPanel.tsx": {
+    "font-bold": 2
+  },
+  "src/components/lesson-editor/LessonEditor.tsx": {
+    "font-bold": 1
+  },
+  "src/components/onboarding/AuthFeatureLoop.tsx": {
+    "text-px": 1
+  },
+  "src/components/onboarding/OnboardingWizard.tsx": {
+    "font-bold": 1
+  },
+  "src/components/shadcn-space/blocks/two-factor-authentication-01/two-factor-auth.tsx": {
+    "font-bold": 1
+  },
+  "src/components/shadcn-space/file-upload/file-upload-01.tsx": {
+    "font-bold": 1
+  },
+  "src/components/tasks/FocusTimerPill.tsx": {
+    "font-bold": 1
+  },
+  "src/components/timetable/PeriodGrid.tsx": {
+    "text-px": 1
+  },
+  "src/components/ui/calendar.tsx": {
+    "text-px": 2
+  },
+  "src/components/ui/form-blocks.tsx": {
+    "font-bold": 1
+  },
+  "src/components/ui/tabs.tsx": {
+    "space-arbitrary": 1
+  },
+  "src/components/ui/typography.tsx": {
+    "space-arbitrary": 2,
+    "font-bold": 1
+  }
+}

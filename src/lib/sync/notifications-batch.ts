@@ -9,7 +9,7 @@ const id = z.string().min(1).max(200);
 
 export const notificationUpsertSchema = z.object({
   id,
-  kind: z.enum(["reply", "feedback", "status", "system"]),
+  kind: z.enum(["reply", "feedback", "status", "system", "birthday"]),
   title: z.string().min(1).max(300),
   body: z.string().max(2000).nullable(),
   href: z.string().max(500).nullable(),
@@ -27,11 +27,3 @@ export const notificationsBatchSchema = z.object({
 
 export type NotificationUpsert = z.infer<typeof notificationUpsertSchema>;
 export type NotificationsBatch = z.infer<typeof notificationsBatchSchema>;
-
-export function emptyNotificationsBatch(): NotificationsBatch {
-  return { itemsUpsert: [], itemsDelete: [] };
-}
-
-export function isEmptyNotificationsBatch(b: NotificationsBatch): boolean {
-  return b.itemsUpsert.length === 0 && b.itemsDelete.length === 0;
-}

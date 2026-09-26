@@ -166,14 +166,14 @@ export function QuotesDialog({
           description={t("description")}
         />
 
-        <div className="flex max-h-56 flex-col gap-1 overflow-y-auto scrollbar-thin px-3.5 pt-3 pb-1">
+        <div className="flex max-h-56 flex-col gap-1 scrollbar-hover overflow-y-auto scrollbar-thin px-4 pt-3 pb-1">
           {quotes.length === 0 && (
             <p className="py-4 text-center text-sm text-muted-foreground">{t("empty")}</p>
           )}
           {quotes.map((q) => (
             <div
               key={q.id}
-              className="group flex items-start gap-2 rounded-lg px-2.5 py-2 transition-colors hover:bg-muted/60"
+              className="group flex items-start gap-2 rounded-lg px-3 py-2 transition-colors hover:bg-muted/60"
             >
               <div className="min-w-0 flex-1">
                 <p className="text-sm leading-snug text-foreground">

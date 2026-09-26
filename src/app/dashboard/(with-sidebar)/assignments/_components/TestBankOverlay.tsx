@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SectionIcon } from "@/components/ui/section-icon";
+import { SegmentedToggle } from "@/components/ui/segmented-toggle";
 import { Spinner } from "@/components/ui/spinner";
 import { TypographyMuted } from "@/components/ui/typography";
 import {
@@ -331,23 +332,16 @@ export default function TestBankOverlay({
 
       {/* Darajalar */}
       <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-border px-5 py-3">
-        {tabs.map(({ key, label, Icon }) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => setTier(key)}
-            aria-pressed={tier === key}
-            className={
-              "flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors " +
-              (tier === key
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-border text-muted-foreground hover:bg-muted hover:text-foreground")
-            }
-          >
-            <Icon className="size-3.5" />
-            {label}
-          </button>
-        ))}
+        <SegmentedToggle<BankTier>
+          variant="pill"
+          value={tier}
+          onValueChange={setTier}
+          options={tabs.map(({ key, label, Icon }) => ({
+            value: key,
+            label,
+            icon: <Icon className="size-4" />,
+          }))}
+        />
       </div>
 
       {/* Filtrlar */}
@@ -397,7 +391,7 @@ export default function TestBankOverlay({
           Bitta sinf boʻlsa umuman koʻrsatilmaydi: tanlashga narsa yoʻq
           va qator faqat ekranni band qilardi. */}
       {allClasses.length > 1 && (
-        <div className="flex shrink-0 flex-wrap items-center gap-1.5 border-b border-border px-5 py-2.5">
+        <div className="flex shrink-0 flex-wrap items-center gap-1.5 border-b border-border px-5 py-3">
           <TypographyMuted className="mr-1 shrink-0 text-xs font-medium">
             {t("targetClasses")}
           </TypographyMuted>
@@ -417,7 +411,7 @@ export default function TestBankOverlay({
                   )
                 }
                 className={
-                  "rounded-full border px-2.5 py-1 text-xs font-medium transition-colors " +
+                  "rounded-full border px-3 py-1 text-xs font-medium transition-colors " +
                   (on
                     ? "border-primary bg-primary/10 text-primary"
                     : "border-border text-muted-foreground hover:bg-muted hover:text-foreground") +
@@ -474,7 +468,7 @@ export default function TestBankOverlay({
           </Empty>
         ) : (
           <ScrollArea className="h-full w-full">
-            <div className="grid grid-cols-1 gap-2.5 p-5 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 p-5 sm:grid-cols-2 xl:grid-cols-3">
               {tests.map((test) => (
                 <BankCard
                   key={test.id}
@@ -607,7 +601,7 @@ function BankCard({
   const Icon = TIER_ICON[test.tier];
 
   return (
-    <div className="list-card flex flex-col gap-2.5 p-3.5">
+    <div className="list-card flex flex-col gap-3 p-3">
       {/* Sarlavha bosilsa savollar koʻrinadi — ustoz begona odam
           tuzgan testni koʻrmasdan sinfiga bermaydi. */}
       <button
@@ -629,15 +623,15 @@ function BankCard({
       </button>
 
       <div className="flex flex-wrap items-center gap-1.5">
-        <Badge variant="outline" className="text-[10px] text-muted-foreground">
+        <Badge size="sm" variant="outline" className="text-muted-foreground">
           {t("questionCount", { count: test.questionCount })}
         </Badge>
         {/* `null` = fansiz/sinfsiz — bu HAQIQIY holat, shuning uchun
             boʻsh qoldirilmay ochiq yoziladi. */}
-        <Badge variant="outline" className="text-[10px] text-muted-foreground">
+        <Badge size="sm" variant="outline" className="text-muted-foreground">
           {test.subject ?? t("subjectNone")}
         </Badge>
-        <Badge variant="outline" className="text-[10px] text-muted-foreground">
+        <Badge size="sm" variant="outline" className="text-muted-foreground">
           {test.grade ?? t("gradeNone")}
         </Badge>
       </div>

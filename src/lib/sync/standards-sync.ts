@@ -1,10 +1,6 @@
 import type { CustomSet, StandardSet } from "@/store/useStandardsStore";
-import {
-  emptyStandardsBatch,
-  isEmptyStandardsBatch,
-  type StandardsBatch,
-  type StandardSetUpsert,
-} from "./standards-batch";
+import { emptyStandardsBatch, isEmptyStandardsBatch } from "./standards-batch-shape";
+import type { StandardsBatch, StandardSetUpsert } from "./standards-batch";
 
 /* ════════════════════════════════════════════════════════════════════
    STANDARDS DIFF — {sets, customSets} (prev, next) → batch | null.

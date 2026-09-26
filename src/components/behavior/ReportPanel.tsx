@@ -90,10 +90,10 @@ export function ReportPanel({
           <BehaviorDonut slices={slices} positivePct={stats.positivePct} />
 
           <div className="flex items-center justify-center gap-2">
-            <span className="rounded-full bg-success/10 px-2.5 py-1 text-xs font-semibold tabular-nums text-success">
+            <span className="rounded-full bg-success/10 px-3 py-1 text-xs font-semibold tabular-nums text-success">
               +{stats.earned} {t("positive")}
             </span>
-            <span className="rounded-full bg-destructive/10 px-2.5 py-1 text-xs font-semibold tabular-nums text-destructive">
+            <span className="rounded-full bg-destructive/10 px-3 py-1 text-xs font-semibold tabular-nums text-destructive">
               −{stats.lost} {t("negative")}
             </span>
           </div>
@@ -160,7 +160,7 @@ function DeletionLog({
             const positive = d.points > 0;
             const studentName = nameById?.get(d.studentId);
             return (
-              <li key={d.id} className="flex items-start gap-2.5">
+              <li key={d.id} className="flex items-start gap-2">
                 <BehaviorEmoji
                   code={d.emoji}
                   label={d.name}

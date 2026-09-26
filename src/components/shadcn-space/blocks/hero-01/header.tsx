@@ -2,63 +2,74 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetClose } from "@/components/ui/sheet";
-import {
-  NavigationMenu,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-  NavigationMenuContent,
-} from "@/components/ui/navigation-menu";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { Menu, X, Globe, Send, Mail, Phone } from 'lucide-react';
+import { Menu, X, Send } from "lucide-react";
+import { IconChartSquare, IconClipboard, IconNotebook, PRODUCT_ICONS } from "./product-icons";
 import Logo from "@/assets/logo/logo";
 import { Button } from "@/components/ui/button";
 import ButtonWithIcon from "@/components/shadcn-space/button/button-01";
-import { PRODUCTS } from "@/lib/landing-nav";
+import { LanguageSwitcher } from "@/components/landing/LanguageSwitcher";
+import { HEADER_NAV, TELEGRAM_URL, type HeaderNavItem } from "@/lib/landing-nav";
+import { LANDING_TONES } from "@/components/landing/landing-tones";
 
-export type NavigationSection = {
-  title: string;
-  href: string;
+/**
+ * Header havolalari — faqat ishlayotgan mahsulotlar (`HEADER_NAV`), har
+ * birida ikonka. Ikonkalar `product-icons.tsx` dagi Solar duotone
+ * toʻplamidan — header, «Mahsulotlar» boʻlimi va mahsulot sahifalari
+ * bir xil belgini koʻrsatadi.
+ */
+const NAV_ICONS: Record<HeaderNavItem["key"], typeof IconClipboard> = {
+  jurnal: IconClipboard,
+  baholash: IconChartSquare,
+  blog: IconNotebook,
 };
 
-type HeaderProps = {
-  navigationData: NavigationSection[];
-  className?: string;
-};
-
-const CollaborateButton = ({ className }: { className?: string }) => (
-  <ButtonWithIcon href="/register" size="sm" className={className}>
-    Bepul boshlash
-  </ButtonWithIcon>
+/**
+ * Doska — roʻyxatdan oʻtmasdan ochiladigan yagona mahsulot, shuning uchun
+ * menyuda alohida, oʻz rangida turadi. Kirgan odam uchun eng qisqa «sinab
+ * koʻrish» yoʻli. Rang `LANDING_TONES.doska` dan — tablar, hero vazifalari
+ * va ikonkalar bilan bitta manba.
+ */
+const DoskaIcon = PRODUCT_ICONS.doska;
+const DOSKA_PILL = cn(
+  "inline-flex h-10 items-center gap-2 rounded-full border border-transparent px-4 text-sm font-medium transition-colors duration-fast ease-standard",
+  LANDING_TONES.doska.soft,
+  LANDING_TONES.doska.hoverBorder,
 );
 
-const Header = ({ navigationData, className }: HeaderProps) => {
+const CollaborateButton = ({ className }: { className?: string }) => {
+  const t = useTranslations("Landing.common");
+  return (
+    <ButtonWithIcon href="/register" size="sm" className={className}>
+      {t("register")}
+    </ButtonWithIcon>
+  );
+};
+
+const Header = ({ className }: { className?: string }) => {
+  const t = useTranslations("Landing");
   const pathname = usePathname();
   const [sticky, setSticky] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  /**
-   * Faol havola. Hash-boʻlimli sahifada (landing) scroll-spy aniqlaydi;
-   * alohida sahifada (masalan /blog) — joriy yoʻl boʻyicha.
-   */
-  const [activeHref, setActiveHref] = useState(
-    () =>
-      // `/blog/maqola` ham "Blog"ni yoqsin — shuning uchun prefiks boʻyicha.
-      navigationData.find(
-        (item) => item.href !== "/" && !item.href.startsWith("#") && pathname.startsWith(item.href),
-      )?.href ??
-      navigationData[0]?.href ??
-      "#top",
-  );
+
+  /* Faol havola — joriy yoʻl boʻyicha (`/blog/maqola` ham «Blog»ni
+     yoqsin, shuning uchun prefiks). Jurnal landing boʻlimi — langar,
+     uni faol deb belgilamaymiz. */
+  const activeKey = HEADER_NAV.find(
+    (item) => !item.href.includes("#") && pathname.startsWith(item.href),
+  )?.key;
 
   const handleScroll = useCallback(() => {
     setSticky(window.scrollY >= 50);
   }, []);
 
+  /* Menyu `xl` (1280px) gacha koʻrinadi — shu chegaradan yopamiz. Ilgari
+     768 edi: planshetda istalgan `resize` (manzil qatori yigʻilishi,
+     klaviatura) ochiq menyuni darhol yopib qoʻyardi. */
   const handleResize = useCallback(() => {
-    if (window.innerWidth >= 768) setIsOpen(false);
+    if (window.innerWidth >= 1280) setIsOpen(false);
   }, []);
 
   useEffect(() => {
@@ -71,51 +82,6 @@ const Header = ({ navigationData, className }: HeaderProps) => {
     };
   }, [handleScroll, handleResize]);
 
-  /**
-   * Scroll-spy: qaysi boʻlim ekranning yuqori yarmida boʻlsa, oʻsha yoritiladi.
-   * Ilgari "Asosiy" qoʻlda `isActive: true` qilingan va hech qachon
-   * oʻzgarmasdi — foydalanuvchi Narxlarga tushsa ham "Asosiy" yonib turardi.
-   */
-  useEffect(() => {
-    const anchors = navigationData
-      .filter((item) => item.href.startsWith("#") && item.href !== "#top")
-      .map((item) => item.href);
-
-    const sections = anchors
-      .map((href) => document.querySelector(href))
-      .filter((el): el is Element => el !== null);
-
-    if (sections.length === 0) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
-
-        if (visible[0]) {
-          setActiveHref(`#${visible[0].target.id}`);
-        } else if (window.scrollY < 200) {
-          setActiveHref(navigationData[0]?.href ?? "#top");
-        }
-      },
-      // Yuqori 20% — "hozir oʻqilayotgan" zona.
-      { rootMargin: "-80px 0px -60% 0px", threshold: 0 },
-    );
-
-    sections.forEach((section) => observer.observe(section));
-
-    const onScrollTop = () => {
-      if (window.scrollY < 200) setActiveHref(navigationData[0]?.href ?? "#top");
-    };
-    window.addEventListener("scroll", onScrollTop, { passive: true });
-
-    return () => {
-      observer.disconnect();
-      window.removeEventListener("scroll", onScrollTop);
-    };
-  }, [navigationData]);
-
   return (
     <header
       className={cn(
@@ -125,9 +91,9 @@ const Header = ({ navigationData, className }: HeaderProps) => {
     >
       <div
         className={cn(
-          "w-full max-w-6xl flex items-center h-fit justify-between gap-3.5 lg:gap-6 transition-all duration-500",
+          "w-full max-w-7xl flex items-center h-fit justify-between gap-3 lg:gap-6 transition-all duration-500",
           sticky
-            ? "p-2.5 bg-background/60 backdrop-blur-lg border border-border/40 shadow-2xl shadow-primary/5 rounded-full"
+            ? "p-3 bg-background/60 backdrop-blur-lg border border-border/40 shadow-2xl shadow-primary/5 rounded-full"
             : "bg-transparent border-transparent",
         )}
       >
@@ -138,141 +104,118 @@ const Header = ({ navigationData, className }: HeaderProps) => {
           </a>
         </div>
 
-        {/* Desktop Navigation */}
-        <div>
-          <NavigationMenu className="max-lg:hidden bg-muted p-0.5 rounded-full">
-            <NavigationMenuList className="flex gap-0">
-              {navigationData.map((navItem) => {
-                const isActive = navItem.href === activeHref;
-
-                // "Mahsulotlar" — oddiy havola oʻrniga mega-menyu: hech biri
-                // tayyor boʻlmasa ham, 4 mahsulot bir bosishda koʻrinadi.
-                if (navItem.title === "Mahsulotlar") {
-                  return (
-                    <NavigationMenuItem key={navItem.title}>
-                      <NavigationMenuTrigger
-                        className={cn(
-                          "h-auto bg-transparent px-2 lg:px-4 py-2 text-sm font-medium rounded-full text-muted-foreground hover:text-foreground hover:bg-background data-[state=open]:bg-background data-[state=open]:text-foreground",
-                          isActive ? "bg-background text-foreground shadow-xs" : "",
-                        )}
-                      >
-                        {navItem.title}
-                      </NavigationMenuTrigger>
-                      <NavigationMenuContent>
-                        <ul className="grid w-[320px] gap-1 p-1">
-                          {PRODUCTS.map((p) => (
-                            <li key={p.slug}>
-                              <NavigationMenuLink href={`/${p.slug}`} className="flex-row items-center justify-between gap-3">
-                                <span className="flex flex-col gap-0.5">
-                                  <span className="font-medium text-foreground">{p.name}</span>
-                                  <span className="text-xs text-muted-foreground">{p.tagline}</span>
-                                </span>
-                                <Badge variant="outline" className="shrink-0 text-[10px] text-muted-foreground">
-                                  {p.statusLabel}
-                                </Badge>
-                              </NavigationMenuLink>
-                            </li>
-                          ))}
-                        </ul>
-                      </NavigationMenuContent>
-                    </NavigationMenuItem>
-                  );
-                }
-
-                return (
-                  <NavigationMenuItem key={navItem.title}>
-                    <NavigationMenuLink
-                      href={navItem.href}
-                      aria-current={isActive ? "true" : undefined}
-                      className={cn("px-2 lg:px-4 py-2 text-sm font-medium rounded-full text-muted-foreground hover:text-foreground hover:bg-background outline outline-transparent hover:outline-border hover:shadow-xs transition tracking-normal", isActive ? "bg-background text-foreground shadow-xs" : "")}
-                    >
-                      {navItem.title}
-                    </NavigationMenuLink>
-                  </NavigationMenuItem>
-                );
-              })}
-            </NavigationMenuList>
-          </NavigationMenu>
-        </div>
+        {/* Desktop — mahsulotlar. `xl` (1280px) dan: 1024px da ruscha yozuvlar
+            («Оценивание», «Зарегистрироваться») bilan header sigʻmay, gorizontal
+            skroll chiqardi. Undan torda — gamburger menyu. */}
+        <nav aria-label={t("nav.menu")} className="max-xl:hidden flex items-center gap-1">
+          {HEADER_NAV.map((item) => {
+            const Icon = NAV_ICONS[item.key];
+            const isActive = item.key === activeKey;
+            return (
+              <a
+                key={item.key}
+                href={item.href}
+                aria-current={isActive ? "page" : undefined}
+                className={cn(
+                  "inline-flex h-10 items-center gap-2 rounded-full px-4 text-sm font-medium transition-colors duration-fast ease-standard",
+                  isActive
+                    ? "bg-muted text-foreground"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                )}
+              >
+                <Icon className="size-4" />
+                {t(`nav.${item.key}`)}
+              </a>
+            );
+          })}
+          <a href="/doska" className={cn(DOSKA_PILL, "ml-1")}>
+            <DoskaIcon className="size-4" />
+            {t("nav.doska")}
+          </a>
+        </nav>
 
         {/* Desktop CTA — landing standarti: "Kirish" xira havola (mavjud
             foydalanuvchi oʻzi topadi), asosiy tugma esa roʻyxatdan oʻtish
             (sahifaning maqsadi — yangi oʻqituvchi jalb qilish). */}
         <div className="flex items-center gap-2 lg:gap-3">
+          <LanguageSwitcher className="hidden xl:inline-flex" />
+          {/* Oʻquvchining kirish eshigi — telefonda ham menyuga
+              yashirilmaydi: uni darsda, oʻqituvchi kodni ekranga
+              chiqargan paytda qidirishadi. Telefonda qisqa yozuv: logo
+              aylanuvchi soʻz bilan ~190px oladi, toʻliq yozuv hamburgerni
+              ekrandan itarib chiqarardi. 360px dan tor ekranda umuman
+              sigʻmaydi — u yerda hero'dagi tugma qoladi. */}
+          <Button
+            asChild
+            variant="outline"
+            className="max-[359px]:hidden rounded-full h-10 px-4 text-sm font-medium cursor-pointer"
+          >
+            <a href="/play" aria-label={t("nav.enterCode")}>
+              <span className="sm:hidden">{t("nav.enterCodeShort")}</span>
+              <span className="max-sm:hidden">{t("nav.enterCode")}</span>
+            </a>
+          </Button>
           <Button
             asChild
             variant="ghost"
-            className="hidden lg:flex rounded-full h-10 px-5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer"
+            className="hidden xl:flex rounded-full h-10 px-5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer"
           >
-            <a href="/login">Kirish</a>
+            <a href="/login">{t("common.login")}</a>
           </Button>
-          <CollaborateButton className="hidden lg:flex" />
+          <CollaborateButton className="hidden xl:flex" />
 
-          <div className="lg:hidden">
+          <div className="xl:hidden">
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger id="mobile-menu-trigger">
                 <span className="rounded-full border border-border p-2 block">
-                  <Menu
-                    width={20}
-                    height={20}
-                  />
-                  <span className="sr-only">Menu</span>
+                  <Menu width={20} height={20} />
+                  <span className="sr-only">{t("nav.menu")}</span>
                 </span>
               </SheetTrigger>
 
-              <SheetContent
-                side="right"
-                className="w-full sm:w-96 p-0 border-l-0"
-              >
+              <SheetContent side="right" className="w-full sm:w-96 p-0 border-l-0">
                 <div className="flex items-center justify-between p-6">
                   <a href="/">
                     <Logo className="gap-2" />
                   </a>
                   <SheetClose id="mobile-menu-close">
-                    <span className="rounded-full border border-border p-2.5 block">
+                    <span className="rounded-full border border-border p-3 block">
                       <X width={16} height={16} />
                     </span>
                   </SheetClose>
                 </div>
 
-                <div className="flex flex-col gap-12 px-6 pb-6 overflow-y-auto">
+                <div className="flex flex-col gap-12 px-6 pb-6 scrollbar-hover overflow-y-auto">
                   <div className="flex flex-col gap-8">
-                    <SheetTitle className="sr-only">Menu</SheetTitle>
-                    <NavigationMenu
-                      orientation="vertical"
-                      className="items-start flex-none"
-                    >
-                      <NavigationMenuList className="flex flex-col items-start gap-3">
-                        {navigationData.map((item) => {
-                          const isActive = item.href === activeHref;
-                          return (
-                            <NavigationMenuItem key={item.title}>
-                              <NavigationMenuLink
-                                href={item.href}
-                                aria-current={isActive ? "true" : undefined}
-                                onClick={() => setIsOpen(false)}
-                                className={cn(
-                                  "group/nav flex items-center text-2xl font-semibold tracking-tight transition-all p-0 hover:bg-transparent focus:bg-transparent data-[active]:bg-transparent data-[state=open]:bg-transparent",
-                                  isActive
-                                    ? "text-primary"
-                                    : "text-muted-foreground hover:text-foreground hover:translate-x-2",
-                                )}
-                              >
-                                <div
-                                  className={cn(
-                                    "h-0.5 bg-primary transition-all duration-300 overflow-hidden",
-                                    isActive
-                                      ? "w-4 mr-2 opacity-100"
-                                      : "w-0 opacity-0 group-hover/nav:w-4 group-hover/nav:mr-2 group-hover/nav:opacity-100",
-                                  )}
-                                />
-                                {item.title}
-                              </NavigationMenuLink>
-                            </NavigationMenuItem>
-                          );
-                        })}
-                      </NavigationMenuList>
-                    </NavigationMenu>
+                    <SheetTitle className="sr-only">{t("nav.menu")}</SheetTitle>
+                    <nav className="flex flex-col items-start gap-4">
+                      {HEADER_NAV.map((item) => {
+                        const Icon = NAV_ICONS[item.key];
+                        const isActive = item.key === activeKey;
+                        return (
+                          <a
+                            key={item.key}
+                            href={item.href}
+                            aria-current={isActive ? "page" : undefined}
+                            onClick={() => setIsOpen(false)}
+                            className={cn(
+                              "flex items-center gap-3 text-2xl font-semibold tracking-tight transition-colors",
+                              isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+                            )}
+                          >
+                            <Icon className="size-6" />
+                            {t(`nav.${item.key}`)}
+                          </a>
+                        );
+                      })}
+                    </nav>
+
+                    <a href="/doska" onClick={() => setIsOpen(false)} className={cn(DOSKA_PILL, "w-fit")}>
+                      <DoskaIcon className="size-4" />
+                      {t("nav.doska")}
+                    </a>
+
+                    <LanguageSwitcher />
 
                     <div className="flex flex-col gap-3 w-fit">
                       <CollaborateButton />
@@ -281,32 +224,26 @@ const Header = ({ navigationData, className }: HeaderProps) => {
                         variant="outline"
                         className="rounded-full h-10 px-5 text-sm font-medium w-fit cursor-pointer"
                       >
-                        <a href="/login">Kirish</a>
+                        <a href="/login">{t("common.login")}</a>
                       </Button>
                     </div>
                   </div>
 
                   <div className="mt-auto flex flex-col gap-4">
-                    <div className="flex gap-3">
-                      {[
-                        { icon: Send, label: "Telegram" },
-                        { icon: Globe, label: "Web" },
-                        { icon: Mail, label: "Email" },
-                        { icon: Phone, label: "Phone" },
-                      ].map(({ icon: SocialIcon, label }) => (
-                        <a
-                          key={label}
-                          href="#"
-                          className="flex items-center justify-center rounded-full outline outline-border hover:bg-muted transition p-3 shadow-xs"
-                        >
-                          <SocialIcon size={16} />
-                        </a>
-                      ))}
-                    </div>
+                    {/* Faqat haqiqiy manzili bor kanal. Ilgari veb, email va
+                        telefon ham `href="#"` bilan turardi — bosilganda
+                        sahifa tepaga sakrardi xolos. */}
+                    <a
+                      href={TELEGRAM_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={t("social.telegram")}
+                      className="flex w-fit items-center justify-center rounded-full outline outline-border hover:bg-muted transition p-3 shadow-xs"
+                    >
+                      <Send size={16} />
+                    </a>
 
-                    <p className="text-sm text-muted-foreground">
-                      © 2026 Ustozona
-                    </p>
+                    <p className="text-sm text-muted-foreground">© 2026 Ustozona</p>
                   </div>
                 </div>
               </SheetContent>

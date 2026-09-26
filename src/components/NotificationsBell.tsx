@@ -1,52 +1,67 @@
 "use client";
 
+import * as React from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { formatDayLabelUz } from "@/lib/localization";
+import { dateToKey, todayKey, addDaysKey } from "@/lib/date-keys";
 import { IconButton } from "@/components/ui/icon-button";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { SegmentedToggle } from "@/components/ui/segmented-toggle";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription,
 } from "@/components/ui/empty";
-import { Bell, CheckCheck } from "lucide-react";
-import {
-  useNotificationsStore, type NotificationKind,
-} from "@/store/useNotificationsStore";
+import { Bell, CheckCheck, Trash2 } from "lucide-react";
+import { NotificationCard } from "@/components/notifications/NotificationCard";
+import { useNotificationsStore, type NotificationItem } from "@/store/useNotificationsStore";
 
-const KIND_LABEL: Record<NotificationKind, string> = {
-  reply: "Javob",
-  feedback: "Fikr",
-  status: "Holat",
-  system: "Tizim",
-};
+/* ════════════════════════════════════════════════════════════════════
+   BILDIRISHNOMALAR QOʻNGʻIROGʻI.
 
-const KIND_BADGE: Record<NotificationKind, string> = {
-  reply: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
-  feedback: "bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/20",
-  status: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
-  system: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
-};
+   Panel — uch qavat: qotgan sarlavha (segment + «hammasini oʻqilgan»),
+   skroll qilinadigan roʻyxat, qotgan footer (tozalash). Roʻyxatning
+   qurilish birligi — `NotificationCard`; bu fayl faqat KUN boʻlimlariga
+   ajratadi va filtrni boshqaradi.
 
-/** ISO → "hozir / 5 daq oldin / 3 soat oldin / 2 kun oldin / 12 iyun". */
-const MONTHS_SHORT = [
-  "yan", "fev", "mar", "apr", "may", "iyun",
-  "iyul", "avg", "sen", "okt", "noy", "dek",
+   ⚠️ Skroll balandligi kartalar konteynerining OʻZIDA (`max-h`), `flex-1`
+   da emas: `PopoverContent` da `max-height` bor-u, `height` yoʻq —
+   bunday konteyner bolaga aniq balandlik bermaydi, `flex-1` auto boʻlib
+   qoladi va roʻyxat skroll oʻrniga kesilib ketardi.
+   ════════════════════════════════════════════════════════════════════ */
+
+type Filter = "all" | "unread";
+
+const FILTER_OPTIONS = [
+  { value: "all" as const, label: "Barchasi" },
+  { value: "unread" as const, label: "Oʻqilmagan" },
 ];
-function timeAgo(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  const diff = Date.now() - d.getTime();
-  const min = Math.floor(diff / 60_000);
-  if (min < 1) return "hozir";
-  if (min < 60) return `${min} daq oldin`;
-  const hr = Math.floor(min / 60);
-  if (hr < 24) return `${hr} soat oldin`;
-  const day = Math.floor(hr / 24);
-  if (day < 7) return `${day} kun oldin`;
-  return `${d.getDate()} ${MONTHS_SHORT[d.getMonth()]}`;
+
+type Section = { dayKey: string; label: string; items: NotificationItem[] };
+
+/** ISO → mahalliy `yyyy-mm-dd` (UTC kesish emas — kech kelgan xabar
+ *  ertangi kunga tushib qolmasin). */
+const dayKeyOf = (iso: string) => dateToKey(new Date(iso));
+
+function dayLabel(key: string): string {
+  const today = todayKey();
+  if (key === today) return "Bugun";
+  if (key === addDaysKey(today, -1)) return "Kecha";
+  return formatDayLabelUz(key);
+}
+
+/** Kun boʻyicha boʻlaklar — store tartibi (yangi → eski) saqlanadi. */
+function toSections(items: NotificationItem[]): Section[] {
+  const sections: Section[] = [];
+  for (const item of items) {
+    const key = dayKeyOf(item.createdAt);
+    const last = sections[sections.length - 1];
+    if (last && last.dayKey === key) last.items.push(item);
+    else sections.push({ dayKey: key, label: dayLabel(key), items: [item] });
+  }
+  return sections;
 }
 
 export default function NotificationsBell() {
@@ -55,23 +70,51 @@ export default function NotificationsBell() {
   const hydrated = useNotificationsStore((s) => s._hasHydrated);
   const markRead = useNotificationsStore((s) => s.markRead);
   const markAllRead = useNotificationsStore((s) => s.markAllRead);
+  const clearAll = useNotificationsStore((s) => s.clearAll);
+
+  const [open, setOpen] = React.useState(false);
+  const [filter, setFilter] = React.useState<Filter>("all");
+  const [confirmClear, setConfirmClear] = React.useState(false);
 
   const unread = hydrated ? items.filter((n) => !n.read).length : 0;
+  const sections = React.useMemo(
+    () => toSections(filter === "unread" ? items.filter((n) => !n.read) : items),
+    [items, filter]
+  );
+
+  /* Panel yopilganda boshlangʻich holatga qaytadi — keyingi ochilishda
+     eski filtr yoki yarim bosilgan tasdiq qolib ketmasin. */
+  React.useEffect(() => {
+    if (open) return;
+    setFilter("all");
+    setConfirmClear(false);
+  }, [open]);
 
   const openItem = (id: string, href?: string) => {
     markRead(id);
-    if (href) router.push(href);
+    if (href) {
+      setOpen(false);
+      router.push(href);
+    }
   };
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <Tooltip>
         <TooltipTrigger asChild>
           <PopoverTrigger asChild>
-            <IconButton aria-label="Bildirishnomalar" className="relative text-muted-foreground">
+            <IconButton
+              aria-label={
+                unread > 0 ? `Bildirishnomalar — ${unread} ta oʻqilmagan` : "Bildirishnomalar"
+              }
+              className="relative text-muted-foreground"
+            >
               <Bell className="size-[17px]" strokeWidth={2} />
               {unread > 0 && (
-                <span className="absolute right-0.5 top-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-destructive px-1 text-[8px] font-bold leading-none text-white">
+                <span
+                  aria-live="polite"
+                  className="absolute right-0.5 top-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-destructive px-1 text-micro leading-none text-white"
+                >
                   {unread > 9 ? "9+" : unread}
                 </span>
               )}
@@ -82,73 +125,93 @@ export default function NotificationsBell() {
       </Tooltip>
 
       <PopoverContent align="end" className="w-96 max-w-[calc(100vw-1.5rem)] p-0 shadow-lg">
-        <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
-          <h3 className="text-sm font-semibold text-foreground">Bildirishnomalar</h3>
-          {unread > 0 && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-7 text-muted-foreground hover:text-foreground"
-                  onClick={markAllRead}
-                >
-                  <CheckCheck className="size-3.5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Barchasini oʻqilgan deb belgilash</TooltipContent>
-            </Tooltip>
-          )}
+        <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
+          <h3 className="heading-small">Bildirishnomalar</h3>
+          <div className="flex items-center gap-1">
+            <SegmentedToggle
+              value={filter}
+              onValueChange={setFilter}
+              options={FILTER_OPTIONS}
+              variant="pill"
+              className="h-8 [&_button]:px-2 [&_button]:text-xs"
+            />
+            {unread > 0 && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-7 text-muted-foreground hover:text-foreground"
+                    onClick={markAllRead}
+                  >
+                    <CheckCheck className="size-3.5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Barchasini oʻqilgan deb belgilash</TooltipContent>
+              </Tooltip>
+            )}
+          </div>
         </div>
 
-        {items.length === 0 ? (
+        {sections.length === 0 ? (
           <Empty className="p-8">
             <EmptyHeader>
-              <EmptyMedia variant="icon"><Bell /></EmptyMedia>
-              <EmptyTitle>Bildirishnoma yoʻq</EmptyTitle>
-              <EmptyDescription>Yangi bildirishnomalar shu yerda koʻrinadi.</EmptyDescription>
+              <EmptyMedia variant="icon">
+                {filter === "unread" ? <CheckCheck /> : <Bell />}
+              </EmptyMedia>
+              <EmptyTitle>
+                {filter === "unread" ? "Oʻqilmagan xabar yoʻq" : "Bildirishnoma yoʻq"}
+              </EmptyTitle>
+              <EmptyDescription>
+                {filter === "unread"
+                  ? "Hammasi oʻqilgan — «Barchasi» ga oʻting."
+                  : "Yangi bildirishnomalar shu yerda koʻrinadi."}
+              </EmptyDescription>
             </EmptyHeader>
           </Empty>
         ) : (
-          <ScrollArea className="max-h-[min(420px,60vh)]">
-            <ul className="divide-y divide-border/60">
-              {items.map((n) => {
-                return (
-                  <li key={n.id}>
-                    <button
-                      type="button"
-                      onClick={() => openItem(n.id, n.href)}
-                      className={cn(
-                        "flex w-full items-start px-4 py-3 text-left transition-colors hover:bg-muted/60",
-                        !n.read && "bg-primary/[0.04]"
-                      )}
-                    >
-                      <span className="min-w-0 flex-1">
-                        <span className="flex items-center justify-between gap-2">
-                          <span className="truncate text-sm font-medium text-foreground">{n.title}</span>
-                          <Badge
-                            variant="outline"
-                            className={cn(
-                              "shrink-0 px-1.5 py-0 text-[10px] font-medium",
-                              n.badgeClassName ?? KIND_BADGE[n.kind]
-                            )}
-                          >
-                            {n.badgeLabel ?? KIND_LABEL[n.kind]}
-                          </Badge>
-                        </span>
-                        {n.body && (
-                          <span className="mt-0.5 line-clamp-2 block text-xs leading-relaxed text-muted-foreground">
-                            {n.body}
-                          </span>
-                        )}
-                        <span className="mt-1 block text-xs text-muted-foreground">{timeAgo(n.createdAt)}</span>
-                      </span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
+          <ScrollArea className="max-h-[min(380px,calc(var(--radix-popover-content-available-height)-6rem))] bg-muted/30">
+            <div className="space-y-3 px-3 py-3">
+              {sections.map((section) => (
+                <section key={section.dayKey}>
+                  <h4 className="px-1 pb-1.5 text-label">{section.label}</h4>
+                  <div className="space-y-1.5">
+                    {section.items.map((item) => (
+                      <NotificationCard key={item.id} item={item} onOpen={openItem} />
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </div>
           </ScrollArea>
+        )}
+
+        {items.length > 0 && (
+          <div className="flex justify-end border-t border-border px-2 py-1.5">
+            {/* Ikki qadamli tasdiq — tozalash qaytarilmaydi, lekin popover
+                ichida dialog ochilsa popover yopilib ketardi. */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn(
+                "h-7 gap-1.5 text-xs",
+                confirmClear
+                  ? "text-destructive hover:text-destructive"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+              onClick={() => {
+                if (!confirmClear) {
+                  setConfirmClear(true);
+                  return;
+                }
+                clearAll();
+                setConfirmClear(false);
+              }}
+            >
+              <Trash2 className="size-3.5" />
+              {confirmClear ? "Tasdiqlang — hammasi oʻchadi" : "Hammasini tozalash"}
+            </Button>
+          </div>
         )}
       </PopoverContent>
     </Popover>

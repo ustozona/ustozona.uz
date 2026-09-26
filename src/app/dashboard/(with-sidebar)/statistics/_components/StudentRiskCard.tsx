@@ -46,7 +46,7 @@ export function StudentRiskCard({
       title={t("riskStudentsTitle")}
       action={<span className="text-xs tabular-nums text-muted-foreground">{risky.length}</span>}
     >
-      <div className="-mx-1.5 flex max-h-[22rem] flex-col divide-y divide-border/60 overflow-y-auto px-1.5">
+      <div className="-mx-1.5 flex max-h-[22rem] flex-col divide-y divide-border/60 scrollbar-hover overflow-y-auto px-1.5">
         {shown.map((s) => {
           const high = s.destructiveCount > 0;
           return (

@@ -59,7 +59,26 @@ export async function GET(request: Request) {
     //
     // `importRoster` bogʻlanishni oʻzi yozadi, koʻprik esa TESKARI
     // yoʻnalish uchun kerak: bot Ustozona sinflarini shu orqali topadi.
-    await bridgeTelegramIdentity(tokens.access_token);
+    const bridge = await bridgeTelegramIdentity(tokens.access_token);
+
+    /* ⛔ EGALIK NIZOSIDA IMPORT BOSHLANMAYDI.
+
+       Ilgari natija umuman qaralmasdi (`await …;`) va koʻprik
+       yozilmagan boʻlsa ham import davom etardi. Eng xavflisi —
+       `taken_tg`: telegram akkaunt allaqachon BOSHQA Ustozona
+       hisobiga bogʻlangan, lekin uning sinf va oʻquvchilari shu
+       yerdagi hisobga koʻchib oʻtardi. Yaʼni ikki hisob oʻrtasida
+       maʼlumot aralashuvi.
+
+       `conflict` — teskarisi: shu hisob boshqa telegramga bogʻlangan.
+       Unda ham import qilsak, bitta Ustozona hisobiga IKKI telegram
+       akkauntning roʻyxati tushardi.
+
+       Ikkalasi ham foydalanuvchi hal qiladigan holat (Sozlamalar →
+       LessonLab), kod taxmin qilmaydi. `unavailable` esa texnik
+       nosozlik — koʻprik shart emas, import davom etaveradi. */
+    if (bridge.status === "taken_tg") return back(request, { import: "takentg" });
+    if (bridge.status === "conflict") return back(request, { import: "otherlink" });
 
     const kind = targetClass ? "tests" : "roster";
     const report = targetClass

@@ -178,7 +178,7 @@ function StudentNamePreview({
         </Avatar>
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-foreground">{student.name}</p>
-          <Badge variant="secondary" className="mt-1 text-[10px]">
+          <Badge size="sm" variant="secondary" className="mt-1">
             {classLabel}
           </Badge>
         </div>
@@ -186,11 +186,11 @@ function StudentNamePreview({
       <Separator />
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{t("masteryLabel")}</p>
+          <p className="text-micro font-normal uppercase tracking-wide text-muted-foreground">{t("masteryLabel")}</p>
           <p className="mt-0.5 text-sm font-semibold text-foreground">{levelDisplay}</p>
         </div>
         <div>
-          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{t("dynamicsLabel")}</p>
+          <p className="text-micro font-normal uppercase tracking-wide text-muted-foreground">{t("dynamicsLabel")}</p>
           <p
             className="mt-0.5 inline-flex items-center gap-1 text-sm font-semibold"
             style={{ color: trendColor }}
@@ -510,7 +510,7 @@ export default function GradesTable({
                   {t("assignment")}
                 </DropdownMenuItem>
                 {archiveNotice && (
-                  <div className="px-2 pb-1.5 pt-0.5 text-[11px] leading-snug text-muted-foreground">
+                  <div className="px-2 pb-1.5 pt-0.5 text-tag leading-snug text-muted-foreground">
                     {archiveNotice}
                   </div>
                 )}
@@ -531,7 +531,7 @@ export default function GradesTable({
       </CardHeader>
 
       {/* Jadval */}
-      <CardContent className={cn(panelCardContentClass, "overflow-auto scrollbar-thin [&_div[data-slot=table-container]]:overflow-visible [&_div[data-slot=table-container]]:h-full")}>
+      <CardContent className={cn(panelCardContentClass, "scrollbar-hover overflow-auto scrollbar-thin [&_div[data-slot=table-container]]:overflow-visible [&_div[data-slot=table-container]]:h-full")}>
         {students.length === 0 ? (
           <GradesEmptyState />
         ) : (
@@ -587,7 +587,7 @@ export default function GradesTable({
                         >
                           <div
                             title={a.title}
-                            className="font-semibold text-[11px] whitespace-nowrap flex-1 flex items-start justify-center text-foreground max-h-[150px] overflow-hidden text-ellipsis"
+                            className="font-semibold text-tag whitespace-nowrap flex-1 flex items-start justify-center text-foreground max-h-[150px] overflow-hidden text-ellipsis"
                             style={{
                               writingMode: "vertical-rl",
                               transform: "rotate(180deg)",
@@ -700,7 +700,7 @@ export default function GradesTable({
                 </div>
               </TableCell>
               <TableCell className="sticky left-[260px] z-30 bg-card border-b-2 border-r border-border p-0 w-16 min-w-16 max-w-16 h-16">
-                <FormativeCell percent={classFormative} />
+                <FormativeCell percent={classFormative} hint />
               </TableCell>
               {assignmentAverages.map((aa) => (
                 // Ustun oʻrtachasi — toifa shkalasida EMAS, sinfning yagona
@@ -751,13 +751,22 @@ export default function GradesTable({
                               {s.initials}
                             </AvatarFallback>
                           </Avatar>
-                          <span className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap font-semibold decoration-muted-foreground/40 underline-offset-4 group-hover/name:underline">
+                          <span
+                            className={cn(
+                              "min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap font-semibold decoration-muted-foreground/40 underline-offset-4 group-hover/name:underline",
+                              /* Boshqa sinfga koʻchgan — jurnalda faqat eski
+                                 baholari uchun turibdi. Soʻnik koʻrinish uni
+                                 joriy roʻyxatdan ajratadi. */
+                              s.leftAt && "text-muted-foreground"
+                            )}
+                            title={s.leftAt ? `Boshqa sinfga koʻchgan (${s.leftAt})` : undefined}
+                          >
                             {s.name}
                           </span>
                           <ChevronRight className="size-4 shrink-0 -translate-x-1 text-muted-foreground opacity-0 transition-all group-hover/name:translate-x-0 group-hover/name:opacity-100" />
                         </Link>
                       </HoverCardTrigger>
-                      <HoverCardContent align="start" side="right" className="w-72">
+                      <HoverCardContent align="start" side="left" className="w-72">
                         <StudentNamePreview
                           student={s}
                           classLabel={classData.info.name}
@@ -889,8 +898,11 @@ const EMPTY_BG = "color-mix(in srgb, var(--muted) 60%, var(--card))";
  * Formativ ustuni katagi — oxirgi 3 formativ ishning MEDIANI (foiz).
  * Ataylab jurnal shkalasiga oʻgirilmaydi: bu rasmiy baho emas, "hozir qayerda"
  * signali. Foiz koʻrinishi uni "Summativ" ustunidan darrov ajratib turadi.
+ *
+ * `hint` — izoh tooltipi faqat sinf oʻrtachasi katagida; har oʻquvchi qatorida
+ * takrorlanmaydi.
  */
-function FormativeCell({ percent }: { percent: number | null }) {
+function FormativeCell({ percent, hint = false }: { percent: number | null; hint?: boolean }) {
   const t = useTranslations("GradesTable");
   if (percent === null) {
     return (
@@ -900,18 +912,20 @@ function FormativeCell({ percent }: { percent: number | null }) {
     );
   }
   const color = scoreBarColor(percent);
+  const cell = (
+    <div
+      className="h-full w-full flex items-center justify-center cursor-default"
+      style={{ backgroundColor: `color-mix(in srgb, ${color} 8%, transparent)` }}
+    >
+      <span className="font-bold text-base" style={{ color }}>
+        {Math.round(percent)}%
+      </span>
+    </div>
+  );
+  if (!hint) return cell;
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
-        <div
-          className="h-full w-full flex items-center justify-center cursor-default"
-          style={{ backgroundColor: `color-mix(in srgb, ${color} 8%, transparent)` }}
-        >
-          <span className="font-bold text-base font-mono" style={{ color }}>
-            {Math.round(percent)}%
-          </span>
-        </div>
-      </TooltipTrigger>
+      <TooltipTrigger asChild>{cell}</TooltipTrigger>
       <TooltipContent className="max-w-[220px] text-xs leading-snug">
         {t("formativeColumnHint")}
       </TooltipContent>
@@ -994,7 +1008,7 @@ function ColHeader({
     >
       <div className="flex flex-col items-center justify-end h-full pb-2">
         <div
-          className="text-[11px] font-bold uppercase text-muted-foreground tracking-wider"
+          className="text-label font-bold uppercase text-muted-foreground tracking-wider"
           style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
         >
           {label}
@@ -1057,7 +1071,7 @@ function GradeCell({
       <span className="text-base font-bold tabular-nums leading-none text-foreground">
         {grade.score}
       </span>
-      <span className="absolute bottom-1 right-1.5 text-[10px] text-muted-foreground tabular-nums leading-none">
+      <span className="absolute bottom-1 right-1.5 text-micro font-normal text-muted-foreground tabular-nums leading-none">
         /{maxScore}
       </span>
     </div>

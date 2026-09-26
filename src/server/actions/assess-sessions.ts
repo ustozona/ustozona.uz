@@ -11,6 +11,8 @@ import {
 import { publishSessionToGrades, type PublishResult } from "@/server/dal/assess/publish";
 import { sessionReport, type SessionReport } from "@/server/dal/assess/results";
 import type { QuizSessionRow } from "@/server/db/schema";
+import { gradeOpenAnswer, listOpenAnswers } from "@/server/dal/assess/open-answers";
+import type { OpenAnswer } from "@/lib/live-session";
 
 /* Host (oʻqituvchi) sessiya boshqaruvi — yupqa qatlam: zod-parse → DAL. */
 
@@ -29,12 +31,17 @@ const startSchema = z.object({
   setId: z.string().min(1),
   classId: z.string().min(1),
   title: z.string().max(200).optional(),
+  /** Topshiriqning «Muddat» sanasi (YYYY-MM-DD) — uyga vazifa. */
+  dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
 });
 
-/** Sessiya yaratadi VA darhol ochadi (`running`) — v1 UI uchun bitta qadam. */
+/** Sessiya yaratadi VA darhol ochadi (`running`) — v1 UI uchun bitta qadam.
+    `dueDate` berilsa, sessiya shu kunning oxirigacha (Toshkent vaqti)
+    ochiq: oʻquvchi xohlagan vaqtda, oʻz tezligida topshiradi. */
 export async function startSessionAction(input: z.infer<typeof startSchema>): Promise<QuizSessionRow> {
-  const parsed = startSchema.parse(input);
-  const created = await createSession({ ...parsed, mode: "selfpaced" });
+  const { dueDate, ...parsed } = startSchema.parse(input);
+  const dueAt = dueDate ? new Date(`${dueDate}T23:59:59.999+05:00`) : undefined;
+  const created = await createSession({ ...parsed, mode: "selfpaced", dueAt });
   return openSession(created.id);
 }
 
@@ -56,4 +63,19 @@ export async function publishSessionAction(
 ): Promise<PublishResult> {
   const parsed = publishSchema.parse(input);
   return publishSessionToGrades(parsed.sessionId, parsed.topicId);
+}
+
+/** Ochiq javoblar — qoʻlda baholash roʻyxati. */
+export async function listOpenAnswersAction(sessionId: string): Promise<OpenAnswer[]> {
+  return listOpenAnswers(z.string().min(1).parse(sessionId));
+}
+
+const gradeSchema = z.object({
+  responseId: z.string().min(1),
+  score: z.union([z.literal(0), z.literal(0.5), z.literal(1)]),
+});
+
+export async function gradeOpenAnswerAction(input: z.infer<typeof gradeSchema>): Promise<void> {
+  const { responseId, score } = gradeSchema.parse(input);
+  await gradeOpenAnswer(responseId, score);
 }

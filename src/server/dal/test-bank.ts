@@ -6,6 +6,7 @@ import {
   activities, activityItems, activitySets, classes, setSources, userTelegram,
 } from "@/server/db/schema";
 import { requireTeacher } from "@/server/session";
+import { assertTeachesClass } from "@/server/workspace";
 import { createSession, openSession } from "@/server/dal/assess/sessions";
 import type {
   AssignBankTestResult, AssignedClass, BankFacets, BankPage, BankPreview,
@@ -68,13 +69,9 @@ async function linkedTelegramId(teacherId: string): Promise<string | null> {
   return row?.telegramId ?? null;
 }
 
-/** Sinf shu oʻqituvchinikimi — har amaldan oldin. */
-async function requireOwnClass(classId: string, teacherId: string): Promise<void> {
-  const [own] = await db
-    .select({ id: classes.id })
-    .from(classes)
-    .where(and(eq(classes.id, classId), eq(classes.teacherId, teacherId)));
-  if (!own) throw new Error("Sinf topilmadi yoki sizga tegishli emas");
+/** Oʻqituvchi shu darsni oʻtadimi — har amaldan oldin. */
+async function requireOwnClass(classId: string, _teacherId: string): Promise<void> {
+  await assertTeachesClass(classId);
 }
 
 /* ── Filtr shartlari — uchala soʻrov uchun BITTA joyda ─────────────── */
@@ -174,6 +171,10 @@ export async function listBankTests(
   // `Number()` siz sahifalash solishtiruvlari jimgina notoʻgʻri boʻlardi.
   const total = Number(Array.from(countRows)[0]?.n ?? 0);
 
+  // Tartib — eng yangisi birinchi, LessonLab bot va saytdagi test
+  // roʻyxatlari bilan BIR XIL. Ilgari `usage_count DESC` edi: yangi test
+  // (hali oʻynalmagan) oxiriga tushib, 24 talik sahifada koʻrinmay qolardi
+  // — ustoz botda hozirgina yaratgan testini bu yerda topolmasdi.
   const rows = await db.execute<{
     id: number; title: string | null; subject: string | null; grade: string | null;
     author_name: string | null; question_count: string | number;
@@ -186,7 +187,7 @@ export async function listBankTests(
            ) AS already
       FROM (${base}) b
      WHERE TRUE${filters}
-     ORDER BY b.usage_count DESC NULLS LAST, b.id DESC
+     ORDER BY b.id DESC
      LIMIT ${PAGE_SIZE} OFFSET ${page * PAGE_SIZE}
   `);
 

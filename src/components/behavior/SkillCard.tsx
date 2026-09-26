@@ -7,13 +7,13 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import type { BehaviorReward, BehaviorSkill } from "@/lib/behavior-data";
 import { BehaviorEmoji } from "./BehaviorEmoji";
 
-/* Koʻnikma/mukofot kartalari (ClassDojo karta-grid uslubi): yuqori
+/* Koʻnikma/mukofot kartalari (karta-grid uslubi): yuqori
    oʻngda badge (±N yoki narx), markazda emoji, pastda nom; tavsif
    hover-tooltipda. Ball berish modali ham, Sozlamalar editori ham
    shu kartalarni ishlatadi. */
 
 const tileClass = cn(
-  "group relative flex flex-col items-center gap-2.5 rounded-xl border border-border bg-card px-3 pt-6 pb-4",
+  "group relative flex h-28 flex-col items-center justify-center gap-3 rounded-xl border border-border bg-card px-3",
   "cursor-pointer transition-all hover:ring-2 hover:ring-inset hover:ring-primary/30 hover:bg-muted/40",
   "active:scale-[0.97]"
 );
@@ -50,7 +50,7 @@ export function SkillCard({
         {formatPoints(skill.points)}
       </span>
       <BehaviorEmoji code={skill.emoji} label={skill.name} className={tileEmojiClass} />
-      <span className="line-clamp-2 text-center text-[13px] font-medium leading-tight text-foreground">
+      <span className="line-clamp-2 text-center text-sm font-medium leading-tight text-foreground">
         {skill.name}
       </span>
     </button>
@@ -86,7 +86,7 @@ export function RewardCard({
         {t("pointsSuffix", { cost: reward.cost })}
       </span>
       <BehaviorEmoji code={reward.emoji} label={reward.name} className={tileEmojiClass} />
-      <span className="line-clamp-2 text-center text-[13px] font-medium leading-tight text-foreground">
+      <span className="line-clamp-2 text-center text-sm font-medium leading-tight text-foreground">
         {reward.name}
       </span>
     </button>
@@ -108,7 +108,7 @@ export function AddCard({
       type="button"
       onClick={onClick}
       className={cn(
-        "flex flex-col items-center justify-center gap-2.5 rounded-xl border border-dashed border-border px-3 pt-6 pb-4",
+        "flex h-28 flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border px-3",
         "cursor-pointer text-muted-foreground transition-colors hover:border-primary/50 hover:bg-muted/40 hover:text-foreground",
         className
       )}
@@ -116,7 +116,7 @@ export function AddCard({
       <span className="flex size-9 items-center justify-center">
         <Plus className="size-5" aria-hidden />
       </span>
-      <span className="line-clamp-2 min-h-[2.4em] text-center text-[13px] font-medium leading-tight">
+      <span className="line-clamp-2 text-center text-sm font-medium leading-tight">
         {label}
       </span>
     </button>

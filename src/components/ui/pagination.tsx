@@ -12,7 +12,7 @@ function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
   return (
     <nav
       role="navigation"
-      aria-label="pagination"
+      aria-label="Sahifalar"
       data-slot="pagination"
       className={cn("mx-auto flex w-full justify-center", className)}
       {...props}
@@ -71,8 +71,9 @@ function PaginationPrevious({
 }: React.ComponentProps<typeof PaginationLink>) {
   return (
     <PaginationLink
-      aria-label="Go to previous page"
+      aria-label="Oldingi sahifa"
       size="default"
+      // design-tokens-ignore: chevron ikonali tugma — optik kompensatsiya
       className={cn("gap-1 px-2.5 sm:pl-2.5", className)}
       {...props}
     >
@@ -88,8 +89,9 @@ function PaginationNext({
 }: React.ComponentProps<typeof PaginationLink>) {
   return (
     <PaginationLink
-      aria-label="Go to next page"
+      aria-label="Keyingi sahifa"
       size="default"
+      // design-tokens-ignore: chevron ikonali tugma — optik kompensatsiya
       className={cn("gap-1 px-2.5 sm:pr-2.5", className)}
       {...props}
     >
@@ -111,7 +113,7 @@ function PaginationEllipsis({
       {...props}
     >
       <MoreHorizontal className="size-4" />
-      <span className="sr-only">More pages</span>
+      <span className="sr-only">Boshqa sahifalar</span>
     </span>
   )
 }

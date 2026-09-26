@@ -139,11 +139,11 @@ export default function CreateStudentModal({ open, onOpenChange, defaultClassId,
         {/* ── Sarlavha ── */}
         <div className="flex shrink-0 items-center gap-4 border-b border-border px-6 py-5">
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2">
               <DialogTitle className="text-xl">{mode === "edit" ? t("titleEdit") : t("titleCreate")}</DialogTitle>
               {selectedClass && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
-                  <ClassSwatch hex={classHex} className="size-2.5" />
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
+                  <ClassSwatch hex={classHex} />
                   {selectedClass.name}
                 </span>
               )}
@@ -158,7 +158,7 @@ export default function CreateStudentModal({ open, onOpenChange, defaultClassId,
         </div>
 
         {/* ── Tana ── */}
-        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+        <div className="min-h-0 flex-1 scrollbar-hover overflow-y-auto px-6 py-5">
           {/* Avatar — sinf rangi, ixtiyoriy rasm yuklash */}
           <div className="mb-5 flex items-center gap-4">
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />

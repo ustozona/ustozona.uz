@@ -74,6 +74,7 @@ import {
 } from "@/lib/grades-data";
 import { getScaleBoundaries } from "@/lib/grade-scale";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
+import { ClassSwatch, ClassSwatchStack } from "@/components/ClassSwatch";
 
 function buildFormSchema(t: (key: string) => string) {
   return z.object({
@@ -141,7 +142,7 @@ export default function NewTopicModal({
 }: Props) {
   const t = useTranslations("NewTopicModal");
   /* Modal joriy sinf jurnalidan ochiladi — kutubxona ham oʻsha sinf bilan
-     doiralanib boshlanadi (Canvas/Google Classroom xuddi shunday: toifalar
+     doiralanib boshlanadi (taʼlim-boshqaruv tizimlarida xuddi shunday: toifalar
      kursga tegishli). "Barcha sinflar" ochiq variant boʻlib qolaveradi. */
   const [filterClassId, setFilterClassId] = useState(
     currentClassId && classDataMap[currentClassId] ? currentClassId : ALL
@@ -686,11 +687,11 @@ function TemplateCard({ template }: { template: (typeof DEFAULT_TOPIC_TEMPLATES)
       </div>
       <div className="flex items-center justify-end gap-2">
         {isFormative ? (
-          <Badge variant="outline" className="gap-1 border-dashed text-[10px] text-muted-foreground">
+          <Badge size="sm" variant="outline" className="gap-1 border-dashed text-muted-foreground">
             <Ban className="size-3" /> {t("formativeBadge")}
           </Badge>
         ) : (
-          <Badge variant="secondary" className="gap-1 tabular-nums text-[10px]">
+          <Badge size="sm" variant="secondary" className="gap-1 tabular-nums">
             {t("summativeBadge")} {template.weightPercent}%
             <WeightDonut percent={template.weightPercent} compact />
           </Badge>
@@ -773,11 +774,11 @@ function GroupCard({
       <div className="flex items-center justify-between gap-2">
         <ClassesBadge group={group} totalClasses={totalClasses} classDataMap={classDataMap} />
         {isFormative ? (
-          <Badge variant="outline" className="gap-1 border-dashed text-[10px] text-muted-foreground">
+          <Badge size="sm" variant="outline" className="gap-1 border-dashed text-muted-foreground">
             <Ban className="size-3" /> {t("formativeBadge")}
           </Badge>
         ) : (
-          <Badge variant="secondary" className="gap-1 tabular-nums text-[10px]">
+          <Badge size="sm" variant="secondary" className="gap-1 tabular-nums">
             {t("summativeBadge")} {weightLabel}
             {uniform && <WeightDonut percent={minW} compact />}
           </Badge>
@@ -800,7 +801,7 @@ function ClassesBadge({
   const n = group.classIds.length;
   if (n === totalClasses) {
     return (
-      <Badge variant="outline" className="shrink-0 text-[10px] font-normal text-muted-foreground">
+      <Badge size="sm" variant="outline" className="shrink-0 font-normal text-muted-foreground">
         {t("allClasses")}
       </Badge>
     );
@@ -810,7 +811,7 @@ function ClassesBadge({
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Badge variant="outline" className="shrink-0 text-[10px] font-normal text-muted-foreground">
+        <Badge size="sm" variant="outline" className="shrink-0 font-normal text-muted-foreground">
           {label}
         </Badge>
       </TooltipTrigger>
@@ -839,7 +840,7 @@ function WeightDonut({ percent, compact }: { percent: number; compact?: boolean 
           transform="rotate(-90 6 6)"
         />
       </svg>
-      {!compact && <span className="text-[10px] font-bold tabular-nums text-foreground">{percent}%</span>}
+      {!compact && <span className="text-micro font-bold tabular-nums text-foreground">{percent}%</span>}
     </span>
   );
 }
@@ -964,26 +965,8 @@ function ClassMultiSelect({
   );
 }
 
-function ClassSwatch({ hex }: { hex: string }) {
-  return (
-    <span className="size-3 shrink-0 rounded-full" style={{ backgroundColor: hex }} aria-hidden />
-  );
-}
-
 function AllClassesSwatch({ hexes }: { hexes: string[] }) {
-  const cells = hexes.slice(0, 3);
-  while (cells.length < 3) cells.push("var(--muted-foreground)");
-  return (
-    <span className="flex shrink-0 items-center" aria-hidden>
-      {cells.map((c, i) => (
-        <span
-          key={i}
-          className="size-3 rounded-full ring-2 ring-card"
-          style={{ backgroundColor: c, marginLeft: i === 0 ? 0 : -5 }}
-        />
-      ))}
-    </span>
-  );
+  return <ClassSwatchStack hexes={hexes} pad />;
 }
 
 /**
@@ -997,7 +980,7 @@ function ScaleBoundaryPreview({ kind }: { kind: GradingScale }) {
 
   if (!boundaries) {
     return (
-      <div className="flex items-start gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2.5">
+      <div className="flex items-start gap-2 rounded-lg border border-border bg-muted/40 px-3 py-3">
         <Info className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
         <TypographyMuted className="text-xs leading-snug">
           {t("scalePreviewFormulaNotice")}

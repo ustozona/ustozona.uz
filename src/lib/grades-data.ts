@@ -36,13 +36,18 @@ export type Student = {
   studentNumber?: number | null;
   name: string;
   initials: string;
-  status?: "active" | "away" | "archived";
+  status?: "active" | "archived";
   // Profil maʼlumotlari (oʻquvchi yaratish formasidagi maydonlar bilan mos)
   gender?: "male" | "female";
   birthDate?: string;     // yyyy-mm-dd
   parentName?: string;    // ota yoki onasining ismi sharifi
   parentPhone?: string;
   studentPhone?: string;
+  /** Shu sinfdan CHIQQAN sana ("YYYY-MM-DD"). Faqat `ClassData.formerStudents`
+      ichidagi yozuvlarda toʻladi — joriy roʻyxatdagi bolada har doim
+      `undefined`. Bir bola boshqa sinfda hali oʻqiyotgan boʻlishi mumkin,
+      shuning uchun bu maydon bolaga emas, YOZILISHGA tegishli. */
+  leftAt?: string;
 };
 
 // Topic = baholash turi (Tests, Homework, Projects ...)
@@ -196,6 +201,25 @@ export type Assignment = {
   /** Topshiriq turi: manual (qoʻlda) | test | deck (taqdimot). Test/deck
       hozircha muharrirsiz — kelgusi bosqichda ulanadi. */
   kind?: AssignmentKind;
+  /**
+   * Shu topshiriq OʻLCHAYDIGAN standart(lar) kodi.
+   *
+   * Bu oʻzlashtirish zanjirining oʻrta boʻgʻini: dars → standart bogʻlanishi
+   * QAMROV beradi («oʻqitildi»), topshiriq → standart bogʻlanishi esa
+   * DALIL beradi («oʻrganildi»). Ikkisi hech qachon aralashmaydi
+   * (docs/standards-page-spec.md §3, §11.1).
+   *
+   * Koʻplik — ataylab. Bitta insho yoki ochiq topshiriq bir vaqtda
+   * grammatika, soʻz boyligi va matn tarkibi boʻyicha alohida dalil
+   * beradi (§13.1). Test uchun bundan ham nozikroq daraja — HAR SAVOLGA
+   * standart — keyingi bosqichda `activityItems` ustida quriladi;
+   * bu maydon topshiriq darajasidagi bogʻlanish.
+   *
+   * Qiymat = `StandardItem.id` (kod, mas. "IAT5.AD.01"). FK YOʻQ: standart
+   * toʻplami JSONB hujjat, va toʻplam oʻchsa topshiriq qolishi kerak —
+   * yetim kod jimgina eʼtiborsiz qoldiriladi.
+   */
+  standardIds?: string[];
   /** Yoʻriqnoma — oddiy matn (v1). */
   instructions?: string;
   /** Baholash sessiyasidan nashr qilingan boʻlsa — manba sessiya id'si
@@ -232,7 +256,15 @@ export type Grade = {
 
 export type ClassData = {
   info: ClassInfo;
+  /** JORIY roʻyxat — faqat ochiq yozilishlar. Davomat, yangi topshiriq,
+      statistika va qolgan hamma joy shu maydonni oʻqiydi. */
   students: Student[];
+  /** Shu sinfdan chiqib ketganlar (`leftAt` toʻlgan).
+      ⛔ Roster EMAS — davomat olishda yoki yangi topshiriqda chiqmasligi
+      kerak. Faqat JURNAL uni qoʻshib koʻrsatadi: bolaning eski baholari
+      egasiz qolib koʻrinmay ketmasligi uchun
+      (docs/oquvchini-kochirish-spec.md §4). */
+  formerStudents?: Student[];
   topics: Topic[];
   assignments: Assignment[];
   grades: Grade[];

@@ -232,6 +232,118 @@
       "when": 1786990933899,
       "tag": "0032_goofy_lightspeed",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1786994943334,
+      "tag": "0033_tense_maggott",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1787383276394,
+      "tag": "0034_ish_maydoni_qoshish",
+      "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1787383320390,
+      "tag": "0035_ish_maydoni_kochirish",
+      "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1787742198754,
+      "tag": "0036_sinf_egasi",
+      "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1787743673224,
+      "tag": "0037_hamkasb_taklifi",
+      "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1787744649671,
+      "tag": "0038_maydon_auditi",
+      "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1788001581930,
+      "tag": "0039_blog_fikr_muallifi",
+      "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1788063047935,
+      "tag": "0040_blog_nashr_surati_koorishlar",
+      "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1788065441948,
+      "tag": "0041_blog_fikr_javob_tahrir",
+      "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1788414896974,
+      "tag": "0042_topshiriq_standartlari",
+      "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1788521425510,
+      "tag": "0043_maktab_dars_jadvali",
+      "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1788764075211,
+      "tag": "0044_email_aktivatsiya",
+      "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "7",
+      "when": 1788765489793,
+      "tag": "0045_email_activation_rls",
+      "breakpoints": true
+    },
+    {
+      "idx": 46,
+      "version": "7",
+      "when": 1788786783657,
+      "tag": "0046_status_away_olib_tashlandi",
+      "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1788872478537,
+      "tag": "0047_yozilish_sana_oraligi",
+      "breakpoints": true
+    },
+    {
+      "idx": 48,
+      "version": "7",
+      "when": 1790168529429,
+      "tag": "0048_telegram_bot",
+      "breakpoints": true
     }
   ]
 }

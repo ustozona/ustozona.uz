@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { CLASS_COLOR_HEX, classTints } from "@/lib/class-colors";
@@ -50,20 +51,31 @@ import {
   AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import CreateStudentModal, { type NewStudentInput } from "./_components/CreateStudentModal";
-import AddStudentModal from "./_components/AddStudentModal";
+import type { NewStudentInput } from "./_components/CreateStudentModal";
 import StudentsDataTable from "./_components/StudentsDataTable";
 import { BulkActionBar, BulkActionButton, BulkActionCount, BulkActionDivider } from "@/components/BulkActionBar";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { SegmentedToggle } from "@/components/ui/segmented-toggle";
+import { useCollator } from "@/lib/use-collator";
+
+/* Uchala oyna ham faqat ochilganda kerak, lekin ularning bogʻliqliklari
+   (taqvim, fayl yuklagich, jadval oʻqigich) sahifaning boshlangʻich
+   paketini shishirardi. Shuning uchun talabga koʻra yuklanadi va
+   yopiq holatda umuman chizilmaydi. */
+const AddStudentModal = dynamic(() => import("./_components/AddStudentModal"), { ssr: false });
+const CreateStudentModal = dynamic(() => import("./_components/CreateStudentModal"), { ssr: false });
+const MoveStudentsDialog = dynamic(
+  () => import("@/components/students/MoveStudentsDialog").then((m) => m.MoveStudentsDialog),
+  { ssr: false }
+);
 import {
   Users, User, Plus, Search, ListFilter, ArrowUpDown, Trash2, X,
   TrendingUp, Phone, MessageCircle, Pen, Download, ChevronDown, MoreHorizontal,
-  Eye, NotebookPen, Clock, Archive, GraduationCap, LayoutGrid, Table as TableIcon,
-  CalendarCheck, Award,
+  Eye, NotebookPen, Archive, GraduationCap, LayoutGrid, Table as TableIcon, Check,
+  CalendarCheck, Award, ArrowRightLeft,
 } from "lucide-react";
 
 // ─── Tiplar ────────────────────────────────────────────────────────────────
-export type Status = "active" | "away" | "archived";
+export type Status = "active" | "archived";
 export type StudentRow = {
   id: string;
   name: string;
@@ -81,9 +93,11 @@ export type StudentRow = {
   studentPhone?: string;
 };
 
-type SortKey = "name" | "grade" | "attendance";
-type StatusFilter = "all" | "active" | "away" | "archived";
+type SortKey = "name" | "lastName" | "grade" | "attendance";
+type StatusFilter = "all" | "active" | "archived";
 type ViewMode = "card" | "table";
+/** Sukut boʻyicha faqat oʻqiyotganlar koʻrsatiladi. */
+const DEFAULT_STATUS_FILTER: StatusFilter = "active";
 const STUDENTS_VIEW_STORAGE_KEY = "students-view-mode";
 
 // ─── Yordamchilar ────────────────────────────────────────────────────────────
@@ -92,6 +106,12 @@ function makeInitials(firstName: string, lastName: string): string {
   return (
     ((firstName[0] ?? "") + (lastName[0] ?? firstName[1] ?? "")).toUpperCase() || "?"
   );
+}
+
+/** Toʻliq ismdan familiyani ajratadi ("Abdulloh Xasanov" → "Xasanov"). */
+function surnameOf(fullName: string): string {
+  const parts = fullName.trim().split(/\s+/);
+  return parts.length > 1 ? parts[parts.length - 1]! : (parts[0] ?? "");
 }
 
 export const STATUS_META: Record<
@@ -104,12 +124,6 @@ export const STATUS_META: Record<
     icon: GraduationCap,
     iconColor: "text-emerald-500",
   },
-  away: {
-    cls: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-400 dark:border-amber-800",
-    dot: "bg-amber-500",
-    icon: Clock,
-    iconColor: "text-amber-500",
-  },
   archived: {
     cls: "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800/60 dark:text-slate-400 dark:border-slate-700",
     dot: "bg-slate-400",
@@ -118,24 +132,56 @@ export const STATUS_META: Record<
   },
 };
 
+/* Holat filtri: kundalik tanlovlar tepada, «Hammasi» — uchinchi.
+   Ikona va rangi holatning oʻzidan olinadi, «hammasi» neytral qoladi. */
+const STATUS_FILTER_ORDER: StatusFilter[] = ["active", "archived", "all"];
+function statusFilterMeta(val: StatusFilter) {
+  if (val === "all") return { Icon: Users, iconColor: "text-muted-foreground" };
+  return { Icon: STATUS_META[val].icon, iconColor: STATUS_META[val].iconColor };
+}
+
 export const badgeBase =
-  "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border whitespace-nowrap";
+  "inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold border whitespace-nowrap";
 
 // ─── Sahifa ──────────────────────────────────────────────────────────────────
 export default function StudentsPage() {
   const t = useTranslations("StudentsPage");
-  // Sinf tanlash — lokal holat. null = hech narsa tanlanmagan (Sinflar ustuni keng).
-  // Tanlangach store ham yangilanadi (boshqa sahifalar bilan sinxron).
   const router = useRouter();
-  const openProfile = (id: string) => router.push(`/dashboard/students/${encodeURIComponent(id)}`);
-  const [selectedClassId, handleSelectClass] = useClassIdParam();
+  // Sinf tanlash — `?classId=` URL param'i. Yon menyudan «toza» kirilganda
+  // (param yoʻq) oxirgi tanlangan sinfdan davom etadi: har safar qaytadan
+  // tanlash shart emas. Tanlangach store ham yangilanadi (boshqa sahifalar
+  // bilan sinxron). null = hali hech qanday sinf tanlanmagan (Sinflar ustuni keng).
+  const [selectedClassId, handleSelectClass] = useClassIdParam({ fallbackToStore: true });
+  // Profil qaysi guruh kontekstida ochilayotganini biladi: oʻquvchi 2+ guruhda
+  // boʻlishi mumkin va `prevId`/`nextId`, roʻyxat, davomat oʻshanga bogʻliq.
+  const openProfile = (id: string) =>
+    router.push(
+      `/dashboard/students/${encodeURIComponent(id)}` +
+        (selectedClassId ? `?classId=${encodeURIComponent(selectedClassId)}` : "")
+    );
+  /* Koʻchirish oynasi — bittalab ham, belgilangan guruh ham shu holatga
+     tushadi (bir xil oyna, ikki chaqiruv joyi). */
+  const [moveTargets, setMoveTargets] = useState<{ id: string; name: string }[]>([]);
 
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+  /* Mobil: preview ustuni Sheet sifatida chiqadi — qator bosilganda ochiladi
+     (trigger tugmasi yoʻq, chunki panel oʻquvchi tanlanmasa maʼnosiz).
+     Desktopда bu holat ishlatilmaydi — ustun oddiy grid track boʻlib qoladi. */
+  const [previewOpen, setPreviewOpen] = useState(false);
+  /** Qatorni bosish — tanlovni almashtiradi va mobilда preview'ni ochadi/yopadi. */
+  const toggleStudentSelection = (id: string) =>
+    setSelectedStudentId((prev) => {
+      const next = prev === id ? null : id;
+      setPreviewOpen(next !== null);
+      return next;
+    });
   const [search, setSearch] = useState("");
-  const [sortKey, setSortKey] = useState<SortKey>("grade");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [sortKey, setSortKey] = useState<SortKey>("name");
+  const compare = useCollator();
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>(DEFAULT_STATUS_FILTER);
   const [addOpen, setAddOpen] = useState(false);
   const [deleteTargets, setDeleteTargets] = useState<StudentRow[] | null>(null);
+  const [archiveTarget, setArchiveTarget] = useState<StudentRow | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [view, setView] = useState<ViewMode>("card");
   useEffect(() => {
@@ -146,6 +192,22 @@ export default function StudentsPage() {
     setView(v);
     localStorage.setItem(STUDENTS_VIEW_STORAGE_KEY, v);
   };
+  /* Koʻrinish almashtirgichi ikki joyda joylashadi (panel KENGLIGIGA qarab,
+     ekran kengligiga emas — panel yon menyu/profil paneliga qarab mustaqil
+     torayadi): keng panelda markazda, tor panelda amallar guruhida. Bitta
+     manba — ikki oʻramda CSS orqali almashtiriladi. */
+  const viewToggle = (
+    <SegmentedToggle
+      value={view}
+      onValueChange={handleViewChange}
+      variant="pill"
+      iconOnly
+      options={[
+        { value: "card", label: t("viewCardAria"), icon: <LayoutGrid className="size-4" /> },
+        { value: "table", label: t("viewTableAria"), icon: <TableIcon className="size-4" /> },
+      ]}
+    />
+  );
   // Jadval koʻrinishidagi qator belgilash; toʻliq tahrirlash alohida oynada (editTarget).
   const [selectedRowIds, setSelectedRowIds] = useState<Set<string>>(new Set());
   const [editTarget, setEditTarget] = useState<StudentRow | null>(null);
@@ -170,6 +232,7 @@ export default function StudentsPage() {
   // Sinf almashganda preview yopiladi
   useEffect(() => {
     setSelectedStudentId(null);
+    setPreviewOpen(false);
     setSearch("");
     setSelectedRowIds(new Set());
   }, [selectedClassId]);
@@ -221,16 +284,26 @@ export default function StudentsPage() {
     const q = search.trim().toLowerCase();
     if (q) list = list.filter((s) => s.name.toLowerCase().includes(q) || s.studentId.toLowerCase().includes(q));
     const sorted = [...list];
-    if (sortKey === "name") sorted.sort((a, b) => a.name.localeCompare(b.name));
+    if (sortKey === "name") sorted.sort((a, b) => compare(a.name, b.name));
+    else if (sortKey === "lastName")
+      sorted.sort((a, b) => compare(surnameOf(a.name), surnameOf(b.name)) || compare(a.name, b.name));
     else if (sortKey === "grade") sorted.sort((a, b) => a.grade - b.grade);
     else sorted.sort((a, b) => a.attendance - b.attendance);
     return sorted;
-  }, [allStudents, isDemoMode, demoStudents, statusFilter, search, sortKey]);
+  }, [allStudents, isDemoMode, demoStudents, statusFilter, search, sortKey, compare]);
 
   const selectedStudent =
     students.find((s) => s.id === selectedStudentId) ?? (isDemoMode ? students[0] ?? null : null);
-  const filterActive = statusFilter !== "all" || search.trim().length > 0;
+  const filterActive = statusFilter !== DEFAULT_STATUS_FILTER || search.trim().length > 0;
   const noClass = !selectedClassId && !isDemoMode;
+
+  /* Koʻchirish faqat DARAJALI sinfdan mumkin. Darajasiz guruhda
+     (toʻgarak, qoʻshimcha dars) band umuman koʻrsatilmaydi — u har doim
+     xato bilan tugardi, chunki server `assertSameGrade` da rad etadi.
+     Sinf tanlanmaganda ham yoʻq: qaysi sinfDAN chiqarilishi noaniq. */
+  const canMove = Boolean(
+    selectedClassId && classDataMap[selectedClassId]?.info.grade != null
+  );
 
   /* Ustun nisbatlari — sinf tanlanmagan → 50/50 (grades/standards bilan bir xil boʻsh holat);
      sinf tanlangan, preview yopiq → 25/75; oʻquvchi tanlangan → 25/50/25. */
@@ -249,8 +322,13 @@ export default function StudentsPage() {
     }));
   };
 
-  const toggleStatus = (id: string, current: Status) =>
-    setStatus(id, current === "active" ? "away" : "active");
+  /* Holat faqat kontekst menyu (yoki guruhaviy amal) orqali oʻzgaradi.
+     "Chiqib ketgan" — roʻyxatdan tushiruvchi amal, shuning uchun tasdiq
+     soʻraladi; faolga qaytarish darhol bajariladi. */
+  const requestStatus = (id: string, next: Status) => {
+    if (next !== "archived") { setStatus(id, next); return; }
+    setArchiveTarget(students.find((s) => s.id === id) ?? null);
+  };
 
   // Guruhaviy holat oʻzgartirish — jadvalda bir nechta qator belgilanganda
   const handleBulkStatus = (status: Status) => {
@@ -374,11 +452,11 @@ export default function StudentsPage() {
   const toolbarBtn = "size-9 shadow-none";
 
   return (
-    <div className="flex flex-col flex-1 min-w-0 h-full min-h-0">
+    <div className="flex flex-col flex-1 min-w-0 gap-6 p-4 md:p-6 max-lg:min-h-full lg:h-full lg:min-h-0">
       <TourDemoBanner tourId="students" active={isDemoMode} />
-      <DashboardColumns template={columnsTemplate} className="h-full overflow-hidden p-4 md:p-6">
+      <DashboardColumns template={columnsTemplate} className="lg:h-full lg:overflow-hidden">
         {/* ── Ustun 1: Sinflar ── */}
-        <DashboardColumn hideBelow="lg" data-tour="students-classes">
+        <DashboardColumn hideBelow="lg" mobile="self" data-tour="students-classes">
           <ClassListPanel
             page="students"
             selectedClassId={selectedClassId ?? (isDemoMode ? STUDENTS_TOUR_DEMO_CLASS_ID : "")}
@@ -388,7 +466,7 @@ export default function StudentsPage() {
         </DashboardColumn>
 
         {/* ── Ustun 2: Oʻquvchilar roʻyxati ── */}
-        <div data-tour="students-list" className="@container flex min-w-0 min-h-0 h-full flex-col overflow-hidden rounded-xl border border-border bg-card">
+        <div data-tour="students-list" className="@container flex min-w-0 min-h-0 flex-col overflow-hidden rounded-xl border border-border bg-card lg:h-full max-lg:min-h-[60svh]">
           {noClass ? (
             <Empty className="h-full border-0">
               <EmptyHeader>
@@ -400,41 +478,31 @@ export default function StudentsPage() {
           ) : (
             <>
           {/* Header / toolbar */}
-          <div className={cn(panelHeaderClass, "grid grid-cols-[1fr_auto_1fr] items-center gap-3")}>
-            <div className="flex min-w-0 items-center gap-2.5 justify-self-start">
+          {/* Tor panelda — oddiy flex (sarlavha qisqaradi, toggle amallar
+              guruhida). Panel yetarlicha kengaygandagina simmetrik 3-ustunli
+              gridga oʻtadi va toggle haqiqiy markazda turadi: simmetrik
+              ustunlar bir-biriga joy bera olmagani uchun, joy tor boʻlsa
+              oʻng guruh sarlavha ustiga toshib ketardi. */}
+          <div className={cn(
+            panelHeaderClass,
+            "flex items-center justify-between gap-3",
+            "@[54rem]:grid @[54rem]:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]",
+          )}>
+            <div className="flex min-w-0 items-center gap-3">
               <SectionIcon><Users /></SectionIcon>
               <CardTitle className="min-w-0 shrink truncate">{t("title")}</CardTitle>
               <TypographyMuted className="hidden shrink-0 text-sm md:inline">({students.length})</TypographyMuted>
-              {statusFilter !== "all" && (
-                <button
-                  type="button"
-                  onClick={() => setStatusFilter("all")}
-                  className="hidden shrink-0 items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/15 lg:inline-flex"
-                >
-                  {t("filterChip", { label: t(`status.${statusFilter}`) })}
-                  <X className="size-3" />
-                </button>
-              )}
             </div>
 
-            {/* Koʻrinish: karta / jadval — doim markazda, bulk rejimida ham koʻrinadi */}
-            <ToggleGroup
-              type="single"
-              value={view}
-              onValueChange={(v) => v && handleViewChange(v as ViewMode)}
-              variant="outline"
-              size="default"
-              className="hidden shadow-none justify-self-center sm:flex"
-            >
-              <ToggleGroupItem value="card" aria-label={t("viewCardAria")}>
-                <LayoutGrid className="size-4" />
-              </ToggleGroupItem>
-              <ToggleGroupItem value="table" aria-label={t("viewTableAria")}>
-                <TableIcon className="size-4" />
-              </ToggleGroupItem>
-            </ToggleGroup>
+            {/* Markaziy slot — grid ustuni sifatida JOY BAND QILADI, shuning
+                uchun yon guruhlar uning ustiga chiqa olmaydi. */}
+            <div className="hidden justify-self-center @[54rem]:flex">{viewToggle}</div>
 
-            <div className="flex shrink-0 items-center gap-1.5 justify-self-end md:gap-2.5">
+            <div className="flex shrink-0 items-center gap-1.5 justify-self-end md:gap-2">
+              {/* Panel markazga sigʻmaydigan darajada tor boʻlsa — shu yerda.
+                  Ajratgich shart emas: pill oʻz border'iga ega. */}
+              <div className="hidden sm:flex @[54rem]:hidden">{viewToggle}</div>
+
               {/* Qidiruv — popover emas, joyida kengayadigan input (Sinflar bilan bir xil naqsh) */}
               <div className={cn("flex items-center transition-all duration-fast", searchOpen ? "w-44 sm:w-56" : "w-9")}>
                 {searchOpen ? (
@@ -464,26 +532,32 @@ export default function StudentsPage() {
               {/* Filtr — tor ekranda "···" ga yigʻiladi */}
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button data-tour="students-filter" variant="ghost" size="icon" aria-label={t("filterAria")} className={cn(toolbarBtn, "hidden sm:inline-flex", statusFilter !== "all" && "ring-2 ring-primary ring-offset-2")}>
+                  <Button data-tour="students-filter" variant="ghost" size="icon" aria-label={t("filterAria")} className={cn(toolbarBtn, "hidden sm:inline-flex", statusFilter !== DEFAULT_STATUS_FILTER && "ring-2 ring-primary ring-offset-2")}>
                     <ListFilter className="size-4" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent align="end" className="w-56">
                   <p className="mb-2 text-sm font-medium">{t("filterByStatus")}</p>
                   <div className="flex flex-col gap-1">
-                    {(["all", "active", "away", "archived"] as StatusFilter[]).map((val) => (
-                      <button
-                        key={val}
-                        onClick={() => setStatusFilter(val)}
-                        className={cn(
-                          "flex items-center justify-between rounded-md px-3 py-2 text-sm transition-colors",
-                          statusFilter === val ? "bg-primary/10 font-medium text-primary" : "hover:bg-muted"
-                        )}
-                      >
-                        {val === "all" ? t("statusFilterAll") : t(`status.${val}`)}
-                        {statusFilter === val && <span className="size-1.5 rounded-full bg-primary" />}
-                      </button>
-                    ))}
+                    {STATUS_FILTER_ORDER.map((val) => {
+                      const { Icon, iconColor } = statusFilterMeta(val);
+                      return (
+                        <button
+                          key={val}
+                          onClick={() => setStatusFilter(val)}
+                          className={cn(
+                            "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors",
+                            statusFilter === val ? "bg-primary/10 font-medium text-primary" : "hover:bg-muted"
+                          )}
+                        >
+                          <Icon className={cn("size-4 shrink-0", iconColor)} />
+                          <span className="flex-1 text-left">
+                            {val === "all" ? t("statusFilterAll") : t(`status.${val}`)}
+                          </span>
+                          {statusFilter === val && <Check className="size-4 shrink-0 text-primary" />}
+                        </button>
+                      );
+                    })}
                   </div>
                 </PopoverContent>
               </Popover>
@@ -505,9 +579,10 @@ export default function StudentsPage() {
                     <DropdownMenuLabel>{t("sortMenuLabel")}</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuRadioGroup value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
+                      <DropdownMenuRadioItem value="name">{t("sortName")}</DropdownMenuRadioItem>
+                      <DropdownMenuRadioItem value="lastName">{t("sortLastName")}</DropdownMenuRadioItem>
                       <DropdownMenuRadioItem value="grade">{t("sortGrade")}</DropdownMenuRadioItem>
                       <DropdownMenuRadioItem value="attendance">{t("sortAttendance")}</DropdownMenuRadioItem>
-                      <DropdownMenuRadioItem value="name">{t("sortName")}</DropdownMenuRadioItem>
                     </DropdownMenuRadioGroup>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -516,26 +591,33 @@ export default function StudentsPage() {
               {/* Tor ekran: Filtr (+ karta koʻrinishida Saralash) shu yerga yigʻiladi */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" aria-label={t("moreActionsAria")} className={cn(toolbarBtn, "sm:hidden", statusFilter !== "all" && "ring-2 ring-primary ring-offset-2")}>
+                  <Button variant="ghost" size="icon" aria-label={t("moreActionsAria")} className={cn(toolbarBtn, "sm:hidden", statusFilter !== DEFAULT_STATUS_FILTER && "ring-2 ring-primary ring-offset-2")}>
                     <MoreHorizontal className="size-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>{t("filterByStatus")}</DropdownMenuLabel>
-                  <DropdownMenuRadioGroup value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
-                    <DropdownMenuRadioItem value="all">{t("statusFilterAll")}</DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="active">{t("status.active")}</DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="away">{t("status.away")}</DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="archived">{t("status.archived")}</DropdownMenuRadioItem>
-                  </DropdownMenuRadioGroup>
+                  {STATUS_FILTER_ORDER.map((val) => {
+                    const { Icon, iconColor } = statusFilterMeta(val);
+                    return (
+                      <DropdownMenuItem key={val} onClick={() => setStatusFilter(val)}>
+                        <Icon className={cn("size-4 shrink-0", iconColor)} />
+                        <span className="flex-1">
+                          {val === "all" ? t("statusFilterAll") : t(`status.${val}`)}
+                        </span>
+                        {statusFilter === val && <Check className="size-4 shrink-0 text-primary" />}
+                      </DropdownMenuItem>
+                    );
+                  })}
                   {view === "card" && (
                     <>
                       <DropdownMenuSeparator />
                       <DropdownMenuLabel>{t("sortMenuLabel")}</DropdownMenuLabel>
                       <DropdownMenuRadioGroup value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
+                        <DropdownMenuRadioItem value="name">{t("sortName")}</DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="lastName">{t("sortLastName")}</DropdownMenuRadioItem>
                         <DropdownMenuRadioItem value="grade">{t("sortGrade")}</DropdownMenuRadioItem>
                         <DropdownMenuRadioItem value="attendance">{t("sortAttendance")}</DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="name">{t("sortName")}</DropdownMenuRadioItem>
                       </DropdownMenuRadioGroup>
                     </>
                   )}
@@ -547,7 +629,7 @@ export default function StudentsPage() {
                 <Button
                   onClick={() => setAddOpen(true)}
                   className={cn(
-                    "rounded-r-none px-2.5 font-semibold",
+                    "rounded-r-none px-3 font-semibold",
                     !selectedStudent && "@[420px]:px-3 @[560px]:px-4"
                   )}
                 >
@@ -598,14 +680,25 @@ export default function StudentsPage() {
                     <DropdownMenuItem onClick={() => handleBulkStatus("active")}>
                       <GraduationCap className={cn("size-4", STATUS_META.active.iconColor)} /> {t("status.active")}
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleBulkStatus("away")}>
-                      <Clock className={cn("size-4", STATUS_META.away.iconColor)} /> {t("status.away")}
-                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => handleBulkStatus("archived")}>
                       <Archive className={cn("size-4", STATUS_META.archived.iconColor)} /> {t("status.archived")}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
+                {canMove && (
+                  <BulkActionButton
+                    icon={<ArrowRightLeft className="size-4" />}
+                    onClick={() =>
+                      setMoveTargets(
+                        students
+                          .filter((s) => selectedRowIds.has(s.id))
+                          .map((s) => ({ id: s.id, name: s.name }))
+                      )
+                    }
+                  >
+                    Koʻchirish
+                  </BulkActionButton>
+                )}
                 <BulkActionButton
                   icon={<Trash2 className="size-4" />}
                   variant="destructive"
@@ -646,14 +739,19 @@ export default function StudentsPage() {
               <StudentsDataTable
                 students={students}
                 selectedStudentId={selectedStudentId}
-                onSelect={(id) => setSelectedStudentId((prev) => (prev === id ? null : id))}
+                onSelect={toggleStudentSelection}
                 selectedIds={selectedRowIds}
                 onToggleSelect={toggleRowSelect}
                 onToggleSelectAll={toggleSelectAllRows}
                 sortKey={sortKey}
                 onSortChange={setSortKey}
-                onToggleStatus={toggleStatus}
+                onStatusChange={requestStatus}
                 onEdit={(row) => setEditTarget(row)}
+                onMove={
+                  canMove
+                    ? (row) => setMoveTargets([{ id: row.id, name: row.name }])
+                    : undefined
+                }
                 onDelete={(row) => setDeleteTargets([row])}
                 hex={selHex}
               />
@@ -667,7 +765,7 @@ export default function StudentsPage() {
                       <ContextMenu key={s.id}>
                         <ContextMenuTrigger asChild>
                           <div
-                            onClick={() => setSelectedStudentId(isSelected ? null : s.id)}
+                            onClick={() => toggleStudentSelection(s.id)}
                             className="list-card group block w-full cursor-pointer p-4 text-left"
                             data-active={isSelected || undefined}
                             style={{
@@ -703,15 +801,10 @@ export default function StudentsPage() {
                                 <TrendingUp className="size-3 shrink-0" />
                                 {s.grade}%
                               </span>
-                              <button
-                                type="button"
-                                onClick={(e) => { e.stopPropagation(); toggleStatus(s.id, s.status); }}
-                                title={s.status === "active" ? t("markAway") : t("markActive")}
-                                className={cn(badgeBase, "shrink-0 cursor-pointer transition-all hover:opacity-80 active:scale-95", pill.cls)}
-                              >
+                              <span className={cn(badgeBase, "shrink-0", pill.cls)}>
                                 <span className={cn("size-1.5 shrink-0 rounded-full", pill.dot)} />
                                 {t(`status.${s.status}`)}
-                              </button>
+                              </span>
                             </div>
                           </div>
                           </div>
@@ -726,6 +819,16 @@ export default function StudentsPage() {
                           <ContextMenuItem onSelect={() => setSelectedStudentId(s.id)}>
                             <NotebookPen className="size-4 shrink-0" /> {t("addNote")}
                           </ContextMenuItem>
+                          {/* Jadval koʻrinishidagi «⋮» menyu bilan parity —
+                              sinf tanlanmagan boʻlsa yoʻq, chunki qaysi
+                              sinfDAN chiqarilishi noaniq boʻlardi. */}
+                          {canMove && (
+                            <ContextMenuItem
+                              onSelect={() => setMoveTargets([{ id: s.id, name: s.name }])}
+                            >
+                              <ArrowRightLeft className="size-4 shrink-0" /> Boshqa sinfga koʻchirish
+                            </ContextMenuItem>
+                          )}
                           <ContextMenuSeparator />
                           <ContextMenuSub>
                             <ContextMenuSubTrigger className="gap-2">
@@ -738,13 +841,10 @@ export default function StudentsPage() {
                             <ContextMenuSubContent>
                               <ContextMenuRadioGroup
                                 value={s.status}
-                                onValueChange={(v) => setStatus(s.id, v as Status)}
+                                onValueChange={(v) => requestStatus(s.id, v as Status)}
                               >
                                 <ContextMenuRadioItem value="active">
                                   <GraduationCap className={cn("size-4 shrink-0", STATUS_META.active.iconColor)} /> {t("status.active")}
-                                </ContextMenuRadioItem>
-                                <ContextMenuRadioItem value="away">
-                                  <Clock className={cn("size-4 shrink-0", STATUS_META.away.iconColor)} /> {t("status.away")}
                                 </ContextMenuRadioItem>
                                 <ContextMenuRadioItem value="archived">
                                   <Archive className={cn("size-4 shrink-0", STATUS_META.archived.iconColor)} /> {t("status.archived")}
@@ -770,7 +870,17 @@ export default function StudentsPage() {
 
         {/* ── Ustun 3: Preview (oʻquvchi tanlanganda) ── */}
         {selectedStudent && (
-          <DashboardColumn hideBelow="lg" data-tour="students-preview">
+          <DashboardColumn
+            hideBelow="lg"
+            mobile={{
+              title: t("previewPanel"),
+              side: "right",
+              hideTrigger: true,
+              open: previewOpen,
+              onOpenChange: setPreviewOpen,
+            }}
+            data-tour="students-preview"
+          >
             <div className="h-full overflow-hidden rounded-xl border border-border bg-card">
               <PreviewCard
                 key={selectedStudent.id}
@@ -779,7 +889,6 @@ export default function StudentsPage() {
                 classId={selectedClassId ?? ""}
                 hex={selHex}
                 tint={tint}
-                onToggleStatus={() => toggleStatus(selectedStudent.id, selectedStudent.status)}
                 onViewProfile={() => openProfile(selectedStudent.id)}
               />
             </div>
@@ -787,13 +896,15 @@ export default function StudentsPage() {
         )}
       </DashboardColumns>
 
+      {addOpen ? (
       <AddStudentModal
-        open={addOpen}
+        open
         onOpenChange={setAddOpen}
         defaultClassId={selectedClassId ?? firstLiveClassId ?? ""}
         onCreate={handleCreate}
         onImport={handleImport}
       />
+      ) : null}
 
       {/* Toʻliq tahrirlash — jadval "edit" rejimidagi qalam tugmasi va kontekst menyu shu oynani ochadi */}
       {editTarget && (() => {
@@ -820,6 +931,38 @@ export default function StudentsPage() {
           />
         );
       })()}
+
+      <AlertDialog open={!!archiveTarget} onOpenChange={(open) => { if (!open) setArchiveTarget(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("archiveDialogTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("archiveDialogDescription", { name: archiveTarget?.name ?? "" })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (archiveTarget) setStatus(archiveTarget.id, "archived");
+                setArchiveTarget(null);
+              }}
+            >
+              {t("confirmArchive")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {moveTargets.length > 0 ? (
+      <MoveStudentsDialog
+        open
+        onOpenChange={(v) => { if (!v) setMoveTargets([]); }}
+        fromClassId={selectedClassId ?? ""}
+        students={moveTargets}
+        onMoved={() => setSelectedRowIds(new Set())}
+      />
+      ) : null}
 
       <AlertDialog open={!!deleteTargets} onOpenChange={(open) => { if (!open) setDeleteTargets(null); }}>
         <AlertDialogContent>
@@ -867,14 +1010,13 @@ const EMPTY_BEHAVIOR_EVENTS: never[] = [];
 
 // ─── Preview kartasi ──────────────────────────────────────────────────────────
 function PreviewCard({
-  student, className, classId, hex, tint, onToggleStatus, onViewProfile,
+  student, className, classId, hex, tint, onViewProfile,
 }: {
   student: StudentRow;
   className: string;
   classId: string;
   hex: string;
   tint: (pct: number) => string;
-  onToggleStatus: () => void;
   onViewProfile: () => void;
 }) {
   const t = useTranslations("StudentsPage");
@@ -930,10 +1072,10 @@ function PreviewCard({
 
           {/* 4. Sinf — kvadrat-radiusli rangli belgi + nom */}
           <div
-            className="mt-2 inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-sm font-medium"
+            className="mt-2 inline-flex items-center gap-1.5 rounded-md px-3 py-1 text-sm font-medium"
             style={{ backgroundColor: tint(13), color: hex }}
           >
-            <ClassSwatch hex={hex} className="size-2.5" />
+            <ClassSwatch hex={hex} />
             {className}
           </div>
 
@@ -998,18 +1140,20 @@ function PreviewCard({
                 variant="outline"
                 disabled={!student.parentPhone}
                 asChild={!!student.parentPhone}
-                className="h-9 flex-1 rounded-lg shadow-none"
+                className="h-9 min-w-0 flex-1 gap-1.5 rounded-lg px-2 shadow-none"
               >
                 {student.parentPhone ? (
-                  <a href={`tel:${student.parentPhone}`}>
-                    <Phone className="mr-2 size-4" /> {t("call")}
+                  <a href={`tel:${student.parentPhone}`} className="inline-flex min-w-0 items-center justify-center gap-1.5 whitespace-nowrap">
+                    <Phone className="size-4 shrink-0" /> <span className="truncate">{t("call")}</span>
                   </a>
                 ) : (
-                  <span><Phone className="mr-2 size-4" /> {t("call")}</span>
+                  <span className="inline-flex min-w-0 items-center justify-center gap-1.5 whitespace-nowrap">
+                    <Phone className="size-4 shrink-0" /> <span className="truncate">{t("call")}</span>
+                  </span>
                 )}
               </Button>
-              <Button variant="outline" disabled title={t("telegramSoon")} className="h-9 flex-1 rounded-lg shadow-none">
-                <MessageCircle className="mr-2 size-4" /> {t("chat")}
+              <Button variant="outline" disabled title={t("telegramSoon")} className="h-9 min-w-0 flex-1 gap-1.5 rounded-lg px-2 shadow-none">
+                <MessageCircle className="size-4 shrink-0" /> <span className="truncate">{t("chat")}</span>
               </Button>
             </div>
 

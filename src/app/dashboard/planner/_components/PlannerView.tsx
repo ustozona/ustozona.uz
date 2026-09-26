@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, useReducedMotion } from "motion/react";
+import * as m from "motion/react-m";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { classTints, type ClassColor } from "@/lib/class-colors";
@@ -9,6 +10,7 @@ import { fmtMin, type TimetableEvent } from "@/lib/timetable";
 import { classColor, type ClassInfo } from "@/lib/grades-data";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useLessonStore } from "@/store/useLessonStore";
+import { commitLessonsDelete } from "@/lib/sync/lessons-delete";
 import { useTimetableStore } from "@/store/useTimetableStore";
 import { useCalendarStore } from "@/store/useCalendarStore";
 import { resolveVersionForDate } from "@/lib/timetable-versions";
@@ -24,12 +26,15 @@ import {
 import { sessionMatchesSlot } from "@/lib/calendar-core/resolve";
 import { EventPill as CalendarEventPill } from "@/components/calendar/EventPill";
 import { ClassBadge } from "@/components/ClassBadge";
+import { ClassSwatch } from "@/components/ClassSwatch";
 import { TimeGrid, type TimeGridColumn } from "@/components/calendar/TimeGrid";
 import { MonthGrid } from "@/components/calendar/MonthGrid";
 import { useCalendarFormat } from "@/components/calendar/format";
 import { getHolidayForDate, inRange } from "@/lib/academic-calendar";
-import { lessonSessions, lessonClassIds, unitIdForClass, type Lesson } from "@/lib/lessons-data";
+import { lessonSessions, lessonClassIds, unitIdForClass, isTaught, type Lesson } from "@/lib/lessons-data";
+import { todayKey } from "@/lib/date-keys";
 import { cn } from "@/lib/utils";
+import { subjectLabel } from "@/lib/standards-data";
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -40,7 +45,7 @@ import { DateKeyPicker } from "@/components/ui/date-key-picker";
 import { Label } from "@/components/ui/label";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { Button } from "@/components/ui/button";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { SegmentedToggle } from "@/components/ui/segmented-toggle";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
@@ -67,10 +72,10 @@ import {
   DndContext, PointerSensor, KeyboardSensor, useDraggable, useDroppable,
   useSensor, useSensors, closestCenter, type DragEndEvent,
 } from "@dnd-kit/core";
-import { EventCard } from "@/components/calendar/EventCard";
+import { EventCard, EventSubtitle } from "@/components/calendar/EventCard";
 import { AddTopicButton } from "@/components/calendar/AddTopicButton";
 import { LessonChip } from "@/components/calendar/LessonChip";
-import { LessonStatusBadge, LessonStatusPill } from "@/components/LessonStatusBadge";
+import { LessonCycleBadge, LessonCyclePills } from "@/components/LessonStatusBadge";
 import { useTourRequest } from "@/components/tour/tour-request";
 import { makePlannerTourDemo } from "@/components/tour/planner-tour-demo";
 
@@ -234,7 +239,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
   const moveSession = useLessonStore((s) => s.moveSession);
   const unscheduleSession = useLessonStore((s) => s.unscheduleSession);
   const restoreLesson = useLessonStore((s) => s.restoreLesson);
-  const setStatus = useLessonStore((s) => s.setStatus);
+  const setTaught = useLessonStore((s) => s.setTaught);
 
   const [blockModal, setBlockModal] = useState<{ date: Date } | null>(null);
   const [blockLabel, setBlockLabel] = useState("");
@@ -301,8 +306,12 @@ export default function PlannerView({ classId }: { classId?: string }) {
       holda demo namunasi hech qachon koʻrinmas edi. */
   const showMonthPreview = useTourRequest((s) => s.activeStepId === "planner-month-preview");
   useEffect(() => {
-    if (showMonthPreview) setView("month");
-  }, [showMonthPreview]);
+    // Faqat "oyga oʻtish" qadamida oy koʻrinishi kerak — boshqa har qanday
+    // tur qadamiga (jumladan ORQAGA qaytishda) haftaga qaytariladi, aks
+    // holda koʻrinish "oy"da qotib qolib, boshqa qadamlarning nishonlari
+    // (haftalik gridda joylashgan) topilmay qolardi.
+    if (tourDemoActive) setView(showMonthPreview ? "month" : "week");
+  }, [tourDemoActive, showMonthPreview]);
   const plannerDemo = useMemo(() => (isDemoMode ? makePlannerTourDemo() : null), [isDemoMode]);
 
   const classInfoById = (id: string): ClassInfo | undefined =>
@@ -421,7 +430,12 @@ export default function PlannerView({ classId }: { classId?: string }) {
   const placedByDate = useMemo(() => {
     const map = new Map<string, Placement[]>();
     for (const l of visLessons) {
+      const members = new Set(lessonClassIds(l));
       for (const s of lessonSessions(l)) {
+        // Aʼzolik qoʻriqchisi: dars shu sinfdan chiqarilgan boʻlsa, uning
+        // eski jadval yozuvi plannerda qolmasin — bunday yozuv hech qaysi
+        // dars roʻyxatida koʻrinmaydi, yaʼni uni olib tashlab ham boʻlmaydi.
+        if (!members.has(s.classId)) continue;
         if (classId && s.classId !== classId) continue; // sinf-detali filtri
         if (!classId && classFilter && !classFilter.has(s.classId)) continue; // sinflar filtri
         const arr = map.get(s.date) ?? [];
@@ -430,9 +444,15 @@ export default function PlannerView({ classId }: { classId?: string }) {
       }
     }
     if (plannerDemo) {
-      const visibleDates = [...allWeekDates, ...monthGrid.filter((d): d is Date => d !== null)];
-      for (const d of visibleDates) {
-        const dateKey = toDateKey(d);
+      // Hafta va oy toʻri kesishadi (joriy hafta koʻpincha koʻrinadigan oy
+      // ichida) — sana boʻyicha dedupe qilinmasa, bitta sana uchun demo
+      // darslar IKKI marta qoʻshilib, bir xil id bilan dublikat React key
+      // hosil qilardi.
+      const visibleDatesByKey = new Map<string, Date>();
+      for (const d of [...allWeekDates, ...monthGrid.filter((d): d is Date => d !== null)]) {
+        visibleDatesByKey.set(toDateKey(d), d);
+      }
+      for (const [dateKey, d] of visibleDatesByKey) {
         const placements = plannerDemo.placementsForDate(dateKey, dateToTimetableDay(d));
         if (placements.length === 0) continue;
         map.set(dateKey, [...(map.get(dateKey) ?? []), ...placements]);
@@ -486,8 +506,11 @@ export default function PlannerView({ classId }: { classId?: string }) {
   const weekTitle = useMemo(() => {
     if (view !== "week" || allWeekDates.length === 0) return null;
     const a = allWeekDates[0], b = allWeekDates[allWeekDates.length - 1];
-    if (a.getMonth() === b.getMonth()) return `${a.getDate()}–${b.getDate()} ${fmt.monthName(a.getMonth())}`;
-    return `${a.getDate()} ${fmt.monthName(a.getMonth())} – ${b.getDate()} ${fmt.monthName(b.getMonth())}`;
+    // Oʻzbek imlosida oy nomlari kichik harf bilan va sanaga chiziqcha
+    // bilan qoʻshib yoziladi ("17–23-avgust", gap boshida emas) —
+    // [[localization-canonical-source]].
+    if (a.getMonth() === b.getMonth()) return `${a.getDate()}–${b.getDate()}-${fmt.monthName(a.getMonth()).toLowerCase()}`;
+    return `${a.getDate()}-${fmt.monthName(a.getMonth()).toLowerCase()} – ${b.getDate()}-${fmt.monthName(b.getMonth()).toLowerCase()}`;
   }, [view, allWeekDates, fmt]);
 
   // ── Bayram ──
@@ -596,9 +619,10 @@ export default function PlannerView({ classId }: { classId?: string }) {
     setEditTarget(null);
     toast.success(t("savedToast"));
   }
-  function handleDelete() {
+  async function handleDelete() {
     if (!editLesson) return;
     const snap: Lesson = { ...editLesson }; // toʻliq snapshot (content/standards/scheduleByClass ham)
+    if (!(await commitLessonsDelete({ lessonIds: [snap.id] }))) return;
     deleteLessonAction(snap.id);
     setEditTarget(null);
     toast(t("lessonDeletedToast"), {
@@ -752,7 +776,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
             <PillHoverTime startMin={p.startMin} endMin={p.endMin} />
             <div className="flex items-center gap-1.5">
               {cls && <ClassBadge color={color} name={cls.name} />}
-              <LessonStatusPill status={p.lesson.status} />
+              <LessonCyclePills lesson={p.lesson} />
             </div>
           </div>
         }
@@ -825,7 +849,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
 
     return (
       <Card className={cn("h-full", panelCardClass)}>
-        <CardHeader className={cn(panelCardHeaderClass, "gap-2.5 pt-4! pb-4!")}>
+        <CardHeader className={cn(panelCardHeaderClass, "gap-3 pt-4! pb-4!")}>
           <SectionIcon>
             <CalendarIcon />
           </SectionIcon>
@@ -898,7 +922,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                               density="auto"
                               style={{ height: h }}
                               className={cn("h-full", isOver && "inset-ring-2 inset-ring-[var(--ring)]")}
-                              subtitle={`${minToHHMM(ev.startMin)} — ${minToHHMM(ev.endMin)}`}
+                              subtitle={<EventSubtitle subject={subjectLabel(cls.subject) || undefined} time={`${minToHHMM(ev.startMin)} — ${minToHHMM(ev.endMin)}`} height={h} />}
                               /* Boʻsh slot — TodayRail bilan bir xil grammatika:
                                  bitta doim koʻrinadigan chorlov (burchak
                                  qavslari + dashed perimetr, hoverda sinf
@@ -1038,6 +1062,21 @@ export default function PlannerView({ classId }: { classId?: string }) {
     ? { duration: 0 }
     : { duration: PANEL_DURATION_BASE, ease: PANEL_EASE_STANDARD };
 
+  /* Koʻrinish almashtirgichi ikki joyda joylashadi (panel KENGLIGIGA qarab —
+     students/classes sahifalari bilan bir xil naqsh): keng panelda markazda,
+     tor panelda amallar guruhida. Bitta manba — ikki oʻramda CSS almashtiradi. */
+  const viewToggle = (
+    <SegmentedToggle
+      value={view}
+      onValueChange={(v) => setView(v)}
+      variant="pill"
+      options={[
+        { value: "week", label: t("week") },
+        { value: "month", label: t("month") },
+      ]}
+    />
+  );
+
   return (
     <>
     {/* Bitta DndContext — kunlik panel va oy toʻri bir DnD maydonida: darsni
@@ -1071,7 +1110,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
           qolardi va unmount paytida shuncha sakrardi. */}
       <AnimatePresence>
         {dayPanelOpen && (
-          <motion.div
+          <m.div
             key="day-panel"
             initial={{ width: "0%", paddingRight: 0, opacity: 0 }}
             animate={{ width: "25%", paddingRight: 24, opacity: 1 }}
@@ -1082,7 +1121,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
             {/* Ichki qatlam gorizontal sirpanadi: kenglik animatsiyasi kontentni
                 har kadrda qayta oqizadi ("ezilish" effekti), transform esa GPU'da
                 ketadi va koʻz buni "chapdan kirib kelish" deb oʻqiydi. */}
-            <motion.div
+            <m.div
               initial={{ x: -16 }}
               animate={{ x: 0 }}
               exit={{ x: -16 }}
@@ -1090,15 +1129,19 @@ export default function PlannerView({ classId }: { classId?: string }) {
               className="h-full w-full"
             >
               {renderDayPanel(selectedDate)}
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         )}
       </AnimatePresence>
       <div className="flex h-full min-h-0 min-w-0 flex-1 flex-col">
-      <Card className={cn("flex-1", panelCardClass)}>
+      <Card className={cn("@container flex-1", panelCardClass)}>
 
         {/* ── Toolbar ── */}
-        <CardHeader className={cn(panelCardHeaderClass, "grid grid-rows-[auto] items-center gap-0 space-y-0 pt-4! pb-4!")} style={{ gridTemplateColumns: "1fr auto 1fr" }}>
+        <CardHeader className={cn(
+          panelCardHeaderClass,
+          "flex items-center justify-between gap-3 space-y-0 pt-4! pb-4!",
+          "@[46rem]:grid @[46rem]:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]",
+        )}>
           <div className="flex min-w-0 items-center gap-3">
             <SectionIcon>
               <CalendarIcon />
@@ -1109,7 +1152,8 @@ export default function PlannerView({ classId }: { classId?: string }) {
               ) : (
                 <>
                   {fmt.monthName(anchor.getMonth())}
-                  <span className="font-normal text-muted-foreground">{anchor.getFullYear()}</span>
+                  {/* Oʻzbek imlo standarti: "{Oy} ({Yil}-yil)" — [[localization-canonical-source]]. */}
+                  <span className="font-normal text-muted-foreground">({anchor.getFullYear()}-yil)</span>
                 </>
               )}
               {classId && classInfoById(classId) && (
@@ -1120,20 +1164,19 @@ export default function PlannerView({ classId }: { classId?: string }) {
             </CardTitle>
           </div>
 
-          <ToggleGroup
-            type="single"
-            value={view}
-            onValueChange={(v) => v && setView(v as "week" | "month")}
-            variant="outline"
-            size="default"
-            className="self-center"
-            data-tour="planner-view-toggle"
-          >
-            <ToggleGroupItem value="week" className="px-5 text-sm font-medium">{t("week")}</ToggleGroupItem>
-            <ToggleGroupItem value="month" className="px-5 text-sm font-medium">{t("month")}</ToggleGroupItem>
-          </ToggleGroup>
+          {/* `data-tour` ATAYLAB yo'q — bu tugma hech qanday tur qadamiga
+              bog'lanmagan. Ikki nusxa (keng/tor) bitta belgiga ega bo'lsa,
+              `document.querySelector` doim BIRINCHISINI (keng nusxa) topib
+              olardi — tor rejimda u `display:none` bo'lgani uchun spotlight
+              nol o'lchamli nishonga tushib qolardi. */}
+          <div className="hidden justify-self-center @[46rem]:flex">
+            {viewToggle}
+          </div>
 
-          <div className="flex items-center justify-end gap-1">
+          <div className="flex shrink-0 items-center justify-self-end gap-1">
+            <div className="@[46rem]:hidden">
+              {viewToggle}
+            </div>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -1149,7 +1192,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                 <div className="border-b border-border px-3 py-2 text-xs font-semibold text-muted-foreground">
                   {t("blockedHolidaysTitle")}
                 </div>
-                <div className="flex max-h-72 flex-col gap-0.5 overflow-y-auto p-1.5">
+                <div className="flex max-h-72 flex-col gap-0.5 scrollbar-hover overflow-y-auto p-1.5">
                   {blockedList.length === 0 && holidayList.length === 0 ? (
                     <TypographyMuted className="px-2 py-4 text-center text-xs">
                       {t("blockedHolidaysEmpty")}
@@ -1196,7 +1239,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                   >
                     <ListFilter className="size-4" />
                     {classFilter && (
-                      <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold tabular-nums text-primary-foreground">
+                      <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-micro font-bold tabular-nums text-primary-foreground">
                         {classFilter.size}
                       </span>
                     )}
@@ -1237,7 +1280,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                                 >
                                   {checked && <Check className="size-3 text-white" strokeWidth={3} />}
                                 </button>
-                                <span className="size-2 shrink-0 rounded-full" style={tints.dot} />
+                                <ClassSwatch hex={tints.solid} />
                                 <span className="truncate">{info.name}</span>
                               </CommandItem>
                             );
@@ -1419,21 +1462,21 @@ export default function PlannerView({ classId }: { classId?: string }) {
                         </div>
                         {isBlocked && (
                           <div className="mt-1 flex justify-center">
-                            <span className="max-w-full truncate rounded bg-destructive/10 px-1.5 py-0.5 text-[10px] font-semibold text-destructive">
+                            <span className="max-w-full truncate rounded bg-destructive/10 px-1.5 py-0.5 text-micro font-semibold text-destructive">
                               {blockedMap.get(key)}
                             </span>
                           </div>
                         )}
                         {!isBlocked && holiday && (
                           <div className="mt-1 flex justify-center">
-                            <span className="max-w-full truncate rounded bg-foreground/5 px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                            <span className="max-w-full truncate rounded bg-foreground/5 px-1.5 py-0.5 text-micro font-semibold text-muted-foreground">
                               {holiday.name}
                             </span>
                           </div>
                         )}
                         {versionChanged && (
                           <div className="mt-1 flex justify-center">
-                            <span className="max-w-full truncate rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
+                            <span className="max-w-full truncate rounded bg-primary/10 px-1.5 py-0.5 text-micro font-semibold text-primary">
                               {t("scheduleUpdated")}
                             </span>
                           </div>
@@ -1489,7 +1532,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                               data-tour={hasLesson ? "planner-lesson-block" : "planner-empty-slot"}
                               color={clsColor}
                               title={cls.name}
-                              subtitle={`${fmtMin(ev.startMin)} — ${fmtMin(ev.endMin)}`}
+                              subtitle={<EventSubtitle subject={subjectLabel(cls.subject) || undefined} time={`${fmtMin(ev.startMin)} — ${fmtMin(ev.endMin)}`} height={blockPx} />}
                               state={hasLesson ? "filled" : "empty"}
                               density="auto"
                               style={{ top: Math.max(topH, 0) * slotHeight + 2, height: blockPx }}
@@ -1606,9 +1649,9 @@ export default function PlannerView({ classId }: { classId?: string }) {
                                 leading={done ? <Check className="size-3.5 shrink-0" strokeWidth={3} style={tints.textOnSolid} /> : <FileText className="size-3.5 shrink-0" style={tints.textOnSolid} />}
                                 style={{ height: h }}
                                 className="h-full transition-all hover:brightness-95"
-                                actions={<LessonStatusBadge status={l.status} />}
+                                actions={<LessonCycleBadge lesson={l} />}
                               >
-                                <span style={tints.textOnSolidMuted} className="mt-0.5 flex items-center gap-1.5 truncate text-[11px]">
+                                <span style={tints.textOnSolidMuted} className="mt-0.5 flex items-center gap-1.5 truncate text-tag">
                                   {minToHHMM(start)} — {minToHHMM(end)}
                                 </span>
                               </EventCard>
@@ -1710,12 +1753,12 @@ export default function PlannerView({ classId }: { classId?: string }) {
                           </button>
                           <div className="flex min-w-0 items-center gap-1">
                             {isBlocked && blockLbl && (
-                              <span className="max-w-[80px] truncate rounded bg-destructive/10 px-1 py-0.5 text-[11px] font-semibold text-destructive">
+                              <span className="max-w-[80px] truncate rounded bg-destructive/10 px-1 py-0.5 text-tag font-semibold text-destructive">
                                 {blockLbl}
                               </span>
                             )}
                             {!isBlocked && holiday && (
-                              <span className="max-w-[80px] truncate rounded bg-foreground/5 px-1 py-0.5 text-[11px] font-semibold text-muted-foreground">
+                              <span className="max-w-[80px] truncate rounded bg-foreground/5 px-1 py-0.5 text-tag font-semibold text-muted-foreground">
                                 {holiday.name}
                               </span>
                             )}
@@ -1741,7 +1784,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                         {/* Katak mazmuni — KATAK ICHIDA scroll. Ilgari 2 ta chip
                             koʻrsatilib, qolgani "+N ta" popover'iga yigʻilardi;
                             endi hammasi shu yerda, nozik scrollbar bilan. */}
-                        <div className="scrollbar-thin flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto">
+                        <div className="scrollbar-thin flex min-h-0 flex-1 flex-col gap-0.5 scrollbar-hover overflow-y-auto">
                           {items.map((it, k) =>
                             it.t === "l"
                               ? <PlacedPill key={`l-${it.p.lesson.id}-${it.p.classId}-${it.p.startMin}`} p={it.p} dateKey={key} />
@@ -1769,7 +1812,8 @@ export default function PlannerView({ classId }: { classId?: string }) {
           <DialogHeader>
             <DialogTitle>{t("blockDayDialogTitle")}</DialogTitle>
             <DialogDescription>
-              {blockModal && `${blockModal.date.getDate()} ${fmt.monthName(blockModal.date.getMonth())} ${blockModal.date.getFullYear()}`}
+              {/* Kanonik toʻliq sana naqshi: "{yil}-yil {kun}-{oy}" — [[localization-canonical-source]]. */}
+              {blockModal && `${blockModal.date.getFullYear()}-yil ${blockModal.date.getDate()}-${fmt.monthName(blockModal.date.getMonth()).toLowerCase()}`}
             </DialogDescription>
           </DialogHeader>
           <div className="py-1">
@@ -1853,7 +1897,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                       return (
                         <button key={l.id} type="button" onClick={() => setLmLessonId(sel ? "" : l.id)}
                           className={cn(
-                            "flex items-center gap-2.5 rounded-lg border px-3 py-2 text-left transition-colors",
+                            "flex items-center gap-2 rounded-lg border px-3 py-2 text-left transition-colors",
                             sel ? "border-primary bg-primary/5" : "border-border bg-background hover:border-foreground/30"
                           )}>
                           <span style={tints.dot} className="size-2 shrink-0 rounded-[4px]" />
@@ -1916,16 +1960,16 @@ export default function PlannerView({ classId }: { classId?: string }) {
             {editLesson && (
               <div className="flex flex-wrap gap-2">
                 <Button
-                  variant={editLesson.status === "Completed" ? "soft" : "outline"}
+                  variant={isTaught(editLesson, editTarget?.classId) ? "soft" : "outline"}
                   size="sm" className="gap-1.5"
                   onClick={() => {
                     if (!editLesson) return;
-                    const next = editLesson.status === "Completed" ? "Scheduled" : "Completed";
-                    setStatus(editLesson.id, next);
-                    toast.success(next === "Completed" ? t("markedCompletedToast") : t("rescheduledToast"));
+                    const taught = isTaught(editLesson, editTarget?.classId);
+                    setTaught(editLesson.id, taught ? null : todayKey(), editTarget?.classId);
+                    toast.success(taught ? t("rescheduledToast") : t("markedCompletedToast"));
                   }}>
                   <Check className="size-4" />
-                  {editLesson.status === "Completed" ? t("completedCheck") : t("markCompleted")}
+                  {isTaught(editLesson, editTarget?.classId) ? t("completedCheck") : t("markCompleted")}
                 </Button>
                 <Button variant="outline" size="sm" className="gap-1.5" onClick={() => {
                   if (!editTarget) return;

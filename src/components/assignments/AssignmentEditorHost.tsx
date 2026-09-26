@@ -1,9 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useAssignmentEditorStore } from "@/store/useAssignmentEditorStore";
-import AssignmentEditorOverlay from "@/app/dashboard/(with-sidebar)/assignments/_components/AssignmentEditorOverlay";
+/* Muharrir qobigʻi Tiptapni tortadi. Langar HAR dashboard sahifasida
+   mount boʻladi, lekin oynaning oʻzi faqat sessiya ochilganda chiziladi —
+   shuning uchun ogʻir qismi alohida chunkda, talab boʻlganda yuklanadi. */
+const AssignmentEditorOverlay = dynamic(
+  () => import("@/app/dashboard/(with-sidebar)/assignments/_components/AssignmentEditorOverlay"),
+  { ssr: false }
+);
 
 /**
  * Topshiriq muharririning GLOBAL langari — `dashboard/layout.tsx`da bir marta

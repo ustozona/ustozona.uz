@@ -3,6 +3,7 @@ import { asc, eq, inArray } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import { activities, activityItems, activitySets } from "@/server/db/schema";
 import { requireParticipant } from "@/server/play/session";
+import { slideLayoutOf, type SlideLayout } from "@/lib/slide-layouts";
 
 /* ════════════════════════════════════════════════════════════════════
    ISHTIROKCHI KONTENTI — `isCorrect` HECH QACHON mijozga yuborilmaydi
@@ -21,6 +22,12 @@ import { requireParticipant } from "@/server/play/session";
     R33: "oʻyin qatlami maʼlumot oladi, lekin unga yozmaydi"). */
 export type PointsMultiplier = 0 | 1 | 2;
 
+export type AnswerLayout = "grid" | "list";
+
+function answerLayoutOf(config: Record<string, unknown> | undefined): AnswerLayout {
+  return config?.answerLayout === "list" ? "list" : "grid";
+}
+
 export type McqStep = {
   kind: "mcq";
   itemId: string;
@@ -28,6 +35,8 @@ export type McqStep = {
   stem: string;
   options: { id: string; text: string }[];
   pointsMultiplier: PointsMultiplier;
+  /** Muharrirdagi «Vertikal koʻrinish»: `list` — uzun javoblar uchun bitta ustun. */
+  answerLayout: AnswerLayout;
 };
 
 export type PairsStep = {
@@ -40,12 +49,57 @@ export type PairsStep = {
   pointsMultiplier: PointsMultiplier;
 };
 
-export type PlayStep = McqStep | PairsStep;
+/** Taqdimot slaydi — javob kutilmaydi, oʻquvchi oʻqib keyingisiga oʻtadi. */
+export type SlideStep = {
+  kind: "slide";
+  activityId: string;
+  layout: SlideLayout;
+  title: string;
+  body: string;
+  imageUrl?: string;
+  videoUrl?: string;
+  /** Slaydning oʻz foni; yoʻq boʻlsa toʻplam foni (`stageTheme`). */
+  bg?: string;
+};
+
+/** Soʻrovnoma — variantlar, toʻgʻri javobi yoʻq. */
+export type PollStep = {
+  kind: "poll";
+  itemId: string;
+  activityId: string;
+  stem: string;
+  options: { id: string; text: string }[];
+  answerLayout: AnswerLayout;
+};
+
+/** Soʻz buluti — qisqa matnli javob. */
+export type WordcloudStep = {
+  kind: "wordcloud";
+  itemId: string;
+  activityId: string;
+  stem: string;
+};
+
+/** Ochiq javob — erkin matn, oʻqituvchi keyin qoʻlda baholaydi. */
+export type TextStep = {
+  kind: "text";
+  itemId: string;
+  activityId: string;
+  stem: string;
+};
+
+export type PlayStep = McqStep | PairsStep | SlideStep | PollStep | WordcloudStep | TextStep;
 
 export type PlaySessionContent = {
   sessionId: string;
   mode: string;
   currentIndex: number;
+  /** Toʻplam sahna mavzusi (`activity_sets.config.stageTheme`) — slayd foni. */
+  stageTheme?: string;
+  /** Toʻplam sahna shrifti (`activity_sets.config.stageFont`). */
+  stageFont?: string;
+  /** Toʻplam sahna uslubi (`activity_sets.config.stageStyle`). */
+  stageStyle?: string;
   steps: PlayStep[];
 };
 
@@ -86,6 +140,7 @@ export async function getSessionContent(token: string): Promise<PlaySessionConte
       : [];
 
   const shapeByActivity = new Map(activityRows.map((a) => [a.id, a.shape]));
+  const titleByActivity = new Map(activityRows.map((a) => [a.id, a.title]));
   const configByActivity = new Map(activityRows.map((a) => [a.id, a.config]));
   const itemsByActivity = new Map<string, typeof itemRows>();
   for (const item of itemRows) {
@@ -98,6 +153,28 @@ export async function getSessionContent(token: string): Promise<PlaySessionConte
   for (const activityId of activityIds) {
     const shape = shapeByActivity.get(activityId);
     const items = itemsByActivity.get(activityId) ?? [];
+    // Slaydda element yoʻq — shu sababli boʻsh-element tekshiruvidan OLDIN.
+    if (shape === "slide") {
+      const config = (configByActivity.get(activityId) ?? {}) as {
+        heading?: string;
+        bg?: string;
+        body?: string;
+        layout?: string;
+        imageUrl?: string;
+        videoUrl?: string;
+      };
+      steps.push({
+        kind: "slide",
+        activityId,
+        layout: slideLayoutOf(config.layout),
+        title: config.heading ?? titleByActivity.get(activityId) ?? "",
+        body: config.body ?? "",
+        imageUrl: config.imageUrl,
+        videoUrl: config.videoUrl,
+        bg: config.bg,
+      });
+      continue;
+    }
     if (items.length === 0) continue;
     const pointsMultiplier = pointsMultiplierOf(configByActivity.get(activityId) ?? {});
 
@@ -112,9 +189,36 @@ export async function getSessionContent(token: string): Promise<PlaySessionConte
         itemId: item.id,
         activityId,
         stem: content.stem,
-        options: content.options.map((o) => ({ id: o.id, text: o.text })),
+        /* Oʻz tezligidagi rejimda variantlar har oʻquvchiga aralashtiriladi:
+           rang/tartib («men qizilni bosdim») javobni bildirmasin. Jonli
+           rejimda EMAS — u yerda telefon rangi proyektordagi bilan mos
+           boʻlishi kerak. */
+        options: (session.mode === "live" ? content.options : shuffled(content.options)).map((o) => ({
+          id: o.id,
+          text: o.text,
+        })),
         pointsMultiplier,
+        answerLayout: answerLayoutOf(configByActivity.get(activityId)),
       });
+    } else if (shape === "text") {
+      const item = items[0];
+      const content = item.content as { stem?: string };
+      steps.push({ kind: "text", itemId: item.id, activityId, stem: content.stem ?? "" });
+    } else if (shape === "poll" || shape === "wordcloud") {
+      const item = items[0];
+      const content = item.content as { stem?: string; options?: { id: string; text: string }[] };
+      steps.push(
+        shape === "poll"
+          ? {
+              kind: "poll",
+              itemId: item.id,
+              activityId,
+              stem: content.stem ?? "",
+              options: (content.options ?? []).map((o) => ({ id: o.id, text: o.text })),
+              answerLayout: answerLayoutOf(configByActivity.get(activityId)),
+            }
+          : { kind: "wordcloud", itemId: item.id, activityId, stem: content.stem ?? "" },
+      );
     } else if (shape === "pairs") {
       const left = items.map((item) => ({
         itemId: item.id,
@@ -130,5 +234,18 @@ export async function getSessionContent(token: string): Promise<PlaySessionConte
     }
   }
 
-  return { sessionId: session.id, mode: session.mode, currentIndex: session.currentIndex, steps };
+  const setConfig = set?.config as
+    | { stageTheme?: string; stageFont?: string; stageStyle?: string }
+    | undefined;
+  const stageTheme = setConfig?.stageTheme;
+  const stageFont = setConfig?.stageFont;
+  return {
+    sessionId: session.id,
+    mode: session.mode,
+    currentIndex: session.currentIndex,
+    stageTheme,
+    stageFont,
+    stageStyle: setConfig?.stageStyle,
+    steps,
+  };
 }

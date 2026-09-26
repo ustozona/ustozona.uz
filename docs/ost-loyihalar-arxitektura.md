@@ -90,9 +90,25 @@ Shuning uchun **ikkita mustaqil oʻq**:
 
 **2-oʻq — Mahsulot (faqat palitra/brend):** `data-product` → `ustozona` \| `baholash` \| `doska` \| `shogird` \| `boshqaruv`. Bu FAQAT `--primary`/`--accent` ranglarini oʻzgartiradi, oʻlchamni emas.
 
-**3-oʻq — Oʻqish yordami (inklyuzivlik):** `data-reading="support"` → kattaroq shrift, kengaytirilgan qator/harf oraligʻi, disleksiya shrifti, qatorga fokus. Bu Pear Deck'ning Immersive Reader'ining CSS qismi (B3.4) va u **shu token mexanizmining oʻzidan bepul keladi** — alohida kod emas.
+**3-oʻq — Ohang (xarakter):** `data-tone` → `serious` (standart) \| `playful`.
 
-Sahifa ularni eʼlon qiladi: `<html data-surface="stage" data-product="doska">`.
+Yuqoridagi ikki oʻq **oʻlcham** va **brend rangini** boshqaradi, lekin *uslubni* emas. Amalda esa jurnal bilan sinf ekrani bir xil xarakterda boʻlishi mumkin emas: birinchisini oʻqituvchi har kuni soatlab titkilaydi va u tinch, quruq, professional boʻlishi kerak; ikkinchisini butun sinf koʻradi va u quvnoq, rangli, jonli boʻlishi kerak. Faqat kattalashtirish buni bermaydi — kattalashtirilgan jurnal baribir jurnalga oʻxshaydi.
+
+| | `serious` (Dashboard, Boshqaruv, Baholash muharriri) | `playful` (Doska, kviz oʻyin ekrani, Oʻyinlar) |
+|---|---|---|
+| Burchak | 8px | 20–24px |
+| Rang | boʻgʻiq, neytral fon | toʻyingan, rangli fon |
+| Chuqurlik | tekis, 0.5px hairline | qalin ofset soya |
+| Tugma | toʻgʻriburchak, 36px | pill (99px), 48px+ |
+| Shrift | 500, kichik | 500–600, katta |
+| Ikona | nozik kontur / duotone | toʻldirilgan, rangli kvadratchada |
+| Animatsiya | tez, sokin | sakraydigan (spring) |
+
+Ohang **sirtdan mustaqil**: `stage` + `serious` (projektorga chiqarilgan hisobot) ham, `desk` + `playful` (oʻquvchining oʻz qurilmasidagi kviz) ham mumkin. Va u tokenlarni **qayta xaritalaydi, fork qilmaydi** — `<Button>` bitta boʻlib qolaveradi.
+
+**4-oʻq — Oʻqish yordami (inklyuzivlik):** `data-reading="support"` → kattaroq shrift, kengaytirilgan qator/harf oraligʻi, disleksiya shrifti, qatorga fokus. Bu Pear Deck'ning Immersive Reader'ining CSS qismi (B3.4) va u **shu token mexanizmining oʻzidan bepul keladi** — alohida kod emas.
+
+Sahifa ularni eʼlon qiladi: `<html data-surface="stage" data-product="doska" data-tone="playful">`.
 
 **Kelajakdagi foydasi (aynan shu sababdan tavsiya qilyapman):**
 - Beshinchi ost-loyiha qoʻshilsa — yangi dizayn tizimi kerak emas, u avtomatik mavjud uchta kontekstdan biriga tushadi.
@@ -2665,7 +2681,18 @@ Shu prinsip qabul qilinsa, runtime tanlovi hayot-mamot boʻlishdan toʻxtaydi: r
 
 **Farqlovchi ustunlik:** classroomscreen.com sizning oʻquvchilaringizni bilmaydi — Ustozona Doska biladi. Random Name va Group Maker haqiqiy roʻyxatdan oʻqiydi; Group Maker xulq ballari va davomatni hisobga olishi mumkin. **Poll vidjeti alohida qurilmaydi** — u Baholash'ning `grading: none` soʻrovnomasi, `stage` sirtida chizilgani (B5.2); QR Code vidjeti ham xuddi shu PIN tizimiga ulanadi, va shu bois **Doska'ga alohida realtime qatlami kerak emas** (R140). Draw = `DrawBoard` primitivi (R107), Baholash va taqdimot bilan umumiy.
 
-**Kirishsiz ochiladi (R134):** oʻqituvchi darsga kirdi, projektorni yoqdi — 3 soniyada taymer kerak. `/doska` login talab qilmaydi, ekran localStorage'da ishlaydi; kirgandan keyin lokal ekran **serverga koʻchiriladi** (yoʻqolmaydi). Saqlash bizda **bepul** — classroomscreen uni pullik qilgan, bu bizga toʻgʻri kelmaydi.
+**Kirishsiz ochiladi (R134):** oʻqituvchi darsga kirdi, projektorni yoqdi — 3 soniyada taymer kerak. `/doska` login talab qilmaydi, ekran localStorage'da ishlaydi; kirgandan keyin lokal ekran **serverga koʻchiriladi** (yoʻqolmaydi).
+
+⚠️ **Biznes modeli oʻzgardi (2026-08-21).** Ilgari bu yerda «saqlash bizda bepul, classroomscreen uni pullik qilgan» deb yozilgan edi. Yangi qaror — **classroomscreen modeli**: bepul qism ishlatishga toʻsiq qoʻymaydi, pullik qism esa ishni **saqlab qolish** va **jurnalga ulash**:
+
+| | Bepul (mehmon) | Pullik |
+|---|---|---|
+| Vidjetlar, fon, ekran | toʻliq | toʻliq |
+| Ekran qayerda qoladi | shu brauzer (localStorage) | hisobda, istalgan qurilmadan |
+| Sinf roʻyxati (Random Name, Group Maker) | qoʻlda kiritiladi | jurnaldan avtomatik |
+| Ekranlar toʻplami | joriy seans | saqlanadi, qayta ishlatiladi |
+
+Sabab: Doska **kirish nuqtasi** boʻlib xizmat qiladi (qidiruvdan «sinf taymeri» deb kelgan oʻqituvchi), pul esa oʻqituvchi ishini yoʻqotmaslikni xohlagan paytda tushadi. Pro bandlar UI'da **oʻchirilgan emas**, yulduzcha bilan belgilanadi va bosilganda taklif ochiladi.
 
 **Panel oʻqituvchi tomonidan tuziladi (R132):** 11 ta koʻrinadi, qolgani menyuda — `doska_prefs.bar_widget_kinds`. Shu bois vidjet qoʻshish UI'ni buzmaydi.
 

@@ -11,7 +11,7 @@ import { create } from "zustand";
    oʻqituvchi) ishlatiladi — export shu sabab qoladi.
    ════════════════════════════════════════════════════════════════════ */
 
-export type NotificationKind = "reply" | "feedback" | "status" | "system";
+export type NotificationKind = "reply" | "feedback" | "status" | "system" | "birthday";
 
 export type NotificationItem = {
   id: string;
@@ -29,6 +29,10 @@ export type NotificationItem = {
 };
 
 export type NewNotificationInput = {
+  /** Ixtiyoriy barqaror id — berilsa, shu id allaqachon mavjud boʻlsa
+   *  yangi yozuv qoʻshilmaydi. Avto-manbalar (tugʻilgan kun) shu bilan
+   *  takror xabar yuborishdan saqlanadi. */
+  id?: string;
   kind: NotificationKind;
   title: string;
   body?: string;
@@ -72,7 +76,7 @@ export const useNotificationsStore = create<NotificationsState>()(
       setHasHydrated: (v) => set({ _hasHydrated: v }),
 
       notify: (input) => {
-        const id = uid();
+        const id = input.id ?? uid();
         const item: NotificationItem = {
           id,
           kind: input.kind,
@@ -84,7 +88,7 @@ export const useNotificationsStore = create<NotificationsState>()(
           read: false,
           createdAt: new Date().toISOString(),
         };
-        set((s) => ({ items: [item, ...s.items] }));
+        set((s) => (s.items.some((n) => n.id === id) ? s : { items: [item, ...s.items] }));
         return id;
       },
 

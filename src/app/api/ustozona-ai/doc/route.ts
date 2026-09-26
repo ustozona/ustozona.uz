@@ -1,7 +1,5 @@
-import { sql } from "drizzle-orm";
-import { getSession } from "@/server/session";
-import { db } from "@/server/db/client";
-import { aiUsage, aiDocs } from "@/server/db/schema";
+import { requireTeacher } from "@/server/session";
+import { consumeAiDoc, saveAiDoc } from "@/server/dal/ai-usage";
 
 /**
  * Ustozona AI — darslik/fayl yuklash (NotebookLM-uslubidagi hujjat rejimi).
@@ -17,16 +15,13 @@ const MAX_BYTES = 15 * 1024 * 1024; // 15 MB
 const ALLOWED = new Set(["application/pdf", "text/plain", "text/markdown"]);
 
 const BASE = "https://generativelanguage.googleapis.com";
-const DOC_DAILY_LIMIT = Math.max(1, Number(process.env.AI_DOC_DAILY_LIMIT) || 5);
-
-/** Asia/Tashkent (UTC+5) boʻyicha YYYY-MM-DD. */
-function todayTashkent(): string {
-  return new Date(Date.now() + 5 * 3600_000).toISOString().slice(0, 10);
-}
-
 export async function POST(req: Request) {
-  const session = await getSession();
-  if (!session) return new Response("Kirish talab qilinadi", { status: 401 });
+  let teacher;
+  try {
+    teacher = await requireTeacher();
+  } catch {
+    return new Response("Kirish talab qilinadi", { status: 401 });
+  }
 
   const key = process.env.GEMINI_API_KEY;
   if (!key) {
@@ -36,20 +31,12 @@ export async function POST(req: Request) {
     );
   }
 
-  // ── Kunlik hujjat kvotasi (atomik) ──
-  const userId = session.user.id;
-  const day = todayTashkent();
-  const [usage] = await db
-    .insert(aiUsage)
-    .values({ id: `${userId}:${day}`, userId, day, count: 0, docCount: 1 })
-    .onConflictDoUpdate({
-      target: [aiUsage.userId, aiUsage.day],
-      set: { docCount: sql`${aiUsage.docCount} + 1` },
-    })
-    .returning({ docCount: aiUsage.docCount });
-  if (usage.docCount > DOC_DAILY_LIMIT) {
+  // ── Oylik hujjat krediti ──
+  const userId = teacher.id;
+  const quota = await consumeAiDoc(userId, teacher.plan);
+  if (!quota.allowed) {
     return new Response(
-      `Bugungi hujjat yuklash limiti (${DOC_DAILY_LIMIT} ta) tugadi. Ertaga yana urinib koʻring.`,
+      `Bu oyning hujjat krediti (${quota.credit} ta) tugadi. Keyingi oy boshida yangilanadi.`,
       { status: 429 }
     );
   }
@@ -122,16 +109,12 @@ export async function POST(req: Request) {
   }
 
   // Egalik yozuvi — chat endpointi faqat shu foydalanuvchining uri'sini qabul qiladi
-  await db
-    .insert(aiDocs)
-    .values({
-      id: crypto.randomUUID(),
-      userId,
-      uri: f.uri,
-      mimeType: f.mimeType || mime,
-      name: file.name.slice(0, 200),
-    })
-    .onConflictDoNothing();
+  await saveAiDoc({
+    userId,
+    uri: f.uri,
+    mimeType: f.mimeType || mime,
+    name: file.name.slice(0, 200),
+  });
 
   return Response.json({
     uri: f.uri,

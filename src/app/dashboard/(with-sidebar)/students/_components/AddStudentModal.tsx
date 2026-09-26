@@ -203,11 +203,11 @@ export default function AddStudentModal({ open, onOpenChange, defaultClassId, on
         <div className="flex shrink-0 items-center gap-3 border-b border-border px-6 py-5">
           <SectionIcon><Users /></SectionIcon>
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2">
               <DialogTitle className="text-lg">{t("title")}</DialogTitle>
               {selectedClass && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
-                  <ClassSwatch hex={classHex} className="size-2.5" />
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
+                  <ClassSwatch hex={classHex} />
                   {selectedClass.name}
                 </span>
               )}
@@ -271,7 +271,7 @@ export default function AddStudentModal({ open, onOpenChange, defaultClassId, on
         {/* ── Bosqich: bitta oʻquvchi ── */}
         {step === "single" && (
           <form className="contents" onSubmit={(e) => { e.preventDefault(); submitSingle(); }}>
-            <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+            <div className="min-h-0 flex-1 scrollbar-hover overflow-y-auto px-6 py-5">
               <div className="mb-5 flex justify-center">
                 <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarFile} />
                 <div className="relative shrink-0">
@@ -520,16 +520,16 @@ export default function AddStudentModal({ open, onOpenChange, defaultClassId, on
               </Button>
             </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto px-6 py-4">
+            <div className="min-h-0 flex-1 scrollbar-hover overflow-y-auto px-6 py-4">
               {/* ⇄ ustuni ATAYLAB ikki maydon ORASIDA — oʻchirish tugmasi
                   yonida emas. Ikki sabab: shakl «shu ikkisini almashtir»
                   maʼnosini oʻzi koʻrsatadi (izoh kerak boʻlmaydi), va
                   ikkita mayda ikonka yonma-yon turmaydi — notoʻgʻri
                   bosilsa qator oʻchib ketardi. */}
               <div className="mb-2 grid grid-cols-[1fr_auto_1fr_auto] items-center gap-3 px-1">
-                <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{t("columnFirstName")}</span>
+                <span className="text-label font-medium uppercase tracking-wider text-muted-foreground">{t("columnFirstName")}</span>
                 <span className="w-9" />
-                <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{t("columnLastName")}</span>
+                <span className="text-label font-medium uppercase tracking-wider text-muted-foreground">{t("columnLastName")}</span>
                 <span className="w-9" />
               </div>
               <div className="space-y-2">

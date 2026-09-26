@@ -15,9 +15,9 @@ import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { AttendanceRing } from "@/app/dashboard/(with-sidebar)/statistics/_components/AttendanceRing";
-import { ArrowDown, ArrowUpDown, MoreHorizontal, Pen, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowRightLeft, ArrowUpDown, Check, MoreHorizontal, Pen, Trash2 } from "lucide-react";
 
-type SortKey = "name" | "grade" | "attendance";
+type SortKey = "name" | "lastName" | "grade" | "attendance";
 
 interface StudentsDataTableProps {
   students: StudentRow[];
@@ -28,8 +28,11 @@ interface StudentsDataTableProps {
   onToggleSelectAll: () => void;
   sortKey: SortKey;
   onSortChange: (key: SortKey) => void;
-  onToggleStatus: (id: string, current: Status) => void;
+  onStatusChange: (id: string, next: Status) => void;
   onEdit: (student: StudentRow) => void;
+  /** Boshqa sinfga koʻchirish. Sinf tanlanmagan boʻlsa berilmaydi —
+      qaysi sinfDAN chiqarilishi noaniq boʻladi. */
+  onMove?: (student: StudentRow) => void;
   onDelete: (student: StudentRow) => void;
   hex: string;
 }
@@ -39,12 +42,13 @@ interface StudentsDataTableProps {
  * qatorga hover qilinganda oʻng chetda 3-nuqta menyu (Tahrirlash/Oʻchirish)
  * chiqadi, ustun sarlavhalari (Ism/Davomat/Baho) bosiladigan — Statistika
  * jadvali bilan bir xil naqsh, alohida "Saralash" tugmasi shart emas.
- * Holat pill bosilsa faol/taʼtilda almashadi (karta koʻrinishi bilan parity).
+ * Holat pill — faqat belgi; holat qator menyusidan oʻzgaradi (karta
+ * koʻrinishida kontekst menyu bilan parity), "chiqib ketgan" tasdiq soʻraydi.
  */
 export default function StudentsDataTable({
   students, selectedStudentId, onSelect,
   selectedIds, onToggleSelect, onToggleSelectAll,
-  sortKey, onSortChange, onToggleStatus, onEdit, onDelete, hex,
+  sortKey, onSortChange, onStatusChange, onEdit, onMove, onDelete, hex,
 }: StudentsDataTableProps) {
   const t = useTranslations("StudentsPage");
   const allSelected = students.length > 0 && selectedIds.size === students.length;
@@ -69,26 +73,30 @@ export default function StudentsDataTable({
   );
 
   const SortHead = ({
-    label, colKey, className, center,
-  }: { label: string; colKey: SortKey; className?: string; center?: boolean }) => (
-    <TableHead className={cn(stickyHead, className)}>
-      <button
-        type="button"
-        onClick={() => onSortChange(colKey)}
-        className={cn(
-          "inline-flex items-center gap-1.5 font-medium text-foreground hover:text-primary transition-colors",
-          center && "w-full justify-center"
-        )}
-      >
-        {label}
-        {sortKey === colKey ? <ArrowDown className="size-3" /> : <ArrowUpDown className="size-3 opacity-40" />}
-      </button>
-    </TableHead>
-  );
+    label, colKey, altKey, className, center,
+  }: { label: string; colKey: SortKey; altKey?: SortKey; className?: string; center?: boolean }) => {
+    // altKey berilgan ustun ikki tartib orasida almashadi (ism ⇄ familiya).
+    const active = sortKey === colKey || (altKey !== undefined && sortKey === altKey);
+    return (
+      <TableHead className={cn(stickyHead, className)}>
+        <button
+          type="button"
+          onClick={() => onSortChange(altKey !== undefined && sortKey === colKey ? altKey : colKey)}
+          className={cn(
+            "inline-flex items-center gap-1.5 font-medium text-foreground hover:text-primary transition-colors",
+            center && "w-full justify-center"
+          )}
+        >
+          {label}
+          {active ? <ArrowDown className="size-3" /> : <ArrowUpDown className="size-3 opacity-40" />}
+        </button>
+      </TableHead>
+    );
+  };
 
   return (
-    <div ref={scrollRef} className="absolute inset-0 overflow-auto">
-      <table className="w-full min-w-2xl caption-bottom text-sm">
+    <div ref={scrollRef} className="absolute inset-0 scrollbar-hover overflow-auto">
+      <table className="w-full min-w-xl caption-bottom text-sm">
         <TableHeader>
           <TableRow className="hover:bg-transparent! border-b-0!">
             <TableHead className={cn(stickyHead, "w-11 px-4 py-3")}>
@@ -99,10 +107,15 @@ export default function StudentsDataTable({
                 className="cursor-pointer"
               />
             </TableHead>
-            <SortHead label={t("tableColName")} colKey="name" className="min-w-48 py-3 pr-3 pl-0" />
-            <SortHead label={t("tableColAttendance")} colKey="attendance" className="w-20 px-3 py-3" center />
-            <SortHead label={t("tableColGrade")} colKey="grade" className="w-40 px-3 py-3" />
-            <TableHead className={cn(stickyHead, "w-36 px-3 py-3")}>{t("tableColStatus")}</TableHead>
+            <SortHead
+              label={sortKey === "lastName" ? t("tableColSurname") : t("tableColName")}
+              colKey="name"
+              altKey="lastName"
+              className="min-w-40 py-3 pr-3 pl-0"
+            />
+            <SortHead label={t("tableColAttendance")} colKey="attendance" className="w-16 px-3 py-3" center />
+            <SortHead label={t("tableColGrade")} colKey="grade" className="w-32 px-3 py-3" />
+            <TableHead className={cn(stickyHead, "w-32 px-3 py-3")}>{t("tableColStatus")}</TableHead>
             <TableHead className={cn(stickyHead, "w-10 px-4 py-3")} />
           </TableRow>
         </TableHeader>
@@ -121,7 +134,7 @@ export default function StudentsDataTable({
                 )}
                 onClick={() => onSelect(s.id)}
               >
-                <TableCell className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
+                <TableCell className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                   <Checkbox
                     checked={selectedIds.has(s.id)}
                     onCheckedChange={() => onToggleSelect(s.id)}
@@ -129,7 +142,7 @@ export default function StudentsDataTable({
                   />
                 </TableCell>
 
-                <TableCell className="whitespace-nowrap py-3.5 pr-3 pl-0">
+                <TableCell className="whitespace-nowrap py-3 pr-3 pl-0">
                   <div className="flex min-w-0 items-center gap-3">
                     <div
                       className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full text-xs font-semibold text-white"
@@ -146,37 +159,32 @@ export default function StudentsDataTable({
                   </div>
                 </TableCell>
 
-                <TableCell className="px-3 py-3.5">
+                <TableCell className="px-3 py-3">
                   <div className="flex justify-center">
                     <AttendanceRing pct={s.attendance} />
                   </div>
                 </TableCell>
 
-                <TableCell className="whitespace-nowrap px-3 py-3.5">
-                  <div className="flex items-center gap-2.5">
+                <TableCell className="whitespace-nowrap px-3 py-3">
+                  <div className="flex items-center gap-3">
                     <Progress
                       value={s.grade}
                       indicatorColor={scoreColor}
-                      className="h-1.5 w-full max-w-24"
+                      className="h-1.5 w-full max-w-16"
                       style={{ backgroundColor: `color-mix(in srgb, ${scoreColor} 16%, transparent)` }}
                     />
                     <span className="shrink-0 text-sm font-semibold tabular-nums">{s.grade}%</span>
                   </div>
                 </TableCell>
 
-                <TableCell className="whitespace-nowrap px-3 py-3.5" onClick={(e) => e.stopPropagation()}>
-                  <button
-                    type="button"
-                    onClick={() => onToggleStatus(s.id, s.status)}
-                    title={s.status === "active" ? t("markAway") : t("markActive")}
-                    className={cn(badgeBase, "cursor-pointer transition-all hover:opacity-80 active:scale-95", pill.cls)}
-                  >
+                <TableCell className="whitespace-nowrap px-3 py-3">
+                  <span className={cn(badgeBase, pill.cls)}>
                     <span className={cn("size-1.5 shrink-0 rounded-full", pill.dot)} />
                     {t(`status.${s.status}`)}
-                  </button>
+                  </span>
                 </TableCell>
 
-                <TableCell className="px-4 py-3.5">
+                <TableCell className="px-4 py-3">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
@@ -194,6 +202,30 @@ export default function StudentsDataTable({
                         <Pen className="size-4 text-muted-foreground" />
                         {t("edit")}
                       </DropdownMenuItem>
+                      {onMove && (
+                        <DropdownMenuItem
+                          className="cursor-pointer gap-2"
+                          onClick={(e) => { e.stopPropagation(); onMove(s); }}
+                        >
+                          <ArrowRightLeft className="size-4 text-muted-foreground" />
+                          Boshqa sinfga koʻchirish
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuSeparator />
+                      {(["active", "archived"] as Status[]).map((val) => {
+                        const StatusIcon = STATUS_META[val].icon;
+                        return (
+                          <DropdownMenuItem
+                            key={val}
+                            className="cursor-pointer gap-2"
+                            onClick={(e) => { e.stopPropagation(); onStatusChange(s.id, val); }}
+                          >
+                            <StatusIcon className={cn("size-4", STATUS_META[val].iconColor)} />
+                            <span className="flex-1">{t(`status.${val}`)}</span>
+                            {s.status === val && <Check className="size-4 text-primary" />}
+                          </DropdownMenuItem>
+                        );
+                      })}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         className="cursor-pointer gap-2 text-destructive focus:bg-destructive/10 focus:text-destructive"

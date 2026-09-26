@@ -3,6 +3,7 @@
 import type { HTMLAttributes, ReactNode, Ref } from "react";
 import { minToHHMM } from "@/lib/calendar-core/date-math";
 import { cn } from "@/lib/utils";
+import { NowPulseDot, NowTimePill } from "./NowIndicator";
 
 /* ════════════════════════════════════════════════════════════════════
    TIMEGRID — kun/hafta vaqt-toʻri karkasi (headless-ga yaqin).
@@ -72,6 +73,10 @@ export function TimeGrid({
   const nowTop =
     nowMin == null ? null : (nowMin / 60 - startHour) * pxPerHour;
   const nowVisible = nowTop != null && nowTop >= 0 && nowTop <= hourCount * pxPerHour;
+  // Pill va xira chiziq faqat koʻrinayotgan davr ichida bugun boʻlsa.
+  const showNow = nowVisible && columns.some((c) => c.isToday);
+  // Pill soat yorligʻini yopib qoʻysa — oʻsha yorliq yashiriladi.
+  const hideHourLabel = (h: number) => showNow && Math.abs(nowTop! - h * pxPerHour - 10) < 14;
 
   const templateColumns = `${gutterWidth}px repeat(${columns.length}, minmax(0,1fr))`;
 
@@ -85,7 +90,10 @@ export function TimeGrid({
           boʻlganda ostidagi kontent xira koʻrinib turadi (frosted glass). */}
       <div
         ref={scrollRef}
-        className="min-h-0 flex-1 overflow-y-auto scrollbar-thin [scrollbar-gutter:stable]"
+        // `scrollbar-hover` oʻzida `thin` + `scrollbar-gutter: stable` bor —
+        // shuning uchun `scrollbar-thin` va `[scrollbar-gutter:stable]` olib
+        // tashlandi (`scrollbar-thin` thumb'ni doim koʻrinadigan qilardi).
+        className="min-h-0 flex-1 scrollbar-hover overflow-y-auto"
       >
         <div
           className="sticky top-0 z-20 grid border-b border-border/60 bg-background/70 backdrop-blur-md"
@@ -104,7 +112,7 @@ export function TimeGrid({
         </div>
         <div className="grid" style={{ gridTemplateColumns: templateColumns }}>
         {/* Vaqt oʻqi */}
-        <div className={cn(gutterVariant === "axis" ? "border-r border-border/40" : "border-r border-border")}>
+        <div className={cn("relative", gutterVariant === "axis" ? "border-r border-border/40" : "border-r border-border")}>
           {hourIdx.map((h) =>
             gutterVariant === "axis" ? (
               <div
@@ -112,15 +120,25 @@ export function TimeGrid({
                 className="border-t border-border/40 pr-2 pt-1 text-right text-xs font-medium tabular-nums text-muted-foreground"
                 style={{ height: pxPerHour }}
               >
-                {minToHHMM((startHour + h) * 60)}
+                <span className={cn(hideHourLabel(h) && "invisible")}>{minToHHMM((startHour + h) * 60)}</span>
               </div>
             ) : (
               <div key={h} className={cn("relative", h > 0 && "border-t border-border")} style={{ height: pxPerHour }}>
-                <span className="absolute left-1/2 top-1 -translate-x-1/2 text-[11px] font-medium tabular-nums text-muted-foreground">
+                <span
+                  className={cn(
+                    "absolute left-1/2 top-1 -translate-x-1/2 text-tag font-medium tabular-nums text-muted-foreground",
+                    hideHourLabel(h) && "invisible",
+                  )}
+                >
                   {minToHHMM((startHour + h) * 60)}
                 </span>
               </div>
             ),
+          )}
+          {showNow && (
+            <span className="pointer-events-none absolute right-1 z-20 -translate-y-1/2" style={{ top: nowTop! }}>
+              <NowTimePill label={minToHHMM(nowMin!)} />
+            </span>
           )}
         </div>
 
@@ -162,12 +180,22 @@ export function TimeGrid({
               </div>
             ))}
 
-            {col.isToday && nowVisible && (
-              <div className="pointer-events-none absolute inset-x-0 z-20 flex items-center" style={{ top: nowTop! }}>
-                <div className="-ml-1.5 size-2.5 shrink-0 rounded-full bg-destructive" />
-                <div className="h-px flex-1 bg-destructive" />
-              </div>
-            )}
+            {/* Bugun — nuqta + qalin chiziq; boshqa kunlar — xira chiziq. */}
+            {showNow &&
+              (col.isToday ? (
+                <div
+                  className="pointer-events-none absolute inset-x-0 z-20 flex -translate-y-1/2 items-center"
+                  style={{ top: nowTop! }}
+                >
+                  <NowPulseDot className="-ml-1" />
+                  <div className="h-0.5 flex-1 bg-destructive" />
+                </div>
+              ) : (
+                <div
+                  className="pointer-events-none absolute inset-x-0 z-20 h-px -translate-y-1/2 bg-destructive/25"
+                  style={{ top: nowTop! }}
+                />
+              ))}
 
             {renderColumn(col)}
           </div>

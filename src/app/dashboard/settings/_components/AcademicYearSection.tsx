@@ -545,7 +545,7 @@ export default function AcademicYearSection() {
         <YearStrip calendar={calendar} onSegmentClick={({ kind, id }) => scrollToRow(kind, id)} />
 
         {issuesFor({ kind: "year" }).length > 0 && (
-          <div className="space-y-1 rounded-lg border border-warning/40 bg-warning/10 px-3.5 py-2.5">
+          <div className="space-y-1 rounded-lg border border-warning/40 bg-warning/10 px-4 py-3">
             {issuesFor({ kind: "year" }).map((w, i) => (
               <p key={i} className="flex items-start gap-1.5 text-xs text-warning">
                 <TriangleAlert className="mt-0.5 size-3.5 shrink-0" />

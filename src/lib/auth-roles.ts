@@ -12,8 +12,13 @@ import { defaultStatements, adminAc } from "better-auth/plugins/admin/access";
    (masalan "teacher,super_admin").
 
    - teacher      — oddiy foydalanuvchi (default), plugin API'lari yopiq
-   - school_admin — oʻz maktabi doirasida read-only (scoping DAL'da,
-                    plugin API'lari yopiq)
+   - school_admin — ⚠️ ESKIRGAN, RUXSAT UCHUN ISHLATILMAYDI (2026-08-26).
+                    Maktab admini endi `workspace_members.role = "admin"`
+                    orqali aniqlanadi — bitta manba, faol maydon boʻyicha
+                    (`requireWorkspaceAdmin()`, src/server/workspace.ts).
+                    Bu yorliq faqat `/admin/users` roʻyxatida koʻrinadi;
+                    ⛔ unga qarab hech qanday darvoza qurilmasin.
+                    Sabab: docs/ish-maydoni-arxitektura.md §11.2
    - super_admin  — toʻliq boshqaruv. `adminAc` shablonida
                     `impersonate-admins` YOʻQ — super_admin boshqa
                     super_admin sifatida kira olmaydi (ataylab).

@@ -139,7 +139,7 @@ export default async function AdminLayout({
             ichida, sarlavhadan OLDIN. */}
         <ImpersonationBanner />
         <AdminHeader />
-        <div className="relative flex-1 min-w-0 min-h-0 overflow-auto">
+        <div className="relative flex-1 min-w-0 min-h-0 scrollbar-hover overflow-auto">
           {children}
         </div>
       </SidebarInset>

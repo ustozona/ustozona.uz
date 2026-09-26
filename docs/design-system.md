@@ -42,21 +42,108 @@ Hosilalar:
 - `classTints(color)` — tayyor inline-style (surface, tint, badge, text, ring, ...).
 - `color-mix(in srgb, ${hex} N%, transparent)` — shaffof ottenka.
 
+#### Sinfni koʻrsatishning toʻrt kanonik shakli
+
+Sinf rangi/nomi UI'da **faqat shu komponentlar** orqali chiziladi — qoʻlda
+`<span className="size-2 rounded-full" style={{ backgroundColor: hex }}>`
+yozilmaydi va mahalliy nusxa yaratilmaydi:
+
+| Holat | Komponent |
+|---|---|
+| Sinf nomi qatorning **asosiy** matni (sinflar roʻyxati, tanlovchi, breadcrumb, meta-qator) | `<ClassSwatch hex={…} />` + oddiy matn |
+| Sinf nomi **oʻqiladigan yorliq** boshqa mazmun ichida (dars kartasi, jadval qatori) | `<ClassBadge color={…} name={…} />` |
+| Sinf nomi **bosiladigan chip** (formada tanlangan sinf, krestcha bilan) | `<ClassChip color={…} name={…} onRemove={…} />` |
+| **Nechta** sinf — ustma-ust taxlangan doiralar | `<ClassSwatchStack hexes={…} />` |
+| **Sinflar paneli** (`ClassListPanel`) — sinf navigatsiyasi | Sinf ikonkasi `classIcon(key)` 36px tint doirada, `data-slot="class-glyph"` + qator `.list-row--glyph` |
+
+**Deviatsiya (2026-09-10) — sinflar paneli glifi (tint doira).**
+Panel sinfning asosiy navigatsiyasi: oʻqituvchi tanlagan ikonka sinfni
+nuqtadan tezroq tanitadi. Doira 36px (`size-9`, toolbar standarti bilan bir
+xil), `rounded-full` (Karta pasporti v2 iconbox shakli), 18px glif;
+oʻlchami holatlar orasida oʻzgarmaydi: tinch — sinf rangining 18%
+tint foni + rangli glif; tanlangan — doira toʻyinadi, `classTints().gradientTile`
++ oq glif, qator foni tint + 1px chegara toʻliq sinf rangida (inline;
+umumiy `softBorder` 22% och ranglarda koʻrinmasdi). Hover — kulrang `--muted` emas, sinf
+rangining 5% tinti (chegarasiz — tanlangan holatdan ajralib turadi) va
+yagona hover-harakat — doira `scale(1.08)`, `--transition-duration-base`
+(reduced-motion'da oʻchadi). Rail yoʻq — tanlov doiraning oʻzida.
+Qator balandligi 52px (vertikal padding 8px). Mobil
+trigger ham shu ikonkani sinf rangida chizadi. Boshqa zich roʻyxatlar nuqtada
+qoladi.
+
+**Doira oʻlchami — 8px, yagona.** `ClassSwatch` ichida `size-2` `className`dan
+keyin `cn()` ga beriladi, `cn` esa `tailwind-merge` — shuning uchun chaqiruv
+joyida oʻlchamni oʻzgartirib boʻlmaydi. Bu 2026-09 auditidan keyin qotirildi:
+oʻlcham `className` orqali berilar edi va loyihada 4 xil doira paydo boʻlgan
+edi (6/8/10/12px), hatto **bir xil** kontekstda ham — 14px matnli qator
+kodning turli joyida uchala oʻlchamda ham chizilgan edi. 12px hech qachon
+ataylab tanlanmagan: u shunchaki eski default edi.
+
+Nega bitta oʻlcham yetadi: doira KATTALIK oʻlchamaydi, u «bu qaysi sinf»
+degan savolga RANG bilan javob beradi. Oʻlcham hech qanday maʼlumot
+tashimaydi — faqat chaqiruv joyida qaror talab qiladi, qaror esa vaqt oʻtib
+driftga aylanadi.
+
+`ClassSwatchStack` — istisno emas, **boshqa qoida**: halqa (`ring-2 ring-card`)
+doiralarni ajratadi va diametrni yeydi, 8px doira halqadan keyin oʻqilmay
+qoladi. Shu sabab u yerda 12px.
+
+`ClassBadge` (20px qobiq, 11px matn) va `ClassChip` (24px qobiq, 12px matn)
+oʻlcham prop'i bilan emas, **alohida nom** bilan ajratilgan — chaqiruv joyida
+«kattasinimi, kichiginimi?» degan savol tugʻilmasin. Ikkalasi ham rang
+retseptini `classTints()`dan oladi, qoʻlda `color-mix` yozilmaydi.
+
+Anatomiya 4pt gridда (§6.5) va §3 boshqaruv shkalasidan chiqariladi, tanlanmaydi:
+
+| | Balandlik | Nimadan chiqqan |
+|---|---|---|
+| `ClassBadge` | 20px (`h-5`) | 11px matn + 9px havo; gridда |
+| `ClassChip` | 24px (`h-6`) | `min-h-9` (36px) idish − `py-1.5` (12px); **va** 16px qator + `py-1` — ikki hisob bir sonda |
+| Krestcha nishoni | 24×24 | WCAG 2.2 §2.5.8 (AA) minimal nishon |
+
+`LessonStatusPill` `ClassBadge` bilan bir qatorda turadi — balandligi va matni
+oʻsha yerdan koʻchiriladi, alohida tanlanmaydi.
+
 ---
 
 ## 2. Tipografika shkalasi
 
-Utility klasslar (`globals.css`) — inline uchun; React analoglar
-(`@/components/ui/typography`, `CardTitle`) — semantik JSX uchun. Ikkalasi mos.
+Rollar — Tailwind tokeni (`globals.css` `@theme inline`): bitta klass
+oʻlcham, qator balandligi, vazn va harf oraligʻini birga beradi. React
+analoglar (`@/components/ui/typography`, `CardTitle`) — semantik JSX uchun.
 
-| Klass | React | Oʻlcham / vazn | Ishlatish |
+| Rol | React | Oʻlcham / qator / vazn | Ishlatish |
 |---|---|---|---|
-| `.heading-page` | `TypographyH1` | 24px / 700 | Sahifa sarlavhasi |
-| `.heading-section` | `CardTitle` | 18px / 600 | Panel / boʻlim sarlavhasi |
-| `.heading-small` | — | 15px / 600 | Karta ichidagi ism, kichik sarlavha |
-| `.text-body` | `TypographyP` | 14px / 400 | Asosiy matn (`body` ham 14px) |
-| `.text-caption` | `TypographyMuted` | 12px / 400 muted | Izoh, ikkilamchi maʼlumot |
-| `.text-label` | `TypographyLabel` | 11px / 500 UPPERCASE | Boʻlim yorliqlari (Sinf, Aloqa) |
+| `text-headline` (eski `.heading-page`) | `TypographyH1` | 24 / 1.2 / 700 | Sahifa sarlavhasi |
+| `text-title` (eski `.heading-section`) | `CardTitle` | 18 / 1.3 / 600 | Panel / boʻlim sarlavhasi |
+| `text-title-sm` (eski `.heading-small`) | — | 15 / 1.3 / 600 | Karta ichidagi ism, kichik sarlavha |
+| `text-reading` | — | 16 / 1.6 / 400 | Uzun oʻqiladigan matn |
+| `text-body` | `TypographyP` | 14 / 1.5 / 400 | Asosiy matn (`body` ham 14px) |
+| `text-caption` | `TypographyMuted` | 12 / 1.4 / 400 | Izoh, ikkilamchi maʼlumot |
+| `text-label` | `TypographyLabel` | 11 / 1.4 / 500 UPPERCASE | Boʻlim yorliqlari (Sinf, Aloqa) |
+| `text-tag` | — | 11 / 1.4 / vazn joyida | Badge, chip, pill, ixcham meta |
+| `text-micro` | — | 10 / 1.2 / 600 tabular | ⚠️ FAQAT zich toʻr kataklari (maktab dars jadvali) |
+
+Rol utility boʻlgani uchun yonidagi `font-medium`, `leading-relaxed`, rang
+klassi uni ustidan yozadi. Yangi rol qoʻshilsa — `src/lib/utils.ts` dagi
+`TEXT_ROLES` ga ham (aks holda `cn()` uni rang deb tashlab yuboradi).
+
+**`.text-micro` haqida.** Shkalaning eng kichigi `.text-caption` (12px)
+boʻlib qoladi; `.text-micro` — 2026-09-02 da ochilgan bitta istisno.
+Sababi oʻlchovda: maktab dars jadvalida ~33 sinf × 6 kun × 6 soat =
+~1200 katak bitta toʻrda turadi, katak eni ~30px. 12px matn u yerga
+sigʻmaydi, katakni kattalashtirish esa toʻrni ekrandan chiqaradi va
+zavuchning asosiy amali — «kim shu vaqtda band» degan ustun skanini —
+buzadi.
+
+Ikkinchi ruxsat (2026-09-18): **20px dan kichik idish ichidagi belgi** —
+hisoblagich nishoni, kichik avatar initsiali, 16px doiradagi raqam.
+10px — ekrandagi matnning pastki chegarasi, undan kichigi yozilmaydi.
+
+Shuning uchun qoida tor: **`.text-micro` roʻyxat, karta, panel yoki
+formadagi oddiy matn uchun ishlatilmaydi.** Agar u yerda 10px kerak boʻlib qolsa, muammo
+zichlikda emas — ierarxiyada, va yechim matnni kichraytirish emas.
+Toʻliq asos: [dars-jadvali-spec.md](./dars-jadvali-spec.md) §12.3, §14.
 
 Rang har doim tokendan (`--foreground` / `--muted-foreground`).
 
@@ -78,6 +165,12 @@ toolbar tugmalari va inputlari bir qatorda 36px balandlikda boʻladi.
 
 > Uslub (boxed: border + `card-elevation` vs ghost) kontekstga qarab tanlanadi —
 > lekin **oʻlcham** hamma joyda yuqoridagidek. (Students = boxed, Lessons = ghost.)
+
+### Boʻshliq shkalasi
+
+4px toʻri, qiymat roldan keladi — rollar jadvali: `DESIGN.md` §3.5.
+Taqiqlangan qadamlar (`2.5 · 3.5 · 4.5`, ixtiyoriy `[Npx]`)
+build oldidan `npm run check:tokens` bilan ushlanadi.
 
 ---
 
@@ -137,6 +230,42 @@ shadow-none/px-5/py-4/min-h-16 qotirilgan holda.
   Faqat `xl+` da chiqadigan ustun boʻlsa `xlTemplate` bering (track soni oshadi).
   Breakpoint siyosati: chap "Sinflar" paneli = `lg`, oʻng detal/preview paneli = `xl`
   (students preview `lg` da — ustunlar bilan birga chiqadi, hujjatlangan istisno).
+
+  **Mobil bosqichi (2026-09-06).** `hideBelow` yolgʻiz oʻzi ustunni
+  YOʻQOTADI — telefonda sahifa tugik boʻlib qoladi. Shu sabab yon ustunga
+  `mobile` propi beriladi:
+
+  ```tsx
+  {/* Sinf tanlash — panel oʻzi trigger + Sheet koʻrsatadi */}
+  <DashboardColumn hideBelow="lg" mobile="self">
+    <ClassListPanel page="grades" selectedClassId={id} onSelect={select} />
+  </DashboardColumn>
+
+  {/* Detal/preview — qator bosilganda oʻngdan chiqadi, trigger tugmasi yoʻq */}
+  <DashboardColumn
+    hideBelow="lg"
+    mobile={{ title: t("previewPanel"), side: "right", hideTrigger: true,
+              open: previewOpen, onOpenChange: setPreviewOpen }}
+  >
+    <PreviewCard … />
+  </DashboardColumn>
+  ```
+
+  - `mobile="self"` — bola oʻz ixcham koʻrinishini oʻzi beradi.
+  - `mobile={{ title, icon?, side?, id?, hideTrigger?, open?, onOpenChange? }}` —
+    bola `Sheet` ichida; `side` navigatsiya uchun `left`, detal uchun `right`.
+  - `open`/`onOpenChange` — `DashboardColumns`ni render qilgan sahifa
+    provayderdan TASHQARIDA turadi, shuning uchun panelni shu ikki prop
+    orqali boshqaradi. Chuqurroqdagi bolalar uchun `useDashboardColumns()`
+    (`openPanel`/`closePanels`) bor.
+  - Balandlik: `< lg` da ustun `h-auto`; sahifa qobigʻida `h-full` va
+    `overflow-hidden` `lg:` prefiksida yoziladi, vertikal scroll esa
+    `dashboard/layout.tsx` dagi `max-lg:overflow-y-auto` ga oʻtadi.
+    Ustma-ust tushgan panelga `max-lg:min-h-[50–70svh]` beriladi.
+  - JS chegarasi (`useIsBelow`) `hideBelow` bilan bir xil breakpointdan
+    olinadi — aks holda 768–1023px da "oʻlik zona" chiqadi.
+
+  Toʻliq kontrakt va sabab: `DESIGN.md` §10.
 
 ### Brend CTA tugmasi (`variant="brand"` / `BrandCtaButton`)
 
@@ -279,6 +408,11 @@ Ilovadagi barcha karta va roʻyxat elementlari "Karta pasporti v2" qoidalariga b
 > ⚠️ **Taqiqlar**: Koʻp rangli (candy) gradientlar, ochiq rangli (sariq/ohak) tile ustida oq glifning oʻqilmay qolishi (qorayuvchi gradient orqali yechiladi).
 
 ---
+
+
+**Deviatsiyalar (2026-09-22, Darslar sahifasi):**
+- Tanlanmagan sinf/boʻlim kartasida iconbox — 18% tint fon + rangli glif; tanlanganda gradient + oq glif (`ClassListPanel` deviatsiyasi bilan bir xil sabab: koʻp karta orasida tanlangani ajralishi kerak).
+- Karta ichidagi «Oʻtildimi?» tasdiqlash lentasi tugmalari 28px (`h-7`) — 72px karta ichida 36px ogʻir; faqat shu lenta uchun.
 
 ## 7. Modal sarlavhasi (standart)
 

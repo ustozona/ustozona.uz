@@ -31,13 +31,13 @@ export function AbsenceTierList({ summaries, students }: { summaries: StudentPer
           <Link
             key={s.studentId}
             href={`/dashboard/students/${s.studentId}`}
-            className="flex items-center gap-2.5 py-2 text-sm hover:bg-muted/40 -mx-1 px-1 rounded-md transition-colors"
+            className="flex items-center gap-2 py-2 text-sm hover:bg-muted/40 -mx-1 px-1 rounded-md transition-colors"
           >
             <span className="truncate flex-1 text-foreground/90">{s.name}</span>
             <TypographyMuted className="tabular-nums text-xs">{s.attendancePct}%</TypographyMuted>
             <span
               className={cn(
-                "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold",
+                "shrink-0 rounded-full px-2 py-0.5 text-micro font-semibold",
                 s.absenceTier === "chronic" ? "bg-destructive/15 text-destructive" : "bg-warning/15 text-warning"
               )}
             >

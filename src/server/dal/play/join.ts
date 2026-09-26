@@ -2,8 +2,10 @@ import "server-only";
 import { randomUUID, randomBytes } from "node:crypto";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/server/db/client";
-import { quizSessions, sessionParticipants, students } from "@/server/db/schema";
+import { enrollments, quizSessions, sessionParticipants, students } from "@/server/db/schema";
 import { hashParticipantToken, ForbiddenError, UnauthorizedError } from "@/server/play/session";
+import { isSessionPastDue } from "@/lib/assess/session-due";
+import { scheduleNudge } from "@/server/realtime/broadcast";
 
 /* ════════════════════════════════════════════════════════════════════
    QOʻSHILISH — akkauntsiz ishtirokchi PIN/havola/QR bilan kiradi.
@@ -18,18 +20,27 @@ import { hashParticipantToken, ForbiddenError, UnauthorizedError } from "@/serve
 export type JoinResult = { token: string; participantId: string; sessionId: string };
 
 /** Kod ishtirokchiga ekvivalent — sinf roʻyxatini (faqat id+ism) qaytaradi,
-    ishtirokchi ROʻYXATDAN ismini TANLAYDI (R43), yozmaydi. */
-export async function listRosterByCode(joinCode: string): Promise<{ id: string; name: string }[]> {
+    ishtirokchi ROʻYXATDAN ismini TANLAYDI (R43), yozmaydi.
+
+    `null` — bunday kod yoʻq. Bu xato emas, kutilgan holat: oʻquvchi kodni
+    `/play` da qoʻlda yozadi va bir harf adashishi oddiy hol. Xato
+    otilganda mijoz «kod yoʻq» ni tarmoq uzilishidan ajrata olmasdi. */
+export async function listRosterByCode(
+  joinCode: string,
+): Promise<{ id: string; name: string }[] | null> {
   const [session] = await db
     .select()
     .from(quizSessions)
     .where(eq(quizSessions.joinCode, joinCode.toUpperCase()));
-  if (!session) throw new UnauthorizedError("Yaroqsiz kod");
+  if (!session) return null;
 
+  // Mehmon oqimi: oʻqituvchi sessiyasi yoʻq, shu bois qamrov join-kod
+  // orqali kelgan sinfning YOZILISH roʻyxatidan olinadi.
   return db
     .select({ id: students.id, name: students.name })
-    .from(students)
-    .where(eq(students.classId, session.classId));
+    .from(enrollments)
+    .innerJoin(students, eq(students.id, enrollments.studentId))
+    .where(eq(enrollments.classId, session.classId));
 }
 
 export async function joinByCode(
@@ -46,12 +57,17 @@ export async function joinByCode(
   if (session.state !== "running" && session.state !== "scheduled") {
     throw new ForbiddenError("Sessiya hozir qoʻshilish uchun ochiq emas");
   }
+  if (isSessionPastDue(session)) {
+    throw new ForbiddenError("Topshiriq muddati tugagan");
+  }
 
   if (studentId) {
     const [student] = await db
-      .select({ id: students.id })
-      .from(students)
-      .where(and(eq(students.id, studentId), eq(students.classId, session.classId)));
+      .select({ id: enrollments.studentId })
+      .from(enrollments)
+      .where(
+        and(eq(enrollments.studentId, studentId), eq(enrollments.classId, session.classId))
+      );
     if (!student) throw new ForbiddenError("Oʻquvchi shu sinfda topilmadi");
   }
 
@@ -67,6 +83,10 @@ export async function joinByCode(
       deviceKind: deviceKind ?? null,
     })
     .returning({ id: sessionParticipants.id });
+
+  // Jonli sessiyada doskadagi «N qoʻshildi» hisobi darhol yangilansin.
+  const liveTopic = (session.renderConfig as { liveTopic?: string }).liveTopic;
+  if (session.mode === "live" && liveTopic) scheduleNudge(liveTopic);
 
   return { token, participantId: participant.id, sessionId: session.id };
 }

@@ -40,7 +40,7 @@ function TagPill({
       type="button"
       onClick={onClick}
       className={cn(
-        "rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
+        "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
         active ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:bg-muted"
       )}
     >
@@ -175,16 +175,20 @@ export function TasksNav({
                       key={cls.id}
                       type="button"
                       onClick={() => onSelectClass(cls.id)}
-                      style={active ? { ["--card-accent" as string]: hex, ...tints.tint } : undefined}
-                      className="list-row-compact w-full disabled:pointer-events-none disabled:opacity-50"
+                      style={active ? {
+                        ["--card-accent" as string]: hex,
+                        ...tints.tint,
+                        ...tints.softBorder,
+                      } : undefined}
+                      className="list-row list-row--dot-ring group w-full disabled:pointer-events-none disabled:opacity-50"
                       data-active={active || undefined}
-                      data-tint={active || undefined}
+                      aria-current={active || undefined}
                     >
                       <ClassSwatch hex={hex} />
                       <span
                         className={cn(
                           "flex-1 truncate text-left text-sm transition-colors",
-                          active ? "font-semibold text-foreground" : "text-foreground/70"
+                          active ? "font-semibold text-foreground" : "text-foreground/70 group-hover:text-foreground"
                         )}
                       >
                         {cls.name}
@@ -199,7 +203,7 @@ export function TasksNav({
 
         {allTags.length > 0 && (
           <div className="flex flex-col gap-2">
-            <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+            <div className="text-label font-medium uppercase tracking-wider text-muted-foreground">
               {t("tagsLabel")}
             </div>
             <div className="flex flex-wrap items-center gap-1.5">

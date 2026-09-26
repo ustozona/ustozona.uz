@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { StandardItem } from '@/lib/standards-data';
+import type { StandardDomain, StandardItem } from '@/lib/standards-data';
 
 /* ════════════════════════════════════════════════════════════════════
    STANDARTLAR — server-backed store (7-bosqich migratsiyasi)
@@ -22,6 +22,13 @@ export interface StandardSet {
   classIds: string[];
   /** Papka ichidagi standartlar */
   standards: StandardItem[];
+  /**
+   * Mazmun sohalari (domenlar) — `StandardItem.domainId` shularga
+   * havola qiladi. Boʻsh boʻlishi mumkin: eski toʻplamlarda umuman
+   * yoʻq (JSONB hujjat — migratsiya kerak emas), va oʻqituvchi
+   * soha ishlatmasa ham hech narsa buzilmaydi.
+   */
+  domains?: StandardDomain[];
   /** Manba: "custom" (oʻzi yaratgan) yoki ramka nomi ("CEFR", "OʻzDTS"…) */
   source?: string;
   /** Sinf/bosqich (mas. "9-sinf", "B1") */
@@ -39,6 +46,8 @@ export interface CustomSet {
   subject: string;
   grade?: string;
   standards: StandardItem[];
+  /** Mazmun sohalari — `StandardSet.domains` bilan bir xil maʼno. */
+  domains?: StandardDomain[];
 }
 
 type CreateSetInput = {
@@ -46,6 +55,7 @@ type CreateSetInput = {
   subject: string;
   classIds: string[];
   standards?: StandardItem[];
+  domains?: StandardDomain[];
   source?: string;
   grade?: string;
   frameworkCode?: string;
@@ -75,8 +85,21 @@ interface StandardsState {
   /** Standartni papkadan oʻchirish. */
   removeStandard: (setId: string, code: string) => void;
 
+  /* ── Mazmun sohalari (domenlar) ── */
+  /** Toʻplam domenlari roʻyxatini toʻliq almashtiradi (tartib bilan). */
+  setDomains: (setId: string, domains: StandardDomain[]) => void;
+  /** Bitta domen qoʻshadi; shu id allaqachon bor boʻlsa — no-op. */
+  addDomain: (setId: string, domain: Omit<StandardDomain, 'order'>) => void;
+  /**
+   * Domenni oʻchiradi va unga bogʻlangan standartlarni «Boʻlimsiz»
+   * holatiga qaytaradi (yetim havola qolmasin).
+   */
+  removeDomain: (setId: string, domainId: string) => void;
+  /** Standartga mazmun sohasi beradi (`undefined` → Boʻlimsiz). */
+  setStandardDomain: (setId: string, code: string, domainId: string | undefined) => void;
+
   /* ── Custom kutubxona (Mening standartlarim) ── */
-  addCustomSet: (input: { name: string; subject: string; grade?: string; standards?: StandardItem[] }) => string;
+  addCustomSet: (input: { name: string; subject: string; grade?: string; standards?: StandardItem[]; domains?: StandardDomain[] }) => string;
   updateCustomSet: (id: string, patch: Partial<Pick<CustomSet, 'name' | 'subject' | 'grade'>>) => void;
   removeCustomSet: (id: string) => void;
   addStandardToCustom: (id: string, item: StandardItem) => void;
@@ -91,12 +114,12 @@ export const useStandardsStore = create<StandardsState>()(
       sets: [],
       customSets: [],
 
-      createSet: ({ name, subject, classIds, standards = [], source, grade, frameworkCode, templateId }) => {
+      createSet: ({ name, subject, classIds, standards = [], domains, source, grade, frameworkCode, templateId }) => {
         const id = uid();
         // Yangi qoʻshilganda hamma standart "oʻtilmagan" deb belgilanadi.
         const items = standards.map((s) => ({ ...s, covered: false }));
         set((state) => ({
-          sets: [...state.sets, { id, name, subject, classIds, standards: items, source, grade, frameworkCode, templateId }],
+          sets: [...state.sets, { id, name, subject, classIds, standards: items, domains, source, grade, frameworkCode, templateId }],
         }));
         return id;
       },
@@ -126,10 +149,60 @@ export const useStandardsStore = create<StandardsState>()(
           ),
         })),
 
-      addCustomSet: ({ name, subject, grade, standards = [] }) => {
+      setDomains: (setId, domains) =>
+        set((state) => ({
+          sets: state.sets.map((s) =>
+            s.id === setId
+              ? { ...s, domains: domains.map((d, i) => ({ ...d, order: i })) }
+              : s,
+          ),
+        })),
+
+      addDomain: (setId, domain) =>
+        set((state) => ({
+          sets: state.sets.map((s) => {
+            if (s.id !== setId) return s;
+            const list = s.domains ?? [];
+            if (list.some((d) => d.id.toLowerCase() === domain.id.toLowerCase())) return s;
+            return { ...s, domains: [...list, { ...domain, order: list.length }] };
+          }),
+        })),
+
+      removeDomain: (setId, domainId) =>
+        set((state) => ({
+          sets: state.sets.map((s) => {
+            if (s.id !== setId) return s;
+            return {
+              ...s,
+              domains: (s.domains ?? [])
+                .filter((d) => d.id !== domainId)
+                .map((d, i) => ({ ...d, order: i })),
+              // Yetim havola qolmasin — standartlar «Boʻlimsiz»ga tushadi.
+              standards: s.standards.map((x) =>
+                x.domainId === domainId ? { ...x, domainId: undefined } : x,
+              ),
+            };
+          }),
+        })),
+
+      setStandardDomain: (setId, code, domainId) =>
+        set((state) => ({
+          sets: state.sets.map((s) =>
+            s.id === setId
+              ? {
+                  ...s,
+                  standards: s.standards.map((x) =>
+                    x.id === code ? { ...x, domainId } : x,
+                  ),
+                }
+              : s,
+          ),
+        })),
+
+      addCustomSet: ({ name, subject, grade, standards = [], domains }) => {
         const id = uid();
         set((state) => ({
-          customSets: [...state.customSets, { id, name, subject, grade, standards }],
+          customSets: [...state.customSets, { id, name, subject, grade, standards, domains }],
         }));
         return id;
       },

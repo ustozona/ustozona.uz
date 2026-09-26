@@ -33,7 +33,7 @@ export const studentUpsertSchema = z.object({
   classId: id,
   name: z.string().min(1).max(300),
   initials: z.string().max(10),
-  status: z.enum(["active", "away", "archived"]).optional(),
+  status: z.enum(["active", "archived"]).optional(),
   gender: z.enum(["male", "female"]).optional(),
   birthDate: z.string().max(20).optional(),
   parentName: z.string().max(300).optional(),
@@ -73,6 +73,9 @@ export const assignmentUpsertSchema = z.object({
       `nullable`: guruhdan chiqarish ham oʻzgarish, "yuborilmadi" degani
       emas. FK yoʻq — guruh mustaqil obyekt emas, kalit. */
   groupId: id.nullable().optional(),
+  /** Oʻlchanadigan standartlar (spec §11.1). `setId` bilan bir xil sabab
+      bilan nullable: bogʻlanishni uzish ham oʻzgarish, "yuborilmadi" emas. */
+  standardIds: z.array(z.string().min(1).max(200)).max(50).nullable().optional(),
   sortOrder: z.number().int().min(0),
 });
 
@@ -106,33 +109,3 @@ export type AssignmentUpsert = z.infer<typeof assignmentUpsertSchema>;
 export type GradeUpsert = z.infer<typeof gradeUpsertSchema>;
 export type GradeKey = z.infer<typeof gradeKeySchema>;
 export type GradesBatch = z.infer<typeof gradesBatchSchema>;
-
-export function emptyGradesBatch(): GradesBatch {
-  return {
-    classesUpsert: [],
-    classesDelete: [],
-    studentsUpsert: [],
-    studentsDelete: [],
-    topicsUpsert: [],
-    topicsDelete: [],
-    assignmentsUpsert: [],
-    assignmentsDelete: [],
-    gradesUpsert: [],
-    gradesDelete: [],
-  };
-}
-
-export function isEmptyGradesBatch(b: GradesBatch): boolean {
-  return (
-    b.classesUpsert.length === 0 &&
-    b.classesDelete.length === 0 &&
-    b.studentsUpsert.length === 0 &&
-    b.studentsDelete.length === 0 &&
-    b.topicsUpsert.length === 0 &&
-    b.topicsDelete.length === 0 &&
-    b.assignmentsUpsert.length === 0 &&
-    b.assignmentsDelete.length === 0 &&
-    b.gradesUpsert.length === 0 &&
-    b.gradesDelete.length === 0
-  );
-}

@@ -84,15 +84,26 @@ function CommandInput({
 
 function CommandList({
   className,
+  onWheel,
   ...props
 }: React.ComponentProps<typeof CommandPrimitive.List>) {
   return (
     <CommandPrimitive.List
       data-slot="command-list"
       className={cn(
-        "max-h-[300px] scroll-py-1 overflow-x-hidden overflow-y-auto",
+        "max-h-[300px] scroll-py-1 overflow-x-hidden scrollbar-hover overflow-y-auto",
         className
       )}
+      // Command koʻpincha Dialog ICHIDAGI Popover'da ishlatiladi — Popover
+      // portal orqali Dialog'dan tashqarida render boʻladi, Dialog esa
+      // sahifa scroll-lock qoʻyganda buni "ruxsat etilgan" konteyner deb
+      // tanimaydi va sichqoncha gʻildiragini yutib yuboradi (faqat scrollbar
+      // sudrab skroll qilish ishlaydi). Shu sababli gʻildirakni qoʻlda
+      // scrollTop'ga uzatamiz — xuddi ClassFormModal'dagi ScrollArea kabi.
+      onWheel={(e) => {
+        e.currentTarget.scrollTop += e.deltaY
+        onWheel?.(e)
+      }}
       {...props}
     />
   )

@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useCollator } from "@/lib/use-collator";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { unwrap } from "@/lib/action-result";
+import { previewClassDeletionAction } from "@/server/actions/workspace";
 import { TourDemoBanner } from "@/components/tour/TourDemoBanner";
 import { BulkActionBar, BulkActionButton, BulkActionCount, BulkActionDivider } from "@/components/BulkActionBar";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -11,7 +14,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { SegmentedToggle } from "@/components/ui/segmented-toggle";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -52,6 +55,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { CLASS_COLOR_HEX, classTints, classColorValue, type ClassColor } from "@/lib/class-colors";
 import { classIcon, type ClassIconKey } from "@/lib/class-icons";
 import { classColor, type ClassInfo } from "@/lib/grades-data";
+import { subjectLabel } from "@/lib/standards-data";
 import { lessonClassIds } from "@/lib/lessons-data";
 import { classFormInitial, classInfoFromForm, useCreateClass } from "@/hooks/useLiveClasses";
 import { useGradesStore } from "@/store/useGradesStore";
@@ -115,13 +119,39 @@ export default function ClassesPage() {
     if (v !== "table") setSelectedIds(new Set());
     localStorage.setItem(CLASSES_VIEW_STORAGE_KEY, v);
   };
+  /* Koʻrinish almashtirgichi ikki joyda joylashadi (panel KENGLIGIGA qarab,
+     ekran kengligiga emas): keng panelda markazda, tor panelda amallar
+     guruhida. Bitta manba — ikki oʻramda CSS orqali almashtiriladi. */
+  const viewToggle = (
+    <SegmentedToggle
+      value={view}
+      onValueChange={handleViewChange}
+      variant="pill"
+      iconOnly
+      options={[
+        { value: "grid", label: t("gridViewAria"), icon: <LayoutGrid className="size-4" /> },
+        { value: "list", label: t("listViewAria"), icon: <ListIcon className="size-4" /> },
+        { value: "table", label: t("tableViewAria"), icon: <TableIcon className="size-4" /> },
+      ]}
+    />
+  );
   const [search, setSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>("name");
+  const compare = useCollator();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<LiveClass | null>(null);
   const [deleteTargets, setDeleteTargets] = useState<LiveClass[] | null>(null);
+  /* Oʻchirish dialogi ochilganda serverdan soʻraladi: qaysi sinflar
+     haqiqatan oʻchadi, qaysilari faqat roʻyxatdan chiqadi (hamkasb ham
+     oʻsha darsni oʻtsa sinf saqlanadi — dal/class-teachers.ts).
+     `null` = javob hali kelmagan. */
+  const [deletionModes, setDeletionModes] = useState<Map<
+    string,
+    "delete" | "detach" | "blocked"
+  > | null>(null);
+  const [deletePending, setDeletePending] = useState(false);
   // Jadval koʻrinishida qator tanlash — faqat bulk arxivlash/oʻchirish uchun.
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
@@ -212,9 +242,58 @@ export default function ClassesPage() {
     setEditTarget(null);
   };
 
+  /* ⭐ Dialog javob KELGACH ochiladi, oldin emas.
+     Ilgari u darhol ochilib, javob kelgunicha sukut boʻyicha
+     «butunlay oʻchiriladi, qaytarib boʻlmaydi» deb turardi va keyin
+     matn koʻz oldida almashardi. Yaʼni oʻqituvchi bir lahza yolgʻon
+     ogohlantirishni koʻrardi — tez bosgan odam esa faqat oʻshani
+     koʻrardi. Soʻrov bitta SELECT, kechikishi sezilmaydi.
+
+     Xato boʻlsa (tarmoq uzildi) boʻsh xarita bilan ochiladi: dialog
+     eski, qatʼiy matnini koʻrsatadi — kam vaʼda qilgan ogohlantirish
+     xavfsizroq. */
+  const requestDelete = (targets: LiveClass[]) => {
+    if (targets.length === 0 || deletePending) return;
+    setDeletePending(true);
+    previewClassDeletionAction({ classIds: targets.map((c) => c.id) })
+      .then((r) => setDeletionModes(new Map(unwrap(r).map((x) => [x.classId, x.mode]))))
+      .catch(() => setDeletionModes(new Map()))
+      .finally(() => {
+        setDeletePending(false);
+        setDeleteTargets(targets);
+      });
+  };
+
+  const closeDeleteDialog = () => {
+    setDeleteTargets(null);
+    setDeletionModes(null);
+  };
+
+  const modeOf = (id: string) => deletionModes?.get(id) ?? "delete";
+  const detachCount = deleteTargets
+    ? deleteTargets.filter((c) => modeOf(c.id) === "detach").length
+    : 0;
+  /* Egasi men boʻlgan, lekin hamkasbim ham oʻtadigan sinf — server uni
+     uzmaydi (dal/grades.ts). Dialog buni oldindan aytadi, aks holda
+     sinf UI'dan yoʻqolib, keyingi yangilashda qaytib kelardi. */
+  const blockedCount = deleteTargets
+    ? deleteTargets.filter((c) => modeOf(c.id) === "blocked").length
+    : 0;
+  const allBlocked = !!deleteTargets && blockedCount === deleteTargets.length;
+  /* Hammasi ajratish boʻlsa — dialog «oʻchirish» haqida umuman
+     gapirmaydi, tugma ham boshqacha nomlanadi. */
+  const allDetach = !!deleteTargets && detachCount === deleteTargets.length;
+
   const handleDelete = () => {
     if (!deleteTargets || deleteTargets.length === 0) return;
-    const ids = new Set(deleteTargets.map((c) => c.id));
+    /* Toʻsilganlari store'dan ham chiqmaydi: server ularni saqlaydi,
+       demak UI'da yoʻqolishi yolgʻon boʻlardi. */
+    const targets = deleteTargets.filter((c) => modeOf(c.id) !== "blocked");
+    if (targets.length === 0) {
+      closeDeleteDialog();
+      return;
+    }
+    const ids = new Set(targets.map((c) => c.id));
     setClassDataMap((prev) => {
       const next = { ...prev };
       for (const id of ids) delete next[id];
@@ -226,11 +305,20 @@ export default function ClassesPage() {
       return next;
     });
     toast.success(
-      deleteTargets.length === 1
-        ? t("deleteToast", { name: deleteTargets[0].name })
-        : t("deleteBulkToast", { count: deleteTargets.length })
+      allDetach
+        ? targets.length === 1
+          ? t("detachToast", { name: targets[0].name })
+          : t("detachBulkToast", { count: targets.length })
+        : detachCount > 0
+          ? t("deleteMixedToast", {
+              deleted: targets.length - detachCount,
+              detached: detachCount,
+            })
+          : targets.length === 1
+            ? t("deleteToast", { name: targets[0].name })
+            : t("deleteBulkToast", { count: targets.length })
     );
-    setDeleteTargets(null);
+    closeDeleteDialog();
   };
 
   // Arxivlash — sinf pickerlardan yashirin boʻladi, lekin id/tarixi saqlanadi.
@@ -278,9 +366,9 @@ export default function ClassesPage() {
     return [...list].sort((a, b) => {
       if (sortKey === "students") return b.students - a.students;
       if (sortKey === "lessons") return b.lessons - a.lessons;
-      return a.name.localeCompare(b.name);
+      return compare(a.name, b.name);
     });
-  }, [liveClassesDisplay, search, sortKey]);
+  }, [liveClassesDisplay, search, sortKey, compare]);
 
   const totals = useMemo(() => ({
     classes: liveClassesDisplay.length,
@@ -296,35 +384,31 @@ export default function ClassesPage() {
       <div className="flex flex-1 min-h-0 gap-6">
 
         {/* ── Main: classes panel ── */}
-        <Card data-tour="classes-list" className={cn("flex-1 min-w-0", panelCardClass)}>
-          <CardHeader className={cn(panelCardHeaderClass, "grid grid-rows-[auto] grid-cols-[1fr_auto_1fr] gap-3 min-h-16 px-5 pt-4! pb-4!")}>
-            <div className="flex items-center gap-2.5 shrink-0 justify-self-start">
+        <Card data-tour="classes-list" className={cn("@container flex-1 min-w-0", panelCardClass)}>
+          {/* Tor panelda — oddiy flex; yetarlicha kengaygandagina simmetrik
+              3-ustunli gridga oʻtadi (simmetrik ustunlar bir-biriga joy bera
+              olmaydi, shuning uchun tor joyda oʻng guruh sarlavha ustiga
+              toshib ketardi). */}
+          <CardHeader className={cn(
+            panelCardHeaderClass,
+            "flex items-center justify-between gap-3 min-h-16 px-5 pt-4! pb-4!",
+            "@[52rem]:grid @[52rem]:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]",
+          )}>
+            <div className="flex min-w-0 items-center gap-3">
               <SectionIcon><GraduationCap /></SectionIcon>
               <CardTitle>{t("title")}</CardTitle>
             </div>
 
-            {/* Koʻrinish toggle — sarlavha va amallar orasida, markazda */}
-            <ToggleGroup
-              data-tour="classes-view-toggle"
-              type="single"
-              value={view}
-              onValueChange={(v) => v && handleViewChange(v as ViewMode)}
-              variant="outline"
-              size="default"
-              className="hidden sm:flex shadow-none justify-self-center"
-            >
-              <ToggleGroupItem value="grid" aria-label={t("gridViewAria")}>
-                <LayoutGrid className="size-4" />
-              </ToggleGroupItem>
-              <ToggleGroupItem value="list" aria-label={t("listViewAria")}>
-                <ListIcon className="size-4" />
-              </ToggleGroupItem>
-              <ToggleGroupItem value="table" aria-label={t("tableViewAria")}>
-                <TableIcon className="size-4" />
-              </ToggleGroupItem>
-            </ToggleGroup>
+            {/* Markaziy slot — grid ustuni sifatida JOY BAND QILADI, shuning
+                uchun yon guruhlar hech qachon uning ustiga chiqa olmaydi.
+                Koʻrsatish sharti panel KENGLIGIGA bogʻliq (`@container`). */}
+            <div className="hidden justify-self-center @[52rem]:flex">{viewToggle}</div>
 
             <div className="flex items-center gap-2 justify-self-end">
+              {/* Panel markazga sigʻmaydigan darajada tor boʻlsa — shu yerda.
+                  Ajratgich shart emas: pill oʻz border'iga ega. */}
+              <div className="hidden sm:flex @[52rem]:hidden">{viewToggle}</div>
+
               {/* Search */}
               <div className={cn("flex items-center transition-all duration-fast", searchOpen ? "w-52" : "w-8")}>
                 {searchOpen ? (
@@ -374,13 +458,13 @@ export default function ClassesPage() {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              {/* Yangi sinf — boʻlingan tugma: asosiy qism bitta sinf,
-                  `⌄` esa koʻplab import (ClassListPanel bilan bir xil). */}
-              <div className="flex items-center">
+              {/* Yangi sinf — boʻlingan tugma: asosiy qism tanlov oynasini
+                  ochadi (bittadan / roʻyxat / import — «Oʻquvchi qoʻshish»
+                  bilan bir xil), `⌄` da faqat eksport qoladi. */}
+              <div className="flex items-center" data-tour="classes-add">
                 <Button
-                  data-tour="classes-add"
-                  onClick={() => setIsCreateModalOpen(true)}
-                  className="gap-1.5 rounded-r-none pr-2.5"
+                  onClick={() => setIsImportOpen(true)}
+                  className="gap-1.5 rounded-r-none pr-3"
                 >
                   <PlusIcon className="size-4" />
                   {t("newClass")}
@@ -395,10 +479,6 @@ export default function ClassesPage() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => setIsImportOpen(true)}>
-                      <UploadIcon className="size-4" />
-                      {t("importClasses")}
-                    </DropdownMenuItem>
                     <DropdownMenuItem
                       className="gap-2 cursor-pointer"
                       disabled={liveClasses.length === 0}
@@ -430,7 +510,7 @@ export default function ClassesPage() {
                 <BulkActionButton
                   icon={<TrashIcon className="size-4" />}
                   variant="destructive"
-                  onClick={() => setDeleteTargets(filteredAndSorted.filter((c) => selectedIds.has(c.id)))}
+                  onClick={() => requestDelete(filteredAndSorted.filter((c) => selectedIds.has(c.id)))}
                 >
                   {t("delete")}
                 </BulkActionButton>
@@ -505,7 +585,7 @@ export default function ClassesPage() {
                           disabled={isDemoMode}
                           onEdit={() => setEditTarget(cls)}
                           onArchive={() => handleArchive(cls)}
-                          onDelete={() => setDeleteTargets([cls])}
+                          onDelete={() => requestDelete([cls])}
                         />
                       ))}
                       <AddClassCard onClick={() => setIsCreateModalOpen(true)} />
@@ -520,7 +600,7 @@ export default function ClassesPage() {
                           disabled={isDemoMode}
                           onEdit={() => setEditTarget(cls)}
                           onArchive={() => handleArchive(cls)}
-                          onDelete={() => setDeleteTargets([cls])}
+                          onDelete={() => requestDelete([cls])}
                         />
                       ))}
                     </div>
@@ -546,7 +626,7 @@ export default function ClassesPage() {
                       }
                       onEdit={setEditTarget}
                       onArchive={handleArchive}
-                      onDelete={(cls) => setDeleteTargets([cls])}
+                      onDelete={(cls) => requestDelete([cls])}
                     />
                   )}
                 </div>
@@ -627,7 +707,11 @@ export default function ClassesPage() {
         />
       )}
 
-      <ImportClassesModal open={isImportOpen} onOpenChange={setIsImportOpen} />
+      <ImportClassesModal
+        open={isImportOpen}
+        onOpenChange={setIsImportOpen}
+        onSingle={() => setIsCreateModalOpen(true)}
+      />
 
       {editTarget && (
         <ClassFormModal
@@ -643,12 +727,34 @@ export default function ClassesPage() {
         />
       )}
 
-      <AlertDialog open={!!deleteTargets} onOpenChange={(o) => !o && setDeleteTargets(null)}>
+      <AlertDialog open={!!deleteTargets} onOpenChange={(o) => !o && closeDeleteDialog()}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("deleteDialogTitle")}</AlertDialogTitle>
+            <AlertDialogTitle>
+              {allBlocked
+                ? t("blockedDialogTitle")
+                : allDetach
+                ? t("detachDialogTitle")
+                : t("deleteDialogTitle")}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              {deleteTargets && deleteTargets.length > 1
+              {/* ⭐ Toʻrt xil haqiqat, toʻrt xil matn. Ilgari bittasi bor
+                  edi («butunlay oʻchiriladi, qaytarib boʻlmaydi») va u
+                  hamkasbning sinfida yolgʻon boʻlardi. */}
+              {allBlocked
+                ? deleteTargets && deleteTargets.length > 1
+                  ? t("blockedDialogBulk", { count: deleteTargets.length })
+                  : t("blockedDialogOne", { name: deleteTargets?.[0]?.name ?? "" })
+                : allDetach
+                ? deleteTargets && deleteTargets.length > 1
+                  ? t("detachDialogBulk", { count: deleteTargets.length })
+                  : t("detachDialogOne", { name: deleteTargets?.[0]?.name ?? "" })
+                : detachCount > 0 && deleteTargets
+                ? t("deleteDialogMixed", {
+                    deleted: deleteTargets.length - detachCount,
+                    detached: detachCount,
+                  })
+                : deleteTargets && deleteTargets.length > 1
                 ? t("deleteDialogBulk", {
                     count: deleteTargets.length,
                     students: deleteTargets.reduce((s, c) => s + c.students, 0),
@@ -659,13 +765,21 @@ export default function ClassesPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-destructive text-white hover:bg-destructive/90"
-            >
-              {t("delete")}
-            </AlertDialogAction>
+            {/* Toʻsilgan holatda tasdiq tugmasi umuman yoʻq: bosiladigan
+                narsa boʻlmasligi kerak, chunki hech narsa boʻlmaydi. */}
+            <AlertDialogCancel>{allBlocked ? t("close") : t("cancel")}</AlertDialogCancel>
+            {allBlocked ? null : (
+              <AlertDialogAction
+                onClick={handleDelete}
+                /* Ajratish qaytariladigan amal (ega qayta biriktiradi) —
+                   qizil tugma uni haqiqatdan xavfliroq koʻrsatardi. */
+                className={
+                  allDetach ? undefined : "bg-destructive text-white hover:bg-destructive/90"
+                }
+              >
+                {allDetach ? t("detachConfirm") : t("delete")}
+              </AlertDialogAction>
+            )}
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -736,7 +850,7 @@ function ClassCardSkeleton({ index }: { index: number }) {
           <Skeleton className="h-3 w-28" />
           <Skeleton className="h-6 w-14 rounded-full mt-1" />
         </div>
-        <div className="flex w-full gap-3 border-t border-border pt-3.5">
+        <div className="flex w-full gap-3 border-t border-border pt-3">
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="flex flex-1 flex-col gap-1.5">
               <Skeleton className="size-[18px] rounded" />
@@ -851,7 +965,7 @@ function ClassGridCard({
               </div>
               {/* Foiz badge */}
               <span
-                className="absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-full border bg-card px-1.5 py-0.5 text-[11px] font-semibold leading-none tabular-nums shadow-sm"
+                className="absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-full border bg-card px-1.5 py-0.5 text-tag font-semibold leading-none tabular-nums shadow-sm"
                 style={{ color: hex }}
               >
                 {progress}%
@@ -872,12 +986,12 @@ function ClassGridCard({
             {cls.name}
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">
-            {cls.schedule ?? cls.subject ?? t("scheduleNotSet")}
+            {cls.schedule ?? (subjectLabel(cls.subject) || t("scheduleNotSet"))}
           </p>
         </div>
 
         {/* Statistika — ikonali 3 ustun, vertikal ajratgichlar bilan */}
-        <div className="flex w-full border-t border-border pt-3.5">
+        <div className="flex w-full border-t border-border pt-3">
           <div className="flex flex-1 flex-col items-center text-center gap-1.5 pr-3 border-r border-border">
             <Users className="size-[18px] text-muted-foreground" />
             <span className="text-xs font-semibold">{t("studentsCount", { count: cls.students })}</span>
@@ -985,16 +1099,17 @@ function ArchivedClassesSection({
         <div className="mt-3 flex flex-col gap-2">
           {classes.map((cls) => {
             const hex = CLASS_COLOR_HEX[cls.color];
+            const Icon = classIcon(cls.info.icon);
             return (
               <div
                 key={cls.id}
-                className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 px-4 py-2.5"
+                className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 px-4 py-3"
               >
                 <div
                   className="flex size-8 shrink-0 items-center justify-center rounded-md"
                   style={{ backgroundColor: `rgba(${hexToRgb(hex)}, 0.12)` }}
                 >
-                  <GraduationCap className="size-4" style={{ color: hex }} />
+                  <Icon className="size-4" style={{ color: hex }} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-foreground">{cls.name}</p>
@@ -1047,12 +1162,12 @@ function ClassesDataTable({
   // Sarlavha qatorini scroll konteynerga nisbatan qotiradi (statistikadagi
   // ClassesTable bilan bir xil naqsh) — pastga siljitilganda ustunlar
   // koʻrinishda qoladi. Jadval oʻzi emas, uni oʻrab turgan CardContent
-  // (panelCardContentClass, overflow-y-auto) scroll boʻladi — shuning
+  // (panelCardContentClass, scrollbar-hover overflow-y-auto) scroll boʻladi — shuning
   // uchun soya holati shu eng yaqin scroll ota-elementini topib kuzatiladi.
   const [scrolled, setScrolled] = useState(false);
   const tableRef = useRef<HTMLTableElement>(null);
   useEffect(() => {
-    const scrollEl = tableRef.current?.closest<HTMLElement>(".overflow-y-auto");
+    const scrollEl = tableRef.current?.closest<HTMLElement>(".scrollbar-hover overflow-y-auto");
     if (!scrollEl) return;
     const onScroll = () => setScrolled(scrollEl.scrollTop > 0);
     onScroll();
@@ -1089,6 +1204,7 @@ function ClassesDataTable({
         {rows.map((cls, i) => {
           const hex = CLASS_COLOR_HEX[cls.color];
           const progress = Math.round((cls.coveredLessons / Math.max(cls.lessons, 1)) * 100);
+          const Icon = classIcon(cls.info.icon);
           return (
             <TableRow
               key={cls.id}
@@ -1101,7 +1217,7 @@ function ClassesDataTable({
               onClick={disabled ? undefined : () => router.push(`/dashboard/classes/${cls.id}`)}
             >
               {!disabled && (
-                <TableCell className="px-4 py-3.5">
+                <TableCell className="px-4 py-3">
                   <Checkbox
                     checked={selectedIds.has(cls.id)}
                     onCheckedChange={() => onToggleSelect(cls.id)}
@@ -1110,33 +1226,33 @@ function ClassesDataTable({
                   />
                 </TableCell>
               )}
-              <TableCell className={cn("whitespace-nowrap py-3.5 pr-3", disabled ? "pl-4" : "pl-0")}>
+              <TableCell className={cn("whitespace-nowrap py-3 pr-3", disabled ? "pl-4" : "pl-0")}>
                 <div className="flex items-center gap-3">
                   <div
                     className="size-9 shrink-0 rounded-full flex items-center justify-center text-white"
                     style={classTints(cls.color).gradientTile}
                   >
-                    <GraduationCap className="size-4" />
+                    <Icon className="size-4" />
                   </div>
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-foreground">{cls.name}</p>
                     <p className="truncate text-xs text-muted-foreground">
-                      {cls.schedule ?? cls.subject ?? t("scheduleNotSet")}
+                      {cls.schedule ?? (subjectLabel(cls.subject) || t("scheduleNotSet"))}
                     </p>
                   </div>
                 </div>
               </TableCell>
 
-              <TableCell className="whitespace-nowrap px-3 py-3.5 text-sm tabular-nums text-muted-foreground">
+              <TableCell className="whitespace-nowrap px-3 py-3 text-sm tabular-nums text-muted-foreground">
                 {t("studentsCount", { count: cls.students })}
               </TableCell>
 
-              <TableCell className="whitespace-nowrap px-3 py-3.5 text-sm tabular-nums text-muted-foreground">
+              <TableCell className="whitespace-nowrap px-3 py-3 text-sm tabular-nums text-muted-foreground">
                 {t("lessonsCount", { count: cls.lessons })}
               </TableCell>
 
-              <TableCell className="whitespace-nowrap px-3 py-3.5">
-                <div className="flex items-center gap-2.5">
+              <TableCell className="whitespace-nowrap px-3 py-3">
+                <div className="flex items-center gap-2">
                   <Progress
                     value={progress}
                     indicatorColor={hex}
@@ -1148,7 +1264,7 @@ function ClassesDataTable({
               </TableCell>
 
               {!disabled && (
-                <TableCell className="whitespace-nowrap px-4 py-3.5">
+                <TableCell className="whitespace-nowrap px-4 py-3">
                   <div className="flex items-center justify-end">
                     <ClassCardMenu
                       onEdit={() => onEdit(cls)}
@@ -1188,6 +1304,7 @@ function ClassListRow({
   const hex = CLASS_COLOR_HEX[cls.color];
   const initials = cls.initials;
   const overflow = Math.max(cls.students - initials.length, 0);
+  const Icon = classIcon(cls.info.icon);
 
   return (
     <div
@@ -1200,7 +1317,7 @@ function ClassListRow({
         className="list-card-icon size-11 rounded-full flex items-center justify-center shrink-0 text-white"
         style={classTints(cls.color).gradientTile}
       >
-        <GraduationCap className="size-5" />
+        <Icon className="size-5" />
       </div>
 
       {/* Nom + jadval */}
@@ -1209,7 +1326,7 @@ function ClassListRow({
           {cls.name}
         </p>
         <p className="text-xs text-muted-foreground mt-1.5">
-          {cls.schedule ?? cls.subject ?? t("scheduleNotSet")}
+          {cls.schedule ?? (subjectLabel(cls.subject) || t("scheduleNotSet"))}
         </p>
       </div>
 
@@ -1224,14 +1341,14 @@ function ClassListRow({
       <div className="hidden lg:flex -space-x-2 shrink-0">
         {initials.map((init, i) => (
           <Avatar key={i} className="size-8 ring-2 ring-background">
-            <AvatarFallback className="text-[10px] font-semibold text-white" style={{ backgroundColor: hex }}>
+            <AvatarFallback className="text-micro font-semibold text-white" style={{ backgroundColor: hex }}>
               {init}
             </AvatarFallback>
           </Avatar>
         ))}
         {overflow > 0 && (
           <Avatar className="size-8 ring-2 ring-background">
-            <AvatarFallback className="bg-muted text-[10px] font-semibold text-muted-foreground">
+            <AvatarFallback className="bg-muted text-micro font-semibold text-muted-foreground">
               +{overflow}
             </AvatarFallback>
           </Avatar>

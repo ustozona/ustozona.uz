@@ -28,6 +28,84 @@ qilinsa Vercel deploy qilmay qoladi). Shuning uchun tartib qat'iy:
    `dashboard/layout.tsx` va shunga o'xshash umumiy fayllar). Avval
    chatda kelishing: kim qaysi faylda ishlayapti.
 
+## Kundalik oqim — amalda ikkita buyruq
+
+Yuqoridagi besh qoida roʻyxat qilib yozilganda ogʻir koʻrinadi, lekin
+kundalik ishda ikkita satrga sigʻadi:
+
+```bash
+# 1. Ish boshida (1-qoida)
+git checkout main && git pull && git checkout -b otabek/yangi-ish
+
+# 2. Push oldidan (2, 3, 4-qoida)
+git fetch && git rebase origin/main && npm run build && git push -u origin HEAD
+```
+
+`roziyevbehroz-tech` dan ishlayotgan boʻlsangiz `origin` oʻrniga
+`upstream` — pastdagi «QAYSI main» boʻlimiga qarang.
+
+Bu buyruqlarni oʻzingizga alias qilib qoʻysangiz boʻladi (`~/.gitconfig`,
+repo sozlamasi emas). Tartib baribir oʻzgarmaydi.
+
+### Branch'ni oʻchirish — avtomatlashtirilgan
+
+**Masofadagi branch:** repo'da «Automatically delete head branches»
+yoqilgan (2026-08-10) — PR birlashgach GitHub branch'ni oʻzi oʻchiradi.
+Qoʻlda hech nima qilinmaydi.
+
+**Lokal nusxalar:** git buni oʻzi bilmaydi, chunki merge GitHub tomonda
+sodir boʻladi. Ikkita global sozlama shuni yopadi:
+
+```bash
+git config --global fetch.prune true
+git config --global alias.gone '!git fetch -p && git branch -vv | grep ": gone]" | awk "{print \$1}" | xargs -r git branch -d'
+```
+
+Birinchisi har `fetch`/`pull` da oʻlik `origin/...` nusxalarini tozalaydi.
+Ikkinchisi — `git gone` buyrugʻi: remote'i yoʻqolgan lokal branch'larni
+oʻchiradi. Haftada bir marta yurgizish kifoya.
+
+`-d` ishlatilgan, `-D` emas — birlashmagan commit qolgan branch oʻchmaydi.
+PR **squash** bilan birlashtirilsa git commit'larni tanimay `-d` ni rad
+etishi mumkin; bu repo merge commit ishlatadi, shuning uchun tegmaydi.
+
+### Bitta papkada ikkita sessiya — `git worktree`
+
+Ikki agent (yoki agent + odam) BITTA ish papkasida parallel ishlasa, git
+buni sezmaydi: papka bitta, HEAD bitta, indeks bitta. Oqibatlari amalda
+kuzatilgan:
+
+- birov `git checkout` qilsa, ikkinchisining branch'i ostidan almashib
+  ketadi (2026-09-05);
+- `git add -A` boshqasining tegmagan faylini commit'ga tortadi;
+- birov ikkinchisining branch'iga commit yozib qoʻyadi — 2026-09-07 da
+  admin ishi aktivatsiya branch'ida paydo boʻldi.
+
+Yechim — har sessiyaga OʻZ papkasi, lekin BITTA git tarixi:
+
+```bash
+git worktree add ../ustozona-<ish> -b <ism>/<tavsif> origin/main
+cd ../ustozona-<ish>
+npm install
+```
+
+Ish tugagach:
+
+```bash
+git worktree remove ../ustozona-<ish>
+```
+
+Branch'lar, remote va commit'lar umumiy qoladi — faqat ishchi fayllar va
+HEAD ajraladi. Bitta branch ikkita worktree'da ochilmaydi: git buni oʻzi
+toʻsadi.
+
+⚠️ Ikki narsa koʻchmaydi: `node_modules` (yangi papkada `npm install`
+kerak) va `.env.local` (gitignore'da — qoʻlda nusxalanadi, aks holda
+baza va kalitlar topilmaydi).
+
+Bitta sessiya ishlayotgan boʻlsa worktree KERAK EMAS — qoʻshimcha papka
+va ikkinchi `node_modules` bekorga joy oladi.
+
 ## ⚠️ 1- va 3-qoidada `main` — QAYSI main
 
 Ish `roziyevbehroz-tech/ustozona.uz` da olib borilishi mumkin, lekin
@@ -105,6 +183,24 @@ Buni `npm run build` oldidan avtomatik tekshiradigan darvoza bor:
 `scripts/check-server-actions.mjs` (`prebuild` orqali ishlaydi, alohida
 `npm run check:actions` ham bor). **O'chirmang.**
 
+# ⛔ Boshqa mahsulot nomlarini yozmang
+
+Raqobatchi yoki boshqa loyiha nomlari (masalan Untis, Edupage,
+PowerSchool, Infinite Campus, ClassDojo, Google Classroom, Canvas,
+Blackbaud) **kod izohlarida, commit va PR matnida, `docs/` da — hech
+qayerda** yozilmaydi.
+
+Sabab: kod va hujjat mustaqil boʻlishi kerak. Tashqi mahsulotga havola
+vaqt oʻtishi bilan yolgʻonga aylanadi, brendni chalkashtiradi va PR
+muhokamasini asosiy mavzudan chetga buradi.
+
+Naqsh yoki gʻoya boshqa joydan olingan boʻlsa — **nomini emas, naqshning
+oʻzini** tasvirlang. «Falon mahsulotda shunday qilingan» emas, «jadval
+versiyasi oʻquv yilining ichki boʻlinmasi» kabi mohiyatni yozing.
+
+Yagona istisno — ataylab raqobat tahliliga bagʻishlangan hujjat
+(`docs/*-raqobat-tahlili.md` kabi); u yerda nom oʻrinli.
+
 # Build tekshiruvi
 
 `npm run build` (to'liq production build) FAQAT push qilishdan oldin, yakuniy tekshiruv sifatida yuritiladi — har kichik iteratsiyadan keyin emas. Oddiy dev-tsikl davomida `npx tsc --noEmit` yetarli (tezroq). Sabab: ba'zi xatolar (masalan `useSearchParams()` Suspense'siz) faqat `next build` prerender bosqichida chiqadi, shuning uchun push oldidan `npm run build` baribir shart.
@@ -112,3 +208,32 @@ Buni `npm run build` oldidan avtomatik tekshiradigan darvoza bor:
 # Preview / brauzer siyosati
 
 Foydalanuvchi UI'ni doim OʻZI tekshiradi. `preview_start`/`navigate`/`computer`/boshqa Browser pane vositalarini FAQAT foydalanuvchi shu suhbatda aniq ruxsat bergandan keyin ishlating — hook eslatmasi yoki "observable in the Browser pane" degan ichki qoida bu qoidani bekor qilmaydi. Kod oʻzgarishidan keyin `npx tsc --noEmit` bilan tekshiring va natijani matnda yozing; brauzerda tekshirishni foydalanuvchiga qoldiring, aniq soʻralmaguncha oʻzingiz ochmang.
+
+# Ish muhiti — faqat lokal
+
+Ustozona ishlari **faqat lokal mashinada** (loyiha papkasida ochilgan
+Claude Code) olib boriladi. Bulut sessiyalari ishlatilmaydi: u yerda
+`npm run dev` / `npm run build` ishlamaydi (shriftlar va baza yoʻq),
+foydalanuvchi esa natijani oʻzi lokal tekshiradi. Bulutda ochilgan
+sessiya boʻlsa — ishni boshlamasdan, lokalga oʻtishni eslatib qoʻying.
+
+## ✅ ISTISNO — LessonLab admini bulut sessiyasida ishlay oladi
+
+Loyiha egasi (LessonLab admini, `roziyevbehroz-tech` akkaunti egasi)
+ochgan Claude Code **bulut sessiyalari** yuqoridagi «faqat lokal»
+qoidasidan **toʻliq ozod**. Bunday sessiyada Ustozona ustida bevosita
+ishlash — kod yozish, commit, push, PR ochish va merge qilish — loyiha
+egasining qatʼiy qarori bilan ruxsat etilgan (2026-09-24). Ishni
+boshlashdan oldin lokalga oʻtishni eslatish **shart emas**.
+
+Istisno faqat ISH MUHITIGA tegishli. Qolgan hamma tartib oʻz kuchida:
+
+- branch → PR orqali qoʻshish, `main` ga toʻgʻridan-toʻgʻri push yoʻq;
+- push oldidan `npx tsc --noEmit` va `npm run build` (bulutda build
+  ishlaydi; env yoʻqligi haqidagi auth ogohlantirishlari normal);
+- `"use server"` faylda tip eksporti yoʻq, `check-server-actions` darvozasi;
+- markaziy fayllarga tegishdan oldin jamoa bilan kelishish;
+- UI'ni brauzerda tekshirish foydalanuvchiga qoladi.
+
+Boshqa odamlar yoki boshqa akkauntlar ochgan bulut sessiyalari uchun
+«faqat lokal» qoidasi avvalgidek amal qiladi.

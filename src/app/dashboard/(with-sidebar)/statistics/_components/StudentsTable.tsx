@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useCollator } from "@/lib/use-collator";
 import { useTranslations } from "next-intl";
 import { ArrowDown, ArrowUp, ArrowUpDown, ChevronRight, SearchX } from "lucide-react";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -48,12 +49,13 @@ export function StudentsTable({
 }) {
   const t = useTranslations("StatisticsPage");
   const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" }>({ key: "absenceTier", dir: "desc" });
+  const compare = useCollator();
 
   const sorted = useMemo(() => {
     const dirMul = sort.dir === "asc" ? 1 : -1;
     return [...rows].sort((a, b) => {
-      if (sort.key === "name") return a.name.localeCompare(b.name) * dirMul;
-      if (sort.key === "className") return a.className.localeCompare(b.className) * dirMul;
+      if (sort.key === "name") return compare(a.name, b.name) * dirMul;
+      if (sort.key === "className") return compare(a.className, b.className) * dirMul;
       if (sort.key === "absenceTier") {
         const av = a.absenceTier ? TIER_RANK[a.absenceTier] : -1;
         const bv = b.absenceTier ? TIER_RANK[b.absenceTier] : -1;
@@ -63,7 +65,7 @@ export function StudentsTable({
       const bv = b[sort.key] ?? -Infinity;
       return (av - bv) * dirMul;
     });
-  }, [rows, sort]);
+  }, [rows, sort, compare]);
 
   const toggleSort = (key: SortKey) => {
     setSort((prev) =>
@@ -122,7 +124,7 @@ export function StudentsTable({
               const stable = delta === null || Math.abs(delta) < STAT_DEADBAND_PP;
               return (
                 <TableRow key={r.studentId} className="group cursor-pointer" onClick={() => onSelect(r.studentId)}>
-                  <TableCell className="whitespace-nowrap py-3.5 pl-4 pr-3">
+                  <TableCell className="whitespace-nowrap py-3 pl-4 pr-3">
                     <div className="flex items-center gap-3">
                       <div
                         className="size-9 shrink-0 rounded-full flex items-center justify-center text-xs font-semibold text-white"
@@ -135,19 +137,19 @@ export function StudentsTable({
                   </TableCell>
 
                   {!hideClassColumn && (
-                    <TableCell className="whitespace-nowrap w-36 truncate px-3 py-3.5 text-sm text-muted-foreground">
+                    <TableCell className="whitespace-nowrap w-36 truncate px-3 py-3 text-sm text-muted-foreground">
                       {r.className}
                     </TableCell>
                   )}
 
-                  <TableCell className="whitespace-nowrap w-20 px-3 py-3.5">
+                  <TableCell className="whitespace-nowrap w-20 px-3 py-3">
                     <div className="flex justify-center">
                       <AttendanceRing pct={r.attendancePct} />
                     </div>
                   </TableCell>
 
-                  <TableCell className="whitespace-nowrap w-44 px-3 py-3.5">
-                    <div className="flex items-center gap-2.5">
+                  <TableCell className="whitespace-nowrap w-44 px-3 py-3">
+                    <div className="flex items-center gap-2">
                       <Progress
                         value={r.summative ?? 0}
                         indicatorColor={scoreColor}
@@ -160,7 +162,7 @@ export function StudentsTable({
                     </div>
                   </TableCell>
 
-                  <TableCell className="whitespace-nowrap w-24 px-3 py-3.5 text-center">
+                  <TableCell className="whitespace-nowrap w-24 px-3 py-3 text-center">
                     {delta !== null && !stable ? (
                       <span className={cn("inline-flex items-center gap-0.5 text-xs font-semibold tabular-nums", delta > 0 ? "text-success" : "text-destructive")}>
                         {delta > 0 ? <ArrowUp className="size-3" /> : <ArrowDown className="size-3" />}
@@ -171,13 +173,13 @@ export function StudentsTable({
                     )}
                   </TableCell>
 
-                  <TableCell className="whitespace-nowrap w-28 px-3 py-3.5 text-center">
+                  <TableCell className="whitespace-nowrap w-28 px-3 py-3 text-center">
                     {r.absenceTier === "chronic" ? (
-                      <span className="inline-flex rounded-full bg-destructive/15 px-1.5 py-0.5 text-[10px] font-semibold text-destructive">
+                      <span className="inline-flex rounded-full bg-destructive/15 px-1.5 py-0.5 text-micro font-semibold text-destructive">
                         {t("tierChronic")}
                       </span>
                     ) : r.absenceTier === "watch" ? (
-                      <span className="inline-flex rounded-full bg-warning/15 px-1.5 py-0.5 text-[10px] font-semibold text-warning">
+                      <span className="inline-flex rounded-full bg-warning/15 px-1.5 py-0.5 text-micro font-semibold text-warning">
                         {t("tierWatch")}
                       </span>
                     ) : (
@@ -185,7 +187,7 @@ export function StudentsTable({
                     )}
                   </TableCell>
 
-                  <TableCell className="whitespace-nowrap px-4 py-3.5">
+                  <TableCell className="whitespace-nowrap px-4 py-3">
                     <ChevronRight className="size-4 text-muted-foreground/40 transition-transform group-hover:translate-x-0.5 group-hover:text-muted-foreground" />
                   </TableCell>
                 </TableRow>

@@ -127,7 +127,7 @@ function SettingsPageInner() {
           {/* Chap nav — faqat md+ */}
           <nav
             aria-label={t("sectionsNavLabel")}
-            className="hidden w-56 shrink-0 flex-col gap-6 overflow-y-auto border-r border-border px-3 py-4 md:flex"
+            className="hidden w-56 shrink-0 flex-col gap-6 scrollbar-hover overflow-y-auto border-r border-border px-3 py-4 md:flex"
           >
             {SECTION_GROUPS.map((g) => (
               <div key={g.id} className="flex flex-col gap-1">
@@ -143,7 +143,7 @@ function SettingsPageInner() {
                       aria-current={active ? "page" : undefined}
                       onClick={() => select(s.id)}
                       className={cn(
-                        "flex items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm transition-colors [&_svg]:size-4 [&_svg]:shrink-0",
+                        "flex items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors [&_svg]:size-4 [&_svg]:shrink-0",
                         active
                           ? "bg-accent font-medium text-foreground"
                           : "text-muted-foreground hover:bg-muted hover:text-foreground"

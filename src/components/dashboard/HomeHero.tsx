@@ -1,18 +1,27 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { AppleEmoji } from "@/components/ui/apple-emoji";
 import { YearProgress } from "@/components/dashboard/YearProgress";
 import { QuoteText } from "@/components/dashboard/QuoteText";
-import { QuotesDialog } from "@/components/dashboard/QuotesDialog";
 import { useQuotesStore } from "@/store/useQuotesStore";
 import { newQuoteSeed, pickQuote } from "@/lib/quotes";
 import { fmtMin } from "@/lib/timetable";
 import { cn } from "@/lib/utils";
 import type { AcademicYearCalendar } from "@/lib/academic-calendar";
+
+/* Iqtibos muharriri Tiptapga tayanadi (~400 kB chunk). U dashboardning
+   BIRINCHI ekranida hech qachon koʻrinmaydi — faqat foydalanuvchi
+   iqtibosni tahrirlashni tanlaganda ochiladi. Shuning uchun alohida
+   chunk: dynamic() uni bosilgunicha soʻramaydi. */
+const QuotesDialog = dynamic(
+  () => import("@/components/dashboard/QuotesDialog").then((m) => m.QuotesDialog),
+  { ssr: false }
+);
 
 /** Bugungi dars — hero subtitle hisobi uchun minimal koʻrinish. */
 export type HeroEvent = { startMin: number; endMin: number; className: string };
@@ -142,7 +151,11 @@ export function HomeHero({
   const showQuote = !greetedFirst && isSetup && !timeCritical && quote != null;
 
   return (
-    <Card className="relative shrink-0 overflow-hidden rounded-xl border border-border p-0 shadow-none">
+    // `data-tour="home-overview"` — ATAYIN shu yerda (HomeHero'ning oʻzida),
+    // sahifada emas: avval butun 3-ustunli grid'ga qoʻyilgan edi (deyarli
+    // sahifa kengligida), shuning uchun tur tooltip'i "oʻng tomonga" joy
+    // topolmay chapga — sidebar ustiga — kesilib chiqardi (2026-08-18).
+    <Card data-tour="home-overview" className="relative shrink-0 overflow-hidden rounded-xl border border-border p-0 shadow-none">
       <CardContent className="group/hero p-0">
         {/* Landing hero gradienti — yumshoq blur blob (sky → white → amber) */}
         <div
@@ -209,7 +222,8 @@ export function HomeHero({
         </div>
       </CardContent>
 
-      <QuotesDialog open={quotesOpen} onOpenChange={setQuotesOpen} />
+      {/* Shartli render — dialog yopiq turganda chunk umuman soʻralmaydi. */}
+      {quotesOpen ? <QuotesDialog open onOpenChange={setQuotesOpen} /> : null}
     </Card>
   );
 }

@@ -288,14 +288,14 @@ export default function CardScanner({ questionCount, nameByRef, onFinish, onClos
 
       {/* Tasdiqlangan javoblar — oʻqituvchi kimni kutayotganini
           koʻrsin. Ism bilan: raqamdan koʻra tezroq oʻqiladi. */}
-      <div className="absolute inset-x-0 top-16 max-h-[45%] overflow-y-auto px-3">
+      <div className="absolute inset-x-0 top-16 max-h-[45%] scrollbar-hover overflow-y-auto px-3">
         <div className="flex flex-wrap gap-1.5">
           {[...confirmed.entries()]
             .sort((a, b) => a[0] - b[0])
             .map(([no, answer]) => (
               <span
                 key={no}
-                className="rounded-full bg-emerald-500/90 px-2.5 py-1 text-xs font-semibold text-black"
+                className="rounded-full bg-emerald-500/90 px-3 py-1 text-xs font-semibold text-black"
               >
                 {nameByRef.get(no) ?? `#${no}`} · {answer}
               </span>

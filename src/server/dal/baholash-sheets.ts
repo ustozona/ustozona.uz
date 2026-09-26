@@ -1,9 +1,11 @@
 import "server-only";
-import { and, asc, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "@/server/db/client";
-import { classes, students } from "@/server/db/schema";
+import { classes } from "@/server/db/schema";
 import { requireTeacher } from "@/server/session";
+import { assertTeachesClass } from "@/server/workspace";
 import { getSet } from "./assess/sets";
+import { activeClassRoster } from "./class-roster";
 
 /* ════════════════════════════════════════════════════════════════════
    QOGʻOZ TEST — varaq maʼlumotini yigʻish
@@ -92,23 +94,17 @@ export async function buildSheetPlan(
      6-A ning ismlari chop etilardi.
 
      Egalik shu yerda tekshiriladi: `classId` mijozdan kelgan qiymat. */
+  await assertTeachesClass(classId);
   const [cls] = await db
     .select({ id: classes.id, name: classes.name })
     .from(classes)
-    .where(and(eq(classes.id, classId), eq(classes.teacherId, teacherId)))
+    .where(eq(classes.id, classId))
     .limit(1);
   if (!cls) throw new Error("Sinf topilmadi");
 
-  const rows = await db
-    .select({ id: students.id, name: students.name, status: students.status })
-    .from(students)
-    .where(and(eq(students.classId, cls.id), eq(students.teacherId, teacherId)))
-    .orderBy(asc(students.sortOrder), asc(students.createdAt));
-
-  // `archived` — sinfdan chiqqan oʻquvchi, unga varaq chop etilmaydi.
-  // `away` esa QOLADI: vaqtincha yoʻq bola qaytib kelib topshirishi
-  // mumkin, varaqni qayta chop etish esa raqamlarni suradi.
-  const active = rows.filter((r) => r.status !== "archived");
+  // Sinfdan chiqib ketgan (yozilishi yopilgan yoki arxivlangan) bolaga
+  // varaq chop etilmaydi — «joriy roʻyxat» taʼrifi `class-roster.ts` da.
+  const active = await activeClassRoster(cls.id);
 
   return {
     testRef: refOf(set.id),

@@ -70,6 +70,10 @@ export type Note = {
   createdAt: string;
   authorName?: string;
   authorAvatarUrl?: string | null;
+  /** Hamkasb qaydi boʻlsa false — tahrir menyusi umuman chizilmaydi.
+      ⚠️ `disabled` emas, YOʻQ: bosilmaydigan tugma «nega ishlamayapti?»
+      degan savol tugʻdiradi, holbuki javob oddiy — bu qayd meniki emas. */
+  canEdit: boolean;
 };
 
 type Mode = "short" | "full";
@@ -249,7 +253,7 @@ export default function NotesTab({
                     <span
                       key={tag}
                       className={cn(
-                        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold",
+                        "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold",
                         TAG_META.pill
                       )}
                     >
@@ -259,7 +263,7 @@ export default function NotesTab({
                   ))}
                 </div>
               )}
-              <div className="mt-3 flex items-center gap-1.5 border-t border-border/60 pt-2.5">
+              <div className="mt-3 flex items-center gap-1.5 border-t border-border/60 pt-3">
                 <Avatar size="sm">
                   <AvatarImage src={n.authorAvatarUrl ?? undefined} alt={n.authorName ?? ""} />
                   <AvatarFallback>{(n.authorName ?? "?").slice(0, 1).toUpperCase()}</AvatarFallback>
@@ -267,6 +271,7 @@ export default function NotesTab({
                 <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
                   {n.authorName ?? t("unknownAuthor")} · {n.time}
                 </span>
+                {n.canEdit ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
@@ -290,6 +295,7 @@ export default function NotesTab({
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
+                ) : null}
               </div>
             </div>
               ))}
@@ -332,7 +338,7 @@ export default function NotesTab({
               <span className="flex items-center gap-2">
                 <Mic className="size-4" /> {t("modeAudio")}
               </span>
-              <Badge variant="secondary" className="text-[10px]">{t("soon")}</Badge>
+              <Badge size="sm" variant="secondary">{t("soon")}</Badge>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -364,7 +370,7 @@ export default function NotesTab({
                 <span
                   key={tag}
                   className={cn(
-                    "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium",
+                    "inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium",
                     TAG_META.pill
                   )}
                 >
@@ -397,7 +403,7 @@ export default function NotesTab({
                   </Button>
                   <Badge
                     variant="secondary"
-                    className="absolute -right-2 -top-2 px-1 py-0 text-[9px] leading-4"
+                    className="absolute -right-2 -top-2 px-1 py-0 text-micro leading-4"
                   >
                     {t("soon")}
                   </Badge>

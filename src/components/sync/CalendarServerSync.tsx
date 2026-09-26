@@ -4,14 +4,12 @@ import * as React from "react";
 import { useCalendarStore } from "@/store/useCalendarStore";
 import { useHydrateStore } from "@/hooks/useHydrateStore";
 import { createServerSync } from "@/lib/sync/create-server-sync";
+import { bootstrapSlice } from "@/lib/sync/bootstrap-client";
 import {
   makeCalendarForYear,
   currentAcademicStartYear,
 } from "@/lib/academic-calendar";
-import {
-  fetchYearsAction,
-  saveYearsAction,
-} from "@/server/actions/academic-years";
+import { saveYearsAction } from "@/server/actions/academic-years";
 
 /* Calendar store ↔ server koʻprigi (renderi yoʻq) — koʻp-yil (1-bosqich).
 
@@ -33,8 +31,12 @@ function selectSnapshot(s: CalendarState) {
   return { years: s.years };
 }
 
+/** Mount hydration umumiy bootstrap javobidan oʻqiladi (bitta soʻrov).
+    `null` = serverda yil yoʻq → pastdagi eager-seed ishlaydi. */
+const fetchSlice = bootstrapSlice("calendar");
+
 export default function CalendarServerSync() {
-  const hydrated = useHydrateStore(useCalendarStore, fetchYearsAction);
+  const hydrated = useHydrateStore(useCalendarStore, fetchSlice);
 
   // Sync effekti seed'dan OLDIN — createServerSync lastSynced'ni seed'gacha
   // (boʻsh roʻyxat) oladi, keyingi seed subscribe orqali push boʻladi.

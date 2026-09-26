@@ -3,6 +3,7 @@ import { and, eq, gte, inArray, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import {
   classes,
+  enrollments,
   students,
   topics,
   assignments,
@@ -11,6 +12,7 @@ import {
   attendanceStatuses,
   behaviorEvents,
 } from "@/server/db/schema";
+import { visibleClassIds } from "@/server/workspace";
 
 /* ════════════════════════════════════════════════════════════════════
    AI SINF-KONTEKSTI — "sinfga moslab reja tuz" uchun AGREGAT xulosa.
@@ -36,10 +38,13 @@ export async function buildClassContext(
   teacherId: string,
   classId: string
 ): Promise<string | null> {
+  const allowed = await visibleClassIds("data");
+  if (!allowed.includes(classId)) return null;
+
   const [cls] = await db
     .select({ id: classes.id, name: classes.name, grade: classes.grade, subject: classes.subject })
     .from(classes)
-    .where(and(eq(classes.id, classId), eq(classes.teacherId, teacherId)));
+    .where(eq(classes.id, classId));
   if (!cls) return null;
 
   const since = isoDaysAgo(LOOKBACK_DAYS);
@@ -53,14 +58,9 @@ export async function buildClassContext(
     // Faol oʻquvchilar soni
     db
       .select({ n: sql<number>`count(*)::int` })
-      .from(students)
-      .where(
-        and(
-          eq(students.teacherId, teacherId),
-          eq(students.classId, classId),
-          eq(students.status, "active")
-        )
-      ),
+      .from(enrollments)
+      .innerJoin(students, eq(students.id, enrollments.studentId))
+      .where(and(eq(enrollments.classId, classId), eq(students.status, "active"))),
 
     // Toifa boʻyicha oʻrtacha foiz (score/maxScore, draft va missing chiqarilgan)
     db
@@ -176,15 +176,11 @@ export async function buildClassContexts(
   teacherId: string,
   classIds: string[]
 ): Promise<string> {
-  // Faqat oʻqituvchining oʻz sinflari (himoya + tartib)
-  const own = classIds.length
-    ? await db
-        .select({ id: classes.id })
-        .from(classes)
-        .where(and(eq(classes.teacherId, teacherId), inArray(classes.id, classIds)))
-    : [];
+  // Faqat oʻqituvchi oʻtadigan darslar (himoya + tartib)
+  const allowed = new Set(await visibleClassIds("data"));
+  const own = classIds.filter((id) => allowed.has(id));
   const blocks: string[] = [];
-  for (const { id } of own.slice(0, 3)) {
+  for (const id of own.slice(0, 3)) {
     const block = await buildClassContext(teacherId, id);
     if (block) blocks.push(block);
   }

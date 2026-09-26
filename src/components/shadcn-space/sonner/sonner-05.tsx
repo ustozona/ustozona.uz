@@ -8,7 +8,7 @@ import { ExternalLink, GitBranch, Settings } from 'lucide-react'
 const ToastComponent = () => {
   const showToast = () => {
     toast.custom(() => (
-      <div className="bg-popover/95 backdrop-blur-md text-popover-foreground border-border rounded-2xl flex w-89 flex-col gap-3.5 border p-4 shadow-xl transition-all duration-300">
+      <div className="bg-popover/95 backdrop-blur-md text-popover-foreground border-border rounded-2xl flex w-89 flex-col gap-3 border p-4 shadow-xl transition-all duration-300">
         <div className="flex items-center gap-3">
           <div className="rounded-lg flex size-10 shrink-0 items-center justify-center bg-primary text-primary-foreground">
             <GitBranch className="size-5" aria-hidden="true" />
@@ -17,7 +17,7 @@ const ToastComponent = () => {
             <p className="text-sm font-semibold tracking-tight">Repository Synced</p>
             <p className="text-muted-foreground/80 text-xs font-medium">github.com/shadcn-space/pro</p>
           </div>
-          <span className="inline-flex items-center gap-1 rounded-full bg-teal-400/10 px-2 py-0.5 text-[10px] text-teal-400 font-semibold border border-teal-400/20 uppercase tracking-wider">
+          <span className="inline-flex items-center gap-1 rounded-full bg-teal-400/10 px-2 py-0.5 text-micro text-teal-400 font-semibold border border-teal-400/20 uppercase tracking-wider">
             <span className="size-1 rounded-full bg-teal-400 animate-pulse" />
             Active
           </span>

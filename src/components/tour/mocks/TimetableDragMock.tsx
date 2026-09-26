@@ -29,9 +29,9 @@ export function TimetableDragMock() {
 
       {/* Sinflar paneli */}
       <div className="w-32 shrink-0 rounded-lg border border-border bg-background p-3">
-        <p className="mb-2.5 text-xs font-semibold text-muted-foreground">Sinflar</p>
-        <div className="rounded-md border border-primary/40 bg-primary/10 px-2.5 py-2 text-xs font-medium text-foreground">
-          Matematika 7-A
+        <p className="mb-2 text-xs font-semibold text-muted-foreground">Sinflar</p>
+        <div className="rounded-md border border-primary/40 bg-primary/10 px-3 py-2 text-xs font-medium text-foreground">
+          7-A
         </div>
       </div>
 
@@ -41,7 +41,7 @@ export function TimetableDragMock() {
           <div key={i} className="relative h-8 rounded-md border border-border/70 bg-muted/40">
             {i === TARGET_INDEX && (
               <span
-                className="absolute inset-0.5 flex items-center justify-center rounded-[4px] border border-primary/40 bg-primary/15 px-1 text-[9px] font-medium leading-tight text-foreground"
+                className="absolute inset-0.5 flex items-center justify-center rounded-[4px] border border-primary/40 bg-primary/15 px-1 text-micro font-medium leading-tight text-foreground"
                 style={{ animation: "tt-drag-settle 2.6s ease-in-out infinite" }}
               >
                 Matematika
@@ -53,10 +53,10 @@ export function TimetableDragMock() {
 
       {/* Koʻchayotgan ghost karta */}
       <div
-        className="pointer-events-none absolute left-3 top-11 rounded-md bg-primary/80 px-2.5 py-2 text-xs font-medium text-primary-foreground shadow-md"
+        className="pointer-events-none absolute left-3 top-11 rounded-md bg-primary/80 px-3 py-2 text-xs font-medium text-primary-foreground shadow-md"
         style={{ animation: "tt-drag-ghost 2.6s ease-in-out infinite" }}
       >
-        Matematika 7-A
+        7-A
       </div>
     </div>
   );

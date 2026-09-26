@@ -1,7 +1,11 @@
+"use client";
+
+import { useTranslations } from "next-intl";
 import Logo from "@/assets/logo/logo";
 import { Separator } from "@/components/ui/separator";
 import {
   FOOTER_PAGE_LINKS,
+  FOOTER_PRODUCT_LINKS,
   LEGAL_LINKS,
   TELEGRAM_HANDLE,
   TELEGRAM_URL,
@@ -13,18 +17,23 @@ const TelegramIcon = () => (
   </svg>
 );
 
-type FooterData = {
-  title: string;
-  links: { title: string; href: string }[];
-};
-
-// Nomlar va havolalar YAGONA manbadan (lib/landing-nav) — header bilan bir xil.
-const footerSections: FooterData[] = [
-  { title: "Sahifalar", links: FOOTER_PAGE_LINKS },
-  { title: "Qoʻshimcha maʼlumot", links: LEGAL_LINKS },
-];
-
 const Footer = () => {
+  const t = useTranslations("Landing");
+  // Nomlar va havolalar YAGONA manbadan (lib/landing-nav) — header bilan bir xil.
+  const footerSections = [
+    {
+      title: t("footer.productsTitle"),
+      links: FOOTER_PRODUCT_LINKS.map((p) => ({ key: p.key, href: p.href, label: p.label })),
+    },
+    {
+      title: t("footer.pagesTitle"),
+      links: FOOTER_PAGE_LINKS.map((l) => ({ key: l.key, href: l.href, label: t(`nav.${l.key}`) })),
+    },
+    {
+      title: t("footer.moreInfoTitle"),
+      links: LEGAL_LINKS.map((l) => ({ key: l.key, href: l.href, label: t(`legal.${l.key}`) })),
+    },
+  ];
   return (
     <footer className="py-10">
       <div className="max-w-7xl xl:px-16 lg:px-8 px-4 mx-auto">
@@ -38,7 +47,7 @@ const Footer = () => {
                 </a>
 
                 <p className="text-base font-normal text-muted-foreground">
-                  Oʻqituvchilar uchun taʼlim jarayonini boshqarish va sifatini oshirishga moʻljallangan raqamli platforma.
+                  {t("footer.tagline")}
                 </p>
 
                 {/* social links */}
@@ -47,17 +56,15 @@ const Footer = () => {
                     href={TELEGRAM_URL}
                     target="_blank"
                     rel="noopener noreferrer"
-                    aria-label="Telegram kanalimiz"
+                    aria-label={t("footer.telegramAria")}
                     className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                   >
                     <TelegramIcon />
-                    Telegram
+                    {t("social.telegram")}
                   </a>
                 </div>
               </div>
             </div>
-
-            <div className="col-span-1 lg:block hidden"></div>
 
             {footerSections.map(({ title, links }, index) => (
               <div key={index} className="col-span-2">
@@ -66,13 +73,13 @@ const Footer = () => {
                     {title}
                   </p>
                   <ul className="flex flex-col gap-3">
-                    {links.map(({ title, href }) => (
-                      <li key={title}>
+                    {links.map(({ key, href, label }) => (
+                      <li key={key}>
                         <a
                           href={href}
                           className="text-base font-normal text-muted-foreground hover:text-foreground"
                         >
-                          {title}
+                          {label}
                         </a>
                       </li>
                     ))}
@@ -81,10 +88,10 @@ const Footer = () => {
               </div>
             ))}
 
-            <div className="col-span-3">
+            <div className="col-span-2">
               <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-100 ease-in-out fill-mode-both">
                 <p className="text-base font-medium text-foreground">
-                  Bogʻlanish uchun
+                  {t("footer.contactTitle")}
                 </p>
                 <ul className="flex flex-col gap-3">
                   <li>
@@ -100,7 +107,7 @@ const Footer = () => {
                   </li>
                   <li>
                     <p className="text-base font-normal text-muted-foreground">
-                      Savol va takliflar uchun Telegram orqali yozing.
+                      {t("footer.contactNote")}
                     </p>
                   </li>
                 </ul>
@@ -109,7 +116,7 @@ const Footer = () => {
           </div>
           <Separator orientation="horizontal" />
           <p className="text-sm font-normal text-muted-foreground text-center animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-100 ease-in-out fill-mode-both">
-            © {new Date().getFullYear()} Ustozona. Barcha huquqlar himoyalangan.
+            {t("footer.copyright", { year: new Date().getFullYear() })}
           </p>
         </div>
       </div>

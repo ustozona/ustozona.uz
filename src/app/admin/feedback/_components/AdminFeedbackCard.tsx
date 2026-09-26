@@ -6,13 +6,13 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { EmojiText } from "@/components/ui/emoji-text";
+import { RichFeedbackText } from "@/components/feedback/rich-feedback-text";
+import { LinkRichInput } from "@/components/feedback/link-rich-input";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Collapsible, CollapsibleTrigger, CollapsibleContent,
 } from "@/components/ui/collapsible";
-import { Dialog, DialogTrigger, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { ImageZoom } from "@/components/kibo-ui/image-zoom";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -150,38 +150,25 @@ export default function AdminFeedbackCard({ row }: { row: AdminFeedbackItem }) {
 
         {/* ── Tana + reaksiya (o'qish-uchun) + suhbat ── */}
         <div className={cn("mt-2", CONTENT_INDENT)}>
-          <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
-            <EmojiText text={item.body} />
+          <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+            <RichFeedbackText text={item.body} />
           </p>
 
           {item.images && item.images.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-2">
               {item.images.map((src, i) => (
-                <Dialog key={i}>
-                  <DialogTrigger asChild>
-                    <button
-                      type="button"
-                      aria-label={`Rasmni kattalashtirish ${i + 1}`}
-                      className="overflow-hidden rounded-lg border border-border transition-opacity hover:opacity-85"
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={src}
-                        alt={`Biriktirilgan rasm ${i + 1}`}
-                        className="h-20 w-auto max-w-32 object-cover"
-                      />
-                    </button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-3xl p-2">
-                    <DialogTitle className="sr-only">Biriktirilgan rasm</DialogTitle>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={src}
-                      alt={`Biriktirilgan rasm ${i + 1}`}
-                      className="max-h-[80vh] w-full rounded-md object-contain"
-                    />
-                  </DialogContent>
-                </Dialog>
+                <ImageZoom
+                  key={i}
+                  className="overflow-hidden rounded-lg border border-border transition-opacity hover:opacity-85"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={src}
+                    alt={`Biriktirilgan rasm ${i + 1}`}
+                    aria-label={`Rasmni kattalashtirish ${i + 1}`}
+                    className="h-20 w-auto max-w-32 object-cover"
+                  />
+                </ImageZoom>
               ))}
             </div>
           )}
@@ -215,7 +202,7 @@ export default function AdminFeedbackCard({ row }: { row: AdminFeedbackItem }) {
           </div>
 
           <CollapsibleContent className="data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-top-1">
-            <div className="mt-3.5 space-y-3 border-t border-border/60 pt-4">
+            <div className="mt-3 space-y-3 border-t border-border/60 pt-4">
               {item.replies.map((r) => (
                 <div key={r.id} className="flex items-start gap-3">
                   <Avatar size="default" className="mt-0.5 shrink-0">
@@ -234,7 +221,7 @@ export default function AdminFeedbackCard({ row }: { row: AdminFeedbackItem }) {
                       {r.isOfficial && (
                         <>
                           <Star className="size-3.5 shrink-0 fill-amber-400 text-amber-400" />
-                          <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
+                          <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-micro font-semibold text-primary">
                             Rasmiy
                           </span>
                         </>
@@ -248,8 +235,8 @@ export default function AdminFeedbackCard({ row }: { row: AdminFeedbackItem }) {
                         <TooltipContent>{formatFeedbackFull(r.createdAt)}</TooltipContent>
                       </Tooltip>
                     </div>
-                    <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
-                      <EmojiText text={r.body} />
+                    <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+                      <RichFeedbackText text={r.body} />
                     </p>
                   </div>
                 </div>
@@ -264,19 +251,16 @@ export default function AdminFeedbackCard({ row }: { row: AdminFeedbackItem }) {
                 </Avatar>
                 <div className="min-w-0 flex-1">
                   <div className="rounded-xl border border-border bg-background px-3 py-2 transition-colors focus-within:border-primary/50">
-                    <Textarea
+                    <LinkRichInput
                       value={reply}
-                      onChange={(e) => setReply(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) submitReply();
-                      }}
-                      placeholder="Ustozona jamoasi nomidan javob yozing…"
+                      onChange={setReply}
+                      onSubmitShortcut={submitReply}
+                      placeholder="Ustozona jamoasi nomidan javob yozing… (“/” — sahifa havolasi)"
                       rows={2}
                       disabled={pending}
-                      className="min-h-0 resize-none border-0 bg-transparent p-0 text-sm shadow-none focus-visible:ring-0"
                     />
                     <div className="mt-1.5 flex items-center justify-between gap-2">
-                      <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
+                      <span className="inline-flex items-center gap-1.5 text-tag font-medium text-muted-foreground">
                         <ShieldCheck className="size-3.5" />
                         Ustozona jamoasi nomidan
                       </span>
