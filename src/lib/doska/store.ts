@@ -799,3 +799,12 @@ export function useIsSelected(id: string): boolean {
 export function useActiveScreen(): DoskaScreen | undefined {
   return useDoskaStore((s) => s.deck.screens.find((x) => x.id === s.activeScreenId));
 }
+
+/**
+ * Joriy ekran — hook EMAS: hodisa ishlovchilari va store tashqarisidagi
+ * amallar uchun (siyoh qatlami, belgilash amallari).
+ */
+export function getActiveScreen(): DoskaScreen | undefined {
+  const s = useDoskaStore.getState();
+  return s.deck.screens.find((x) => x.id === s.activeScreenId);
+}

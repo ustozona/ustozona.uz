@@ -4779,7 +4779,10 @@
       "promoTitle": "Jumısıńızdı saqlap qoyıń",
       "promoBody": "Ekranlarıńız akkauntıńızda saqlanadı, klas dizimi jalǵanadı hám shaqırılǵan oqıwshı jurnalǵa túsedi.",
       "promoCta": "Múmkinshiliklerdi kóriw",
-      "appearance": "Kóriniw"
+      "appearance": "Kóriniw",
+      "saveImage": "Súwret etip saqlaw",
+      "savingImage": "Tayarlanbaqta…",
+      "saveImageFailed": "Súwret saqlanbadı — qaytadan urınıp kóriń"
     },
     "catalog": {
       "open": "Barlıǵı",
@@ -4939,7 +4942,13 @@
       },
       "penOnly": "Tek qálem",
       "laser": "Lazer",
-      "erasePartial": "Jarım-jartı"
+      "erasePartial": "Jarım-jartı",
+      "lasso": "Belgilew",
+      "ruler": "Sızǵısh",
+      "protractor": "Transportir",
+      "rotate": "Burıw",
+      "hideGuide": "Jabıw: {guide}",
+      "deleteSelection": "Óshiriw"
     }
   }
 }

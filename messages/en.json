@@ -4775,7 +4775,10 @@
       "promoTitle": "Keep your work",
       "promoBody": "Your screens are saved to your account, your class list connects, and the student you call on is recorded in the gradebook.",
       "promoCta": "See the features",
-      "appearance": "Appearance"
+      "appearance": "Appearance",
+      "saveImage": "Save as image",
+      "savingImage": "Preparing…",
+      "saveImageFailed": "Couldn't save the image — try again"
     },
     "catalog": {
       "open": "All",
@@ -4935,7 +4938,13 @@
       },
       "penOnly": "Pen only",
       "laser": "Laser",
-      "erasePartial": "Partial"
+      "erasePartial": "Partial",
+      "lasso": "Lasso",
+      "ruler": "Ruler",
+      "protractor": "Protractor",
+      "rotate": "Rotate",
+      "hideGuide": "Hide: {guide}",
+      "deleteSelection": "Delete"
     }
   }
 }

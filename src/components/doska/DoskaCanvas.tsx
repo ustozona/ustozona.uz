@@ -8,6 +8,7 @@ import { useActiveScreen, useDoskaStore } from "@/lib/doska/store";
 import { backgroundById } from "@/lib/doska/backgrounds";
 import { Z_SPOTLIGHT_EXIT, Z_SPOTLIGHT_SCRIM } from "@/lib/doska/layers";
 import { IconSpotlightExit } from "./icons";
+import { InkGuides } from "./InkGuides";
 import { InkLayer } from "./InkLayer";
 import { useDoskaInteraction } from "./InteractionLayer";
 import { SelectionOverlay } from "./SelectionOverlay";
@@ -47,6 +48,8 @@ export function DoskaCanvas() {
       className={cn("relative size-full overflow-hidden", background.grain && "doska-grain")}
       style={background.style}
       data-bg-tone={background.tone}
+      // «Rasm qilib saqlash» shu elementni oladi (lib/doska/export.ts).
+      data-doska-canvas=""
     >
       {hydrated && (
         <>
@@ -63,8 +66,13 @@ export function DoskaCanvas() {
           {/* Qoʻlyozma vidjetlar USTIDA — taqdimot va taymer ustiga ham
               yoziladi (R338); tanlov tutqichlari va panel esa undan yuqori. */}
           <InkLayer rootRef={rootRef} />
+          <InkGuides />
 
-          <SelectionOverlay />
+          {/* Tanlov ramkasi va vidjet paneli rasmga chiqmaydi. `contents` —
+              oʻrovchi joy ham, qatlam tartibi ham olmaydi. */}
+          <div className="contents" data-doska-no-export="">
+            <SelectionOverlay />
+          </div>
           <SpotlightScrim />
         </>
       )}

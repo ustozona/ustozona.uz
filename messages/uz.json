@@ -4666,7 +4666,10 @@
       "promoTitle": "Ishingizni saqlab qoʻying",
       "promoBody": "Ekranlaringiz hisobingizda saqlanadi, sinf roʻyxatingiz ulanadi va soʻralgan oʻquvchi jurnalga tushadi.",
       "promoCta": "Imkoniyatlarni koʻrish",
-      "appearance": "Koʻrinish"
+      "appearance": "Koʻrinish",
+      "saveImage": "Rasm qilib saqlash",
+      "savingImage": "Tayyorlanmoqda…",
+      "saveImageFailed": "Rasm chiqmadi — qayta urinib koʻring"
     },
     "catalog": {
       "open": "Hammasi",
@@ -4826,7 +4829,13 @@
       },
       "penOnly": "Faqat qalam",
       "laser": "Lazer",
-      "erasePartial": "Qisman"
+      "erasePartial": "Qisman",
+      "lasso": "Belgilash",
+      "ruler": "Chizgʻich",
+      "protractor": "Transportir",
+      "rotate": "Burish",
+      "hideGuide": "Yopish: {guide}",
+      "deleteSelection": "Oʻchirish"
     }
   }
 }

@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { screenHasLocked, useDoskaStore } from "@/lib/doska/store";
+import { downloadScreenPng, exportFileName } from "@/lib/doska/export";
 import { barIconButtonClass } from "./BarGroup";
 import { DoskaAppearance } from "./DoskaAppearance";
 import { ProBadge } from "./ProBadge";
@@ -21,6 +22,7 @@ import {
   IconCurtain,
   IconPalette,
   IconArrowRight,
+  IconImageDownload,
 } from "./icons";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -34,6 +36,11 @@ import {
    sensorli doska — shuning uchun ular menyuda ham bor (tugmasiz amal
    boʻlmaydi, docs/doska-ux-tadqiqot.md Q3). Yorliq yonida koʻrsatiladi:
    noutbukdagi oʻqituvchi uni shu yerdan oʻrganadi.
+
+   «Rasm qilib saqlash» — joriy ekran PNG boʻlib yuklanadi
+   (lib/doska/export.ts). Menyu tayyor boʻlguncha ochiq qoladi: katta
+   ekranda bir-ikki soniya ketadi va xato boʻlsa u shu bandning ostida
+   yoziladi.
 
    «Ekranni tozalash» va «Shu ekranni oʻchirish» tasdiq soʻramaydi —
    ikkalasi ham «Qaytarish» xabari bilan qaytariladi (store, DoskaNotice).
@@ -65,8 +72,23 @@ export function DoskaMenu() {
   const [open, setOpen] = React.useState(false);
   /** Menyu ichidagi boʻlim. Yopilganda doim bosh roʻyxatga qaytadi. */
   const [view, setView] = React.useState<"main" | "appearance">("main");
+  const [exporting, setExporting] = React.useState<"idle" | "busy" | "failed">("idle");
 
   const screenCount = deck.screens.length;
+  const saveImage = async () => {
+    if (exporting === "busy") return;
+    setExporting("busy");
+    try {
+      const number = deck.screens.findIndex((x) => x.id === activeScreenId) + 1;
+      await downloadScreenPng(exportFileName(deck.title, number));
+      setExporting("idle");
+      setOpen(false);
+    } catch (err) {
+      console.error("[doska] ekranni rasmga saqlab boʻlmadi", err);
+      setExporting("failed");
+    }
+  };
+
   /** Amal bajarilgach menyu yopiladi — natija (parda, xabar) koʻrinsin. */
   const run = (fn: () => void) => () => {
     fn();
@@ -78,7 +100,10 @@ export function DoskaMenu() {
       open={open}
       onOpenChange={(next) => {
         setOpen(next);
-        if (!next) setView("main");
+        if (!next) {
+          setView("main");
+          if (exporting === "failed") setExporting("idle");
+        }
       }}
     >
       <PopoverTrigger asChild>
@@ -137,6 +162,14 @@ export function DoskaMenu() {
           <div className="py-1">
             <MenuItem Icon={IconAdd} onClick={run(addScreen)}>
               {tm("newScreen")}
+            </MenuItem>
+            <MenuItem
+              Icon={IconImageDownload}
+              disabled={exporting === "busy"}
+              hint={exporting === "busy" ? tm("savingImage") : exporting === "failed" ? tm("saveImageFailed") : undefined}
+              onClick={saveImage}
+            >
+              {tm("saveImage")}
             </MenuItem>
             <MenuItem Icon={IconUsers} pro>
               {tm("connectClass")}

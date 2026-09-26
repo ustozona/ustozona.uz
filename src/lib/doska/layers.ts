@@ -18,3 +18,10 @@ export const Z_SPOTLIGHT_SCRIM = "calc(var(--z-doska-top) + 10)";
 export const Z_SPOTLIGHT_WIDGET = "calc(var(--z-doska-top) + 11)";
 export const Z_SPOTLIGHT_EXIT = "calc(var(--z-doska-top) + 12)";
 export const Z_CURTAIN = "calc(var(--z-doska-tooltip) + 1000)";
+
+/**
+ * Chizgʻich va transportir — siyoh USTIDA, shaffof plastik kabi: ostidagi
+ * yozuv koʻrinib turadi, barmoq esa yozuvni emas, asbobni ushlaydi.
+ * Tanlov tutqichlaridan past.
+ */
+export const Z_INK_GUIDE = "calc(var(--z-doska-ink) + 1)";

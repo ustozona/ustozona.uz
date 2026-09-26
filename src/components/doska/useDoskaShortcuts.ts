@@ -3,7 +3,7 @@
 import * as React from "react";
 
 import { useDoskaStore } from "@/lib/doska/store";
-import { useInkTool, type InkMode } from "@/lib/doska/ink-tool";
+import { deleteSelection, hasVisibleSelection, useInkTool, type InkMode } from "@/lib/doska/ink-tool";
 import { playBell } from "./sounds";
 import { hasSettings } from "./widgets";
 
@@ -17,13 +17,15 @@ import { hasSettings } from "./widgets";
 
      Ctrl/⌘+Z · Ctrl+Y / ⌘+Shift+Z   bekor qilish / qaytadan bajarish
      Ctrl/⌘+D                         tanlangan vidjet nusxasi
-     Delete · Backspace               tanlangan vidjetni oʻchirish
+     Delete · Backspace               tanlangan vidjetni (lassoda —
+                                      belgilangan yozuvni) oʻchirish
      Strelkalar (Shift — 10 px)       tanlangan vidjetni siljitish
      ← →  (tanlov yoʻq)               oldingi / keyingi ekran
      S                                tanlangan vidjet sozlamasi
      P · M · E · L                    qalam · marker · oʻchirgʻich · lazer
                                       (qayta bosilsa — tanlashga qaytish)
-     Esc                              markazdan chiqish → yozishdan chiqish
+     Esc                              markazdan chiqish → yozuv belgilashini
+                                      bekor qilish → yozishdan chiqish
                                       → sozlamani yopish → tanlovni yopish
                                       (shu tartibda)
      F · B                            toʻliq ekran · boshqaruvni yashirish
@@ -128,6 +130,7 @@ export function useDoskaShortcuts({
         case "Escape":
           // Eng ichki holatdan tashqariga: bitta bosish — bitta qadam.
           if (s.spotlightId) s.setSpotlight(null);
+          else if (hasVisibleSelection()) useInkTool.getState().setSelection([]);
           else if (useInkTool.getState().mode) useInkTool.getState().setMode(null);
           else if (s.settingsId) s.closeSettings();
           else if (s.selectedId) s.select(null);
@@ -173,7 +176,13 @@ export function useDoskaShortcuts({
 
         case "Delete":
         case "Backspace":
-          if (!selected || s.spotlightId) return;
+          if (s.spotlightId) return;
+          if (hasVisibleSelection()) {
+            e.preventDefault();
+            deleteSelection();
+            return;
+          }
+          if (!selected) return;
           e.preventDefault();
           s.removeWidget(selected);
           return;
