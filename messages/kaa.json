@@ -16,11 +16,9 @@
     "standards": "Standartlar",
     "tasks": "Wazıypalar",
     "changelog": "Jańalanıwlar",
-    "help": "Járdem",
     "feedback": "Pikir-usınıs",
     "settings": "Sazlawlar",
     "assignments": "Tapsırmalar",
-    "resources": "Materiallar",
     "baholash": "Baholash",
     "blog": "Blog"
   },
@@ -36,12 +34,10 @@
     "timetable": "Sabaq kestesi",
     "planner": "Jobalawshı",
     "lessons": "Sabaqlar",
-    "resources": "Materiallar",
     "attendance": "Dawamat",
     "behavior": "Minez-qulıq",
     "grades": "Jurnal",
     "gradesHelp": "Járdem",
-    "help": "Járdem",
     "statistics": "Statistika",
     "standards": "Standartlar",
     "tasks": "Wazıypalar",
@@ -53,8 +49,7 @@
     "adminUsers": "Paydalanıwshılar",
     "adminSchools": "Mektepler",
     "adminFeedback": "Pikirler",
-    "adminAudit": "Audit jurnalı",
-    "adminAi": "Ustozona AI"
+    "adminAudit": "Audit jurnalı"
   },
   "GlobalCommandPalette": {
     "search": "Izlew",
@@ -69,6 +64,7 @@
   "HeaderBreadcrumb": {
     "notFound": "Tabılmadı",
     "searchClassPlaceholder": "Klastı izlew…",
+    "myClassesHeading": "Klaslar",
     "searchStudentPlaceholder": "Oqıwshını izlew…"
   },
   "HeaderAccountMenu": {
@@ -106,9 +102,6 @@
     "dismissWarning": "Eskertiwdi jabıw",
     "month": "Ay",
     "quarter": "Sherek",
-    "year": "Jıl",
-    "noYearLessonDaysTitle": "Bul oqıw jılında sabaq kúni joq",
-    "noYearLessonDaysDescription": "Bul klass ushın oqıw jılında sabaq rejelestirilmegen. Sabaq kestesin hám oqıw jılı sazlawların tekseriń.",
     "showAll": "Hámmesin kórsetiw",
     "needsAttentionCount": "Dıqqat talap etetugınlar ({count})",
     "today": "Búgin",
@@ -134,16 +127,7 @@
     "noStudentsInClass": "Bul klaste oqıwshı joq.",
     "studentCount": "{count} oqıwshı",
     "note": "Túsindirme",
-    "cancel": "Biykar etiw",
-    "orphanTitle": "{count} dawamat jazıwı sabaq kestesine sáykes kelmeydi",
-    "orphanDescription": "Sabaq kúnleri ózgerdi. Jazıwlar saqlanıp tur, biraq kestede kórinbeydi.",
-    "orphanReview": "Kóriw",
-    "orphanKeep": "Qaldırıw",
-    "orphanDialogTitle": "Kestege sáykes kelmeytuǵın jazıwlar",
-    "orphanDialogDescription": "Bul sánelerde dawamat belgilengen, biraq olar endi sabaq kúni emes.",
-    "orphanRecordsOnDate": "{count} jazıw",
-    "orphanDelete": "Hámmesin óshiriw",
-    "orphanClose": "Jabıw"
+    "cancel": "Biykar etiw"
   },
   "SettingsPage": {
     "title": "Sazlawlar",
@@ -174,7 +158,7 @@
     "schoolLabel": "Bilimlendiriw mákemesi / Mektep",
     "schoolPlaceholder": "Mısalı: 24-mektep",
     "subjectLabel": "Pán",
-    "subjectPlaceholder": "Pándi tańlań",
+    "subjectPlaceholder": "Mısalı: Inglis tili",
     "birthDateLabel": "Tuwılǵan sánesi",
     "optional": "(qálewge qaray)",
     "toastImageOnly": "Tek súwret faylın jukleń.",
@@ -274,13 +258,7 @@
     "sheetStudents": "Oqıwshılar",
     "sheetClasses": "Klaslar",
     "sheetLessons": "Sabaqlar",
-    "sheetTasks": "Tapsırmalar",
-    "emailTitle": "Helpful emails",
-    "emailDescription": "Emails from Ustozona",
-    "emailToggleTitle": "Getting-started emails",
-    "emailToggleDescription": "Short emails that help you get started. Security emails such as password reset are not affected — they are always sent.",
-    "emailToastSaved": "Saved",
-    "emailToastError": "Could not save"
+    "sheetTasks": "Tapsırmalar"
   },
   "BellSection": {
     "title": "Smenalar hám qońırawlar kestesi",
@@ -759,8 +737,8 @@
   "ArticleFeedback": {
     "thanks": "Pikirińiz ushın raxmet!",
     "wasHelpful": "Bul maqala paydalı boldı ma?",
-    "moreQuestions": "Basqa sorawıńız bar ma?",
-    "contactLink": "Osı jerge jazıń"
+    "yes": "Awa",
+    "no": "Yaq"
   },
   "ArticleToc": {
     "tableOfContents": "Mazmunı"
@@ -781,12 +759,12 @@
   "StudentsPage": {
     "sortLabels": {
       "name": "Atı",
-      "lastName": "Familiyası",
       "grade": "Ortasha baha",
       "attendance": "Dawamat"
     },
     "status": {
       "active": "Oqıp atır",
+      "away": "Demalısta",
       "archived": "Shıǵıp ketken"
     },
     "statusFilterAll": "Hámmesi",
@@ -797,12 +775,12 @@
     "searchPlaceholder": "Atı yamasa ID boyınsha izlew…",
     "filterAria": "Jaǵday boyınsha filtrllew",
     "filterByStatus": "Jaǵday boyınsha",
+    "filterChip": "Jaǵday: {label}",
     "sortButton": "Saralaw: {label}",
     "sortMenuLabel": "Saralaw",
     "sortGrade": "Ortasha baha (pásten)",
     "sortAttendance": "Dawamat (pásten)",
     "sortName": "Atı (A–Z)",
-    "sortLastName": "Familiyası (A–Z)",
     "exportAria": "Eksport",
     "exportToast": "Oqıwshılar dizimi eksport qılındı",
     "newStudent": "Jańa oqıwshı",
@@ -812,16 +790,12 @@
     "emptyFilteredDescription": "Filtr yamasa izlewdi ózgertip kóriń.",
     "emptyDescription": "Birinshi oqıwshını qosıń yamasa tayın dizimdi import qılıń.",
     "viewProfile": "Profildi kóriw",
-    "previewPanel": "Oqıwshı kartası",
     "edit": "Ózgertiw",
     "addNote": "Túsindirme qosıw",
     "statusLabel": "Jaǵdayı",
     "delete": "Óshiriw",
-    "markArchived": "Shıqqan dep belgilew",
+    "markAway": "Joq dep belgilew",
     "markActive": "Aktiv dep belgilew",
-    "archiveDialogTitle": "Oqıwshı shıǵıp kettime?",
-    "archiveDialogDescription": "«{name}» shıqqanlar dizimine ótedi hám ámeldegi dizimde kórinbeydi. Bahaları hám qatnasıw tariyxı saqlanadı — qálegen waqıtta qaytarıp qoyıw múmkin.",
-    "confirmArchive": "Awa, shıǵıp ketti",
     "toastCreated": "Oqıwshı qosıldı",
     "toastImported": "{count} oqıwshı qosıldı",
     "toastDeleted": "Oqıwshı óshirildi",
@@ -853,7 +827,6 @@
     "viewCardAria": "Kartochka koʻrinisi",
     "viewTableAria": "Kesте koʻrinisi",
     "tableColName": "Толық аты",
-    "tableColSurname": "Familiyası",
     "tableColId": "ID",
     "tableColGrade": "Baha",
     "tableColAttendance": "Qatnasıw",
@@ -1194,18 +1167,6 @@
     "deleteDialogWithStudents": "«{name}» klası, onıń {count} oqıwshısı hám barlıq bahaları pútkilley óshiriledi. Bul ámeldi artqa qaytarıp bolmaydı.",
     "deleteDialogWithoutStudents": "«{name}» klası hám oǵan tiyisli barlıq maǵlıwmatlar pútkilley óshiriledi. Bul ámeldi artqa qaytarıp bolmaydı.",
     "deleteDialogBulk": "{count} klas ({students} oqıwshı) hám olarǵa tiyisli barlıq maǵlıwmatlar pútkilley óshiriledi. Bul ámeldi artqa qaytarıp bolmaydı.",
-    "detachDialogTitle": "Dizimińizden alıp taslansınba?",
-    "detachDialogOne": "«{name}» klası siziń dizimińizden shıǵadı. Klas, oqıwshılar hám bahalar kásipleslerińizde qaladı — hesh nárse óshpeydi.",
-    "detachDialogBulk": "{count} klas siziń dizimińizden shıǵadı. Olardı kásipleslerińiz de ótedi, sonlıqtan klaslar, oqıwshılar hám bahalar saqlanadı.",
-    "detachConfirm": "Alıp taslaw",
-    "detachToast": "«{name}» dizimińizden alıp taslandı",
-    "detachBulkToast": "{count} klas dizimińizden alıp taslandı",
-    "deleteDialogMixed": "{deleted} klas pútkilley óshiriledi. Qalǵan {detached} klasti kásipleslerińiz de ótedi — olar tek siziń dizimińizden shıǵadı.",
-    "deleteMixedToast": "{deleted} klas óshirildi, {detached} klas dizimińizden alıp taslandı",
-    "blockedDialogTitle": "Bul klasti óshirip bolmaydı",
-    "blockedDialogOne": "«{name}» klasın kásiplesińiz de ótedi, al siz onıń iyesisiz. Aldın kásiplesti klastan shıǵarıń yamasa iyelikti oǵan berińiz.",
-    "blockedDialogBulk": "{count} klasti kásipleslerińiz de ótedi, al siz olardıń iyesisiz. Aldın kásiplesterdi klastan shıǵarıń yamasa iyelikti berińiz.",
-    "close": "Jabıw",
     "deleteBulkToast": "{count} klas óshirildi",
     "archiveBulkToast": "{count} klas arxivlendi",
     "selectedCount": "{count} tańlandı",
@@ -1262,6 +1223,7 @@
     "sortGrade": "Ortasha baha",
     "sortAttendance": "Dawamat",
     "statusActive": "Oqıp atır",
+    "statusAway": "Demalısta",
     "statusArchived": "Shıǵıp ketken",
     "toastCreated": "Oqıwshı qosıldı",
     "toastImported": "{count} oqıwshı qosıldı",
@@ -1277,7 +1239,7 @@
     "emptyTitle": "Bul klaste ele oqıwshı joq",
     "emptyFilteredDescription": "Izlewdi ózgertip kóriń.",
     "emptyDescription": "Oqıwshılardı qosıń.",
-    "markArchived": "Shıqqan dep belgilew",
+    "markAway": "Joq dep belgilew",
     "markActive": "Aktiv dep belgilew",
     "fullProfileAria": "Tolıq profil",
     "viewProfile": "Profilin kóriw",
@@ -1321,7 +1283,7 @@
     "cancel": "Biykar etiw",
     "save": "Saqlaw",
     "deleteUnitDialogTitle": "Bólimdi óshiriw",
-    "deleteUnitDialogDescription": "«{unit}» bólimi hám ondaǵı sabaqlar óshiriledi — kestege qoyılǵan sabaqlar da alıp taslanadı. Bul ámeldi keyinirek biykar etiwińiz múmkin.",
+    "deleteUnitDialogDescription": "«{unit}» bólimi óshiriledi. Ondaǵı sabaqlar óshpeydi — tek bólimsiz bolıp qaladı. Bul ámeldi keyinirek biykar qılıwıńız múmkin.",
     "delete": "Óshiriw",
     "noUnitSelectedTitle": "Bólim tańlanbaǵan",
     "noUnitSelectedDescription": "Temalardı kóriw ushın bólim tańlań.",
@@ -1329,13 +1291,6 @@
     "editAria": "Ózgertiw",
     "searchAria": "Izlew",
     "sortAria": "Saralaw",
-    "reorderMenuItem": "Tártipti ózgertiw",
-    "reorderHint": "Súyreń yamasa ↑ ↓ basıń",
-    "reorderMoved": "{count} orın ózgerdi",
-    "reorderDone": "Tayın",
-    "reorderDrag": "Súyrew",
-    "reorderUp": "Joqarıǵa",
-    "reorderDown": "Tómenge",
     "newLesson": "Jańa tema",
     "listViewAria": "Dizim",
     "calendarViewAria": "Kalendar",
@@ -1344,44 +1299,15 @@
     "deleteLessonAria": "Óshiriw",
     "deleteLessonDialogTitle": "Temanı óshiriw",
     "deleteLessonDialogDescription": "Bul tema hám onıń redaktordaǵı barlıq mazmunı pútkilley óshiriledi. Bul ámeldi qaytarıp bolmaydı.",
-    "lessonDeletedToast": "Tema óshirildi",
-    "deleteUnitKeepLessons": "Sabaqlar óshpesin — «Bólimsiz» ge ótsin",
-    "deleteUnitImpact": "Bólimde {lessons} sabaq bar, olardan kestege {sessions} jazıw qoyılǵan."
+    "lessonDeletedToast": "Tema óshirildi"
   },
   "LessonsPage": {
     "statusCompleted": "Tawısıldı",
     "statusScheduled": "Rejelestirilgen",
     "statusUnscheduled": "Rejesiz",
-    "classMeta": "{units} bólim · {lessons} tema",
-    "classCoverage": "Qamtıw: {pct}%",
-    "moveToNewUnit": "Jańa bólimge…",
-    "lessonMovedToUnit": "«{lesson}» → {unit}",
-    "lessonsMovedToUnit": "{count} tema → {unit}",
-    "lessonsSearchPlaceholder": "Tema izlew…",
-    "lessonsSearchEmpty": "«{q}» boyınsha tema tabılmadı",
-    "classUnitsTip": "{count} bólim",
-    "classLessonsTip": "{count} tema · {taught} ótildi",
     "statusDraft": "Qaralama",
-    "unitDeletedToast": "«{unit}» óshirildi",
-    "undo": "Biykar etiw",
-    "selectAria": "Belgilew",
-    "selectMenuItem": "Tańlaw",
-    "reorderMenuItem": "Tártipti ózgertiw",
-    "reorderHint": "Súyreń yamasa ↑ ↓ basıń",
-    "reorderMoved": "{count} orın ózgerdi",
-    "reorderDone": "Tayın",
-    "reorderDrag": "Súyrew",
-    "reorderUp": "Joqarıǵa",
-    "reorderDown": "Tómenge",
-    "selectAll": "Barlıģın tańlaw",
-    "bulkDeleteUnitsTitle": "Tańlanģan bólimler óshirilsinbe?",
-    "bulkDeleteUnitsDescription": "{units} ta bólim hám olardıń ishindegi {lessons} ta sabaq óshiriledi. Ámeldi xabarnamadaģı «Biykarlaw» arqalı derhal qaytarıw múmkin.",
-    "bulkDeleteLessonsTitle": "Tańlanģan sabaqlar óshirilsinbe?",
-    "bulkDeleteLessonsDescription": "{lessons} ta sabaq óshiriledi. Ámeldi xabarnamadaģı «Biykarlaw» arqalı derhal qaytarıw múmkin.",
-    "bulkUnitsDeletedToast": "{units} ta bólim hám {lessons} ta sabaq óshirildi",
-    "bulkLessonsDeletedToast": "{lessons} ta sabaq óshirildi",
-    "selectedCount": "{count} ta tańlandı",
-    "bulkDeleteSessions": "Kestedegi {sessions} ta jazıw da alıp taslanadı.",
+    "unitDeletedToast": "«{unit}» óshirildi",
+    "undo": "Biykar etiw",
     "newLessonToast": "Jańa sabaq jaratıldı",
     "editUnit": "Ózgertiw",
     "deleteUnit": "Óshiriw",
@@ -1409,7 +1335,7 @@
     "cancel": "Biykar etiw",
     "save": "Saqlaw",
     "deleteUnitDialogTitle": "Bólimdi óshiriw",
-    "deleteUnitDialogDescription": "«{unit}» bólimi hám ondaǵı sabaqlar óshiriledi — kestege qoyılǵan sabaqlar da alıp taslanadı. Bul ámeldi keyinirek biykar etiwińiz múmkin.",
+    "deleteUnitDialogDescription": "«{unit}» bólimi óshiriledi. Ondaǵı sabaqlar óshpeydi — tek bólimsiz bolıp qaladı. Bul ámeldi keyinirek biykar qılıwıńız múmkin.",
     "delete": "Óshiriw",
     "noUnitSelectedTitle": "Bólim tańlanbaǵan",
     "noUnitSelectedDescription": "Temalardı kóriw ushın bólim tańlań.",
@@ -1421,29 +1347,18 @@
     "lessonsEmptyTitle": "Ele tema joq",
     "lessonsEmptyDescription": "Usı bólimge birinshi temanı qosıń.",
     "deleteLessonAria": "Óshiriw",
-    "moveLesson": "Kóshiriw",
     "deleteLessonDialogTitle": "Sabaqtı óshiriw",
     "deleteLessonDialogDescription": "Bul sabaq hám onıń redaktordaǵı barlıq mazmunı pútkilley óshiriledi. Bul ámeldi qaytarıp bolmaydı.",
-    "lessonDeletedToast": "Sabaq óshirildi",
-    "deleteUnitKeepLessons": "Sabaqlar óshpesin — «Bólimsiz» ge ótsin",
-    "deleteUnitImpact": "Bólimde {lessons} sabaq bar, olardan kestege {sessions} jazıw qoyılǵan."
+    "lessonDeletedToast": "Sabaq óshirildi"
   },
   "TimetablePage": {
-    "scheduleSavedToast": "Keste jańalandı",
-    "pendingSubtitle": "Kestede áli góne tártip ámel etedi",
-    "discardedToast": "{count} ózgeris biykar etildi",
-    "undo": "Qaytarıw",
-    "discardConfirmTitle": "Ózgerisler biykar etilsinbe?",
-    "discardConfirmDescription": "{count} ózgeris óshedi hám keste sońǵı qollanǵan halatına qaytadı.",
-    "pendingChanges": "{count} ózgeris saqlanbadı",
-    "applyChanges": "Saqlaw",
-    "discardChanges": "Biykar etiw",
     "unknownClass": "Belgisiz klas",
     "versionExistsError": "Bul sánede álle qashan versiya bar",
     "newVersionToast": "Jańa keste versiyası — {date}den",
     "exportEmptyError": "Eksport ushın keste bos",
     "exportSuccessToast": "Keste eksport qılındı",
     "classRemovedToast": "Klas kesteneden alıp taslandı",
+    "undo": "Qaytarıw",
     "notScheduled": "Kestege qosılmaǵan",
     "classesTitle": "Klaslar",
     "add": "Qosıw",
@@ -2047,9 +1962,6 @@
       "tuzatildi": "Tuwırlandı"
     },
     "routes": {
-      "help": "Járdem orayı",
-      "baholash": "Baholash",
-      "blog": "Blog",
       "assignments": "Tapsırmalar",
       "planner": "Jobalawshı",
       "dashboard": "Bas bet",
@@ -2068,30 +1980,6 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
-      "doska-uslublar": {
-        "title": "Doska: ózińizge unaǵan stildi tańlań hám paneldi ózińiz dúziń",
-        "body": "Menyudaǵı «Kóriniw» bóliminde úsh stildiń birin tańlań: «Tınısh» — proektorda eń anıq, «Oyınshıq» — kishi klasslar ushın quwanıshlı hám reńli, «Doska» — jasıl doskadaǵı qaǵaz hám magnitler. Paneldi tómende, shep yamasa oń tárepte qaldırıw múmkin — interaktiv doskanıń qasında turıp islesenińiz qolay. Kerekli qurallardı «Barlıǵı» aynasınan panelge qadap qoyıń, qalǵanları sol aynada turadı."
-      },
-      "doska-qulay-boshqaruv": {
-        "title": "Doska qolaylı boldı: taymerge qálegen waqıt, hár háreketti qaytarıw, basqarıw qol astında",
-        "body": "Taymerdi qoyǵanda waqıttı dárhal tańlaysız (1–15 minut yamasa ± túymeleri), onı basıp baslaysız, waqıt tawsılǵanda qońıraw qaǵıladı; hár vidjettiń sazlawları onıń qasında, «Sazlaw» túymesinde ashıladı. Abaysızda óshirilgen vidjet yamasa ekran «Qaytarıw» menen ornına keledi, kerekli vidjetti bekitiw yamasa «Ortaǵa» menen pútkil ekranǵa shıǵarıw múmkin. Barlıq basqarıw endi tómende — interaktiv doskada ańsat jetesiz, al menyuda klastıń dıqqatın awdarıw ushın «Ekrandı jabıw» hám «Qońıraw qaǵıw» bar."
-      },
-      "doska-gildirak": {
-        "title": "Doskada Dóńgelek: kim juwap beretuǵının ádil tańlań",
-        "body": "Doskanıń tómengi panelinen «Dóńgelek»ti qoyasız, qálem túymesi menen oqıwshılardıń atların jazasız hám dóńgelekti basasız — ol aylanıp, bir oqıwshını tańlaydı. «Hámme bir retten» rejiminde soralǵan oqıwshı dóńgelekten shıǵadı, sonlıqtan «nege hámme waqıt men?!» degen sóz bolmaydı; hámme soralǵannan keyin jańa aylanbanı baslaysız. Oqıwshı tayar bolmasa, «Keyinirek»ti basasız — ol dóńgelekke qaytıp, keyin qayta shıǵadı."
-      },
-      "sahna-uslubi": {
-        "title": "Prezentaciya hám testler ushın jańa kórinis: shrift, stil hám reńli juwaplar",
-        "body": "Redaktordaǵı «Tema» panelinde shrifttı (Nunito, Rubik, Montserrat, Onest) hám sahna stilin — «Klassik» yamasa «Zamanagóy» — tańlaysız: oqıwshı telefonı da, Doska da usı kóriniste shıǵadı. Juwap variantları endi reńli, formalı hám nomerli — kompyuter klasında oqıwshılar 1–6 túymeleri menen juwap beredi. Juwap ashılǵanda durısı jasıl, qáte tańlaw qızıl bolıp shıǵadı, Doskada bolsa sorawlar progressi hám waqıt sızıǵı kórinedi. Úy tapsırmasında oqıwshı hár sorawdan keyin nátiyjesin dárhal kóredi."
-      },
-      "taqdimot-doskada": {
-        "title": "Interaktiv prezentaciya: slaydlar, sorawlar hám tiri sabaq — bir jerde",
-        "body": "Jurnalda tapsırma jaratıp atırǵanda «Avtomatik» → «Prezentaciya» nı tańlaysız. Slaydtı tayar maketten dúzesiz (atama, dizim, súwret, video, citata) yamasa bar PowerPoint hám PDF faylıńızdı import etesiz, slaydlar arasına bolsa test, sorawnama, sóz bultı hám ashıq juwap qoyasız. Sabaqta Doskadan «Tiri sessiya» nı baslaysız: oqıwshılar QR yamasa PIN menen kiredi, siz slaydtı almastırsańız barlıq ekran birge ótedi, juwaplar bolsa doskada tiri baǵana bolıp ósedi. Qurılma bolmasa da boladı — juwaptı doskada ashıp, klastı toparlarǵa bólip ball beresiz. Ashıq juwaplardı keyin 0, ½ yamasa 1 menen bahalaysız hám nátiyjeni jurnalǵa kóshiresiz."
-      },
-      "jamoa-ish-maydoni": {
-        "title": "Endi mektep bolıp birge islewge boladı — birneshe muǵallim, ulıwma oqıwshılar dizimi",
-        "body": "Sazlawlar › Jámáát bóliminde kásiplesińizge shaqırıw kodın beresiz. Ol qosılǵanda klasları hám oqıwshıları menen birge kóshedi — kelisiwden aldın ne kóshetuǵının dizim menen kóredi. Hár klastıń iyesi bar: sabaqtı kim ótetuǵının ol sheshedi, bir klasta birneshe muǵallim bolıwı múmkin. Balanıń bahası, sabaqqa qatnasıwı hám jazbaları tek onı haqıyqatında oqıtatuǵın muǵallimlerge kórinedi — bir mektepte islewdiń ózi hesh nárseni ashpaydı."
-      },
       "topshiriq-qoralama-royxatda": {
         "title": "Tamamlanbagʻan tapsırma endi dizimde turadı hám joytpaydı",
         "body": "Redaktordı japsangʻız hesh nárse soralmaydı — qaralama Tapsırmalar diziminde karta bolıp turadı, basıp dawam etesiz. Basqa klasta «+» bassangʻız da eski qaralamangʻız óshpeydi, sol ashıladı. Kishireytiw tuymesi hám múyeshtegi belgi kerek bolmay qaldı."
@@ -2472,17 +2360,7 @@
       "tasks-stats-panel": {
         "title": "Tapsırmalar — oń panelge statistika qosıldı",
         "body": "Hesh qanday tapsırma tańlanbaǵanda oń panel endi bos turmaydı: jobalanǵan waqıt, jobalanǵan tapsırmalar, ısletilgen waqıt hám orınlanǵanlar procenti kórinedi. Tolıq statistikaǵa ótiw túymesi de sol jerde."
-      },
-      "ish-reja-yuklash": {
-        "title": "Jumıs rejesin júkleń — temalar sabaqlarıńızǵa kúnbe-kún ózi jaylasadı",
-        "body": "Endi hár bir temanı qolda ashıw shárt emes. Bólim ishinde «Jańa sabaq» → «Excel júklew» arqalı jumıs rejesi faylın júkleysiz yamasa temalar dizimin kóshirip qoyasız — barlıq sabaqlar birden jaratıladı. Sabaq kestesi sazlanǵan bolsa, temalar kezektegi sabaqlarıńızǵa izbe-iz biriktiriledi, dem alıs kúnleri ótkerip jiberiledi. Bólimlerdi de tap usınday dizim menen qosıw múmkin.",
-        "cta": "Jumıs rejesin júklewdi úyreniw"
       }
-    },
-    "cta": {
-      "help": "Qollanbanı oqıw",
-      "blog": "Blogta kóriw",
-      "try": "Sınap kóriw"
     }
   },
   "StandardsView": {
@@ -2576,7 +2454,6 @@
     "customSetsCount": "{count} custom toplam",
     "noCustomSetsYet": "Ele custom toplam joq. Joqarıda at kirgizip «Jaratıw» basıń.",
     "importSuccess": "{count} standart import qılındı",
-    "importDomainsInferred": "{count} maqsettiń mazmun tarawı kodtan boljandı — tekseriń",
     "importNoStandards": "Faylda standart tabılmadı",
     "importReadError": "Fayldı oqıp bolmadı",
     "editAria": "Ózgertiw",
@@ -2609,9 +2486,7 @@
   "YearProgress": {
     "ariaLabel": "Oqıw jılınıń barısı: {year}",
     "quarterWeek": "{quarter} · {week}/{weeks}-hápte",
-    "quarterUntil": "{name} — {date} shekem",
-    "quarterEndDate": "{date} shekem",
-    "weekOfYear": "{week}/{weeks}-hápte"
+    "quarterUntil": "{name} — {date} shekem"
   },
   "QueueSection": {
     "title": "Wazıypalar",
@@ -2631,11 +2506,8 @@
     "dueToday": "Búgin",
     "dueTomorrow": "Erteń",
     "footerDone": "Búgin: {done}/{total} orınlandı",
-    "emptyTitle": "Házirshe wazıypa joq",
-    "emptyDescription": "Joqarıdaǵı maydanǵa jazıp, búgingi wazıypanı qosıń.",
-    "emptyWeekTitle": "Bul hápte bos",
-    "emptyWeekDescription": "Keyinirek jáne {count} wazıypa bar.",
-    "quickAddPlaceholder": "Búginge wazıypa qosıw"
+    "emptyTitle": "Barlıǵı tekserildi",
+    "emptyDescription": "Gezek bos — jańa wazıypa qosıń yamasa dem alıń."
   },
   "TodayRail": {
     "title": "Búgingi sabaqlar",
@@ -2660,7 +2532,6 @@
     "showSunday": "Ekshembini kórsetiw",
     "hideSunday": "Ekshembini jasırıw",
     "attendanceAction": "Qatnasıw",
-    "startPresentation": "Prezentaciyanı baslaw",
     "gradesAction": "Jurnal"
   },
   "AttentionSection": {
@@ -2701,18 +2572,9 @@
     "unknownClass": "Belgisiz klass",
     "untitledTopic": "(ataqsız tema)",
     "tomorrow": "Erteń",
-    "inDays": "{count} kúnnen keyin",
     "durationSuffix": "{count} min",
     "emptyTitle": "Aldag'ı sabaq joq",
-    "emptyDescription": "Ăli jobalanbagan — sabaq kestesin tekseriń.",
-    "noTopic": "Mavzu biriktirilmagan",
-    "addTopic": "Mavzu qoʻshish",
-    "addTopicTooltip": "Yangi mavzu yaratib, muharrirni ochish",
-    "link": "Ulash",
-    "linkTooltip": "Mavjud mavzuni shu darsga ulash",
-    "thisWeek": "Bu hafta",
-    "weekProgressAria": "Bu hafta {total} ta darsdan {done} tasiga mavzu biriktirilgan",
-    "holidayRow": "{day} — {name}"
+    "emptyDescription": "Ăli jobalanbagan — sabaq kestesin tekseriń."
   },
   "DashboardPage": {
     "unknownClass": "Belgisiz klas",
@@ -2912,6 +2774,7 @@
   },
   "SignupForm": {
     "title": "Tegin baslaw",
+    "subtitle": "Bank kartası talap etilmeydi. Bir minutta iske túsersiz.",
     "continueWithGoogle": "Google arqalı dawam etiw",
     "orWithEmail": "yamasa email menen",
     "firstNameLabel": "Atı",
@@ -2928,19 +2791,14 @@
     "signIn": "Sistemag'a kiriw",
     "googleNotConfigured": "Google arqalı kiriw házirshe sazlanbaǵan.",
     "errors": {
-      "required": "Bul maydan tolıtırılıwı shárt.",
       "userAlreadyExists": "Bul email menen esap allaaqashan bar.",
       "passwordTooShort": "Parol keminde 8 belgiden ibarat bolsın.",
       "passwordTooLong": "Parol júdá uzın.",
       "invalidEmail": "Email mánzili qáte kóriniste.",
       "generic": "Dizimnen ótiwde qátelik júz berdi. Qaytadan urinıp kóriń."
     },
-    "passwordStrength": {
-      "weak": "Álsiz",
-      "medium": "Ortasha",
-      "strong": "Kúshli"
-    },
-    "continueWithTelegram": "Telegram menen dawam etiw"
+    "continueWithTelegram": "Telegram menen dawam etiw",
+    "telegramHint": "Eń tez jol — atı-familiyası hám baylanıs avtomatikalıq"
   },
   "ForgotPasswordPage": {
     "title": "Paroldi unıttıńız ba?",
@@ -3014,7 +2872,7 @@
       "schoolLabel": "Mektep / mákeme",
       "schoolPlaceholder": "Mısalı, 24-mektep",
       "subjectLabel": "Tiykarǵı pán",
-      "subjectPlaceholder": "Pándi tańlań",
+      "subjectPlaceholder": "Mısalı, Ingliz tili",
       "birthDateLabel": "Tuwılǵan sáne"
     },
     "yearStep": {
@@ -3120,14 +2978,6 @@
     "standards": "Standartlar",
     "addStandard": "Standart qosıw",
     "removeStandard": "Alıp taslaw",
-    "materials": "Prezentaciya hám testler",
-    "addMaterial": "Prezentaciya yamasa test biriktiriw",
-    "searchMaterial": "Izlew…",
-    "noMaterials": "Házirshe prezentaciya yamasa test joq",
-    "removeMaterial": "Ajıratıw",
-    "kindDeck": "Prezentaciya",
-    "kindTest": "Test",
-    "materialsHint": "Sabaq kúni Dashboard hám Doskada tayar turadı",
     "taught": "Ótilgen",
     "selectClassFirst": "Áwwel klass tańlań",
     "searchStandard": "Standart izlew…",
@@ -3148,7 +2998,6 @@
     "textColor": "Tekst rangi",
     "highlightColor": "Ajıratıw rangi",
     "clearColor": "Rangdi tazalaw",
-    "blockStyle": "Stil",
     "paragraph": "Ápiwayı tekst",
     "heading1": "Sarlawha 1",
     "heading2": "Sarlawha 2",
@@ -3179,12 +3028,6 @@
     "link": "Silkeltpe",
     "linkApply": "Qosıw",
     "insertImage": "Súwret qosıw",
-    "insertVideo": "Video qosıw",
-    "videoApply": "Qoyıw",
-    "videoHint": "YouTube yamasa Instagram siltemesin qoyıń. Bos qatarǵa siltemesi taslansa video ózi qoyıladı.",
-    "videoNotRecognized": "Silteme tanılmadı — YouTube yamasa Instagram siltemesin qoyıń",
-    "imageUploadFailed": "Súwretti júklew ámelge aspadı",
-    "captionPlaceholder": "Súwret izohı (qálewi boyınsha)",
     "insertCallout": "Callout qosıw",
     "changeCalloutType": "Túrin ózgertiw",
     "insertNotionCallout": "Emojili blok",
@@ -3287,36 +3130,37 @@
     "pastMidnightWarning": "Sabaqlar yarım túnnen asıp ketpekte — baslanıw waqtı yamasa sabaqlar sanın tekseriń."
   },
   "EffectiveDateDialog": {
-    "title": "Ózgeris qashannan ámel etsin?",
-    "description": "Bul redaktsiyalar qaysı kúnlerge tiyisli.",
-    "pickTitle": "Taza keste qashannan baslanadı?",
-    "pickDescription": "Tańlanǵan sáneden taza keste versiyası jaratıladı.",
+    "title": "Taza sabaq kestesi qashannan kúshke kiredi?",
+    "description": "Oǵan shekemgi sabaq hám bahalar tariyxı aldınǵı kestede saqlanadı.",
     "close": "Jabıw",
     "options": {
-      "new": {
-        "title": "Búginnen",
-        "caption": "Aldınǵı sabaqlar góne kestede qaladı."
+      "monday": {
+        "title": "Keyingi dúyshembiden",
+        "caption": "Taza keste '{date}' den kúshke kiredi. Oǵan shekem sabaqlar góne tártipte boladı."
       },
-      "fix": {
-        "title": "Basınan — qáteni tuwrılaw",
-        "caption": "Barlıq sabaqlar taza keste boyınsha kórsetiledi."
+      "today": {
+        "title": "Búginnen baslap",
+        "caption": "'{date}' den baslanadı. Ótken kúnler tariyxına tásir etpeydi."
+      },
+      "custom": {
+        "title": "Basqa sáneden…",
+        "caption": "'{date}' den kúshke kiredi",
+        "pickFromCalendar": "Sáneni kalendardan tańlań."
+      },
+      "inPlace": {
+        "title": "Qáteni tuwrılaw",
+        "caption": "Taza keste jaratılmaydı, ózgerisler barlıq kúnlerge qollanıladı."
       }
     },
-    "attendanceWarning": "Bul ótken sabaqlardaǵı dawamat belgilerine tásir etiwi múmkin.",
-    "effectiveDateLabel": "Baslanıw sánesi",
     "dateAlreadyTaken": "Bul sánege sabaq kestesi dúzilgen",
+    "effectiveDateLabel": "Kúshke kiriw sánesi",
+    "pickDate": "Sáneni tańlań",
+    "dateAlreadyTakenFull": "Bul sánege sabaq kestesi dúzilgen.",
     "pastDateWarning": "Ótmishegi sáne — usı kúnnen keyingi kúnler tariyxı da taza keste menen kórsetiledi.",
+    "noteLabel": "Ózgerisler haqqında túsindirme (qálegenshe)",
+    "notePlaceholder": "Mısalı: 7-B sabaǵı juma kúnine ótkerildi",
     "cancel": "Biykar etiw",
     "save": "Saqlaw"
-  },
-  "SubjectPicker": {
-    "placeholder": "Pándi tańlań",
-    "search": "Pán izlew…",
-    "empty": "Pán tabılmadı",
-    "mySubjects": "Meniń pánlerim",
-    "suggested": "Usınıs etiledi",
-    "addCustom": "«{value}» pánin qosıw",
-    "clear": "Tańlawdı tazalaw"
   },
   "ClassFormModal": {
     "createTitle": "Taza klass jaratıw",
@@ -3327,7 +3171,7 @@
     "pickColor": "Reń tańlaw",
     "gradeValue": "{grade}-klass",
     "subject": "Pán",
-    "subjectPlaceholder": "Pándi tańlań",
+    "subjectPlaceholder": "Mısalı, Matematika",
     "cancel": "Biykar etiw",
     "create": "Jaratıw",
     "save": "Saqlaw",
@@ -3348,7 +3192,6 @@
       "undo": "Biykar etiw"
     },
     "title": "Klasslar",
-    "selectClass": "Klass saylañ",
     "addClass": "Klass qosıw",
     "add": "Qosıw",
     "emptyTitle": "Házirshe klasslar joq",
@@ -3380,8 +3223,7 @@
     "submit": "Bólim jaratıw"
   },
   "LessonsServerSync": {
-    "saveError": "Sabaqlar serverge saqlanbadı",
-    "deleteError": "Óshiriw serverde orınlanbadı — qaytadan urınıp kóriń"
+    "saveError": "Sabaqlar serverge saqlanbadı"
   },
   "SettingsDialogContent": {
     "close": "Jabıw"
@@ -3432,15 +3274,27 @@
         },
         "1": {
           "title": "Kúndi basqarıw orayı",
-          "body": "Bul jerde kúnniń jaǵdayı shıǵadı: birinshi kirgende — sálemlesiw hám búgingi jaǵday (neshshe sabaq bar, keyingisi qashan); keyingi kirgenlerde — sitata, onı basıp ózińizdikin qosasız. Sálemlesiw waqtında tómende jińishke sızıq — oqıw jılınıń barısı; máwsim belgilerine kursordı alıp barsańız, sherek kúnleri shıǵadı."
+          "body": "Sálemlesiwdegi chipler basıladı: tekseriwler jurnalǵa, qatnasıw sanaǵıshı qatnasıw betine alıp baradı. Tómendegi jińishke sızıq — oqıw jılınıń barısı; máwsim belgilerine kursordı alıp barsańız, sherek kúnleri shıǵadı."
         },
         "2": {
           "title": "Isler gezegi",
-          "body": "Bahalaw wazıypaları múddetine qaray toparlanǵan — ótip ketken, búgingi, kelesi hápte ishindegi. Katekshedi belgilesengiz orınlanǵan boladı, qatardı basıp sol klasstıń jurnalına ótesiz; hámmesi sıymasa, tómende «Tagı kóriw» siltemesi shıǵadı."
+          "body": "Wazıypalar, tekserilmegen isler hám qadaǵalaw múddetleri bir gezekte. Atamadaǵı «Búgin» arqalı gorizonttı keńeytesiz (hápte yamasa barlıǵı), «+ Wazıypa» usı jerden tez qosadı."
         },
         "3": {
           "title": "Búgingi sabaqlar",
-          "body": "Sabaqlar waqıt kósherinde dawamlılıǵına sáykes biyiklikte ornalasadı. Ótken sabaqlar kúńgirt, házirgisi ajıralıp turadı; sońǵı sabaqtan keyin kún juwmaqlanǵanı hám erteńgi birinshi sabaq waqtı kórsetiletuǵın karta shıǵadı. Joqarıdaǵı kúndi tańlasańız tek usı panel sol kúnge ótedi — isler gezegi búginge qaray beredi; kún astındaǵı noqat sol kúnge sabaq rejelestirilgenin bildiredi."
+          "body": "Dizim menen waqıt kósheri arasında almastırǵısh bar — tańlawıńız este saqlanadı. Ótken sabaqlar kúńgirt, házirgisi ajıralıp turadı; sońǵı sabaqtan keyin kún juwmaǵı kartası shıǵadı, ondaǵı túyme menen sitatalardı ózińiz basqarasız."
+        },
+        "4": {
+          "title": "Háptelik taspa",
+          "body": "Kúndi tańlasańız tek sabaqlar paneli sol kúnge ótedi — isler gezegi búginge qaray beredi. Kún astındaǵı noqat sol kúnge sabaq rejelestirilgenin bildiredi."
+        },
+        "5": {
+          "title": "Jol-joba orayı",
+          "body": "Biraq bólim qalay islewiniń unıtsańız, usı túymeni basıń — hár bir bettiń qollanbasın qálegen waqıtta qaytadan kóresiz."
+        },
+        "6": {
+          "title": "Pikirińiz biz ushın áhmiyetli",
+          "body": "Qáte taptıńız ba yamasa usınıs bar ma? Usı jerden komandaǵa tuwrıdan-tuwrı jazıń — skrinshot ta biriktirse boladı."
         }
       }
     },
@@ -3449,13 +3303,17 @@
       "steps": {
         "0": {
           "title": "Barlıǵı usı jerden baslanadı",
-          "body": "Aldın taza klass jaratıń: ataması, páni hám ajıratıp turatuǵın reńin kiritiń (janındaǵı strelka arqalı Excelʼden import qılıwǵa da boladı). Sistemadaǵı basqa barlıq bólim (keste, oqıwshılar, jurnal, qatnasıw) usı klasslarǵa baylanadı."
+          "body": "Aldın taza klass jaratıń: ataması, páni hám ajıratıp turatuǵın reńin kiritiń. Sistemadaǵı basqa barlıq bólim (keste, oqıwshılar, jurnal, qatnasıw) usı klasslarǵa baylanadı."
         },
         "1": {
           "title": "Klass kartochkası",
           "body": "Hár bir kartochkada oqıwshılar, temalar hám tapsırmalar sanı bir qarasta kórinedi. Kartochka ústine basıp tolıq klass betine ótesiz."
         },
         "2": {
+          "title": "Kórinisti ózgertiw",
+          "body": "Klasslarıńızdı kletkasha yamasa dizim kórinisinde kóriw múmkinshiligi bar — ózińizge eń qolaylı kórinisti tańlań."
+        },
+        "3": {
           "title": "Ulıwma statistika",
           "body": "Usı bólimde barlıq klasslar, oqıwshılar, sabaqlar hám tapsırmalardıń ulıwma sanı jıynalǵan. Taza klass qosıwıńız benen bul kórsetkishler óz-ózinen jańalanadı."
         }
@@ -3475,6 +3333,10 @@
         "2": {
           "title": "Oqıwshı maǵlıwmatları",
           "body": "Betten shıqpaǵan halda oqıwshınıń klassı, baylanısıw maǵlıwmatları hám tezkor ámelleri menen tanısıń. Tolıq qatnasıw, bahalar, esletpeler hám jeke toplamı menen tanısıw ushın «Profildi kóriw»di basıń."
+        },
+        "3": {
+          "title": "Jaǵday boyınsha filtrllew",
+          "body": "Oqıwshılardı jaǵdayına qarap (aktiv, demalısta, arxivte) saralań — kerekli oqıwshılarǵa itibar qaratıw ushın qolaylı."
         }
       }
     },
@@ -3534,40 +3396,6 @@
         "2": {
           "title": "Sabaqlarıńız",
           "body": "Hár bir bólim ishnide bólek sabaqlar jaratıń. Hár bir sabaq kartası onıń jaǵdayın hám sánesin kórsetip turadı."
-        }
-      }
-    },
-    "assignments": {
-      "label": "Tapsırmalar",
-      "steps": {
-        "0": {
-          "title": "Klasslarıńız",
-          "body": "Tapsırmalardı kóriw ushın klasstı tańlań."
-        },
-        "1": {
-          "title": "Tapsırmalar dizimi",
-          "body": "Tapsırmalar kategoriyalar boyınsha toparlanadı. Hár bir karta onıń jaǵdayın (rejelestirilgen, orınlanǵan) hám múddetin kórsetedi."
-        },
-        "2": {
-          "title": "Jańa tapsırma",
-          "body": "Bankten tayar testti tańlań yamasa noldan jańa tapsırma — test, prezentaciya yamasa ápiwayı baha bagʼanı — jaratıń."
-        }
-      }
-    },
-    "resources": {
-      "label": "Materiallar",
-      "steps": {
-        "0": {
-          "title": "Jańa material",
-          "body": "Bul túymeden test, sabaq yamasa basqa material jaratiń. Hár bir túr óz redaktorine alip baradi."
-        },
-        "1": {
-          "title": "Túrler boyınsha filtr",
-          "body": "Materiallardı túri (test, sabaq) yamasa qaralama halatı boyınsha filtrlew múmkin."
-        },
-        "2": {
-          "title": "Materiallar dizimi",
-          "body": "Barlıq jaratqan materiallarıńız usı jerde — qaysı klasta paydalanılğanı hám aqırǵı ózgertilgen waqtı menen."
         }
       }
     },
@@ -3957,24 +3785,6 @@
     "discardCancel": "Dawam etiw",
     "discardConfirm": "Saqlamay shıǵıw"
   },
-  "MaterialKinds": {
-    "test": "Test",
-    "testHint": "Sorawlar toplamı — janlı yamasa ózbetinshe",
-    "lesson": "Sabaq",
-    "lessonHint": "Tekst, súwret hám formulalı tolıq sabaq hújjeti",
-    "deck": "Prezentatsiya",
-    "deckHint": "Slaydlar hám olardaǵı sorawlar",
-    "video": "Video",
-    "videoHint": "Video dawamında soraw beriledi",
-    "flashcard": "Flashkarta",
-    "flashcardHint": "Aldınǵı tárepte soraw, artında juwap",
-    "testShort": "Sorawlar toplamı",
-    "lessonShort": "Tolıq hújjet",
-    "deckShort": "Slaydlar",
-    "videoShort": "Sorawlı video",
-    "flashcardShort": "Ald–art kartalar",
-    "soon": "Tez arada"
-  },
   "AssignmentsPage": {
     "status_today": "Búgin",
     "statusHint_today": "Búgin ótkeriledi — ele baha kirgizilmegen.",
@@ -3988,15 +3798,7 @@
     "deleteSetFailed": "Testti óshirip bolmadı",
     "attachNewTest": "Jańa test dúziw",
     "attachExisting": "Bar testten tanlaw",
-    "contentCreate": "Jaratıw",
-    "contentAttach": "Tirkew",
-    "gradingModeLabel": "Bahalaw usılı",
-    "gradingManual": "Qolda",
-    "gradingAuto": "Avtomat",
     "attachExistingTitle": "Qaysı test tirkelsin?",
-    "attachFromThisClass": "Usı klassta dúzilgen",
-    "attachFromLibrary": "Materiallardan",
-    "attachOriginNoClass": "klasssız",
     "attachExistingDescription": "Usı klass ushın dúzilgen yamasa banktan alıngʻan testler. Tanlangʻanı jurnaldagʻı usı bagʻanagʻa baylanadı.",
     "attachedTitle": "Test tirkeldi",
     "setAlreadyUsed": "Basqa tapsırmada da isletilgen",
@@ -4065,7 +3867,11 @@
     "statusHint_planned": "Kún ele kelmegen.",
     "statusHint_grading": "{graded} / {total} oqıwshı bahalandı.",
     "statusHint_done": "Barlıgʻı bahalandı — {graded} / {total}.",
+    "contentLabel": "Kontent",
     "kindManual": "Baha bagʻanası",
+    "noContentTitle": "Kontent tirkelmegen",
+    "noContentDescription": "Bul — jurnaldagʻı baha bagʻanası: qagʻazdagʻı jumıs, awızsha soraw yamasa klasta ótken jumıs ushın baha usı jerge jazıladı. Qálesengiz test tirkeng.",
+    "moreKindsSoon": "Prezentaciya, video, tekst hám fleshkartalar tez arada.",
     "questionCount": "{count} soraw",
     "runSession": "Sessiya",
     "detachTest": "Testti ajıratıw",
@@ -4129,9 +3935,6 @@
   },
   "ImportClassesModal": {
     "title": "Klaslardı import qılıw",
-    "titleAdd": "Klass qosıw",
-    "choiceSingleTitle": "Bir klass",
-    "choiceSingleDescription": "Dáreje, hárip hám pándi saylań.",
     "close": "Jabıw",
     "back": "Artqa",
     "review": "Kórip shıgıw",
@@ -4158,797 +3961,5 @@
     "newBadge": "Jańa",
     "removeRowAria": "Alıp taslaw",
     "submit": "{count} klastı qosıw"
-  },
-  "Landing": {
-    "common": {
-      "register": "Dizimnen ótiw",
-      "login": "Kiriw",
-      "freeNote": "Muǵallimler ushın biykar. Bank kartası talap etilmeydi."
-    },
-    "nav": {
-      "top": "Bas bet",
-      "features": "Múmkinshilikler",
-      "products": "Ónimler",
-      "pricing": "Bahalar",
-      "faq": "FAQ",
-      "blog": "Blog",
-      "menu": "Menyu",
-      "doska": "Doska",
-      "jurnal": "Jurnal",
-      "baholash": "Bahalaw",
-      "enterCode": "Kodtı kiritiw",
-      "enterCodeShort": "Kod"
-    },
-    "legal": {
-      "terms": "Paydalanıw sharayatları",
-      "privacy": " Júmıslıq siyasatı"
-    },
-    "social": {
-      "telegram": "Telegram"
-    },
-    "hero": {
-      "badge": "Jańa: interaktiv prezentaciya hám tiri sabaq",
-      "titleLine1": "Sabaqlarıńızdı rejelestiriń, ótkeriń, bahalań — qalǵanın Ustozona",
-      "titleHighlight": "orınlaydı",
-      "subtitle": "Jumıs rejesin júkleysiz — temalar sabaqlarǵa kúnbe-kún jaylastırıladı. Sabaqta prezentaciya hám test ótkeresiz: telefonnan, QR-kartadan yamasa qaǵazda. Nátiyje jurnalǵa túsedi — kimge járdem kerekligi birden kórinedi.",
-      "taskPrompt": "Búgin sabaqta ne isleysiz?",
-      "tasks": [
-        {
-          "label": "Taymer qoyıw",
-          "hint": "Dizimnen ótpey-aq"
-        },
-        {
-          "label": "Klasstı tınıshlandırıw",
-          "hint": "Svetofor menen"
-        },
-        {
-          "label": "Test ótkeriw",
-          "hint": "Telefon, QR-karta yamasa qaǵaz"
-        },
-        {
-          "label": "Prezentaciya kórsetiw",
-          "hint": "Slaydlar hám tiri sorawlar"
-        },
-        {
-          "label": "Qatnastı belgilew",
-          "hint": "Pútin klass — bir basıwda"
-        },
-        {
-          "label": "Sabaq rejesin dúziw",
-          "hint": "AI járdemshi menen"
-        }
-      ],
-      "roleTeacher": "Muǵallim",
-      "roleStudent": "Oqıwshı"
-    },
-    "pricing": {
-      "badge": "Bahalar",
-      "heading": "Muǵallimler ushın — biykar",
-      "desc": "Sabaqtı tayarlaw, ótkeriw hám bahalaw ushın kerek bolǵan hámme nárse muǵallimler ushın biykar. Tólemli tarifler haqqında aldın ala ashıq aytamız.",
-      "plans": [
-        {
-          "name": "Mektep ushın",
-          "status": "Jaqında",
-          "descp": "Mektep basshılıǵı hám ata-analar ushın qosımsha múmkinshilikler.",
-          "price": "Jaqında",
-          "cta": "Xabardar bolıw",
-          "features": [
-            "Basshılıq ushın basqarıw paneli",
-            "Mektep boyınsha ulıwma esabatlar",
-            "Ata-ana ushın Telegram mini-qosımsha"
-          ]
-        },
-        {
-          "name": "Ustaz ushın",
-          "status": "Bar",
-          "descp": "Sabaqtıń úsh basqıshı ushın jeterli. Bank kartası talap etilmeydi.",
-          "price": "0 sum",
-          "cta": "Dizimnen ótiw",
-          "features": [
-            "Elektron jurnal hám 10+ bahalaw shkalası",
-            "Qatnas hám avtomatik minez-qulıq ballı",
-            "Jumıs rejesin Excel faylınan júklew",
-            "AI járdemshi (kúnlik limit penen)",
-            "Onlayn test, qaǵaz test skaneri, QR-karta",
-            "Doska hám interaktiv prezentaciya",
-            "Kásiplesler menen birge islesiw",
-            "Sheklenbegen klass hám oqıwshı"
-          ]
-        },
-        {
-          "name": "Pro",
-          "status": "Jaqında",
-          "descp": "Kóp klass hám kóp sabaq penen isleytuǵın ustazlar ushın.",
-          "price": "Jaqında",
-          "cta": "Gezekke jazılıw",
-          "features": [
-            "Keńeytilgen AI limiti",
-            "Keńeytilgen ózlestiriw esabatları",
-            "Birinshi gezektegi qollap-quwatlaw"
-          ]
-        }
-      ]
-    },
-    "cta": {
-      "headingLine1": "Keyingi sabaǵıńızdı Ustozonada",
-      "headingLine2": "tayarlań, ótkeriń hám bahalań",
-      "desc": "Google yamasa Telegram arqalı bir túymede kiresiz. Klassıńızdı qosıń, jumıs rejesin júkleń — erteńgi sabaqqa tayarsız.",
-      "ctaLabel": "Biykar dizimnen ótiw",
-      "trust": "Biykar · Karta kerek emes · 7 tilde"
-    },
-    "faq": {
-      "heading": "Soraularıńız barma? Bizde juwaplar tayar",
-      "items": [
-        {
-          "question": "Bul rásmiy elektron jurnaldıń ornına ótedi me?",
-          "answer": "Yaq. Ustozona — sizdiń jeke jumıs quralıńız. Sherek bahaların, qatnas hám minez-qulıq esabatın usı jerde tayarlaysız, keyin tayar sanlardı rásmiy sistemaǵa kóshiresiz. Kalkulyator menen esaplap otırmaysız."
-        },
-        {
-          "question": "Telefonda isley me?",
-          "answer": "Muǵallim paneli kompyuter hám noutbuk ushın mólsherlengen. Oqıwshılar bolsa testke hám prezentaciyaǵa óz telefonınan qosıladı, qaǵaz testti siz telefon kamerası menen tekseresiz. Hesh qanday qosımsha ornatıw shárt emes — hámmesi brauzerde."
-        },
-        {
-          "question": "Oqıwshılarda telefon bolmasa, test qalay ótedi?",
-          "answer": "Úsh jol bar. QR-karta: hár oqıwshı kartanı burap juwabın kórsetedi, siz klasstı telefon kamerası menen skanerleysiz. Qaǵaz test: juwap paraqların basıp shıǵarıp, kamera menen tekseresiz. Yamasa prezentaciyada klasstı komandalarǵa bólip, doskada ball beresiz."
-        },
-        {
-          "question": "Tayar slaydlarım bar — olardı paydalansam bola ma?",
-          "answer": "Awa. PowerPoint (PPTX) yamasa PDF faylıńızdı import etesiz hám slaydlar arasına test, soraw, sóz bultın qosasız. Sabaqta Doskadan tiri sessiya baslaysız — oqıwshılar QR yamasa PIN menen qosıladı. Ashıq sabaqta ásirese qolaylı."
-        },
-        {
-          "question": "Jumıs rejesin qolda qayta kiritiwim kerek pe?",
-          "answer": "Yaq. Jumıs rejesin Excel faylınan júkleysiz yamasa temalar dizimin kóshirip qoyasız. Sabaqlar birden jaratıladı hám kesteńiz boyınsha kúnbe-kún jaylastırıladı, dem alıs kúnleri ótkerip jiberiledi."
-        },
-        {
-          "question": "Doska ushın dizimnen ótiw shárt pe?",
-          "answer": "Yaq. Taymer, svetofor hám saat sıyaqlı qurallar dizimnen ótpey-aq birden isleydi. Prezentaciya, test hám nátiyjelerdi saqlaw ushın dizimnen ótiw kerek — olar jurnalıńızǵa baylanısadı."
-        },
-        {
-          "question": "Men 100 ballıq sistemada bahalayman — baǵdarlama maǵan sáykes kele me?",
-          "answer": "Árine. 10 nan artıq bahalaw shkalası bar: 5 ballıq, 100 ballıq, procentlik, háriplik hám basqalar. Ózińizge sáykesin tańlap, kategoriya salmaqların bir ret sazlaysız."
-        },
-        {
-          "question": "Hámmesi haqıyqatında biykar ma?",
-          "answer": "Awa, muǵallimler ushın biykar: bank kartası soralmaydı, klass hám oqıwshı sanı sheklenbegen. Keyinirek mektepler ushın hám keńeytilgen múmkinshilikli tólemli tarifler shıǵadı — olar haqqında aldın ala ashıq aytamız."
-        },
-        {
-          "question": "Sistemadan paydalanıwdı qalay úyrenemen?",
-          "answer": "Birinshi kirgenińizde interaktiv qollanba basqıshpa-basqısh jetekleydi. Járdem orayında hár bólim boyınsha maqalalar bar. Usınısıńızdı pikir-mulahaza doskasına jazasız — basqa ustazlar dawıs beredi, komanda kórip shıǵadı."
-        }
-      ],
-      "subtitle": "Muǵallimler eń kóp soraytuǵın sorawlar.",
-      "contactPrompt": "Sorawıńızǵa juwap tappadıńız ba?",
-      "contactCta": "Telegram arqalı jazıń"
-    },
-    "footer": {
-      "tagline": "Muǵallimniń sabaqqa shekemgi, sabaq waqtındaǵı hám sabaqtan keyingi jumısı — bir jerde.",
-      "pagesTitle": "Betler",
-      "productsTitle": "Ónimler",
-      "moreInfoTitle": "Qosımsha maǵlıwmat",
-      "contactTitle": "Baylanısıw ushın",
-      "contactNote": "Soraw hám usınıslar ushın Telegram arqalı jazıń.",
-      "telegramAria": "Telegram kanalımız",
-      "copyright": "© {year} Ustozona. Barlıq huqıqlar qorǵalǵan."
-    },
-    "products": {
-      "badge": "Ónimler",
-      "heading": "Sabaqtıń hár basqıshı ushın",
-      "desc": "Hámmesi bir-biri menen baylanısqan. Tórtewi búgin isleydi, ata-ana qosımshası hám basshılıq paneli — jolda.",
-      "mainTitle": "Ustozona",
-      "mainStatus": "Bar",
-      "mainDesc": "Muǵallim paneli: jurnal, qatnas, minez-qulıq, keste, jumıs rejesi hám AI menen sabaq rejesi.",
-      "mainCta": "Múmkinshiliklerdi kóriw",
-      "detailCta": "Tolıq maǵlıwmat",
-      "statusLive": "Bar",
-      "statusSoon": "Tez arada",
-      "taglines": {
-        "blog": "Muǵallimler jazǵan maqalalar: tájiriybe, metodika, sabaq ideyaları. Ózińiz de jazasız.",
-        "baholash": "Onlayn test, qaǵaz test skaneri hám QR-kartalar — nátiyje jurnalǵa túsedi.",
-        "doska": "Klass ekranı: taymer, svetofor hám tiri prezentaciya. Taymer menen svetofor kirmesten de isleydi.",
-        "shogird": "Ata-ana ushın Telegram qosımshası: balanıń bahası, qatnası hám minez-qulqı.",
-        "boshqaruv": "Mektep basshılıǵı ushın panel hám mektep boyınsha esabatlar."
-      }
-    },
-    "cookie": {
-      "text": "Sayttan paydalanıw tájiriybesin jaqsılaw ushın cookie fayllarınan paydalanamız. Dawam etiw arqalı buǵan razılıq bildiresiz.",
-      "reject": "Bas tartıw",
-      "accept": "Qabıl etiw"
-    },
-    "what": {
-      "heading": "Ustozonada ne bar?",
-      "tabs": [
-        {
-          "label": "Jurnal",
-          "question": "Qaysı oqıwshı artta qalıp atırǵanın keshigip bilesiz be?",
-          "summary": "Jurnal, qatnas, minez-qulıq, keste hám sabaq islenbesi — kúndelikli jumıs bir jerde.",
-          "cta": "Jurnaldı sınap kóriw",
-          "facts": [
-            {
-              "lead": "«Itibar kerek» dizimi",
-              "text": "qatnas, minez-qulıq hám bahanıń tómenlewine qarap kimge járdem kerekligin bas bet ózi kórsetedi."
-            },
-            {
-              "lead": "Qatnas — bir basıwda",
-              "text": "pútin klass kelgen bolsa, sána baǵanasın bir ret basasız."
-            },
-            {
-              "lead": "Jumıs rejesi — Excel yamasa Word faylınan",
-              "text": "temalar keste boyınsha kúnbe-kún jaylastırıladı, dem alıs kúnleri ótkerip jiberiledi."
-            },
-            {
-              "lead": "AI sabaq rejesi",
-              "text": "shınıǵıw hám test sorawların sabaq uzaqlıǵına sáykeslep dúzedi. Oqıwshılardıń atları AI ǵa jiberilmeydi."
-            }
-          ]
-        },
-        {
-          "label": "Bahalaw",
-          "question": "Test paraqların qolda tekseresiz be?",
-          "summary": "Qaysı jol menen ótkermeń, nátiyje bir jurnalǵa túsedi — qaysı test bahaǵa kiretuǵının ózińiz belgileysiz.",
-          "cta": "Bahalaw haqqında",
-          "facts": [
-            {
-              "lead": "Tiri test",
-              "text": "oqıwshılar óz telefonınan PIN yamasa QR arqalı qosıladı."
-            },
-            {
-              "lead": "Telefonsız klass",
-              "text": "oqıwshılar QR-kartanı kóteredi, kamera barlıq juwaplardı bir zamatta oqıydı."
-            },
-            {
-              "lead": "Qaǵaz test",
-              "text": "juwap paraqların basıp shıǵarasız hám telefon kamerası menen tekseresiz."
-            },
-            {
-              "lead": "Úy tapsırması",
-              "text": "múddet penen; oqıwshı hár sorawdan keyin nátiyjesin birden kóredi."
-            }
-          ]
-        },
-        {
-          "label": "Prezentaciya",
-          "question": "Sabaqta oqıwshılar zerigip qalıp atır ma?",
-          "summary": "Slayd kórsetiw hám klasstı tekseriw — bir prezentaciyada.",
-          "cta": "Prezentaciya haqqında",
-          "facts": [
-            {
-              "lead": "PowerPoint hám PDF ten",
-              "text": "tayar slaydlarıńızdı qaytadan islemeysiz."
-            },
-            {
-              "lead": "Slaydlar arasında soraw",
-              "text": "test, soraw-juwap, sóz bultı yamasa ashıq juwap."
-            },
-            {
-              "lead": "Tiri sessiya",
-              "text": "oqıwshılar telefonınan QR yamasa PIN menen qosıladı."
-            },
-            {
-              "lead": "Doskada ashıladı",
-              "text": "prezentaciya klass ekranında taymer hám svetofor qasında turadı."
-            }
-          ]
-        },
-        {
-          "label": "Doska",
-          "question": "Klasstı tártipte uslaw qıyın ba?",
-          "summary": "Proektor hám úlken ekran ushın — alıstan da oqıladı.",
-          "cta": "Doskanı ashıw",
-          "facts": [
-            {
-              "lead": "Taymer hám saat",
-              "text": "shınıǵıw waqtın pútin klass úlken ekranda kórip turadı."
-            },
-            {
-              "lead": "Svetofor",
-              "text": "«tınısh isleymiz», «sıbırlap», «erkin sóylesemiz» — qaǵıydanı hár ret aytıp otırmaysız."
-            },
-            {
-              "lead": "Tekst hám stikerler",
-              "text": "tapsırma hám eslatpanı doskaǵa jazıp qoyasız."
-            },
-            {
-              "lead": "Dizimnen ótpey-aq",
-              "text": "taymer, svetofor hám saat birden ashıladı."
-            }
-          ]
-        }
-      ]
-    }
-  },
-  "StandardTagPicker": {
-    "label": "Ólshenetuǵın standartlar",
-    "add": "Standart",
-    "searchPlaceholder": "Kod yaki tekst boyınsha izlew…",
-    "empty": "Tabılmadı",
-    "noDomain": "Bólimsiz",
-    "remove": "{code} nı alıp taslaw",
-    "orphanHint": "Bul standart toplamnan óshirilgen",
-    "hint": "Bul tapsırma nátiyjesi usı standartlar boyınsha dálil boladı."
-  },
-  "StudentStandards": {
-    "title": "Standartlardı ózlestiriw",
-    "radarHint": "Mazmun tarawları boyınsha ulıwma kórinis",
-    "notAssessed": "Bahalanbaǵan",
-    "needMore": "{have} dálil bar, keminde {need} kerek",
-    "evidence": "{count} dálil"
-  },
-  "StandardsGap": {
-    "title": "Bosliq esabatı",
-    "subtitle": "Sabaq rejesi hám bahalaw arasındaǵı sáykessizlik.",
-    "problemCount": "{count} itibar talap etedi",
-    "draftRestored": "Ju̱mislanbágan qaralama qayta tiklendi — standart biriktirilmedi.",
-    "attach": "Tapsırma",
-    "status": {
-      "untested": "Oqıtıldı, biraq ólshenbedi",
-      "untaught": "Ólshendi, biraq oqıtılmadı"
-    },
-    "hint": {
-      "untested": "Bul standartlardı sabaqta ótkensiz, biraq hesh bir tapsırma olardı tekseremeydi.",
-      "untaught": "Bul standartlar tapsırmalarda ólshenedi, biraq sabaqta ótilgeni belgilenbegen."
-    }
-  },
-  "IshRejaImport": {
-    "title": "Yangi dars",
-    "classesLabel": "Sinflarga bogʻlash",
-    "colTopic": "Mavzu",
-    "topicPlaceholder": "Mavzu nomi",
-    "deleteRow": "Qatorni oʻchirish",
-    "back": "Orqaga",
-    "next": "Keyingi",
-    "confirm": "{count} ta dars qoʻshish",
-    "savedToast": "{count} ta dars qoʻshildi",
-    "step": {
-      "topics": "«{unit}» boʻlimiga mavzularni kiriting yoki fayldan yuklang.",
-      "schedule": "Darslar dars jadvalidagi navbatdagi boʻsh soatlarga ketma-ket qoʻyiladi.",
-      "choice": "«{unit}» boʻlimiga darslarni qanday qoʻshmoqchisiz?"
-    },
-    "pastePlaceholder": "1. Matn qoʻshish, oʻzgartirish va koʻchirish\n2. Shrift turi, oʻlchami va rangini oʻzgartirish\n3. Hujjatga tasvir va hoshiya qoʻshish",
-    "pasteHint": "Har qatorda bitta mavzu. Chorak ajratkichlari va tartib raqamlari avtomatik ajratiladi.",
-    "cancel": "Bekor qilish",
-    "scheduleFrom": "{date} dan",
-    "schedulePickDate": "Sanani tanlang",
-    "presetNext": "Eng yaqin dars",
-    "presetFirst": "Birinchi dars",
-    "noSlot": "Sigʻmadi",
-    "presetFree": "Birinchi boʻsh dars",
-    "listLabel": "{count} ta mavzu",
-    "listEmpty": "Chapga mavzular roʻyxatini joylashtiring yoki fayl yuklang — shu yerda tartiblaysiz",
-    "choice": {
-      "singleTitle": "Bitta dars",
-      "singleDescription": "Darsni muharrirda yarating.",
-      "pasteTitle": "Nusxa koʻchirish",
-      "pasteDescription": "Mavzular roʻyxatini Word/Excelʼdan joylashtiring.",
-      "fileTitle": "Excel yuklash",
-      "fileDescription": "Ish reja faylini (.xlsx, .xls) yuklang."
-    },
-    "undo": "Bekor qilish",
-    "undoneToast": "Import bekor qilindi",
-    "duplicateBadge": "Bor",
-    "templateExample1": "Kompyuter bilan tanishuv",
-    "templateExample2": "Matn muharriri",
-    "templateExample3": "Nazorat ishi",
-    "statLessons": "Darslar",
-    "statStart": "Boshlanadi",
-    "statEnd": "Tugaydi",
-    "statFit": "Oʻquv yili",
-    "statFits": "Sigʻdi",
-    "statMissing": "{count} ta sigʻmadi",
-    "timelineNew": "{unit} · {count} dars",
-    "queueStart": "Navbat boshlanishi:",
-    "queueHintFree": "Oldingi boʻlimlar tugagan joydan davom etadi; taʼtil va band soatlar oʻtkaziladi.",
-    "queueHintDate": "Shu kundan boshlab boʻsh dars soatlariga; band soatlar oʻtkaziladi.",
-    "showDates": "Har bir dars sanasini koʻrish ({count})",
-    "saveUndated": "Sanasiz saqlash"
-  },
-  "UnitImport": {
-    "title": "Yangi boʻlim",
-    "cancel": "Bekor qilish",
-    "confirm": "{count} ta boʻlim yaratish",
-    "savedToast": "{count} ta boʻlim yaratildi",
-    "classesLabel": "Sinflarga bogʻlash",
-    "classesPlaceholder": "Sinf tanlang…",
-    "namePlaceholder": "Boʻlim nomi",
-    "deleteRow": "Qatorni oʻchirish",
-    "listLabel": "{count} ta boʻlim",
-    "description": "Boʻlim nomlarini yozing, joylashtiring yoki Excelʼdan yuklang.",
-    "sourcePaste": "Nusxa koʻchirish",
-    "pastePlaceholder": "Algebraga kirish\nChiziqli tenglamalar\nKvadrat tenglamalar",
-    "pasteHint": "Har qatorda bitta boʻlim. Tartib raqamlari va takrorlar avtomatik tozalanadi.",
-    "listEmpty": "Chapga boʻlim nomlarini yozing yoki fayl yuklang — shu yerda tartiblaysiz",
-    "choiceDescription": "Boʻlimlarni qanday qoʻshmoqchisiz?",
-    "back": "Orqaga",
-    "choice": {
-      "singleTitle": "Bitta boʻlim",
-      "singleDescription": "Nom, sinflar va tavsifni qoʻlda kiriting.",
-      "pasteTitle": "Nusxa koʻchirish",
-      "pasteDescription": "Roʻyxatni Word/Excelʼdan joylashtiring.",
-      "fileTitle": "Excel yuklash",
-      "fileDescription": ".xlsx yoki .xls faylni yuklang."
-    },
-    "undo": "Bekor qilish",
-    "undoneToast": "Import bekor qilindi",
-    "duplicateBadge": "Bor"
-  },
-  "ImportSource": {
-    "emaktabSheet": "eMaktab: {info}",
-    "emaktabDetected": "eMaktab eksportı tanıldı — {count} tema (sarlavha qatarlarısız)",
-    "errorEmpty": "Faylda maʼlumot topilmadi",
-    "errorRead": "Faylni oʻqib boʻlmadi. .xlsx, .xls yoki .csv tanlang.",
-    "dropTitle": "Faylni tanlang yoki shu yerga tashlang",
-    "replaceFile": "Almashtirish",
-    "dropHint": {
-      "topics": "Excel yoki CSV — ish reja fayli",
-      "units": "Excel yoki CSV — boʻlimlar roʻyxati"
-    },
-    "pasteLabel": {
-      "topics": "Mavzular roʻyxati",
-      "units": "Boʻlimlar roʻyxati"
-    },
-    "sheet": "Varaq",
-    "template": "Namuna faylni yuklab olish",
-    "templateFile": {
-      "topics": "ish-reja-namuna.xlsx",
-      "units": "bolimlar-namuna.xlsx"
-    },
-    "templateName": {
-      "topics": "Mavzu",
-      "units": "Boʻlim nomi"
-    },
-    "templateHours": "Soat",
-    "skipped": "{count} ta qator oʻtkazib yuborildi",
-    "rowReason": "{row}-qator · {reason}",
-    "reason": {
-      "separator": "chorak/yarim yil ajratkichi",
-      "total": "jami qatori",
-      "number": "faqat raqam"
-    },
-    "restore": "Qoʻshish",
-    "expanded": "{count} ta mavzu soatiga koʻra takrorlandi",
-    "duplicates": {
-      "topics": "{count} ta mavzu boʻlimda bor — oʻtkaziladi",
-      "units": "{count} ta boʻlim allaqachon bor — oʻtkaziladi"
-    },
-    "duplicatesSkip": {
-      "topics": "{count} ta mavzu boʻlimda bor — oʻtkazib yuborish",
-      "units": "{count} ta boʻlim allaqachon bor — oʻtkazib yuborish"
-    },
-    "mapped": {
-      "topics": "Mavzular «{name}» ustunidan olindi.",
-      "units": "Boʻlimlar «{name}» ustunidan olindi."
-    },
-    "mappedWithHours": "Mavzular «{name}» ustunidan, soatlar «{hours}» ustunidan olindi.",
-    "showTable": "Notoʻgʻrimi? Jadvalda koʻrsatish",
-    "tableTitle": "Ustunlarni belgilang",
-    "closeTable": "Yopish",
-    "setHeader": "Shu qator — sarlavha",
-    "role": {
-      "topics": "Mavzu",
-      "units": "Boʻlim nomi",
-      "hours": "Soat",
-      "none": "Ishlatilmaydi"
-    },
-    "tableHelp": "Ustun nomini bosib «Mavzu» yoki «Soat» deb belgilang. Qator raqamini bossangiz — shu qator sarlavha boʻladi. Chizilgan qatorlar oʻtkaziladi.",
-    "expandHoursShort": "2+ soat → har soatga dars"
-  },
-  "LessonCycle": {
-    "planReady": "Sabaq rejesi",
-    "taught": "Ótildi",
-    "pillNone": "Sabaq rejesi joq",
-    "pillDraft": "Processte",
-    "markPlanButton": "Rejeni tayar dep belgilew",
-    "planReadyShort": "Rejelestirilgen",
-    "askPlanReady": "Sabaq rejesi tayarma?",
-    "askPlanReadyDesc": "Tekst jazılǵan, biraq tayar dep belgilenbegen.",
-    "yesReady": "Awa, tayar",
-    "later": "Keyin",
-    "planStateReady": "Sabaq rejesi tayar",
-    "planStateDraft": "Sabaq rejesi — processte",
-    "planStateNone": "Sabaq rejesi ele joq",
-    "standardsChip": "Standartlar: {count}",
-    "materialsChip": "Materiallar: {count}",
-    "markPlanReady": "Sabaq rejesi tayın",
-    "unmarkPlanReady": "Reje tayın emes",
-    "markTaught": "Ótildi dep belgilew",
-    "unmarkTaught": "Ótilmegen dep belgilew",
-    "section": "Sabaq halatı",
-    "planReadyLabel": "Sabaq rejesi tayın",
-    "taughtLabel": "Sabaq ótildi",
-    "askTaught": "Ótildi me?",
-    "statusSection": "Jaǵday",
-    "taughtByClass": "Qaysı klaslarda ótildi",
-    "askTaughtBanner": "Sabaq waqtı ótti. Ótildi me?",
-    "yesTaught": "Awa, ótildi",
-    "bumpNext": "Keyingi sabaqqa jıljıtıw",
-    "bump": "Keyingi sabaqqa súr",
-    "bumpedToast": "{count} tema bir sabaqqa súrildi",
-    "bumpNoSlot": "Sońǵı temaǵa bos orın tabılmadı — sánesiz qaldı",
-    "bumpNothing": "Bul tema kestege qoyılmaǵan — súriw ushın sessiya joq",
-    "undo": "Biykarlaw"
-  },
-  "Doska": {
-    "widgets": {
-      "clock": "Saat",
-      "timer": "Taymer",
-      "trafficLight": "Svetofor",
-      "text": "Tekst",
-      "stickyNote": "Eslatpe",
-      "shape": "Figura",
-      "presentation": "Slaydlar",
-      "wheel": "Dóńgelek"
-    },
-    "toolbar": {
-      "duplicate": "{widget} — nusqa alıw",
-      "remove": "{widget} — óshiriw",
-      "duplicateShort": "Nusqa",
-      "removeShort": "Óshiriw",
-      "settings": "{widget} — sazlaw",
-      "settingsShort": "Sazlaw",
-      "lock": "{widget} — bekitiw",
-      "lockShort": "Bekitiw",
-      "unlock": "{widget} — bosatıw",
-      "unlockShort": "Bosatıw",
-      "spotlight": "{widget} — ortaǵa shıǵarıw",
-      "spotlightShort": "Ortaǵa"
-    },
-    "bar": {
-      "clear": "Tazalaw",
-      "background": "Fon",
-      "home": "Ustozona bas beti",
-      "fullscreen": "Tolıq ekran",
-      "showControls": "Basqarıwdı kórsetiw",
-      "hideControls": "Basqarıwdı jasırıw",
-      "prevScreen": "Aldınǵı ekran",
-      "nextScreen": "Keyingi ekran",
-      "addScreen": "Ekran qosıw",
-      "undo": "Biykarlaw",
-      "redo": "Qaytadan orınlaw",
-      "screenNumber": "{n}-ekran",
-      "menu": "Menyu",
-      "proFeature": "Tólewli múmkinshilik"
-    },
-    "guestNote": {
-      "text": "Ekran usı brauzerde saqlanadı. <link>Kirseńiz</link>, klas dizimińiz jalǵanadı.",
-      "dismiss": "Eskertpeni jabıw"
-    },
-    "notice": {
-      "widgetRemoved": "{widget} óshirildi",
-      "screenCleared": "Ekran tazalandı",
-      "screenRemoved": "Ekran óshirildi",
-      "undo": "Qaytarıw",
-      "inkCleared": "Jazıw tazalandı",
-      "saveFailed": "Ekran saqlanbay atır.",
-      "saveFailedHint": "Brauzer yadı toldı — jazıwdı tazalań yamasa keregi joq ekrandı óshiriń."
-    },
-    "settings": {
-      "title": "{widget}: sazlawlar",
-      "close": "Jabıw",
-      "instant": "Ózgeris dárhal qollanıladı · Esc — jabıw"
-    },
-    "timer": {
-      "start": "Baslaw",
-      "pause": "Toqtatıw",
-      "reset": "Basınan",
-      "addMinute": "Bir minut qosıw",
-      "finished": "Waqıt tawsıldı",
-      "time": "Waqıt",
-      "minutes": "{n} min",
-      "less": "Azıraq",
-      "more": "Kóbirek",
-      "view": "Kóriniw",
-      "viewDigits": "San",
-      "viewDisk": "Disk",
-      "viewBoth": "Ekewi de",
-      "whenDone": "Tawsılǵanda",
-      "sound": "Dawıs shıǵarıw"
-    },
-    "trafficLight": {
-      "red": "Tınısh",
-      "amber": "Sıbırlap",
-      "green": "Sóylesemiz",
-      "labelSection": "Jazıw",
-      "showLabel": "Jaǵdaydı sóz benen kórsetiw"
-    },
-    "clock": {
-      "view": "Kóriniw",
-      "showSeconds": "Sekundlardı kórsetiw"
-    },
-    "shapeSettings": {
-      "shape": "Figura",
-      "view": "Kóriniw",
-      "labels": "Tóbelerdegi háripler (A, B, C)"
-    },
-    "spotlight": {
-      "exit": "Kishireytiw"
-    },
-    "curtain": {
-      "title": "Dıqqat!",
-      "hint": "Dawam etiw ushın qálegen jerdi basıń"
-    },
-    "menu": {
-      "deckName": "Ekran atı",
-      "unsaved": "Saqlanbaǵan",
-      "localOnly": "{n} ekran · tek usı brauzerde",
-      "curtain": "Ekrandı jabıw",
-      "bell": "Qońıraw qaǵıw",
-      "newScreen": "Jańa ekran",
-      "connectClass": "Klas dizimin jalǵaw",
-      "clearScreen": "Ekrandı tazalaw",
-      "removeScreen": "Usı ekrandı óshiriw",
-      "removeScreenLocked": "Ekranda bekitilgen vidjet bar — aldın onı bosatıń",
-      "promoTitle": "Jumısıńızdı saqlap qoyıń",
-      "promoBody": "Ekranlarıńız akkauntıńızda saqlanadı, klas dizimi jalǵanadı hám shaqırılǵan oqıwshı jurnalǵa túsedi.",
-      "promoCta": "Múmkinshiliklerdi kóriw",
-      "appearance": "Kóriniw",
-      "saveImage": "Súwret etip saqlaw",
-      "savingImage": "Tayarlanbaqta…",
-      "saveImageFailed": "Súwret saqlanbadı — qaytadan urınıp kóriń"
-    },
-    "catalog": {
-      "open": "Barlıǵı",
-      "title": "Barlıq qurallar",
-      "hint": "Basıń — ekranǵa qoyıladı. Qadaw belgisi quraldı panelge shıǵaradı.",
-      "full": "Panel tolı ({max}). Jańasın qadaw ushın aldın birewin alıp taslań.",
-      "pin": "{tool} — panelge qadaw",
-      "unpin": "{tool} — panelden alıw",
-      "categories": {
-        "time": "Waqıt",
-        "class": "Klass",
-        "writing": "Jazıw",
-        "media": "Media"
-      },
-      "descriptions": {
-        "clock": "Házirgi waqıt",
-        "timer": "Keri sanaw, dawıs penen",
-        "trafficLight": "Shawqım dárejesi",
-        "text": "Atama yamasa tapsırma",
-        "stickyNote": "Reńli eslatpe qaǵaz",
-        "shape": "Geometriyalıq figuralar",
-        "presentation": "Sorawlar hám juwaplar",
-        "wheel": "Tosınnan at tańlaw"
-      }
-    },
-    "appearance": {
-      "title": "Kóriniw",
-      "back": "Artqa",
-      "style": "Stil",
-      "styles": {
-        "sokin": {
-          "name": "Tınısh",
-          "note": "Taza hám anıq — proektorda jaqsı kórinedi"
-        },
-        "oyinchoq": {
-          "name": "Oyınshıq",
-          "note": "Quwanıshlı hám reńli — kishi klasslar ushın"
-        },
-        "doska": {
-          "name": "Doska",
-          "note": "Qaǵaz hám magnit — jasıl doskaǵa sáykes"
-        }
-      },
-      "dock": "Panel ornı",
-      "dockLeft": "Shep tárepte",
-      "dockBottom": "Tómende",
-      "dockRight": "Oń tárepte"
-    },
-    "backgrounds": {
-      "chalkboard-green": "Jasıl doska",
-      "chalkboard-black": "Qara doska",
-      "whiteboard": "Aq taxta",
-      "grid-paper": "Katak dápter",
-      "dot-paper": "Noqatlı qaǵaz",
-      "notebook": "Dápter paraǵı",
-      "husnixat": "Hush jazıw shınıǵıwı",
-      "dusk": "Keshki reń",
-      "shakllar": "Reńli figuralar"
-    },
-    "shapes": {
-      "triangle": "Úshmúyeshlik",
-      "right-triangle": "Tuwrı múyeshli",
-      "rectangle": "Tórtmúyeshlik",
-      "parallelogram": "Parallelogramm",
-      "trapezoid": "Trapeciya",
-      "rhombus": "Romb",
-      "circle": "Sheńber",
-      "pentagon": "Besmúyeshlik",
-      "hexagon": "Altımúyeshlik"
-    },
-    "wheel": {
-      "spin": "Dóńgelekti aylandırıw",
-      "hint": "Basıń — aylanadı",
-      "editList": "Dizimdi ózgertiw",
-      "backToWheel": "Dóńgelekke qaytıw",
-      "soundOn": "Dawıstı óshiriw",
-      "soundOff": "Dawıstı qosıw",
-      "counter": "{asked} / {total}",
-      "counterLabel": "{total} adamnan {asked} soraldı",
-      "again": "Jáne",
-      "later": "Keyinirek",
-      "close": "Jabıw",
-      "roundDone": "Hámme soraldı!",
-      "roundDoneHint": "{total} adamnıń hámmesi bir retten shıqtı.",
-      "newRound": "Jańa aylanba",
-      "listTitle": "Atlar",
-      "listHint": "Hár qatarǵa bir at",
-      "samplesHint": "Házir úlgi atlar aylanıp tur. Óz dizimińizdi jazıń.",
-      "mode": "Tańlaw",
-      "modeOnce": "Hámme bir retten",
-      "modeOnceHint": "Soralǵan oqıwshı dóńgelekten shıǵadı. Hámme soralǵannan keyin jańa aylanba baslanadı.",
-      "modeRepeat": "Qaytalansın",
-      "modeRepeatHint": "Soralǵan oqıwshı dóńgelekte qaladı hám qayta shıǵıwı múmkin.",
-      "asked": "Soralǵanlar",
-      "returnToPool": "{name} — dóńgelekke qaytarıw",
-      "resetRound": "Hámmesin qaytarıw",
-      "sound": "Dawıs",
-      "speed": "Tezlik",
-      "speedShort": "Tez",
-      "speedMedium": "Orta",
-      "speedLong": "Áste",
-      "sampleNames": [
-        "Aygúl",
-        "Baxtiyar",
-        "Gúlnara",
-        "Ernazar",
-        "Dilbar",
-        "Azamat",
-        "Sáwle",
-        "Janibek"
-      ],
-      "tooMany": "Dóńgelekke {max} atqa shekem sıyadı — qalǵanları shıqpaydı.",
-      "connectClass": "Klas diziminen alıw",
-      "connectGuest": "Jurnaldaǵı klas dizimin jalǵaw ushın akkauntıńızǵa kiriń.",
-      "login": "Kiriw",
-      "connectFree": "Klas dizimin jurnaldan alıw — Pro tarifindegi múmkinshilik.",
-      "aboutPro": "Pro haqqında",
-      "chooseClass": "Qaysı klas?",
-      "noClasses": "Sizde ele klas joq.",
-      "loading": "Júklenbekte…",
-      "loadFailed": "Dizimdi júklew múmkin bolmadı.",
-      "fromClass": "{className} dizimi",
-      "disconnect": "Ajıratıw",
-      "absentToggle": "{name} — búgin joq",
-      "absentHint": "Búgin joq oqıwshını basıń — ol dóńgelekke shıqpaydı.",
-      "suggestConnect": "Klasıńız jurnalda bolsa, atlardı qolda jazıw shárt emes.",
-      "rosterUnavailable": "Klas dizimi tek Pro tarifinde, akkauntıńızǵa kirgenińizde kórinedi.",
-      "rosterLocked": "Dizim jabıq",
-      "rosterFailed": "Dizim júklenbedi",
-      "retry": "Qaytadan urınıw"
-    },
-    "ink": {
-      "toolbar": "Qoljazba ásbapları",
-      "pen": "Qálem",
-      "marker": "Marker",
-      "eraser": "Óshirgish",
-      "select": "Tańlaw",
-      "clear": "Tazalaw",
-      "clearLabel": "Jazıwdı tazalaw",
-      "color": "Reń",
-      "size": "Qalıńlıq",
-      "sizes": {
-        "thin": "Jińishke",
-        "medium": "Ortasha",
-        "thick": "Qalıń"
-      },
-      "colors": {
-        "autoLight": "Qara",
-        "autoDark": "Aq",
-        "red": "Qızıl",
-        "blue": "Kók",
-        "green": "Jasıl",
-        "orange": "Qızǵılt sarı",
-        "violet": "Fiolet",
-        "yellow": "Sarı",
-        "pink": "Qızǵılt"
-      },
-      "penOnly": "Tek qálem",
-      "laser": "Lazer",
-      "erasePartial": "Jarım-jartı",
-      "lasso": "Belgilew",
-      "ruler": "Sızǵısh",
-      "protractor": "Transportir",
-      "rotate": "Burıw",
-      "hideGuide": "Jabıw: {guide}",
-      "deleteSelection": "Óshiriw"
-    }
   }
 }
