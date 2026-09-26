@@ -55,7 +55,18 @@
     "adminSchools": "Mektepler",
     "adminFeedback": "Pikirler",
     "adminAudit": "Audit jurnalı",
-    "adminAi": "Ustozona AI"
+    "adminAi": "Ustozona AI",
+    "games": "Oyınlar",
+    "gameArqon": "Arqan tartıs",
+    "gamePoyga": "Jarıs",
+    "gamePiyodaPoyga": "Jarıs",
+    "gameLiveHost": "Janlı oyın",
+    "gameLivePlay": "PIN menen qosılıw",
+    "gameHost": "Testten oyın",
+    "gameXotira": "Yad",
+    "gameQaysiKatta": "Qaysısı úlken?",
+    "gameSozTopish": "Sóz tabıw",
+    "gameKrossvord": "Krossvord"
   },
   "GlobalCommandPalette": {
     "search": "Izlew",
@@ -4953,5 +4964,14 @@
       "hideGuide": "Jabıw: {guide}",
       "deleteSelection": "Óshiriw"
     }
+  },
+  "GamesPage": {
+    "catalog": "Oyınlar katalogı",
+    "fullscreen": "Tolıq ekran",
+    "openNewTab": "Jańa aynada ashıw",
+    "linkHint": "Telegram'dı baylanıstırıń — oyınlarǵa avtomat túrde kiresiz hám jeke testlerińiz birden ashıladı.",
+    "linkAction": "Baylanıstırıw",
+    "later": "Keyinirek",
+    "frameTitle": "Ustozona-Games"
   }
 }

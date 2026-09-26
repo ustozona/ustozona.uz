@@ -55,7 +55,18 @@
     "adminSchools": "Schools",
     "adminFeedback": "Feedback",
     "adminAudit": "Audit log",
-    "adminAi": "Ustozona AI"
+    "adminAi": "Ustozona AI",
+    "games": "Games",
+    "gameArqon": "Tug of war",
+    "gamePoyga": "Race",
+    "gamePiyodaPoyga": "Race",
+    "gameLiveHost": "Live game",
+    "gameLivePlay": "Join with PIN",
+    "gameHost": "Game from a test",
+    "gameXotira": "Memory",
+    "gameQaysiKatta": "Which is bigger?",
+    "gameSozTopish": "Word finder",
+    "gameKrossvord": "Crossword"
   },
   "GlobalCommandPalette": {
     "search": "Search",
@@ -5030,5 +5041,14 @@
     "close": "Exit (Esc)",
     "prev": "Previous",
     "next": "Next"
+  },
+  "GamesPage": {
+    "catalog": "Game catalog",
+    "fullscreen": "Full screen",
+    "openNewTab": "Open in a new tab",
+    "linkHint": "Connect Telegram to sign in to games automatically and open your own tests right away.",
+    "linkAction": "Connect",
+    "later": "Later",
+    "frameTitle": "Ustozona-Games"
   }
 }

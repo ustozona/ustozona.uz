@@ -55,7 +55,18 @@
     "adminSchools": "Мактаблар",
     "adminFeedback": "Фикрлар",
     "adminAudit": "Аудит журнали",
-    "adminAi": "Ustozona AI"
+    "adminAi": "Ustozona AI",
+    "games": "Ўйинлар",
+    "gameArqon": "Арқон тортиш",
+    "gamePoyga": "Пойга",
+    "gamePiyodaPoyga": "Пойга",
+    "gameLiveHost": "Жонли ўйин",
+    "gameLivePlay": "PIN билан қўшилиш",
+    "gameHost": "Тестдан ўйин",
+    "gameXotira": "Хотира",
+    "gameQaysiKatta": "Қайси катта?",
+    "gameSozTopish": "Сўз топиш",
+    "gameKrossvord": "Кроссворд"
   },
   "GlobalCommandPalette": {
     "search": "Қидириш",
@@ -4782,5 +4793,14 @@
       "hideGuide": "Ёпиш: {guide}",
       "deleteSelection": "Ўчириш"
     }
+  },
+  "GamesPage": {
+    "catalog": "Ўйинлар каталоги",
+    "fullscreen": "Тўлиқ экран",
+    "openNewTab": "Янги ойнада очиш",
+    "linkHint": "Telegram'ни боғланг — ўйинларга автоматик кирасиз ва шахсий тестларингиз дарҳол очилади.",
+    "linkAction": "Боғлаш",
+    "later": "Кейинроқ",
+    "frameTitle": "Ustozona-Games"
   }
 }

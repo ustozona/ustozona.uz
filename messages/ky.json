@@ -55,7 +55,18 @@
     "adminSchools": "Мектептер",
     "adminFeedback": "Пикирлер",
     "adminAudit": "Аудит журналы",
-    "adminAi": "Ustozona AI"
+    "adminAi": "Ustozona AI",
+    "games": "Оюндар",
+    "gameArqon": "Аркан тартыш",
+    "gamePoyga": "Жарыш",
+    "gamePiyodaPoyga": "Жарыш",
+    "gameLiveHost": "Түз оюн",
+    "gameLivePlay": "PIN менен кошулуу",
+    "gameHost": "Тесттен оюн",
+    "gameXotira": "Эс тутум",
+    "gameQaysiKatta": "Кайсысы чоң?",
+    "gameSozTopish": "Сөз табуу",
+    "gameKrossvord": "Кроссворд"
   },
   "GlobalCommandPalette": {
     "search": "Издөө",
@@ -4953,5 +4964,14 @@
       "hideGuide": "Жашыруу: {guide}",
       "deleteSelection": "Өчүрүү"
     }
+  },
+  "GamesPage": {
+    "catalog": "Оюндар каталогу",
+    "fullscreen": "Толук экран",
+    "openNewTab": "Жаңы өтмөктө ачуу",
+    "linkHint": "Telegram'ды байланыштырыңыз — оюндарга автоматтык түрдө киресиз жана жеке тесттериңиз дароо ачылат.",
+    "linkAction": "Байланыштыруу",
+    "later": "Кийинчерээк",
+    "frameTitle": "Ustozona-Games"
   }
 }

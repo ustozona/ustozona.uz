@@ -23,7 +23,7 @@ import { Button } from "@/components/ui/button";
 import {
   LayoutGrid, Users, Calendar, BookOpen, FileText, ClipboardCheck, Library,
   Award, BarChart2, Target, MessagesSquare, Megaphone, Settings, Home,
-  Search,
+  Search, Gamepad2,
   type LucideIcon,
 } from "lucide-react";
 
@@ -34,6 +34,7 @@ const PAGE_ICONS: Record<string, LucideIcon> = {
   "/dashboard/timetable": Calendar,
   "/dashboard/planner": BookOpen,
   "/dashboard/lessons": FileText,
+  "/dashboard/games": Gamepad2,
   "/dashboard/resources": Library,
   "/dashboard/attendance": ClipboardCheck,
   "/dashboard/behavior": Award,

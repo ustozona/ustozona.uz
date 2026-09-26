@@ -89,7 +89,10 @@ const navGroups: NavGroup[] = [
       // butun tizimda shu joyda — Games yon panelida ham «Oʻquv jarayoni»
       // ichida, Topshiriqlar va Materiallar orasida
       // (lessonlab-scanner/public/assets/sidebar.js).
-      { href: "/games", labelKey: "games", icon: Gamepad2 },
+      // Dashboard ICHIDA ochiladi: Ustozona'ning oʻz yon paneli va
+      // sarlavhasi qoladi, oʻyinlar tomonidagi panel yashiriladi.
+      // Ochiq `/games` — mehmon va oʻquvchi uchun (PIN), `src/lib/games.ts`.
+      { href: "/dashboard/games", labelKey: "games", icon: Gamepad2 },
       { href: "/dashboard/resources", labelKey: "resources", icon: Library },
     ],
   },
