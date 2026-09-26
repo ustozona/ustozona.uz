@@ -85,6 +85,11 @@ const navGroups: NavGroup[] = [
       { href: "/dashboard/planner", labelKey: "planner", icon: BookOpen },
       { href: "/dashboard/lessons", labelKey: "lessons", icon: FileText },
       { href: "/dashboard/assignments", labelKey: "assignments", icon: ClipboardList },
+      // Oʻyinlar — Ustozona-Games (LessonLab oʻyinlari). Yaratuvchi qarori:
+      // butun tizimda shu joyda — Games yon panelida ham «Oʻquv jarayoni»
+      // ichida, Topshiriqlar va Materiallar orasida
+      // (lessonlab-scanner/public/assets/sidebar.js).
+      { href: "/games", labelKey: "games", icon: Gamepad2 },
       { href: "/dashboard/resources", labelKey: "resources", icon: Library },
     ],
   },
@@ -107,9 +112,6 @@ const navGroups: NavGroup[] = [
 const footerItems: NavItem[] = [
   { href: "/dashboard/changelog", labelKey: "changelog", icon: Megaphone, badgeKey: "changelog" },
   { href: "/blog", labelKey: "blog", icon: Newspaper },
-  // Ustozona-Games — LessonLab oʻyinlari (Arqon, Poyga, Jonli oʻyin…).
-  // Blog kabi /dashboard'dan TASHQARIDAGI alohida mahsulot sahifasi.
-  { href: "/games", labelKey: "games", icon: Gamepad2 },
   { href: "/help", labelKey: "help", icon: CircleHelp },
   { href: "/dashboard/feedback", labelKey: "feedback", icon: MessagesSquare },
   { href: "/dashboard/settings", labelKey: "settings", icon: Settings },
