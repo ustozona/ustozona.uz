@@ -125,8 +125,19 @@ export function TelegramLinkDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent showCloseButton={false} className="gap-0 overflow-hidden p-0 sm:max-w-md">
+      {/*
+        grid-cols-[minmax(0,1fr)]: DialogContent — grid, uning yashirin ustuni esa
+        `auto`, ya'ni bolaning min-content kengligidan tor boʻlolmaydi. Sarlavha
+        tavsifi `truncate` (nowrap) — telefonda ustun oyna kengligidan oshib
+        ketib, matn va «Bekor qilish» tugmasi oʻngda qirqilardi.
+      */}
+      <DialogContent
+        showCloseButton={false}
+        width="28rem"
+        className="grid-cols-[minmax(0,1fr)] gap-0 overflow-hidden p-0"
+      >
         <DialogHeaderBar
+          className="[&_[data-slot=dialog-description]]:whitespace-normal"
           icon={<TelegramIcon className="size-4" />}
           title={t("title")}
           description={t("description")}
