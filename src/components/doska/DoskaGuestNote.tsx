@@ -2,10 +2,10 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Info, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { useDoskaStore } from "@/lib/doska/store";
+import { IconClose, IconInfo } from "./icons";
 
 /**
  * MEHMON REJIMI ESLATMASI.
@@ -29,8 +29,8 @@ export function DoskaGuestNote() {
   if (dismissed || !hydrated || !hasWidgets) return null;
 
   return (
-    <div className="doska-bar bg-background flex items-center gap-2 rounded-full border px-4 py-2 shadow-md">
-        <Info className="text-muted-foreground size-4 shrink-0" />
+    <div className="doska-bar doska-ctl flex items-center gap-2 py-1 pr-1 pl-4">
+        <IconInfo className="text-muted-foreground size-5 shrink-0" />
         <p className="text-xs">
           {t.rich("text", {
             link: (chunks) => (
@@ -44,9 +44,9 @@ export function DoskaGuestNote() {
           type="button"
           aria-label={t("dismiss")}
           onClick={() => setDismissed(true)}
-          className="text-muted-foreground hover:text-foreground ml-1 shrink-0"
+          className="text-muted-foreground hover:text-foreground hover:bg-muted grid size-11 shrink-0 place-items-center rounded-lg transition-colors"
         >
-          <X className="size-4" />
+          <IconClose className="size-5" />
         </button>
     </div>
   );

@@ -2068,6 +2068,10 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "doska-uslublar": {
+        "title": "Doska: ózińizge unaǵan stildi tańlań hám paneldi ózińiz dúziń",
+        "body": "Menyudaǵı «Kóriniw» bóliminde úsh stildiń birin tańlań: «Tınısh» — proektorda eń anıq, «Oyınshıq» — kishi klasslar ushın quwanıshlı hám reńli, «Doska» — jasıl doskadaǵı qaǵaz hám magnitler. Paneldi tómende, shep yamasa oń tárepte qaldırıw múmkin — interaktiv doskanıń qasında turıp islesenińiz qolay. Kerekli qurallardı «Barlıǵı» aynasınan panelge qadap qoyıń, qalǵanları sol aynada turadı."
+      },
       "doska-qulay-boshqaruv": {
         "title": "Doska qolaylı boldı: taymerge qálegen waqıt, hár háreketti qaytarıw, basqarıw qol astında",
         "body": "Taymerdi qoyǵanda waqıttı dárhal tańlaysız (1–15 minut yamasa ± túymeleri), onı basıp baslaysız, waqıt tawsılǵanda qońıraw qaǵıladı; hár vidjettiń sazlawları onıń qasında, «Sazlaw» túymesinde ashıladı. Abaysızda óshirilgen vidjet yamasa ekran «Qaytarıw» menen ornına keledi, kerekli vidjetti bekitiw yamasa «Ortaǵa» menen pútkil ekranǵa shıǵarıw múmkin. Barlıq basqarıw endi tómende — interaktiv doskada ańsat jetesiz, al menyuda klastıń dıqqatın awdarıw ushın «Ekrandı jabıw» hám «Qońıraw qaǵıw» bar."
@@ -4771,7 +4775,55 @@
       "removeScreenLocked": "Ekranda bekitilgen vidjet bar — aldın onı bosatıń",
       "promoTitle": "Jumısıńızdı saqlap qoyıń",
       "promoBody": "Ekranlarıńız akkauntıńızda saqlanadı, klas dizimi jalǵanadı hám shaqırılǵan oqıwshı jurnalǵa túsedi.",
-      "promoCta": "Múmkinshiliklerdi kóriw"
+      "promoCta": "Múmkinshiliklerdi kóriw",
+      "appearance": "Kóriniw"
+    },
+    "catalog": {
+      "open": "Barlıǵı",
+      "title": "Barlıq qurallar",
+      "hint": "Basıń — ekranǵa qoyıladı. Qadaw belgisi quraldı panelge shıǵaradı.",
+      "full": "Panel tolı ({max}). Jańasın qadaw ushın aldın birewin alıp taslań.",
+      "pin": "{tool} — panelge qadaw",
+      "unpin": "{tool} — panelden alıw",
+      "categories": {
+        "time": "Waqıt",
+        "class": "Klass",
+        "writing": "Jazıw",
+        "media": "Media"
+      },
+      "descriptions": {
+        "clock": "Házirgi waqıt",
+        "timer": "Keri sanaw, dawıs penen",
+        "trafficLight": "Shawqım dárejesi",
+        "text": "Atama yamasa tapsırma",
+        "stickyNote": "Reńli eslatpe qaǵaz",
+        "shape": "Geometriyalıq figuralar",
+        "presentation": "Sorawlar hám juwaplar",
+        "wheel": "Tosınnan at tańlaw"
+      }
+    },
+    "appearance": {
+      "title": "Kóriniw",
+      "back": "Artqa",
+      "style": "Stil",
+      "styles": {
+        "sokin": {
+          "name": "Tınısh",
+          "note": "Taza hám anıq — proektorda jaqsı kórinedi"
+        },
+        "oyinchoq": {
+          "name": "Oyınshıq",
+          "note": "Quwanıshlı hám reńli — kishi klasslar ushın"
+        },
+        "doska": {
+          "name": "Doska",
+          "note": "Qaǵaz hám magnit — jasıl doskaǵa sáykes"
+        }
+      },
+      "dock": "Panel ornı",
+      "dockLeft": "Shep tárepte",
+      "dockBottom": "Tómende",
+      "dockRight": "Oń tárepte"
     },
     "backgrounds": {
       "chalkboard-green": "Jasıl doska",

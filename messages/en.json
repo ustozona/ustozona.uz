@@ -2068,6 +2068,10 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "doska-uslublar": {
+        "title": "Doska: pick a look and build your own panel",
+        "body": "Under Appearance in the menu, choose one of three styles: Calm, the clearest on a projector; Playful, bright and fun for younger classes; or Board, with paper notes and magnets on a green board. The panel can sit at the bottom, left or right — handy when you stand beside an interactive board. Pin the tools you use from the All window; everything else stays there."
+      },
       "doska-qulay-boshqaruv": {
         "title": "A friendlier Doska: any time on the timer, undo for everything, controls within reach",
         "body": "When you add a timer you pick the time right away (1–15 minutes or the ± buttons), tap it to start, and a bell rings when time is up; every widget’s settings open right next to it under “Settings”. A widget or screen deleted by accident comes back with “Undo”, and you can lock a widget in place or bring it full screen with “Spotlight”. All controls now sit at the bottom, easy to reach on an interactive board, and the menu has “Cover the screen” and “Ring the bell” to get the class’s attention."
@@ -4767,7 +4771,55 @@
       "removeScreenLocked": "This screen has a locked widget — unlock it first",
       "promoTitle": "Keep your work",
       "promoBody": "Your screens are saved to your account, your class list connects, and the student you call on is recorded in the gradebook.",
-      "promoCta": "See the features"
+      "promoCta": "See the features",
+      "appearance": "Appearance"
+    },
+    "catalog": {
+      "open": "All",
+      "title": "All tools",
+      "hint": "Tap a tool to place it on the screen. The pin keeps it on the panel.",
+      "full": "The panel is full ({max}). Unpin one to add another.",
+      "pin": "Pin {tool} to the panel",
+      "unpin": "Unpin {tool} from the panel",
+      "categories": {
+        "time": "Time",
+        "class": "Class",
+        "writing": "Writing",
+        "media": "Media"
+      },
+      "descriptions": {
+        "clock": "Current time",
+        "timer": "Countdown with sound",
+        "trafficLight": "Noise level",
+        "text": "Heading or task",
+        "stickyNote": "Colored note",
+        "shape": "Geometric shapes",
+        "presentation": "Questions and answers",
+        "wheel": "Pick a random name"
+      }
+    },
+    "appearance": {
+      "title": "Appearance",
+      "back": "Back",
+      "style": "Style",
+      "styles": {
+        "sokin": {
+          "name": "Calm",
+          "note": "Clean and clear — reads well on a projector"
+        },
+        "oyinchoq": {
+          "name": "Playful",
+          "note": "Bright and fun — for younger classes"
+        },
+        "doska": {
+          "name": "Board",
+          "note": "Paper and magnets — suits a green board"
+        }
+      },
+      "dock": "Panel position",
+      "dockLeft": "Left",
+      "dockBottom": "Bottom",
+      "dockRight": "Right"
     },
     "backgrounds": {
       "chalkboard-green": "Green chalkboard",

@@ -1,9 +1,9 @@
 # Doska dizayn tizimi
 
-> ⚠️ **Qayta koʻrib chiqilmoqda (2026-09-25).** Asboblar UX tadqiqoti va
-> uchta yoʻnalish — [doska-ux-tadqiqot.md](./doska-ux-tadqiqot.md). Qaror
-> qabul qilingach §1–3 oʻsha hujjat asosida qayta yoziladi; ungacha
-> quyidagi qoidalar amalda.
+> **Holat (2026-09-25):** §1–4 [doska-ux-tadqiqot.md](./doska-ux-tadqiqot.md)
+> qarorlari (Q1–Q3) asosida qayta yozildi — Doskada endi uchta vizual
+> uslub bor, oʻqituvchi tanlaydi. Tokenlar:
+> [`src/styles/doska.css`](../src/styles/doska.css).
 
 > Ustozona Doska — sinf ekrani. Bu hujjat uning **vizual qoidalarini**
 > belgilaydi. Umumiy tizim (tokenlar, sirt/ohang oʻqlari) —
@@ -24,23 +24,85 @@ sof CSS (§4). Referensdan bironta bayt koʻchirilmaydi.
 
 ---
 
-## 1. Asosiy tamoyil: panel jim, kanvas jonli
+## 1. Uch uslub, bitta UX
 
-Referensning vidjet panelida **fon neytral** — oq, ochiq kulrang
-chegara. Ikonalar esa **rangli** — har biri oʻz tusida, ikki
-shaffoflikda (qalam binafsha, taymer sariq, svetofor qizil).
+Vizual uslubni **oʻqituvchi tanlaydi** (menyu → «Koʻrinish»); mantiq,
+joylashuv va xatti-harakat esa hammada bir xil (doska-ux-tadqiqot.md Q1).
 
-Sabab jismoniy: sinf ekrani 5 metrdan koʻriladi va oʻquvchi **kontentga**
-qarashi kerak, boshqaruvga emas. Panel rangli boʻlsa, u eʼtiborni oʻziga
-tortadi va taymer bilan raqobatlashadi.
+| Uslubga KIRADI | Uslubga KIRMAYDI |
+|---|---|
+| rang, burchak, kontur, soya, shrift, qalinlik, harakat egri chizigʻi, bezak (magnit) | joylashuv, nishon oʻlchami, sozlama naqshi, xatti-harakat, yorliqlar, yozuvlar, qaytarish, «rang + belgi + soʻz» |
 
-**Qoida:** panel YUZASI neytral (fon, chegara, hover) — rang faqat
-ikona ichida, vidjetda va faol holat belgisida. Yaʼni rang maʼno
-tashiydi, bezak boʻlmaydi.
+| | Sokin (standart) | Oʻyinchoq | Doska |
+|---|---|---|---|
+| Gʻoya | grafit boshqaruv, toʻyingan bir tekis vidjet, oq matn | qalin siyoh kontur, qattiq soya, rangli plitkalar | oq qogʻoz vidjet + magnit; tus faqat magnitda |
+| Boshqaruv (`.doska-ctl`) | grafit, 1 px yorugʻ chiziq, yumshoq soya | oq patnis, 3 px siyoh, `0 5px 0` siyoh | toʻq relsa, 1 px yorugʻ chiziq |
+| Vidjet (`.doska-card`) | toʻyingan tus, oq matn, radius 18 | och tus, siyoh matn, 3 px kontur, radius 26 | qogʻoz, siyoh matn, magnit, radius 10 |
+| Varaq (`.doska-sheet`) | tema (`--popover`) | oq, 3 px siyoh | qogʻoz |
+| Tanlov | yaxlit chiziq | uzuq chiziq | uzuq chiziq, kvadrat tutqich |
+| Shrift | Onest | Nunito (800–900) | Rubik |
+| Kimga | hammaga; proyektorda eng aniq | 1–6-sinf | yashil/qora doska |
 
-⚠️ Bu `playful` ohangga zid emas. Ohang **kanvasga** tegishli: yumaloq
-burchak, toʻyingan tus, qalin soya — hammasi vidjetda. Panel esa asbob,
-u koʻrinmasligi kerak.
+**Standart — Sokin.** Foydalanuvchilarning 5% dan kami sozlamani
+oʻzgartiradi (R329): 95% oʻqituvchi aynan shuni koʻradi. «Aqlli
+standart» (jurnaldagi sinflar 1–4-sinf boʻlsa Oʻyinchoq) — keyin, sinflar
+Doskaga ulanganda.
+
+### Arxitektura — faqat token qatlami
+
+Uslub — `<html data-doska-style="sokin|oyinchoq|doska">` va
+[`doska.css`](../src/styles/doska.css) dagi uchta token bloki.
+Komponentlar uslubni **bilmaydi**: ular material klassini qoʻyadi
+(`.doska-ctl`, `.doska-sheet`, `.doska-card`, `.doska-tool`,
+`.doska-selection`) va `var(--doska-…)` ni oʻqiydi. Atribut va sahna
+shriftlari klasslari `<html>` da (`DoskaShell`), chunki menyu va tanlash
+oynalari `body` ga portal qilinadi va ular ham uslubni olishi kerak.
+
+Uchta qoida (`doska.css` sarlavhasida batafsil):
+
+1. **Uslub bloki faqat token eʼlon qiladi.** `[data-doska-style="x"] .foo`
+   kabi avlod selektori yozilmaydi — «Koʻrinish» panelidagi namunalar
+   ichma-ich `data-doska-style` bilan chiziladi va avlod selektori
+   sahifaning uslubini namunaga ham tushirardi.
+2. **Har blok BARCHA tokenlarni eʼlon qiladi** (keraksizini `initial`
+   bilan) — aks holda ichma-ich namunada yuqoridagi uslub «oqib» tushadi.
+3. **Token ichidagi `var()` token eʼlon qilingan elementda
+   hisoblanadi.** Vidjetga xos qiymat (`--card-accent`,
+   `--doska-icon-tint`) uslub blokida ishlatilmaydi — u material
+   klassida birlashtiriladi.
+
+Material klasslari **qatlamsiz** (unlayered): shadcn primitivlarining
+`rounded-md border shadow-md` utilitalarini ataylab yengadi. Shuning
+uchun material klassi qoʻyilgan elementga fon, radius, chegara yoki soya
+utilitasi yozilmaydi — u baribir ishlamaydi.
+
+Uslub **saqlanadi** (`lib/doska/prefs.ts`, alohida store): u toʻplamga
+emas, oʻqituvchiga tegishli va qaytarish tarixiga kirmaydi. Hozir shu
+brauzerda; ekranlar serverga koʻchganda oʻqituvchi sozlamasi boʻladi.
+
+### Proyektor sinovi — har uslub
+
+Har uslubning matn/fon juftliklari (vidjet tuslari, boshqaruv, varaq,
+siyoh och doskada, boʻr toʻq doskada) ikki shartda tekshiriladi: oddiy
+ekranda ≥ 4,5:1 va yuvilgan proyektor simulyatsiyasida (toʻyinganlik
+0,72, qora 25% gacha koʻtarilgan) ≥ 3:1 (R324):
+
+```bash
+node scripts/doska-projector-check.mjs
+```
+
+Yangi uslub yoki rang qoʻshilganda skript yashil boʻlishi shart. Eng
+tor joy — Sokinning taymeri: toʻq sariq ustidagi oq matn 4,6:1,
+proyektorda 3,2:1. Shu sababli u `class-colors` ning `-400` darajasidan
+ancha toʻq.
+
+### «Panel jim» — endi uslub qoidasi
+
+Ilgari hamma uchun qoida edi: panel YUZASI neytral, rang faqat ikonada
+va vidjetda — sinf ekrani 5 metrdan koʻriladi va rangli panel taymer
+bilan raqobatlashadi. Endi bu **Sokin va Doska** uslubining qoidasi.
+**Oʻyinchoq** uni ataylab buzadi (rangli plitkalar) — oʻqituvchi buni
+ongli tanlaydi.
 
 ---
 
@@ -48,10 +110,12 @@ u koʻrinmasligi kerak.
 
 Doskada kanvas butun ekranni egallaydi, boshqaruv esa uning ustida
 suzadi. Yaʼni **har boshqaruv toʻdasi oʻzini fondan ajratishi kerak**:
-oq yuza, chegara, soya, oʻz z-qatlami. Bu naqsh qobiqda toʻrt marta
-takrorlanadi (uy · toʻliq ekran+menyu · vidjet paneli · ekran
-navigatsiyasi), shuning uchun u [`BarGroup.tsx`](../src/components/doska/BarGroup.tsx)
-da bitta komponent.
+yuza, chegara, soya, oʻz z-qatlami. Bu naqsh qobiqda bir necha marta
+takrorlanadi (bekor qilish · vidjet paneli · ekranlar va menyu · yigʻish
+tugmasi), shuning uchun u [`BarGroup.tsx`](../src/components/doska/BarGroup.tsx)
+da bitta komponent. Koʻrinishi — `.doska-ctl` materiali: ichidagi
+`text-foreground`, `hover:bg-muted`, `bg-primary` uslub tokenlariga
+qayta bogʻlangan.
 
 ⚠️ Idish border **bilan ham**, shadow **bilan ham** chiziladi — bu
 `design-system.md` dagi «border YOKI shadow» qoidasidan **ataylab
@@ -59,23 +123,28 @@ chetlashish**. U yerdagi qoida panel varaq ustida turishini nazarda
 tutadi; bu yerda fon ixtiyoriy rangda, och fonda chegara, toʻq fonda
 soya ushlab turadi. Bittasi yetmaydi.
 
-### Ikki tur
+### Ikki tur, ikki yoʻnalish
 
 | Tur | Ichki tugmalar | Qayerda |
 |---|---|---|
 | `segmented` | tegib turadi, radius idishda, ajratgich `<BarDivider>` | ikonali boshqaruv toʻdasi |
-| `padded` | oʻz radiusini saqlaydi, idish `p-2` beradi | yorliqli vidjet tugmalari |
+| `padded` | oʻz radiusini saqlaydi, idish `p-1` beradi | vidjet paneli |
 
-Sabab oddiy: yorliqli tugma allaqachon 52px kenglikda va tegib tursa
-qator devorga aylanadi; ikonali tugma esa 40px va ajratilsa toʻda
-boʻlib koʻrinmaydi.
+`orientation="vertical"` — «Panel joyi: chap / oʻng» dagi yon relsa.
+
+### Nishon oʻlchami — hamma uslubda bir xil
+
+| Element | Oʻlcham | Sabab |
+|---|---|---|
+| Ikonali tugma (`BarIconButton`) | 48 × 48 | ≥ 44 px, barmoq (R321) |
+| Yozuvli tugma (`BarTextButton`, kontekst panel) | balandlik 44 | ≥ 44 px |
+| Vosita (`BarButton`) | 64 px keng, BUTUN tugma bosiladi | panel nishoni ≥ 56 px (§3 UX yadrosi) |
 
 ### Tooltip
 
 Guruh ichidagi ikonali tugmada yorliq yoʻq — nom **tooltip**da
 (`<BarIconButton>`). `title` atributi ishlatilmaydi: brauzer uni bir
-soniya kutib chiqaradi va uslubga boʻysunmaydi, dars oʻrtasida esa bu
-«tugma nima qilishini bilmadim» degani.
+soniya kutib chiqaradi va uslubga boʻysunmaydi.
 
 `delayDuration` = 300 ms (nol emas): boshqaruv zich joylashgan va nol
 kechikishda sichqoncha ustidan oʻtganda tooltip'lar ketma-ket chaqnaydi.
@@ -90,18 +159,36 @@ menyu, bekor qilish) — ularning ikonasi hamma joyda bir xil maʼnoda.
 **Kontekst panelda** (§2.5) nom doim koʻrinadi — `<BarTextButton>`:
 sensorli doskada hover yoʻq, tooltip chiqmaydi (doska-ux-tadqiqot.md R322).
 
-### Joylashuv — butun boshqaruv pastki qatorda
+### Joylashuv — pastda yoki yon relsada, tepada hech narsa yoʻq
 
 ```
-[↶ ↷]            [ vidjet paneli ] [⌄]            [‹ 2/3 › + │ ⛶ ⋮]
- bekor qilish         markaz                        ekranlar, menyu
+Past (standart):
+[↶ ↷]          [ vidjet paneli ] [⌄]          [‹ 2/3 › + │ ⛶ ⋮]
+
+Chap / oʻng («Panel joyi»):
+┌──┐
+│  │ ← vidjet paneli yon relsada, oʻrtadan pastda
+│  │   (tepadan 18% boʻsh, pastki qatorga joy)
+└──┘
+[‹]
+[↶ ↷]                                         [‹ 2/3 › + │ ⛶ ⋮]
 ```
 
 Tepada hech narsa yoʻq: 75″ interaktiv panelning tepasi poldan ≈ 1,8 m
 — u yerdagi tugmaga qoʻl toʻliq choʻzilib yetadi, bola yetmaydi
-(doska-ux-tadqiqot.md R319). Bosh sahifa havolasi menyuda. Yigʻish
-tugmasi (`B`) pastki qatorning hammasini yashiradi, «Qaytarish»
-xabaridan tashqari.
+(doska-ux-tadqiqot.md R319). Bosh sahifa havolasi menyuda.
+
+**«Panel joyi»** (menyu → «Koʻrinish») faqat vidjet panelini koʻchiradi:
+bekor qilish chap pastda, ekranlar va menyu oʻng pastda qoladi. Yon
+relsa interaktiv panelda oʻqituvchi yonida turib ishlashi uchun — qoʻli
+mazmunni yopmaydi. Paneldan ochiladigan oynalar («Shakl», «Fon»,
+«Hammasi») panel tomonidan ochiladi: pastki panelda tepaga, chap
+relsada oʻngga (`dock.ts`).
+
+Yigʻish tugmasi (`B`) panel yonida turadi va yigʻilganda oʻsha joyda
+qoladi — oʻqituvchi uni qayerda yashirgan boʻlsa, oʻsha yerdan qaytaradi.
+Strelka panel ketadigan tomonga qaraydi. «Qaytarish» xabari yigʻilgan
+holatda ham chiqadi.
 
 ---
 
@@ -110,84 +197,76 @@ xabaridan tashqari.
 ### Anatomiya
 
 ```
-┌─────────────────────────────────────────────┐
-│ [rejim]  │  vidjetlar grid  │  [menyu]      │  ← 3 boʻlim
-└─────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────┐
+│ [qadalgan vositalar …]  │  [Hammasi] [Fon]              │
+└──────────────────────────────────────────────────────────┘
 ```
 
-| Element | Qiymat | Nega |
-|---|---|---|
-| Panel foni | `--surface-2` (oq) | kanvasdan ajralsin |
-| Panel chegarasi | 1px `--border` | `stage` sirtida 0.5px koʻrinmaydi |
-| Panel radiusi | 10px | vidjetnikidan (22px) **kichik** — asbob, kontent emas |
-| Ichki masofa | 8px | |
-| Z-qatlam | `--z-doska-bar` (1000100) | §5 |
+Qaysi vosita panelda turishini **oʻqituvchi tanlaydi** — «Hammasi»
+oynasidagi qadash belgisi bilan (R132). Tartib esa doim `TOOL_ORDER`
+(`registry.ts`): qadalgan vosita oxiriga emas, oʻz joyiga tushadi.
+Tuzmagan oʻqituvchi standart panelni koʻradi — bugungi panel bilan bir
+xil; keyin qoʻshilgan yangi vosita unga oʻzi chiqadi (`tools: null`).
+«Fon» vosita emas, ekran sozlamasi — u doim panelda.
 
-### Vidjet tugmasi
+### Vosita tugmasi
 
 ```
-   ▁▁▁     ← 3px indikator joyi (ekranda shu vidjet bormi)
+   ▁▁▁     ← 3 px «ekranda bor» belgisi (joyi doim band)
  ┌─────┐
- │ 28  │   ← 40×40 tugma, ichida 28px ikona
+ │ 28  │   ← 40 px plitka, ichida 28 px ikona
  └─────┘
- taymer    ← 11px, 1 qator, max 52px
+  Taymer   ← 12 px, bitta qator, 64 px kenglikda `truncate`
 ```
 
-| Oʻlcham | Qiymat |
-|---|---|
-| Tugma | 40×40px |
-| Ikona | 28×28px (tugma ichida 6px padding) |
-| Tugmalar orasi | 12px (6px margin × 2) |
-| Nom | 11px, `font-medium`, bitta qator, `text-ellipsis` |
-| Nom kengligi | max 52px |
-| Indikator | 3px balandlik, tugma **tepasida** |
+BUTUN tugma bosiladi va yorishadi — ikona ham, nom ham. Ilgari faqat
+40 px ikona qutisi yorishardi va nom ustiga bosish «ishlamagan» boʻlib
+koʻrinardi. Plitka Sokin va Doskada koʻrinmaydi (ikona oʻz tusida,
+ierarxik); Oʻyinchoqda u vosita tusida toʻladi va ikona siyohga oʻtadi —
+oq ikona sariq va yashil plitkada oʻqilmasdi.
 
 ⚠️ Bu oʻlchamlar `stage` sirtidan **mustasno** — panel oʻqituvchi
-qoʻlida, 50 sm dan boshqariladi, sinf esa unga qaramaydi. Shuning uchun
-panel `desk` shkalasida qoladi. Buni kodda ochiq belgilash kerak, aks
-holda `--spacing` override uni ham kattalashtiradi.
+qoʻlida, 50 sm dan boshqariladi. `.doska-bar` klassi `--spacing` va
+matn shkalasini `desk` qiymatiga qaytaradi.
 
 ### Holatlar
 
 | Holat | Koʻrinish |
 |---|---|
-| Normal | shaffof fon, ikona vidjet tusida (§3) |
-| Hover | `--fill-ghost-hover` fon |
-| Fokus | 2px `--ring` halqa, 2px offset |
-| Ekranda bor | tepada 3px `--primary` chiziq |
+| Normal | shaffof fon, ikona vidjet tusida (Oʻyinchoqda — rangli plitka) |
+| Hover | `--muted` (material ichida — uslubning hover rangi) |
+| Fokus | 2 px `--ring` halqa |
+| Ekranda bor | tepada 3 px `--primary` belgi; «Hammasi» ham belgi oladi, agar ekranda paneldan tashqaridagi vosita boʻlsa |
 
-### Faol rejim indikatori
+### «Hammasi» oynasi
 
-Referens faol rejim ostiga **absolute** joylashgan kvadrat
-qoʻyadi va uni `transition-all` bilan siljitadi — yaʼni tugmalar
-oʻzgarmaydi, faqat belgi harakatlanadi.
+Barcha vositalar, toifalarga ajratilgan: Vaqt · Sinf · Yozuv · Media
+([`ToolCatalog.tsx`](../src/components/doska/ToolCatalog.tsx)). Boʻsh
+toifa chiqmaydi — vositasi qoʻshilganda oʻzi paydo boʻladi. Har qatorda
+ikki amal, ikkalasi ≥ 44 px:
 
-Bu naqsh olinadi: bizda ham chizish/tanlash rejimi qoʻshilganda
-indikator siljisin, sakramasin. `playful` ohangdagi spring egri chizigʻi
-bunga aynan mos.
+- qatorning oʻzi — vositani ekranga qoʻyadi (oyna yopiladi). «Shakl»
+  bu yerdan standart figura bilan tushadi va sozlama kartasi darhol
+  ochiladi — figurani oʻsha yerda tanlaysiz;
+- qadash belgisi — vositani panelga chiqaradi yoki olib tashlaydi.
+  Panelda **≤ 9** vosita (`MAX_PINNED_TOOLS`): koʻprogʻi 75″ doskada ham
+  bir qarashda oʻqilmaydi. Toʻla panelda qadash nofaol, sababi oyna
+  sarlavhasida yozilgan.
+
+Vositalar koʻpaygani sayin panel emas, shu oyna oʻsadi.
 
 ### Tor holat — panel ekrandan chiqib ketmaydi
 
-Panel oʻqituvchining planshetida ham ochiladi. Kenglik yetmaganda u
-oʻz ustunidan oshmaydi (`max-w-full`, ota ustunlar `min-w-0`) va
-**ichida gorizontal aylanadi**.
-
-Busiz sigʻmagan tugmalar kanvasdan tashqariga chiqib ketardi: 640px
-ekranda «Fon» koʻrinmas edi va unga yetishning **hech qanday yoʻli
-yoʻq** edi.
+Kenglik (yon relsada — balandlik) yetmaganda panel oʻz ustunidan
+oshmaydi va **ichida aylanadi** (`overflow-x-auto` / `overflow-y-auto`,
+`overscroll-contain`). Busiz sigʻmagan tugmalar kanvasdan tashqariga
+chiqib ketardi va ularga yetish yoʻli yoʻq edi.
 
 ⚠️ «Tozalash» bu panelda YOʻQ — menyuda. Qoʻshish tugmalari qatoridagi
 buzuvchi tugma bir notoʻgʻri bosishda ekranni boʻshatardi (A2); endi
 tozalash ham «Qaytarish» xabari bilan qaytariladi.
 
-`overscroll-x-contain` shart — aylantirish panel oxiriga yetganda
-brauzerning «orqaga» ishorasiga oʻtib ketmasin.
-
 ### Yashirish
-
-Panel yonida yigʻish tugmasi turadi; yigʻilganda uning oʻrnida bitta
-ochish tugmasi qoladi. Toʻliq ekran rejimi buni almashtira olmaydi —
-u brauzer qobigʻini olib tashlaydi, panel esa baribir joyida.
 
 ⚠️ Holat **store'da emas**, oddiy React holati — yaʼni saqlanmaydi.
 Yashirish dars paytiga tegishli qaror («hozir sinf ekranga qarasin»),
@@ -232,9 +311,9 @@ qolib ketadi. Ikkalasi `SelectionOverlay` dan yonma-yon qaytariladi.
 
 ### Nima qoʻyilmaydi
 
-«Sozlamalar» tugmasi **hozircha yoʻq** — vidjetlarning oʻz sozlama
-oynasi yoʻq, boʻsh oyna ochadigan tugma esa yoʻqidan yomon. U vidjet
-sozlamalari qurilganda qoʻshiladi.
+«Sozlash» faqat sozlamasi bor vidjetda chiqadi (`hasSettings`) — boʻsh
+karta ochadigan tugma yoʻqidan yomon. «Oldinga chiqarish» ham yoʻq:
+vidjetni bosishning oʻzi uni oldinga chiqaradi.
 
 ---
 
@@ -274,15 +353,30 @@ umumiy.
 
 ## 3. Vidjet kartochkasi (kanvasda)
 
-Panel jim, vidjet esa jonli — bu yerda `playful` ohang toʻliq ishlaydi.
+Vidjet `.doska-card` klassini va `data-card="{tus}"` ni qoʻyadi —
+qolgani uslubdan. Tuslar: `blue` (soat), `amber` (taymer), `slate`
+(svetofor, taqdimot), `teal` (gʻildirak), `note` (yopishqoq qogʻoz),
+`done` (tugagan taymer).
 
-| Element | Qiymat |
-|---|---|
-| Radius | `--radius` (playful ohangda 20px) |
-| Fon | `--doska-{tus}-bg` |
-| Matn | `--doska-{tus}-fg` |
-| Chuqurlik | `0 4px 0 --doska-{tus}-edge` — ofset soya, blur yoʻq |
-| Matn oʻlchami | `clamp(2rem, 24cqw, 6rem)` — konteynerga bogʻliq |
+| Element | Token | Sokin | Oʻyinchoq | Doska |
+|---|---|---|---|---|
+| Fon / matn | `--doska-{tus}-bg` / `-fg` | toʻyingan / oq | och / siyoh | qogʻoz / siyoh |
+| Urgʻu | `--doska-{tus}-accent` → `--card-accent` | oq | siyoh | magnit tusi |
+| Radius | `--doska-card-radius` | 18 | 26 | 10 |
+| Kontur | `--doska-card-line(-width)` | 1 px yorugʻ | 3 px siyoh | 1 px siyoh/14% |
+| Soya | `--doska-card-shadow` | yumshoq | `0 6px 0` siyoh | yumshoq, chuqurroq |
+| Magnit | `--doska-card-magnet` | yoʻq | yoʻq | `::before`, `--card-accent` |
+
+- **Raqamlar** (taymer, soat) — `<Digits>`: uslub shriftida, har raqam
+  `1ch` qutida. Uslub shriftlari proporsional va «1» torroq — busiz
+  vaqt har soniya chayqalardi.
+- **Taymer diski** `--card-accent` bilan chiziladi: Sokinda oq,
+  Oʻyinchoqda siyoh, Doskada magnit tusi.
+- **Idishsiz matn** (matn vidjeti, shakl) — `.doska-ink`: siyoh, toʻq
+  fonda boʻr (§4); qalinlik `--doska-text-weight`.
+- **Yopishqoq qogʻoz** hamma uslubda qogʻoz (jismoniy narsa). Svetofor
+  chiroqlari va gʻildirak ham jismoniy — uslubdan qatʼi nazar bir xil.
+- Matn oʻlchami `cqw` da — konteynerga bogʻliq, uslubga emas.
 
 ### Rang qayerdan keladi
 
@@ -291,7 +385,7 @@ Panel jim, vidjet esa jonli — bu yerda `playful` ohang toʻliq ishlaydi.
 | Tur | Vazifa | Manba |
 |---|---|---|
 | **Vidjet tusi** | identifikatsiya — qaysi vidjet qayerda | `class-colors.ts` (17 rang) |
-| **Brend rangi** | harakat, faol holat, tanlov | `[data-product="doska"]` → yashil |
+| **Brend rangi** | harakat, faol holat, tanlov | `html[data-product="doska"]` (`products.css`) → yashil-firuza |
 
 **Tus semantik emas, ajratuvchi.** Soat koʻk, taymer sariq, svetofor
 qizil. Maqsad: 5 metrdan qaysi vidjet qayerdaligini **rang boʻyicha**
@@ -300,8 +394,14 @@ tanish. Yangi vidjetga qoʻshni vidjetdan farq qiladigan tus beriladi
 
 ⚠️ **Yangi palitra ixtiro qilinmaydi.** [`class-colors.ts`](../src/lib/class-colors.ts)
 da 17 rang bor va ularning idrok yorqinligi (L) bir diapazonda
-kalibrlangan — yaʼni ular bir oilaga oʻxshaydi. Xom OKLCH yozish oʻsha
-kalibrovkani buzadi.
+kalibrlangan — yaʼni ular bir oilaga oʻxshaydi. Panel ikonalari shu
+qiymatlarni oʻzgarishsiz oladi (`tint.ts`).
+
+Vidjet kartasining tuslari esa `doska.css` da: tus (hue) palitradan,
+yorqinlik esa uslubga koʻra matn kontrasti uchun tanlangan — Sokinda
+oq matn ostida toʻqroq, Oʻyinchoqda siyoh ostida ochroq. Bu qiymatlar
+proyektor sinovi bilan qulflangan (§1); ularni oʻzgartirgandan keyin
+`node scripts/doska-projector-check.mjs` yashil boʻlishi shart.
 
 ⚠️ **Brend yashili tus sifatida ishlatilmaydi.** Agar yashil vidjetlar
 orasida boʻlsa, faol holat belgisi (ham yashil) ular bilan qoʻshilib
@@ -397,8 +497,10 @@ Shakl allaqachon band: **doira = sinf** (`ClassSwatch`), shuning uchun
 **yumaloq kvadrat = vosita/boʻlim**.
 
 Toʻyingan (toʻliq rangli) idish + oq ikona faqat **≥40px** da: landing
-mahsulot kartochkalari, ilova plitkalari. Panelga hech qachon — u yashil
-brend rangining kuchini yeb qoʻyadi.
+mahsulot kartochkalari, ilova plitkalari. Doska panelida — faqat
+**Oʻyinchoq** uslubida (plitka + siyoh ikona, §2), va bu oʻqituvchining
+ongli tanlovi; Sokin va Doskada panelga idish qoʻyilmaydi — u brend
+rangining kuchini yeb qoʻyadi.
 
 ### Oʻz ikonamizni chizish
 
@@ -442,23 +544,25 @@ sudrab belgilaydi.
 
 ---
 
-## 4. Fon va bo'r rejimi
+## 4. Fon va boʻr rejimi
 
 Fonlar sof CSS ([backgrounds.ts](../src/lib/doska/backgrounds.ts)) —
 rasm fayli yoʻq. Sabab: referenslar 100+ JPG saqlaydi (megabaytlar),
-ular projektorda pikselli chiqadi; CSS istalgan oʻlchamda toza.
+ular projektorda pikselli chiqadi; CSS istalgan oʻlchamda toza. Fon
+ekranga tegishli va uslubdan mustaqil — oʻqituvchi uni «Fon» bilan
+tanlaydi.
 
-Har fonning `tone` maydoni bor va u **render qarori**:
+Har fonning `tone` maydoni bor. `data-bg-tone="dark"` boʻlganda faqat
+**idishsiz matn** oʻzgaradi: `--doska-ink` siyohdan boʻrga oʻtadi
+(Doska uslubida sal nurlanadi — `--doska-chalk-shadow`). Aks holda matn
+vidjeti toʻq doskada koʻrinmay qolardi.
 
-| `tone` | Vidjet koʻrinishi |
-|---|---|
-| `light` | toʻyingan rangli kartochka (standart) |
-| `dark` | deyarli shaffof fon + bo'r rangidagi matn |
-
-Toʻq doska ustida rangli kartochka «yopishtirilgan stikerdek» begona
-koʻrinadi. Shuning uchun `data-bg-tone="dark"` boʻlganda `--doska-*`
-tuslari qayta belgilanadi (globals.css) — **vidjet komponentlari bundan
-bexabar**, ular baribir `var(--doska-*-bg)` ni oʻqiydi.
+⚠️ Ilgari toʻq fonda vidjet kartalari ham deyarli shaffof boʻlib
+ketardi («yopishtirilgan stiker» boʻlmasin deb). Endi bunday emas: har
+uslubning kartasi (toʻyingan blok, rangli plitka, qogʻoz) toʻq fonda
+ham oʻzi ajralib turadi, shaffof karta esa proyektorda yuvilib ketardi
+(A9, R324). Komponentlar bu haqda bilmaydi — ular `var(--doska-ink)`
+ni oʻqiydi.
 
 ---
 
@@ -481,7 +585,9 @@ Vidjetlar bir-birining ustiga chiqadi; tartib chalkashsa tuzatish qiyin
 
 Raqamlar referensdan olingan — ular oʻzboshimcha koʻrinadi,
 lekin katta oraliq **ataylab**: orasiga yangi qatlam qoʻshish kerak
-boʻlsa, hech narsani qayta raqamlash shart emas.
+boʻlsa, hech narsani qayta raqamlash shart emas. Tokenlar
+[`doska.css`](../src/styles/doska.css) da, hosil qilinganlari
+`lib/doska/layers.ts` da.
 
 ---
 
@@ -501,17 +607,26 @@ naqshi](./design-system.md)) — Doskada ham shu, `md:`/`lg:` emas.
 
 ## 7. Nima QILINMAYDI
 
-- **Panel YUZASIGA rang berilmaydi** — fon, chegara, hover neytral;
-  rang faqat ikonaning oʻzida (§1)
-- **Yangi rang ixtiro qilinmaydi** — palitra `src/lib/class-colors.ts` dan (§3)
-- **Brend yashili vidjet tusi sifatida ishlatilmaydi** — u faqat harakat
+- **Komponent uslubni bilmaydi** — `if (style === "oyinchoq")` yoʻq;
+  farq faqat `doska.css` tokenlarida (§1)
+- **Uslub blokida avlod selektori yoʻq** — faqat token (§1, qoida 1)
+- **Material klassi qoʻyilgan elementga fon/radius/chegara/soya
+  utilitasi yozilmaydi** — qatlamsiz klass uni baribir yengadi (§1)
+- **Sokin va Doskada panel yuzasiga rang berilmaydi** — rang faqat
+  ikonada; Oʻyinchoq bundan ongli istisno (§1)
+- **Yangi rang ixtiro qilinmaydi** — tus `class-colors.ts` dan,
+  kartadagi yorqinlik proyektor sinovi bilan (§3)
+- **Brend rangi vidjet tusi sifatida ishlatilmaydi** — u faqat harakat
   va faol holat uchun (§3)
 - **Vidjet ichida `--spacing` ga tayanilmaydi** — `cqw` ishlatiladi, §3
-- **Blur soya yoʻq** — faqat ofset (`0 4px 0`); blur `playful` ohangda
-  iflos koʻrinadi va projektorda umuman bilinmaydi
+- **Soya maʼlumot tashimaydi** — uslub bezagi (Oʻyinchoqda ofset,
+  Sokin va Doskada yumshoq); proyektorda ajratishni kontur va kontrast
+  beradi, soya yuviladi
 - **Fon uchun JPG qoʻshilmaydi** — §4. Foydalanuvchi oʻz rasmini
   yuklashi mumkin boʻladi, lekin katalog CSS boʻlib qoladi
 - **Vidjet primitivlari fork qilinmaydi** — `<Button>` va boshqalar
   umumiy tizimdan; Doskaga xos boʻlgani domen komponenti sifatida
   `src/components/doska/` da yashaydi ([component-token-layer
   qoidasi](./design-system.md))
+- **Ikkinchi ikona oilasi yoʻq** — Doskada faqat Solar (`icons.tsx`);
+  lucide Doskadan butunlay chiqarildi (A12)

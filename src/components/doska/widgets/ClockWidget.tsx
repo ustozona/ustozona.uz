@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { useDoskaStore } from "@/lib/doska/store";
 import type { DoskaWidget } from "@/lib/doska/types";
 import { SettingsSection, SettingsSwitch } from "../SettingsFields";
+import { Digits } from "./Digits";
 
 /**
  * SOAT — joriy vaqt.
@@ -32,22 +33,13 @@ export function ClockWidget({ widget }: { widget: DoskaWidget }) {
     : "";
 
   return (
-    <div
-      className="grid size-full place-items-center rounded-[var(--radius)] px-4"
-      style={{
-        background: "var(--doska-blue-bg)",
-        color: "var(--doska-blue-fg)",
-        boxShadow: "0 4px 0 var(--doska-blue-edge)",
-      }}
-    >
-      <span
-        className="font-mono leading-none font-medium tabular-nums"
+    <div className="doska-card grid size-full place-items-center px-4" data-card="blue">
+      <Digits
+        text={text}
         // Yuqori chegara katta: «Markazga» rejimida soat butun ekranga
         // kattalashadi va raqam u bilan oʻsishi kerak.
         style={{ fontSize: "clamp(2rem, 26cqw, 30rem)" }}
-      >
-        {text}
-      </span>
+      />
     </div>
   );
 }

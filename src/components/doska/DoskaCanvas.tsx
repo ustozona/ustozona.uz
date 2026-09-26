@@ -24,8 +24,8 @@ import { WIDGET_COMPONENTS } from "./widgets";
  * `zIndex` hal qiladi (WidgetFrame'da), shuning uchun qayta tartiblash
  * render sabab boʻlmaydi.
  *
- * `data-bg-tone` — toʻq fonda vidjet tuslarini «bo'r rejimi»ga
- * oʻtkazadi (globals.css). Vidjetlar bu haqda bilmaydi.
+ * `data-bg-tone` — toʻq fonda idishsiz matnni siyohdan boʻrga
+ * oʻtkazadi (src/styles/doska.css). Vidjetlar bu haqda bilmaydi.
  */
 export function DoskaCanvas() {
   const screen = useActiveScreen();
@@ -91,7 +91,7 @@ function SpotlightScrim() {
       <button
         type="button"
         onClick={() => setSpotlight(null)}
-        className="doska-bar bg-background text-foreground hover:bg-muted absolute bottom-4 left-1/2 flex h-11 -translate-x-1/2 items-center gap-2 rounded-full border px-5 text-sm font-medium shadow-md transition-colors"
+        className="doska-bar doska-ctl absolute bottom-4 left-1/2 flex h-12 -translate-x-1/2 items-center gap-2 px-5 text-sm font-medium transition-colors"
         style={{ zIndex: Z_SPOTLIGHT_EXIT }}
       >
         <IconSpotlightExit className="size-5" />

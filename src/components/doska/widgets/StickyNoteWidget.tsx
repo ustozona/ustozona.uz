@@ -11,9 +11,9 @@ import { EditableText } from "./EditableText";
  * yopishqoq esa doskaga YOPISHTIRILGAN narsa. Oʻqituvchi ikkisini
  * ajratib ishlatadi: sarlavha yoziladi, qoida yopishtiriladi.
  *
- * ⚠️ Rangi bo'r rejimida oʻzgarmaydi (globals.css dagi
- * `--doska-note-*` toʻq fon override'iga KIRMAYDI) — svetofor
- * chiroqlari bilan bir qatorda, u JISMONIY obyekt. Qogʻoz yashil
+ * ⚠️ Hamma uslubda QOGʻOZ va toʻq fonda ham oʻzgarmaydi
+ * (src/styles/doska.css, `--doska-note-*`) — svetofor chiroqlari
+ * bilan bir qatorda, u JISMONIY obyekt. Qogʻoz yashil
  * doskada ham qogʻoz boʻlib qolaveradi; shaffof boʻlsa metafora
  * yoʻqoladi va u oddiy matnga aylanadi.
  *
@@ -23,12 +23,8 @@ import { EditableText } from "./EditableText";
 export function StickyNoteWidget({ widget }: { widget: DoskaWidget }) {
   return (
     <div
-      className="size-full rounded-[var(--radius)] px-[7cqw] py-[6cqw]"
-      style={{
-        background: "var(--doska-note-bg)",
-        color: "var(--doska-note-fg)",
-        boxShadow: "0 4px 0 var(--doska-note-edge)",
-      }}
+      className="doska-card size-full px-[7cqw] py-[6cqw]"
+      data-card="note"
     >
       <EditableText
         widget={widget}

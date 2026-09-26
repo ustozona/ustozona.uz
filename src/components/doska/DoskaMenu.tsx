@@ -8,15 +8,27 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { screenHasLocked, useDoskaStore } from "@/lib/doska/store";
 import { barIconButtonClass } from "./BarGroup";
+import { DoskaAppearance } from "./DoskaAppearance";
 import { ProBadge } from "./ProBadge";
 import { playBell } from "./sounds";
-import { IconMenu, IconTrash, IconAdd, IconHome, IconUsers, IconBell, IconCurtain } from "./icons";
+import {
+  IconMenu,
+  IconTrash,
+  IconAdd,
+  IconHome,
+  IconUsers,
+  IconBell,
+  IconCurtain,
+  IconPalette,
+  IconArrowRight,
+} from "./icons";
 
 /* ════════════════════════════════════════════════════════════════════
    DOSKA MENYUSI — pastki oʻng guruhdagi ⋮ tugmasi.
 
    Tuzilma: sarlavha + holat belgisi → sinf eʼtibori (parda, qoʻngʻiroq)
-   → ekran amallari → pastda taklif kartochkasi.
+   → «Koʻrinish» (uslub, panel joyi — menyu ichida ochiladi) → ekran
+   amallari → pastda taklif kartochkasi.
 
    Parda va qoʻngʻiroq klaviaturada `1` va `2`, lekin asosiy qurilma
    sensorli doska — shuning uchun ular menyuda ham bor (tugmasiz amal
@@ -51,6 +63,8 @@ export function DoskaMenu() {
   const t = useTranslations("Doska.bar");
   const tm = useTranslations("Doska.menu");
   const [open, setOpen] = React.useState(false);
+  /** Menyu ichidagi boʻlim. Yopilganda doim bosh roʻyxatga qaytadi. */
+  const [view, setView] = React.useState<"main" | "appearance">("main");
 
   const screenCount = deck.screens.length;
   /** Amal bajarilgach menyu yopiladi — natija (parda, xabar) koʻrinsin. */
@@ -60,11 +74,17 @@ export function DoskaMenu() {
   };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover
+      open={open}
+      onOpenChange={(next) => {
+        setOpen(next);
+        if (!next) setView("main");
+      }}
+    >
       <PopoverTrigger asChild>
         {/* Idish yoʻq — tugma `DoskaShell` dagi guruh ichida turadi. */}
         <button type="button" aria-label={t("menu")} className={barIconButtonClass}>
-          <IconMenu className="size-5" />
+          <IconMenu className="size-6" />
         </button>
       </PopoverTrigger>
 
@@ -72,74 +92,88 @@ export function DoskaMenu() {
         align="end"
         side="top"
         sideOffset={8}
-        className="doska-bar w-72 p-0"
+        collisionPadding={12}
+        className="doska-bar doska-sheet max-h-[calc(100vh-6rem)] w-80 overflow-y-auto overscroll-contain p-0"
         style={{ zIndex: "var(--z-doska-context)" }}
       >
-        {/* ── Sarlavha ── */}
-        <div className="flex flex-col gap-1.5 border-b px-4 py-3">
-          <div className="flex items-start justify-between gap-3">
-            <input
-              value={deck.title}
-              onChange={(e) => renameDeck(e.target.value)}
-              aria-label={tm("deckName")}
-              className="focus-visible:ring-ring/50 -mx-1.5 min-w-0 flex-1 rounded-md px-1.5 py-0.5 text-sm font-medium focus-visible:ring-2 focus-visible:outline-none"
-            />
-            <span className="bg-warning/15 text-warning-foreground shrink-0 rounded-full px-2 py-0.5 text-tag font-medium">
-              {tm("unsaved")}
-            </span>
+        {view === "appearance" ? (
+          <DoskaAppearance onBack={() => setView("main")} />
+        ) : (
+          <>
+          {/* ── Sarlavha ── */}
+          <div className="flex flex-col gap-1.5 border-b px-4 py-3">
+            <div className="flex items-start justify-between gap-3">
+              <input
+                value={deck.title}
+                onChange={(e) => renameDeck(e.target.value)}
+                aria-label={tm("deckName")}
+                className="focus-visible:ring-ring/50 -mx-1.5 min-w-0 flex-1 rounded-md px-1.5 py-0.5 text-sm font-medium focus-visible:ring-2 focus-visible:outline-none"
+              />
+              <span className="bg-warning/15 text-warning-foreground shrink-0 rounded-full px-2 py-0.5 text-tag font-medium">
+                {tm("unsaved")}
+              </span>
+            </div>
+            <p className="text-muted-foreground text-xs">{tm("localOnly", { n: screenCount })}</p>
           </div>
-          <p className="text-muted-foreground text-xs">{tm("localOnly", { n: screenCount })}</p>
-        </div>
 
-        {/* ── Sinf eʼtibori ── */}
-        <div className="border-b py-1">
-          <MenuItem Icon={IconCurtain} shortcut="1" onClick={run(() => setCurtain(true))}>
-            {tm("curtain")}
-          </MenuItem>
-          <MenuItem Icon={IconBell} shortcut="2" onClick={() => playBell()}>
-            {tm("bell")}
-          </MenuItem>
-        </div>
-
-        {/* ── Amallar ── */}
-        <div className="py-1">
-          <MenuItem Icon={IconAdd} onClick={run(addScreen)}>
-            {tm("newScreen")}
-          </MenuItem>
-          <MenuItem Icon={IconUsers} pro>
-            {tm("connectClass")}
-          </MenuItem>
-          <MenuItem Icon={IconTrash} onClick={run(clearScreen)}>
-            {tm("clearScreen")}
-          </MenuItem>
-          {screenCount > 1 && (
-            <MenuItem
-              Icon={IconTrash}
-              disabled={screenLocked}
-              hint={screenLocked ? tm("removeScreenLocked") : undefined}
-              onClick={run(() => removeScreen(activeScreenId))}
-            >
-              {tm("removeScreen")}
+          {/* ── Sinf eʼtibori ── */}
+          <div className="border-b py-1">
+            <MenuItem Icon={IconCurtain} shortcut="1" onClick={run(() => setCurtain(true))}>
+              {tm("curtain")}
             </MenuItem>
-          )}
-
-          <hr className="mx-4 my-1" />
-
-          <MenuItem Icon={IconHome} href="/">
-            {t("home")}
-          </MenuItem>
-        </div>
-
-        {/* ── Taklif ── */}
-        <div className="p-3 pt-1">
-          <div className="bg-accent flex flex-col gap-1.5 rounded-[calc(var(--radius)/1.4)] p-3">
-            <p className="text-accent-foreground text-sm font-medium">{tm("promoTitle")}</p>
-            <p className="text-accent-foreground/80 text-xs leading-relaxed">{tm("promoBody")}</p>
-            <Button asChild size="sm" className="mt-1.5 w-full">
-              <Link href="/register">{tm("promoCta")}</Link>
-            </Button>
+            <MenuItem Icon={IconBell} shortcut="2" onClick={() => playBell()}>
+              {tm("bell")}
+            </MenuItem>
           </div>
-        </div>
+
+          {/* ── Koʻrinish ── */}
+          <div className="border-b py-1">
+            <MenuItem Icon={IconPalette} next onClick={() => setView("appearance")}>
+              {tm("appearance")}
+            </MenuItem>
+          </div>
+
+          {/* ── Amallar ── */}
+          <div className="py-1">
+            <MenuItem Icon={IconAdd} onClick={run(addScreen)}>
+              {tm("newScreen")}
+            </MenuItem>
+            <MenuItem Icon={IconUsers} pro>
+              {tm("connectClass")}
+            </MenuItem>
+            <MenuItem Icon={IconTrash} onClick={run(clearScreen)}>
+              {tm("clearScreen")}
+            </MenuItem>
+            {screenCount > 1 && (
+              <MenuItem
+                Icon={IconTrash}
+                disabled={screenLocked}
+                hint={screenLocked ? tm("removeScreenLocked") : undefined}
+                onClick={run(() => removeScreen(activeScreenId))}
+              >
+                {tm("removeScreen")}
+              </MenuItem>
+            )}
+
+            <hr className="mx-4 my-1" />
+
+            <MenuItem Icon={IconHome} href="/">
+              {t("home")}
+            </MenuItem>
+          </div>
+
+          {/* ── Taklif ── */}
+          <div className="p-3 pt-1">
+            <div className="bg-accent flex flex-col gap-1.5 rounded-[calc(var(--radius)/1.4)] p-3">
+              <p className="text-accent-foreground text-sm font-medium">{tm("promoTitle")}</p>
+              <p className="text-accent-foreground/80 text-xs leading-relaxed">{tm("promoBody")}</p>
+              <Button asChild size="sm" className="mt-1.5 w-full">
+                <Link href="/register">{tm("promoCta")}</Link>
+              </Button>
+            </div>
+          </div>
+          </>
+        )}
       </PopoverContent>
     </Popover>
   );
@@ -156,6 +190,7 @@ function MenuItem({
   pro = false,
   shortcut,
   hint,
+  next = false,
   ...props
 }: React.ComponentProps<"button"> & {
   Icon: React.ComponentType<{ className?: string }>;
@@ -166,6 +201,8 @@ function MenuItem({
   shortcut?: string;
   /** Band ostidagi izoh — masalan nega nofaol ekani. */
   hint?: string;
+  /** Band menyu ichida yangi boʻlim ochadi — oʻngda strelka. */
+  next?: boolean;
 }) {
   const inner = (
     <>
@@ -180,6 +217,7 @@ function MenuItem({
           {shortcut}
         </kbd>
       )}
+      {next && <IconArrowRight className="text-muted-foreground size-4 shrink-0" />}
     </>
   );
 

@@ -1,11 +1,10 @@
 /* ════════════════════════════════════════════════════════════════════
    DOSKA Z-QATLAMLARI — «Markazga» va parda.
 
-   Asosiy qatlamlar `globals.css` da (`--z-doska-*`, docs/doska-dizayn-
-   tizimi.md §5). Bu ikkitasi ATAYLAB oʻsha umumiy faylga qoʻshilmadi —
-   ular mavjud tokenlardan HOSIL qilinadi, shuning uchun markaziy fayl
-   tahrirlanmaydi (AGENTS.md, git tartibi 5-qoida), tartib esa
-   baribir bir joydan boshqariladi:
+   Asosiy qatlamlar `src/styles/doska.css` da (`--z-doska-*`,
+   docs/doska-dizayn-tizimi.md §5). Bu ikkitasi mavjud tokenlardan HOSIL
+   qilinadi — yangi raqam kiritilmaydi va tartib baribir bir joydan
+   boshqariladi:
 
      … panel 1000100 · kontekst 1000105 · yuqori 1000110
      «Markazga»: parda top+10 · vidjet top+11 · chiqish tugmasi top+12

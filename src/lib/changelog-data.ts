@@ -36,6 +36,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "doska-uslublar",
+    date: "2026-09-25",
+    type: "yangi",
+    title: "Doskaga oʻzingizga yoqqan uslubni tanlang va panelni oʻzingiz tuzing",
+    body:
+      "Menyudagi «Koʻrinish»da uchta uslubdan birini tanlang: «Sokin» — proyektorda eng aniq, «Oʻyinchoq» — kichik sinflar uchun quvnoq va rangli, «Doska» — yashil doskadagi qogʻoz va magnitlar. Panelni pastda, chap yoki oʻng chetda qoldirish mumkin — interaktiv doska yonida turib ishlasangiz qulay. Kerakli vositalarni «Hammasi» oynasidan panelga qadab qoʻying, qolganlari oʻsha oynada turadi.",
+    href: "/doska",
+  },
+  {
     id: "doska-qulay-boshqaruv",
     date: "2026-09-25",
     type: "yangi",

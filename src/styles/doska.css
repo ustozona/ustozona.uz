@@ -1,0 +1,572 @@
+/* ════════════════════════════════════════════════════════════════════
+   DOSKA — sinf ekranining tokenlari va uchta vizual uslubi.
+
+   Hujjat: docs/doska-dizayn-tizimi.md §1 (uslublar), §2 (boshqaruv),
+   §3 (vidjet kartasi); qarorlar — docs/doska-ux-tadqiqot.md Q1.
+
+   UCH USLUB, oʻqituvchi tanlaydi (`lib/doska/prefs.ts`):
+     • Sokin    — standart. Grafit boshqaruv, toʻyingan bir tekis vidjet,
+                  oq matn. Proyektorda eng aniq.
+     • Oʻyinchoq — qalin siyoh kontur, qattiq soya, rangli plitkalar.
+                  «Panel jim» qoidasini ATAYLAB buzadi — oʻqituvchi oʻzi
+                  tanlaydi (1–6-sinf).
+     • Doska    — qogʻoz vidjet + magnit; tus faqat magnitda.
+
+   Uslub = FAQAT shu fayldagi tokenlar. Joylashuv, nishon oʻlchami,
+   sozlama naqshi, xatti-harakat, yozuvlar uslubga KIRMAYDI — ular
+   hammada bir xil (Q1). Komponentlar qaysi uslub yoqilganini BILMAYDI:
+   ular `.doska-card`, `.doska-ctl`, `.doska-sheet` kabi klasslarni
+   qoʻyadi va `var(--doska-…)` ni oʻqiydi.
+
+   ⚠️ QOIDA 1 — uslub bloki faqat TOKEN (custom property) eʼlon qiladi.
+   `[data-doska-style="x"] .foo { … }` kabi avlod selektorlari YOZILMAYDI.
+   Sabab: «Koʻrinish» panelidagi namunalar ichma-ich `data-doska-style`
+   bilan chiziladi. Avlod selektori boʻlsa, sahifa «Oʻyinchoq»da turganda
+   «Sokin» namunasiga ham oʻyinchoq qoidasi tushardi; token esa eng
+   yaqin ota-elementdan olinadi va namuna toʻgʻri chiqadi.
+
+   ⚠️ QOIDA 2 — har uslub bloki BARCHA tokenlarni eʼlon qiladi, keraksizini
+   `initial` bilan. Aks holda ichma-ich namunada yuqoridagi uslubning
+   qiymati «oqib» tushadi.
+
+   ⚠️ QOIDA 3 — token ichidagi `var()` TOKEN EʼLON QILINGAN elementda
+   hisoblanadi. Shuning uchun vidjetga xos qiymat (masalan `--card-accent`)
+   uslub blokida ishlatilmaydi — u faqat `.doska-card` qoidasida
+   birlashtiriladi. Shriftlar ham shu sababli: `--font-stage-*` klasslari
+   `<html>` ga qoʻyiladi (`DoskaShell`), uslub bloki ham `<html>` da.
+
+   Har uslub PROYEKTOR SINOVIDAN oʻtgan (R324): matn va fon juftligi
+   oddiy ekranda ≥ 4,5:1, yuvilgan proyektor simulyatsiyasida ≥ 3:1 —
+   `node scripts/doska-projector-check.mjs`.
+   ════════════════════════════════════════════════════════════════════ */
+
+/* ── SOKIN — standart ──────────────────────────────────────────────
+   `<html>` da atribut boʻlmasa ham shu uslub: server HTML, mehmon va
+   sozlamani hech qachon ochmagan 95% oʻqituvchi (R329). */
+html[data-product="doska"],
+[data-doska-style="sokin"] {
+  --doska-font: var(--font-stage-onest, var(--font-sans));
+  --doska-display-weight: 700;
+  --doska-text-weight: 600;
+  --doska-label-weight: 500;
+  --doska-ease: cubic-bezier(0.2, 0, 0, 1);
+
+  /* Idishsiz matn (matn vidjeti, shakl) — och fonda siyoh, toʻqda boʻr. */
+  --doska-ink: oklch(0.26 0.02 260);
+  --doska-chalk: oklch(0.97 0.01 260);
+  --doska-chalk-shadow: none;
+
+  /* Vidjet kartasi — toʻyingan bir tekis blok, ingichka yorugʻ chiziq
+     (toʻq fonda toʻq svetofor ham ajralib tursin), yumshoq soya. */
+  --doska-card-radius: 18px;
+  --doska-card-line-width: 1px;
+  --doska-card-line: oklch(1 0 0 / 0.16);
+  --doska-card-shadow: 0 12px 28px -14px oklch(0 0 0 / 0.55);
+  --doska-card-magnet: none;
+
+  --doska-blue-bg: oklch(0.52 0.16 255);
+  --doska-blue-fg: oklch(0.99 0 0);
+  --doska-blue-accent: oklch(0.99 0 0);
+  --doska-amber-bg: oklch(0.57 0.16 45);
+  --doska-amber-fg: oklch(0.99 0 0);
+  --doska-amber-accent: oklch(0.99 0 0);
+  --doska-slate-bg: oklch(0.27 0.02 260);
+  --doska-slate-fg: oklch(0.97 0.01 260);
+  --doska-slate-accent: oklch(0.97 0.01 260);
+  --doska-teal-bg: oklch(0.52 0.1 192);
+  --doska-teal-fg: oklch(0.99 0 0);
+  --doska-teal-accent: oklch(0.99 0 0);
+  /* Yopishqoq qogʻoz — hamma uslubda QOGʻOZ (jismoniy narsa). */
+  --doska-note-bg: oklch(0.91 0.07 350);
+  --doska-note-fg: oklch(0.32 0.1 350);
+  --doska-note-accent: oklch(0.32 0.1 350);
+  /* Tugagan taymer — rang + soʻz (R326). */
+  --doska-done-bg: oklch(0.55 0.21 27);
+  --doska-done-fg: oklch(0.99 0 0);
+  --doska-done-accent: oklch(0.99 0 0);
+
+  /* Boshqaruv materiali — grafit, butun boshqaruvda bitta. */
+  --doska-ctl-bg: oklch(0.22 0.012 250 / 0.94);
+  --doska-ctl-fg: oklch(0.99 0 0);
+  --doska-ctl-muted: oklch(0.8 0.01 250);
+  --doska-ctl-hover: oklch(1 0 0 / 0.1);
+  --doska-ctl-line: oklch(1 0 0 / 0.1);
+  --doska-ctl-line-width: 1px;
+  --doska-ctl-shadow: 0 10px 28px -8px oklch(0 0 0 / 0.45);
+  --doska-ctl-radius: 16px;
+  --doska-ctl-accent: oklch(0.78 0.12 186);
+  --doska-ctl-accent-fg: oklch(0.2 0.03 186);
+  --doska-ctl-danger: oklch(0.78 0.15 25);
+  /* Panel tugmasidagi plitka — Sokinda yoʻq, ikona oʻz tusida. */
+  --doska-tile-fill: 0;
+  --doska-tile-line-width: 0px;
+  --doska-tile-icon: initial;
+
+  /* Varaq — sozlama kartasi, menyu, tanlash oynalari. Tema bilan. */
+  --doska-sheet-bg: var(--popover);
+  --doska-sheet-fg: var(--popover-foreground);
+  --doska-sheet-muted: var(--muted-foreground);
+  --doska-sheet-hover: var(--muted);
+  --doska-sheet-divider: var(--border);
+  --doska-sheet-input: var(--input);
+  --doska-sheet-edge: var(--border);
+  --doska-sheet-line-width: 1px;
+  --doska-sheet-shadow: 0 18px 44px -12px oklch(0 0 0 / 0.42);
+  --doska-sheet-radius: 16px;
+
+  /* Tanlov — brend rangi; och va toʻq fonda ham koʻrinadi. */
+  --doska-sel-color: oklch(0.72 0.13 186);
+  --doska-sel-style: solid;
+  --doska-sel-offset: 4px;
+  --doska-handle-bg: oklch(1 0 0);
+  --doska-handle-line: oklch(0.55 0.13 186);
+  --doska-handle-radius: 50%;
+}
+
+/* ── OʻYINCHOQ ─────────────────────────────────────────────────────
+   Hamma narsa bitta siyoh bilan chizilgan: kontur, soya, ikona. Tus
+   yorqin va och — siyoh matn uning ustida 9:1 dan yuqori. */
+html[data-product="doska"][data-doska-style="oyinchoq"],
+[data-doska-style="oyinchoq"] {
+  --doska-font: var(--font-stage-nunito, var(--font-sans));
+  --doska-display-weight: 900;
+  --doska-text-weight: 800;
+  --doska-label-weight: 800;
+  --doska-ease: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --doska-ink: oklch(0.24 0.03 265);
+  --doska-chalk: oklch(0.98 0.01 95);
+  --doska-chalk-shadow: none;
+
+  --doska-card-radius: 26px;
+  --doska-card-line-width: 3px;
+  --doska-card-line: oklch(0.24 0.03 265);
+  --doska-card-shadow: 0 6px 0 0 oklch(0.24 0.03 265);
+  --doska-card-magnet: none;
+
+  --doska-blue-bg: oklch(0.82 0.1 240);
+  --doska-blue-fg: oklch(0.24 0.03 265);
+  --doska-blue-accent: oklch(0.24 0.03 265);
+  --doska-amber-bg: oklch(0.85 0.15 82);
+  --doska-amber-fg: oklch(0.24 0.03 265);
+  --doska-amber-accent: oklch(0.24 0.03 265);
+  --doska-slate-bg: oklch(0.3 0.03 265);
+  --doska-slate-fg: oklch(0.99 0 0);
+  --doska-slate-accent: oklch(0.99 0 0);
+  --doska-teal-bg: oklch(0.85 0.1 178);
+  --doska-teal-fg: oklch(0.24 0.03 265);
+  --doska-teal-accent: oklch(0.24 0.03 265);
+  --doska-note-bg: oklch(0.88 0.09 350);
+  --doska-note-fg: oklch(0.24 0.03 265);
+  --doska-note-accent: oklch(0.24 0.03 265);
+  --doska-done-bg: oklch(0.56 0.21 27);
+  --doska-done-fg: oklch(0.99 0 0);
+  --doska-done-accent: oklch(0.99 0 0);
+
+  --doska-ctl-bg: oklch(0.99 0 0);
+  --doska-ctl-fg: oklch(0.24 0.03 265);
+  --doska-ctl-muted: oklch(0.4 0.03 265);
+  --doska-ctl-hover: oklch(0.95 0.05 95);
+  --doska-ctl-line: oklch(0.24 0.03 265);
+  --doska-ctl-line-width: 3px;
+  --doska-ctl-shadow: 0 5px 0 0 oklch(0.24 0.03 265);
+  --doska-ctl-radius: 22px;
+  --doska-ctl-accent: oklch(0.55 0.13 186);
+  --doska-ctl-accent-fg: oklch(0.99 0 0);
+  --doska-ctl-danger: oklch(0.55 0.21 27);
+  /* Rangli plitka + siyoh ikona. Oq ikona och tusda (sariq, yashil)
+     oʻqilmasdi — siyoh har tusda aniq. */
+  --doska-tile-fill: 1;
+  --doska-tile-line-width: 2.5px;
+  --doska-tile-icon: oklch(0.24 0.03 265);
+
+  --doska-sheet-bg: oklch(0.99 0 0);
+  --doska-sheet-fg: oklch(0.24 0.03 265);
+  --doska-sheet-muted: oklch(0.42 0.03 265);
+  --doska-sheet-hover: oklch(0.95 0.05 95);
+  --doska-sheet-divider: oklch(0.24 0.03 265 / 0.15);
+  --doska-sheet-input: oklch(0.85 0.02 265);
+  --doska-sheet-edge: oklch(0.24 0.03 265);
+  --doska-sheet-line-width: 3px;
+  --doska-sheet-shadow: 0 6px 0 0 oklch(0.24 0.03 265);
+  --doska-sheet-radius: 22px;
+
+  --doska-sel-color: oklch(0.55 0.13 186);
+  --doska-sel-style: dashed;
+  --doska-sel-offset: 8px;
+  --doska-handle-bg: oklch(0.99 0 0);
+  --doska-handle-line: oklch(0.24 0.03 265);
+  --doska-handle-radius: 50%;
+}
+
+/* ── DOSKA — qogʻoz va magnit ──────────────────────────────────────
+   Vidjet — oq qogʻoz, siyoh matn; vidjet tusi faqat magnitda. Toʻq
+   (yashil/qora) doskada eng tabiiy. Matn vidjeti toʻq fonda boʻr kabi
+   sal nurlanadi. */
+html[data-product="doska"][data-doska-style="doska"],
+[data-doska-style="doska"] {
+  --doska-font: var(--font-stage-rubik, var(--font-sans));
+  --doska-display-weight: 700;
+  --doska-text-weight: 500;
+  --doska-label-weight: 500;
+  --doska-ease: cubic-bezier(0.2, 0, 0, 1);
+
+  --doska-ink: oklch(0.25 0.02 260);
+  --doska-chalk: oklch(0.96 0.01 90);
+  --doska-chalk-shadow: 0 0 2px oklch(1 0 0 / 0.45);
+
+  --doska-card-radius: 10px;
+  --doska-card-line-width: 1px;
+  --doska-card-line: oklch(0.25 0.02 260 / 0.14);
+  --doska-card-shadow: 0 10px 22px -6px oklch(0 0 0 / 0.45);
+  --doska-card-magnet: block;
+
+  --doska-blue-bg: oklch(0.975 0.012 90);
+  --doska-blue-fg: oklch(0.25 0.02 260);
+  --doska-blue-accent: oklch(0.6 0.16 255);
+  --doska-amber-bg: oklch(0.975 0.012 90);
+  --doska-amber-fg: oklch(0.25 0.02 260);
+  --doska-amber-accent: oklch(0.7 0.17 55);
+  --doska-slate-bg: oklch(0.975 0.012 90);
+  --doska-slate-fg: oklch(0.25 0.02 260);
+  --doska-slate-accent: oklch(0.5 0.02 260);
+  --doska-teal-bg: oklch(0.975 0.012 90);
+  --doska-teal-fg: oklch(0.25 0.02 260);
+  --doska-teal-accent: oklch(0.62 0.11 190);
+  --doska-note-bg: oklch(0.91 0.07 350);
+  --doska-note-fg: oklch(0.32 0.1 350);
+  --doska-note-accent: oklch(0.62 0.2 350);
+  --doska-done-bg: oklch(0.55 0.21 27);
+  --doska-done-fg: oklch(0.99 0 0);
+  --doska-done-accent: oklch(0.3 0.02 260);
+
+  --doska-ctl-bg: oklch(0.19 0.01 250 / 0.92);
+  --doska-ctl-fg: oklch(0.96 0.01 90);
+  --doska-ctl-muted: oklch(0.82 0.01 90);
+  --doska-ctl-hover: oklch(1 0 0 / 0.1);
+  --doska-ctl-line: oklch(1 0 0 / 0.12);
+  --doska-ctl-line-width: 1px;
+  --doska-ctl-shadow: 0 10px 24px -8px oklch(0 0 0 / 0.5);
+  --doska-ctl-radius: 18px;
+  --doska-ctl-accent: oklch(0.78 0.12 186);
+  --doska-ctl-accent-fg: oklch(0.2 0.03 186);
+  --doska-ctl-danger: oklch(0.8 0.14 25);
+  --doska-tile-fill: 0;
+  --doska-tile-line-width: 0px;
+  --doska-tile-icon: initial;
+
+  --doska-sheet-bg: oklch(0.975 0.012 90);
+  --doska-sheet-fg: oklch(0.25 0.02 260);
+  --doska-sheet-muted: oklch(0.45 0.02 260);
+  --doska-sheet-hover: oklch(0.25 0.02 260 / 0.07);
+  --doska-sheet-divider: oklch(0.25 0.02 260 / 0.12);
+  --doska-sheet-input: oklch(0.25 0.02 260 / 0.2);
+  --doska-sheet-edge: oklch(0.25 0.02 260 / 0.14);
+  --doska-sheet-line-width: 1px;
+  --doska-sheet-shadow: 0 18px 40px -10px oklch(0 0 0 / 0.45);
+  --doska-sheet-radius: 14px;
+
+  --doska-sel-color: oklch(0.72 0.13 186);
+  --doska-sel-style: dashed;
+  --doska-sel-offset: 8px;
+  --doska-handle-bg: oklch(0.975 0.012 90);
+  --doska-handle-line: oklch(0.25 0.02 260);
+  --doska-handle-radius: 4px;
+}
+
+/* ── Jismoniy ranglar — uslubdan QATʼIY NAZAR bir xil ──
+   Svetofor chirogʻi haqiqiy svetofor rangida; gʻildirak — jismoniy
+   obyekt (siyoh, gardish, ofset soya, gʻolib ostidagi parda). Boʻlak
+   ranglari `class-colors.ts` dan. Toʻq fonda ham qayta belgilanmaydi —
+   aks holda boʻlak ustidagi ism oq boʻlib och boʻlakda yoʻqolardi.
+
+   `html[data-doska-style]` ham — ichki navigatsiyada `data-product`
+   ni `ProductScopeSync` birinchi chizishdan KEYIN qoʻyadi, uslub
+   atributi esa undan oldin (DoskaShell). Busiz svetofor bir kadr
+   chiroqsiz chiqardi. */
+html[data-product="doska"],
+html[data-doska-style] {
+  --doska-light-red: oklch(0.62 0.23 27);
+  --doska-light-amber: oklch(0.8 0.16 80);
+  --doska-light-green: oklch(0.68 0.19 145);
+
+  --doska-wheel-ink: oklch(0.26 0.02 260);
+  --doska-wheel-rim: oklch(0.99 0 0);
+  --doska-wheel-edge: oklch(0.26 0.02 260 / 0.28);
+  --doska-wheel-scrim: oklch(0.2 0.02 260 / 0.45);
+}
+
+/* ── Boʻr rejimi ──
+   Toʻq fonda (yashil/qora doska) idishsiz matn siyohdan BOʻRGA oʻtadi —
+   aks holda u koʻrinmay qoladi. Vidjet kartalari endi oʻzgarmaydi: har
+   uslubning kartasi (toʻyingan blok, rangli plitka, qogʻoz) toʻq fonda
+   ham oʻzi ajralib turadi.
+
+   ⚠️ Komponentlar buni BILMAYDI — ular `var(--doska-ink)` ni oʻqiydi. */
+[data-bg-tone="dark"] {
+  --doska-ink: var(--doska-chalk);
+  --doska-ink-shadow: var(--doska-chalk-shadow);
+}
+
+/* ── Doska ikonalari — IERARXIK ranglash ──
+   Solar duotone SVGʼida ikki qatlam bor: `opacity=".5"` li massa va
+   usti detal. Ierarxik rejimda ikkalasi ham BITTA rang oladi, farq
+   faqat shaffoflikda (bitta tus, ikki shaffoflik).
+
+   ⚠️ Shu sababli bu yerda `opacity` ga TEGILMAYDI. U SVGʼning oʻz
+   atributi boʻlib qolaveradi. Buning amaliy foydasi: yangi ikona
+   qoʻshganda CSS bilan kelishish shart emas, va `opacity` qatlami
+   umuman boʻlmagan ikona ham buzilmaydi — u bir rangli boʻlib chiqadi.
+
+   ⚠️ Oldingi «palitra» rejimi (toʻq kontur + rangli ichki) ATAYLAB
+   olib tashlandi — sabablari src/lib/doska/tint.ts sarlavhasida va
+   docs/doska-dizayn-tizimi.md §3 da. Uni tiklashdan oldin oʻsha
+   yozuvni oʻqing.
+
+   `--doska-icon-tint` har tugmada inline beriladi (tint.ts orqali
+   class-colors.ts palitrasidan), shuning uchun qoida bitta va
+   universal. */
+.doska-icon {
+  fill: currentColor;
+}
+
+/* Tus berilganda ikona oʻsha tusda boʻladi; berilmaganda matn rangida
+   qoladi (toʻliq ekran, menyu tugmalari).
+
+   ⚠️ Bu qoida `.doska-tool-tile .doska-icon` (pastda, «Panel tugmasi»)
+   bilan bir xil xoslikda — u KEYIN turgani uchun yutadi. Tartibni
+   almashtirmang. */
+[data-icon-tinted] .doska-icon {
+  fill: var(--doska-icon-tint, currentColor);
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   MATERIALLAR — komponentlar faqat shu klasslarni qoʻyadi.
+
+   ⚠️ Qatlamsiz (unlayered): shadcn primitivlarining `rounded-md border
+   shadow-md` utilitalarini ataylab yengadi — aks holda popover «Oʻyinchoq»
+   da ham ingichka chegara bilan qolardi. Shu sababli bu klasslar
+   qoʻyilgan elementga radius/chegara/soya utilitasi YOZILMAYDI.
+   ════════════════════════════════════════════════════════════════════ */
+
+/* Butun Doska sahifasi — uslub shrifti. */
+.doska-root {
+  font-family: var(--doska-font);
+}
+
+/* ── Boshqaruv materiali: panel, kontekst panel, xabar ──
+   shadcn tokenlari shu yerda uslubdan qayta bogʻlanadi — ichidagi
+   `text-foreground`, `hover:bg-muted`, `bg-primary` oʻzgarishsiz
+   ishlayveradi va uslubni bilmaydi. */
+.doska-ctl {
+  --background: var(--doska-ctl-bg);
+  --foreground: var(--doska-ctl-fg);
+  --muted: var(--doska-ctl-hover);
+  --muted-foreground: var(--doska-ctl-muted);
+  --border: var(--doska-ctl-line);
+  --primary: var(--doska-ctl-accent);
+  --primary-foreground: var(--doska-ctl-accent-fg);
+  --destructive: var(--doska-ctl-danger);
+  --ring: var(--doska-ctl-accent);
+
+  background-color: var(--doska-ctl-bg);
+  color: var(--doska-ctl-fg);
+  border: var(--doska-ctl-line-width) solid var(--doska-ctl-line);
+  border-radius: var(--doska-ctl-radius);
+  box-shadow: var(--doska-ctl-shadow);
+}
+
+/* ── Varaq: sozlama kartasi, menyu, tanlash oynalari ── */
+.doska-sheet {
+  --popover: var(--doska-sheet-bg);
+  --popover-foreground: var(--doska-sheet-fg);
+  --background: var(--doska-sheet-bg);
+  --foreground: var(--doska-sheet-fg);
+  --card: var(--doska-sheet-bg);
+  --card-foreground: var(--doska-sheet-fg);
+  --muted: var(--doska-sheet-hover);
+  --muted-foreground: var(--doska-sheet-muted);
+  --border: var(--doska-sheet-divider);
+  --input: var(--doska-sheet-input);
+
+  font-family: var(--doska-font);
+  background-color: var(--doska-sheet-bg);
+  color: var(--doska-sheet-fg);
+  border: var(--doska-sheet-line-width) solid var(--doska-sheet-edge);
+  border-radius: var(--doska-sheet-radius);
+  box-shadow: var(--doska-sheet-shadow);
+}
+
+/* Telefonda sozlama kartasi pastki varaqqa aylanadi (Q2) — pastki
+   burchaklar ekran chetiga tegadi. */
+.doska-sheet[data-sheet] {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+/* ── Panel tugmasi (vosita) ──
+   Plitka Sokin va Doskada koʻrinmaydi (`--doska-tile-fill: 0`), ikona
+   oʻz tusida. Oʻyinchoqda plitka vosita tusida toʻladi, ikona siyohda.
+   Toʻldirish psevdo-elementda: `--doska-icon-tint` tugmaning OʻZIDA
+   (inline) eʼlon qilingan, uslub blokida uni ishlatib boʻlmaydi (qoida 3). */
+.doska-tool {
+  font-weight: var(--doska-label-weight);
+  transition-timing-function: var(--doska-ease);
+}
+
+.doska-tool-tile {
+  position: relative;
+  isolation: isolate;
+  border: var(--doska-tile-line-width) solid var(--doska-ctl-line);
+}
+
+.doska-tool-tile::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--doska-icon-tint, transparent);
+  opacity: var(--doska-tile-fill);
+}
+
+.doska-tool-tile .doska-icon {
+  fill: var(--doska-tile-icon, var(--doska-icon-tint, currentColor));
+}
+
+/* ── Vidjet kartasi ──
+   Komponent `data-card` bilan tusni aytadi; qolgani — uslubdan. */
+.doska-card {
+  --card-bg: var(--doska-slate-bg);
+  --card-fg: var(--doska-slate-fg);
+  --card-accent: var(--doska-slate-accent);
+
+  background: var(--card-bg);
+  color: var(--card-fg);
+  border-radius: var(--doska-card-radius);
+  box-shadow:
+    inset 0 0 0 var(--doska-card-line-width) var(--doska-card-line),
+    var(--doska-card-shadow);
+}
+
+.doska-card[data-card="blue"] {
+  --card-bg: var(--doska-blue-bg);
+  --card-fg: var(--doska-blue-fg);
+  --card-accent: var(--doska-blue-accent);
+}
+.doska-card[data-card="amber"] {
+  --card-bg: var(--doska-amber-bg);
+  --card-fg: var(--doska-amber-fg);
+  --card-accent: var(--doska-amber-accent);
+}
+.doska-card[data-card="teal"] {
+  --card-bg: var(--doska-teal-bg);
+  --card-fg: var(--doska-teal-fg);
+  --card-accent: var(--doska-teal-accent);
+}
+.doska-card[data-card="note"] {
+  --card-bg: var(--doska-note-bg);
+  --card-fg: var(--doska-note-fg);
+  --card-accent: var(--doska-note-accent);
+}
+.doska-card[data-card="done"] {
+  --card-bg: var(--doska-done-bg);
+  --card-fg: var(--doska-done-fg);
+  --card-accent: var(--doska-done-accent);
+}
+
+/* Magnit — faqat «Doska» uslubida (`--doska-card-magnet: block`).
+   Vidjet ramkasi (`WidgetFrame`) `absolute`, karta uni toʻliq
+   egallaydi — shuning uchun kartaga `position` kerak emas. */
+.doska-card::before {
+  content: "";
+  display: var(--doska-card-magnet);
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  z-index: 1;
+  width: 26px;
+  height: 26px;
+  translate: -50% 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 32%, oklch(1 0 0 / 0.9) 0 14%, var(--card-accent) 42%);
+  box-shadow: 0 3px 5px oklch(0 0 0 / 0.4);
+  pointer-events: none;
+}
+
+/* Idishsiz matn — matn vidjeti va shakl. */
+.doska-ink {
+  color: var(--doska-ink);
+  font-weight: var(--doska-text-weight);
+  text-shadow: var(--doska-ink-shadow, none);
+}
+
+/* ── Raqamlar — taymer va soat ──
+   Uslub shriftida. Har raqam `1ch` qutida (`Digits`): proporsional
+   shriftda «1» torroq va vaqt har soniya chayqalardi. */
+.doska-digits {
+  font-family: var(--doska-font);
+  font-weight: var(--doska-display-weight);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+.doska-digits [data-digit] {
+  display: inline-block;
+  width: 1ch;
+  text-align: center;
+}
+
+/* ── Tanlov chegarasi va tutqichlar ── */
+.doska-selection {
+  border-radius: var(--doska-card-radius);
+  outline: 3px var(--doska-sel-style) var(--doska-sel-color);
+  outline-offset: var(--doska-sel-offset);
+}
+
+.doska-handle {
+  background: var(--doska-handle-bg);
+  border: 3px solid var(--doska-handle-line);
+  border-radius: var(--doska-handle-radius);
+}
+
+/* Doska teksturasi — SVG shovqin, ~200 bayt data-URI (rasm fayli emas). */
+.doska-grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+}
+
+/* ── Z-qatlamlar (docs/doska-dizayn-tizimi.md §5) ──
+   Vidjetlar bir-birining ustiga chiqadi; tartib chalkashsa tuzatish
+   qiyin. Oraliq katta — orasiga yangi qatlam qoʻshishda hech narsani
+   qayta raqamlash shart emas. */
+:root {
+  --z-doska-handles: 1000095;
+  --z-doska-bar: 1000100;
+  --z-doska-context: 1000105;
+  --z-doska-top: 1000110;
+  --z-doska-tooltip: 1001000;
+}
+
+/* ── Doska boshqaruvi — `stage` sirtidan MUSTASNO ──
+   Boshqaruv oʻqituvchi qoʻlida, 50 sm dan ishlatiladi; sinf unga
+   qaramaydi. Shuning uchun `stage` overrideʼi (matn 24px, tugma 54px)
+   bu yerda bekor qilinadi va standart `desk` shkalasi tiklanadi. Aks
+   holda panel ekranning yarmini egallaydi. Nishon oʻlchami (≥ 44 px)
+   komponentda aniq yoziladi, shkalaga tayanmaydi. */
+.doska-bar {
+  --spacing: 0.25rem;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+
+  --radius: 0.625rem;
+}

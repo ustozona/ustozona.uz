@@ -49,9 +49,10 @@ const EDGE = 8;
 /**
  * Panelning taxminiy balandligi — tepada joy yetadimi degan hisob uchun.
  * Aniq oʻlchash (`getBoundingClientRect`) shart emas: xato qilsa ham
- * eng yomoni panel pastga tushadi, bu esa buzilish emas.
+ * eng yomoni panel pastga tushadi, bu esa buzilish emas. 44 px tugma +
+ * eng qalin uslub chegarasi (Oʻyinchoq, 2 × 3 px).
  */
-const HEIGHT = 48;
+const HEIGHT = 50;
 
 export function WidgetToolbar({ widget }: { widget: DoskaWidget }) {
   const removeWidget = useDoskaStore((s) => s.removeWidget);
@@ -143,7 +144,7 @@ export function WidgetToolbar({ widget }: { widget: DoskaWidget }) {
               icon={<IconTrash className="size-5" />}
               data-doska-no-drag=""
               onClick={() => removeWidget(widget.id)}
-              className="hover:bg-destructive/10 hover:text-destructive"
+              className="hover:text-destructive"
             />
           </>
         )}

@@ -199,11 +199,9 @@ function Panel({
   return (
     <div
       ref={ref}
-      className={cn("flex size-full flex-col rounded-[var(--radius)]", className)}
+      className={cn("doska-card flex size-full flex-col", className)}
+      data-card="slate"
       style={{
-        background: "var(--doska-slate-bg)",
-        color: "var(--doska-slate-fg)",
-        boxShadow: "0 4px 0 var(--doska-slate-edge)",
         // `cqw` panelning oʻziga nisbatan — toʻliq ekranda ham matn
         // ekran oʻlchamiga moslashadi (aks holda vidjet oʻlchamida qolardi).
         containerType: "inline-size",

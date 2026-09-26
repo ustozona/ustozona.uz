@@ -1,9 +1,9 @@
 # Doska UX tadqiqoti — asboblar va dizayn yoʻnalishi
 
 > **Holat (2026-09-25):** tadqiqot tugadi, qarorlar qabul qilindi (§0),
-> **1- va 2-bosqich qurildi** (§5). Vizual uslublar (3-bosqich) qurilgach
-> [doska-dizayn-tizimi.md](./doska-dizayn-tizimi.md) §1–3 shu hujjat
-> asosida qayta yoziladi.
+> **1–3-bosqich qurildi** (§5).
+> [doska-dizayn-tizimi.md](./doska-dizayn-tizimi.md) §1–4 shu hujjat
+> asosida qayta yozildi.
 >
 > Sabab: foydalanuvchi Doskaning dizayn tizimini maʼqul koʻrmadi va
 > «uskunlarni ishlatish UX/UI jihatidan qulay boʻlishi shart» dedi.
@@ -35,7 +35,9 @@ Qabul qilindi, quyidagi chegara bilan:
   qogʻoz + magnit). Nomi — «Uslub», «Mavzu» emas: «mavzu» ilovada dars
   mavzusi maʼnosida band; sahnadagi «uslub» presetlari bilan bir xil soʻz.
 - Arxitektura: `data-doska-style="sokin|oyinchoq|doska"` — faqat
-  **token qatlami** (`components.css`), komponent fork qilinmaydi.
+  **token qatlami** (qurilishda `src/styles/doska.css` ga tushdi —
+  Doskaga xos tokenlar umumiy `components.css` ni shishirmasin),
+  komponent fork qilinmaydi.
   Komponentlar oʻz qiymatini `var(--doska-…)` dan oladi va qaysi uslub
   yoqilganini bilmaydi (hozirgi «boʻr rejimi» bilan bir xil naqsh).
 - C variantidagi yon relsalar **uslub emas** — ular alohida sozlama:
@@ -388,19 +390,54 @@ koʻrinishini (masalan Oʻyinchoqda yuz ifodasi) oʻzgartiradi.
 
    Keyinga qoldi: «Barcha ekranlarda» (pin) — ekranlar toʻplami serverga
    koʻchgach; gʻildirak roʻyxat tomonidagi lucide ikonalar (A12).
-3. **Uslublar** — `data-doska-style` token qatlami: Sokin (standart),
-   Oʻyinchoq, Doska · «Uslub» va «Panel joyi» (past / chap / oʻng)
-   sozlamalari · «Hammasi» oynasi + panelni oʻqituvchi tuzishi · bitta
-   ikona oilasi · har uslub proyektor sinovidan · `doska-dizayn-tizimi.md`
-   §1–3 qayta yoziladi.
+3. **Uslublar — QURILDI** (branch `maxdum/doska-uslublar`):
+   - token qatlami `src/styles/doska.css`: uchta uslub bloki (Sokin —
+     standart, Oʻyinchoq, Doska) va materiallar — `.doska-ctl`
+     (boshqaruv), `.doska-sheet` (karta, menyu, oynalar), `.doska-card`
+     + `data-card` (vidjet), `.doska-tool` (panel tugmasi),
+     `.doska-selection`/`.doska-handle`, `.doska-ink`, `.doska-digits`;
+     komponentlar uslubni bilmaydi. Doska boʻlimi `globals.css` dan shu
+     faylga koʻchdi (oʻrnida bitta `@import`); u yerdagi yashil
+     `[data-product="doska"]` qoidasini `products.css` baribir
+     bosib qoʻyardi — u olib tashlandi;
+   - uslub `<html data-doska-style>` va sahna shriftlari klasslari bilan
+     (`DoskaShell`) — portal qilingan menyu va oynalar ham uslubni oladi;
+     shriftlar: Sokin — Onest, Oʻyinchoq — Nunito, Doska — Rubik (kirill
+     bilan, preloadsiz);
+   - sozlama alohida store `lib/doska/prefs.ts` (`skipHydration`, mount'dan
+     keyin, lekin birinchi chizishdan oldin oʻqiladi; `localStorage`
+     yopiq boʻlsa standart bilan ishlaydi); qaytarish tarixiga kirmaydi;
+   - «Koʻrinish» — menyu ichidagi boʻlim: uslub (haqiqiy tokenlar bilan
+     chizilgan namuna) va «Panel joyi» (past / chap / oʻng); yon relsa
+     oʻrtadan pastda, panel oynalari relsa tomonidan ochiladi (`dock.ts`);
+   - «Hammasi» oynasi (`ToolCatalog`): toifalar Vaqt · Sinf · Yozuv ·
+     Media, qator — ekranga qoʻyish, qadash belgisi — panelga; panelda
+     ≤ 9 vosita, tartib doim `TOOL_ORDER`; tuzmagan oʻqituvchi standart
+     panelni koʻradi;
+   - nishonlar: panel tugmasi 64 px (butun tugma bosiladi), ikonali
+     tugma 48 px, kontekst panel 44 px — hamma uslubda bir xil;
+   - raqamlar uslub shriftida, har raqam `1ch` qutida (`Digits`);
+     taymer diski kartaning urgʻu rangida; toʻq fonda endi faqat
+     idishsiz matn boʻrga oʻtadi — shaffof karta proyektorda yuvilardi (A9);
+   - bitta ikona oilasi: Doskada lucide qolmadi — gʻildirak, fon
+     tanlash, mehmon eslatmasi Solarʼga oʻtdi (A12);
+   - proyektor sinovi: `node scripts/doska-projector-check.mjs` — 34
+     juftlik, hammasi oddiy ekranda ≥ 4,5:1, proyektorda ≥ 3:1 (R324);
+   - matnlar 7 tilda; changelog yozuvi `doska-uslublar`.
+
+   Keyinga qoldi: «aqlli standart» (§6); panelni sudrab tartiblash;
+   uslubni toʻplam boʻyicha saqlash.
 
 ---
 
 ## 6. Qarorlar
 
 Toʻrttala savol yopildi — §0 (Q1–Q4). Ochiq qolgani: «aqlli standart»
-(kirgan oʻqituvchining sinflari 1–4-sinf boʻlsa Oʻyinchoq) — 3-bosqichda
-koʻriladi.
+(kirgan oʻqituvchining sinflari 1–4-sinf boʻlsa Oʻyinchoq). 3-bosqichda
+QURILMADI: Doska hozir mehmon rejimida va oʻqituvchining sinflarini
+bilmaydi; sinf roʻyxati Doskaga ulanganda (ekranlar serverga koʻchishi
+bilan) koʻriladi. Qoida oʻshanda ham faqat STANDARTni tanlaydi —
+oʻqituvchi bir marta oʻzi tanlagan uslub ustun.
 
 ---
 

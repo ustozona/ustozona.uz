@@ -39,7 +39,7 @@ import { classColorValue } from "@/lib/class-colors";
    bermagani ham shundan.
 
    Endi `fill` faqat bitta joyda — `.doska-icon` CSS qoidasida
-   (globals.css) — va u meros orqali pastga tushadi.
+   (src/styles/doska.css) — va u meros orqali pastga tushadi.
    ════════════════════════════════════════════════════════════════════ */
 
 type IconProps = { className?: string };
@@ -526,6 +526,80 @@ export function IconWheel({ className }: IconProps) {
   );
 }
 
+/** Belgilangan — solar:check-circle-bold-duotone */
+export function IconCheck({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={cn("doska-icon", className)} aria-hidden="true">
+      <g><path d="M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" opacity=".5"/><path d="M16.0303 8.96967C16.3232 9.26256 16.3232 9.73744 16.0303 10.0303L11.0303 15.0303C10.7374 15.3232 10.2626 15.3232 9.96967 15.0303L7.96967 13.0303C7.67678 12.7374 7.67678 12.2626 7.96967 11.9697C8.26256 11.6768 8.73744 11.6768 9.03033 11.9697L10.5 13.4393L12.7348 11.2045L14.9697 8.96967C15.2626 8.67678 15.7374 8.67678 16.0303 8.96967Z"/></g>
+    </svg>
+  );
+}
+
+/** Maʼlumot — solar:info-circle-bold-duotone */
+export function IconInfo({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={cn("doska-icon", className)} aria-hidden="true">
+      <g><path d="M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" opacity=".5"/><path d="M12 17.75C12.4142 17.75 12.75 17.4142 12.75 17V11C12.75 10.5858 12.4142 10.25 12 10.25C11.5858 10.25 11.25 10.5858 11.25 11V17C11.25 17.4142 11.5858 17.75 12 17.75Z"/><path d="M12 7C12.5523 7 13 7.44771 13 8C13 8.55229 12.5523 9 12 9C11.4477 9 11 8.55229 11 8C11 7.44771 11.4477 7 12 7Z"/></g>
+    </svg>
+  );
+}
+
+/** «Hammasi» — barcha vositalar oynasi. solar:widget-bold-duotone */
+export function IconCatalog({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={cn("doska-icon", className)} aria-hidden="true">
+      <g><g opacity=".5"><path d="M17.5 13C19.6213 13 20.6818 13.0002 21.3408 13.6592C21.9998 14.3182 22 15.3787 22 17.5C22 19.6213 21.9998 20.6818 21.3408 21.3408C20.6818 21.9998 19.6213 22 17.5 22C15.3787 22 14.3182 21.9998 13.6592 21.3408C13.0002 20.6818 13 19.6213 13 17.5C13 15.3787 13.0002 14.3182 13.6592 13.6592C14.3182 13.0002 15.3787 13 17.5 13Z"/><path d="M6.5 2C8.62132 2 9.68181 2.00017 10.3408 2.65918C10.9998 3.31819 11 4.37868 11 6.5C11 8.62132 10.9998 9.68181 10.3408 10.3408C9.68181 10.9998 8.62132 11 6.5 11C4.37868 11 3.31819 10.9998 2.65918 10.3408C2.00017 9.68181 2 8.62132 2 6.5C2 4.37868 2.00017 3.31819 2.65918 2.65918C3.31819 2.00017 4.37868 2 6.5 2Z"/></g><path d="M6.5 13C8.62132 13 9.68181 13.0002 10.3408 13.6592C10.9998 14.3182 11 15.3787 11 17.5C11 19.6213 10.9998 20.6818 10.3408 21.3408C9.68181 21.9998 8.62132 22 6.5 22C4.37868 22 3.31819 21.9998 2.65918 21.3408C2.00017 20.6818 2 19.6213 2 17.5C2 15.3787 2.00017 14.3182 2.65918 13.6592C3.31819 13.0002 4.37868 13 6.5 13Z"/><path d="M17.5 2C19.6213 2 20.6818 2.00017 21.3408 2.65918C21.9998 3.31819 22 4.37868 22 6.5C22 8.62132 21.9998 9.68181 21.3408 10.3408C20.6818 10.9998 19.6213 11 17.5 11C15.3787 11 14.3182 10.9998 13.6592 10.3408C13.0002 9.68181 13 8.62132 13 6.5C13 4.37868 13.0002 3.31819 13.6592 2.65918C14.3182 2.00017 15.3787 2 17.5 2Z"/></g>
+    </svg>
+  );
+}
+
+/** Panelga qadash — solar:pin-bold-duotone */
+export function IconPin({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={cn("doska-icon", className)} aria-hidden="true">
+      <g><path fillRule="evenodd" d="M16.2188 4.83755L19.1835 7.80516C21.1954 9.81905 22.2014 10.826 21.9667 11.9115C21.7319 12.9969 20.4 13.4973 17.7362 14.4981L15.8922 15.191C15.1788 15.459 14.8221 15.593 14.5468 15.8314C14.4262 15.9358 14.3184 16.054 14.2254 16.1835C14.013 16.4795 13.9119 16.8472 13.7095 17.5825C13.2493 19.2551 13.0192 20.0914 12.4713 20.4041C12.2404 20.5358 11.9792 20.6049 11.7134 20.6045C11.0827 20.6036 10.4699 19.9902 9.24441 18.7635L7.77841 17.2961L6.69935 16.2163L5.28476 14.8C4.06698 13.581 3.45809 12.9715 3.45413 12.3446C3.45242 12.0735 3.5228 11.8069 3.65804 11.5721C3.97088 11.0289 4.80107 10.8 6.46145 10.3423C7.19811 10.1392 7.56644 10.0377 7.86251 9.82451C7.99536 9.72887 8.11619 9.61754 8.22239 9.49292C8.45908 9.2152 8.59063 8.85617 8.85373 8.1381L9.5217 6.31506C10.5086 3.62155 11.0021 2.2748 12.0904 2.03468C13.1788 1.79457 14.1921 2.8089 16.2188 4.83755Z" clipRule="evenodd" opacity=".5"/><path d="M3.30236 21.7764L7.77841 17.2961L6.69935 16.2163L2.22345 20.6965C1.92552 20.9947 1.92552 21.4782 2.22345 21.7764C2.52138 22.0747 3.00443 22.0747 3.30236 21.7764Z"/></g>
+    </svg>
+  );
+}
+
+/** Koʻrinish (uslub) — solar:palette-round-bold-duotone */
+export function IconPalette({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={cn("doska-icon", className)} aria-hidden="true">
+      <g><path fillRule="evenodd" d="M6 2C8.20914 2 10 3.79086 10 6V7.90039L13.2842 4.61621C14.8627 3.03793 17.4215 3.03792 19 4.61621C20.5551 6.17129 20.5815 8.68397 19.0596 10.2715L13.2217 16.3613L9.24805 20.3359C9.25891 20.3209 9.26766 20.3043 9.27832 20.2891C8.55516 21.3228 7.35733 22 6 22C3.79086 22 2 20.2091 2 18V6C2 3.79086 3.79086 2 6 2Z" clipRule="evenodd" opacity=".5"/><path d="M13.2842 4.61615C14.8627 3.03794 17.4215 3.03794 19 4.61615C20.5551 6.17123 20.5815 8.68488 19.0596 10.2724L13.2217 16.3613L9.24707 20.3359C9.72057 19.6787 10 18.8718 10 17.9999V7.90033L13.2842 4.61615Z" opacity=".5"/><path d="M17.8994 14C20.1086 14 21.8994 15.7909 21.8994 18C21.8994 20.2091 20.1086 22 17.8994 22H6C7.35277 22 8.54757 21.3277 9.27148 20.2998C9.26322 20.3115 9.25643 20.3243 9.24805 20.3359L13.2217 16.3613L15.4863 14H17.8994Z"/><path d="M6 17C6.55228 17 7 17.4477 7 18C7 18.5523 6.55228 19 6 19C5.44772 19 5 18.5523 5 18C5 17.4477 5.44772 17 6 17Z"/></g>
+    </svg>
+  );
+}
+
+/**
+ * Panel joyi — oʻzimiz chizdik: ekran (massa) va undagi panel (detal).
+ * Solarʼda «panel ekranning qaysi chetida» degan ikona yoʻq; uchala
+ * variant bitta shakldan, faqat detal joyi farq qiladi.
+ */
+function DockGlyph({ className, side }: IconProps & { side: "bottom" | "left" | "right" }) {
+  const strip =
+    side === "bottom"
+      ? { x: 7, y: 15.5, width: 10, height: 2.5 }
+      : { x: side === "left" ? 5.5 : 16, y: 8, width: 2.5, height: 8 };
+  return (
+    <svg viewBox="0 0 24 24" className={cn("doska-icon", className)} aria-hidden="true">
+      <g><rect x="2" y="4" width="20" height="16" rx="3.5" opacity=".5"/><rect {...strip} rx="1.25"/></g>
+    </svg>
+  );
+}
+
+export function IconDockBottom({ className }: IconProps) {
+  return <DockGlyph className={className} side="bottom" />;
+}
+
+export function IconDockLeft({ className }: IconProps) {
+  return <DockGlyph className={className} side="left" />;
+}
+
+export function IconDockRight({ className }: IconProps) {
+  return <DockGlyph className={className} side="right" />;
+}
+
 /* ════════════════════════════════════════════════════════════════════
    IKONALAR ROʻYXATI — `/doska/ikonalar` nazorat sahifasi uchun.
 
@@ -576,4 +650,12 @@ export const DOSKA_ICONS: { name: string; source: string; Icon: React.ComponentT
   { name: "IconBell", source: "solar:bell", Icon: IconBell },
   { name: "IconCurtain", source: "solar:eye-closed", Icon: IconCurtain },
   { name: "IconClose", source: "solar:close-circle", Icon: IconClose },
+  { name: "IconCheck", source: "solar:check-circle", Icon: IconCheck },
+  { name: "IconInfo", source: "solar:info-circle", Icon: IconInfo },
+  { name: "IconCatalog", source: "solar:widget", Icon: IconCatalog },
+  { name: "IconPin", source: "solar:pin", Icon: IconPin },
+  { name: "IconPalette", source: "solar:palette-round", Icon: IconPalette },
+  { name: "IconDockBottom", source: "oʻzimiz:panel-past", Icon: IconDockBottom },
+  { name: "IconDockLeft", source: "oʻzimiz:panel-chap", Icon: IconDockLeft },
+  { name: "IconDockRight", source: "oʻzimiz:panel-oʻng", Icon: IconDockRight },
 ];
