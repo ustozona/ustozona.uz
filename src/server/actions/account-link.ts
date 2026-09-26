@@ -2,11 +2,11 @@
 
 import { redirect } from "next/navigation";
 import {
-  getLinkStatus, peekBotCode, redeemBotCode, startTelegramLink, unlinkTelegram, getUnlinkImpact,
+  getLinkStatus, redeemBotCode, startTelegramLink, unlinkTelegram, getUnlinkImpact,
 } from "@/server/dal/account-link";
 import { failureOf } from "@/server/dal/_failure-reason";
 import type {
-  BotCodePeek, LinkStart, RedeemResult, UnlinkImpactRow, LinkStatusResult,
+  LinkStart, RedeemResult, UnlinkImpactRow, LinkStatusResult,
 } from "@/lib/link-types";
 
 /* LessonLab bog'lash — yupqa qatlam: mijoz komponentlari DAL'ni
@@ -62,11 +62,6 @@ export async function confirmBoglaAction(formData: FormData): Promise<void> {
   const code = String(formData.get("code") ?? "").trim();
   const result = await redeemBotCode(code);
   redirect(`/bogla?r=${result.status}`);
-}
-
-/** `/bogla`: kod qaysi Telegramga tegishli — tasdiqdan oldin koʻrsatiladi. */
-export async function peekLessonLabCodeAction(code: string): Promise<BotCodePeek> {
-  return peekBotCode(code);
 }
 
 export async function unlinkLessonLabAction(confirmed: boolean) {
