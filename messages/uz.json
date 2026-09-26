@@ -22,6 +22,7 @@
     "assignments": "Topshiriqlar",
     "resources": "Materiallar",
     "baholash": "Baholash",
+    "games": "Games",
     "blog": "Blog"
   },
   "Header": {
@@ -4063,6 +4064,7 @@
       "doska": "Doska",
       "jurnal": "Jurnal",
       "baholash": "Baholash",
+      "games": "Games",
       "enterCode": "Kodni kiritish",
       "enterCodeShort": "Kod"
     },
@@ -4230,6 +4232,7 @@
       "statusSoon": "Tez orada",
       "taglines": {
         "blog": "Oʻqituvchilar yozgan maqolalar: tajriba, metodika, dars gʻoyalari. Oʻzingiz ham yozasiz.",
+        "games": "Arqon tortish, Poyga, Jonli oʻyin va boshqalar — testdan oʻyin yarating, sinfda musobaqa oʻtkazing.",
         "baholash": "Onlayn test, qogʻoz test skaneri va QR-kartalar — natija jurnalga tushadi.",
         "doska": "Sinf ekrani: taymer, svetofor va jonli taqdimot. Taymer bilan svetofor kirmasdan ham ishlaydi.",
         "shogird": "Ota-ona uchun Telegram ilovasi: bolaning bahosi, davomati va xulqi.",

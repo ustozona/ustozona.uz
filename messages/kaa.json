@@ -22,6 +22,7 @@
     "assignments": "Tapsırmalar",
     "resources": "Materiallar",
     "baholash": "Baholash",
+    "games": "Games",
     "blog": "Blog"
   },
   "Header": {
@@ -4176,6 +4177,7 @@
       "doska": "Doska",
       "jurnal": "Jurnal",
       "baholash": "Bahalaw",
+      "games": "Games",
       "enterCode": "Kodtı kiritiw",
       "enterCodeShort": "Kod"
     },
@@ -4343,6 +4345,7 @@
       "statusSoon": "Tez arada",
       "taglines": {
         "blog": "Muǵallimler jazǵan maqalalar: tájiriybe, metodika, sabaq ideyaları. Ózińiz de jazasız.",
+        "games": "Arqan tartıs, Jarıs, Tiri oyın hám basqalar — testten oyın jasań, klasta jarıs ótkiziń.",
         "baholash": "Onlayn test, qaǵaz test skaneri hám QR-kartalar — nátiyje jurnalǵa túsedi.",
         "doska": "Klass ekranı: taymer, svetofor hám tiri prezentaciya. Taymer menen svetofor kirmesten de isleydi.",
         "shogird": "Ata-ana ushın Telegram qosımshası: balanıń bahası, qatnası hám minez-qulqı.",

@@ -49,6 +49,7 @@ import {
   Award,
   TrendingUp,
   ListTodo,
+  Gamepad2,
   ChevronDown,
   type LucideIcon,
 } from "lucide-react";
@@ -106,6 +107,9 @@ const navGroups: NavGroup[] = [
 const footerItems: NavItem[] = [
   { href: "/dashboard/changelog", labelKey: "changelog", icon: Megaphone, badgeKey: "changelog" },
   { href: "/blog", labelKey: "blog", icon: Newspaper },
+  // Ustozona-Games — LessonLab oʻyinlari (Arqon, Poyga, Jonli oʻyin…).
+  // Blog kabi /dashboard'dan TASHQARIDAGI alohida mahsulot sahifasi.
+  { href: "/games", labelKey: "games", icon: Gamepad2 },
   { href: "/help", labelKey: "help", icon: CircleHelp },
   { href: "/dashboard/feedback", labelKey: "feedback", icon: MessagesSquare },
   { href: "/dashboard/settings", labelKey: "settings", icon: Settings },

@@ -68,6 +68,23 @@ export function IconChartSquare({ className }: IconProps) {
   );
 }
 
+/** Gamepad (duotone, shu toʻplam uslubida) — Ustozona-Games */
+export function IconGamepad({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={cn("size-5", className)} aria-hidden="true">
+      <g fill="currentColor">
+        <path
+          d="M7.5 5.5h9c3.04 0 5.5 2.46 5.5 5.5v2.2c0 2.93-2.37 5.3-5.3 5.3-1.5 0-2.92-.64-3.93-1.75l-.27-.3a.66.66 0 0 0-.98 0l-.27.3A5.3 5.3 0 0 1 7.3 18.5C4.37 18.5 2 16.13 2 13.2V11c0-3.04 2.46-5.5 5.5-5.5Z"
+          opacity=".5"
+        />
+        <path d="M7.5 9.25c.41 0 .75.34.75.75v1.25H9.5a.75.75 0 0 1 0 1.5H8.25V14a.75.75 0 0 1-1.5 0v-1.25H5.5a.75.75 0 0 1 0-1.5h1.25V10c0-.41.34-.75.75-.75Z" />
+        <circle cx="16" cy="10.75" r="1.25" />
+        <circle cx="18" cy="13.75" r="1.25" />
+      </g>
+    </svg>
+  );
+}
+
 /** solar:widget-4-bold-duotone — Doska */
 export function IconWidget({ className }: IconProps) {
   return (
@@ -130,6 +147,7 @@ export function IconBuildings({ className }: IconProps) {
 
 export const PRODUCT_ICONS: Record<Product["slug"], typeof IconChartSquare> = {
   blog: IconNotebook,
+  games: IconGamepad,
   baholash: IconChartSquare,
   doska: IconWidget,
   shogird: IconUsersGroup,
@@ -138,6 +156,7 @@ export const PRODUCT_ICONS: Record<Product["slug"], typeof IconChartSquare> = {
 
 export const PRODUCT_ICON_STYLE: Record<Product["slug"], string> = {
   blog: "bg-slate-100 text-slate-700 dark:bg-slate-500/15 dark:text-slate-300",
+  games: "bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-400",
   baholash: "bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-400",
   doska: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400",
   shogird: "bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-400",

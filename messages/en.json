@@ -22,6 +22,7 @@
     "assignments": "Assignments",
     "resources": "Library",
     "baholash": "Baholash",
+    "games": "Games",
     "blog": "Blog"
   },
   "Header": {
@@ -4172,6 +4173,7 @@
       "doska": "Board",
       "jurnal": "Gradebook",
       "baholash": "Assessment",
+      "games": "Games",
       "enterCode": "Enter code",
       "enterCodeShort": "Code"
     },
@@ -4339,6 +4341,7 @@
       "statusSoon": "Coming soon",
       "taglines": {
         "blog": "Articles written by teachers: experience, methods, lesson ideas. You can write too.",
+        "games": "Tug of war, Race, Live game and more — turn a test into a game and run a class competition.",
         "baholash": "Online quizzes, a paper test scanner and QR cards — results go into the gradebook.",
         "doska": "Classroom screen: timer, traffic light and live presentations. The timer and traffic light work even without signing in.",
         "shogird": "Telegram app for parents: their child's grades, attendance and behaviour.",

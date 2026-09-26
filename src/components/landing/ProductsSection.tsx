@@ -24,6 +24,7 @@ import { PRODUCTS, type Product } from "@/lib/landing-nav";
  */
 const CARD_FX: Record<Product["slug"], { from: string; to: string; spot: string }> = {
   blog: { from: "#94a3b8", to: "#64748b", spot: "#64748b" },
+  games: { from: "#fb923c", to: "#f97316", spot: "#f97316" },
   baholash: { from: "#a78bfa", to: "#8b5cf6", spot: "#8b5cf6" },
   doska: { from: "#34d399", to: "#10b981", spot: "#10b981" },
   shogird: { from: "#60a5fa", to: "#3b82f6", spot: "#3b82f6" },
@@ -39,6 +40,7 @@ const MAIN_FX = { from: "#fde68a", to: "#fbc02d", spot: "#fbc02d" };
  */
 const CTA_HOVER: Record<Product["slug"], string> = {
   blog: "hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-500/15 dark:hover:text-slate-300",
+  games: "hover:bg-orange-50 hover:text-orange-700 dark:hover:bg-orange-500/15 dark:hover:text-orange-400",
   baholash: "hover:bg-violet-50 hover:text-violet-700 dark:hover:bg-violet-500/15 dark:hover:text-violet-400",
   doska: "hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-500/15 dark:hover:text-emerald-400",
   shogird: "hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-blue-500/15 dark:hover:text-blue-400",

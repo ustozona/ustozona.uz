@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { listPublishedPosts } from "@/server/dal/blog";
 import { abs } from "@/lib/site-url";
 
-const PRODUCT_SLUGS = ["baholash", "doska", "shogird", "boshqaruv"] as const;
+const PRODUCT_SLUGS = ["games", "baholash", "doska", "shogird", "boshqaruv"] as const;
 
 /* ⚠️ `sitemap.ts` — Next uchun oddiy Route Handler, va u STANDART HOLDA
    KESHLANADI. Bu qatorsiz bazadan olingan maqolalar build paytida
