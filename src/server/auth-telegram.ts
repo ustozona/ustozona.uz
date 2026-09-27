@@ -2,7 +2,7 @@ import "server-only";
 import { and, eq, gt } from "drizzle-orm";
 import * as z from "zod";
 import type { BetterAuthPlugin } from "better-auth";
-import { APIError, createAuthEndpoint } from "better-auth/api";
+import { APIError, createAuthEndpoint, getSessionFromCtx } from "better-auth/api";
 import { setSessionCookie } from "better-auth/cookies";
 import { db } from "./db/client";
 import { tgAuthRequests } from "./db/schema";
@@ -101,6 +101,28 @@ export const telegramAuth = () =>
             expiresAt: session.expiresAt.toISOString(),
             user: { id: user.id, name: user.name, image: user.image ?? null },
           });
+        }
+      ),
+
+      /* Mobil ilova ichida ochilgan sayt sahifalari uchun: bearer sessiyadan
+         AYNAN shu sessiyaning imzolangan cookie'si. Ilova uni WebView'ga
+         qoʻyadi — foydalanuvchi saytga QAYTA kirmaydi. Yangi sessiya
+         ochilmaydi. Faqat serverdan chaqiriladi (`dal/mobile-auth.ts`). */
+      mobileWebCookie: createAuthEndpoint(
+        "/telegram/mobile-web-cookie",
+        { method: "POST" },
+        async (ctx) => {
+          if (ctx.request) throw new APIError("NOT_FOUND");
+          const current = await getSessionFromCtx(ctx);
+          if (!current) throw new APIError("UNAUTHORIZED");
+          const cookie = ctx.context.authCookies.sessionToken;
+          await ctx.setSignedCookie(
+            cookie.name,
+            current.session.token,
+            ctx.context.secret,
+            cookie.attributes,
+          );
+          return ctx.json({ ok: true });
         }
       ),
     },

@@ -122,3 +122,20 @@ export async function getMobileMe(headers: Headers): Promise<MobileMe | null> {
 export async function signOutMobile(headers: Headers): Promise<void> {
   await auth.api.signOut({ headers });
 }
+
+/** Ilova ichidagi sayt oynasi uchun cookie: `{ name, value }` yoki null.
+    Qiymat Better Auth'ning oʻzi imzolagan — aynan brauzerdagi kabi. */
+export async function mobileWebCookie(
+  headers: Headers,
+): Promise<{ name: string; value: string } | null> {
+  try {
+    const res = await auth.api.mobileWebCookie({ headers, returnHeaders: true });
+    const raw = res.headers.get("set-cookie") ?? "";
+    const first = raw.split(";")[0] ?? "";
+    const eq = first.indexOf("=");
+    if (eq <= 0) return null;
+    return { name: first.slice(0, eq), value: first.slice(eq + 1) };
+  } catch {
+    return null;
+  }
+}
