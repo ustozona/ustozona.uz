@@ -34,8 +34,11 @@ const AUTH_PAGES = ["/login", "/register"];
     ⚠️ `/baholash`, `/doska`, `/shogird`, `/boshqaruv` ATAYLAB bu roʻyxatda
     YOʻQ va ochiq qoladi. Sabab mahsulot holatiga qarab ikki xil:
 
-    — Hali tayyor emas (`/baholash`, `/shogird`, `/boshqaruv`) → root'da
+    — Hali tayyor emas (`/shogird`, `/boshqaruv`) → root'da
       `ProductPage` turadi, yaʼni ochiq marketing sahifasi.
+      `/baholash` arxivlandi (yoʻnaltiradi) — telefon skaneri
+      `/baholash/skaner/<chipta>` cookie'siz ochilishi SHART, shuning
+      uchun u ham bu roʻyxatga kirmaydi.
     — Tayyor va mehmon rejimi bor (`/doska`) → root'da ILOVANING OʻZI
       turadi va u ataylab login talab qilmaydi: oʻqituvchi darsga kirdi,
       projektorni yoqdi, 3 soniyada taymer kerak (R134). Ekran

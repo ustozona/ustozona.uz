@@ -2,7 +2,9 @@ import type { MetadataRoute } from "next";
 import { listPublishedPosts } from "@/server/dal/blog";
 import { abs } from "@/lib/site-url";
 
-const PRODUCT_SLUGS = ["games", "baholash", "doska", "shogird", "boshqaruv"] as const;
+/* `baholash` yoʻq — sahifa arxivlandi, imkoniyatlari Topshiriqlarda
+   (docs/topshiriq-boshlash-markazi.md §8). */
+const PRODUCT_SLUGS = ["games", "doska", "shogird", "boshqaruv"] as const;
 
 /* ⚠️ `sitemap.ts` — Next uchun oddiy Route Handler, va u STANDART HOLDA
    KESHLANADI. Bu qatorsiz bazadan olingan maqolalar build paytida

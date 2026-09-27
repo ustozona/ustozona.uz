@@ -1,8 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { syncRosterDirect, syncTestsDirect } from "@/server/dal/lessonlab-import";
+import { z } from "zod";
+import {
+  getImportReport,
+  syncRosterDirect,
+  syncTestsDirect,
+} from "@/server/dal/lessonlab-import";
 import type { SyncOutcome } from "@/lib/sync-types";
+import type { SyncReportDetail } from "@/server/db/schema";
 
 /* LessonLab bilan TOʻGʻRIDAN sinxronizatsiya — rozilik soʻralmaydi.
 
@@ -24,7 +30,7 @@ export async function syncRosterAction(): Promise<SyncOutcome> {
     if (!res.ok) return { ok: false, reason: "not_linked" };
     // Sahifa server komponentida sinf roʻyxatini oʻqiydi — yangilanmasa
     // oʻqituvchi «hech narsa boʻlmadi» deb oʻylardi.
-    revalidatePath("/baholash");
+    revalidatePath("/dashboard/assignments");
     return {
       ok: true,
       classesCreated: res.report.classesCreated,
@@ -46,7 +52,7 @@ export async function syncTestsAction(classId: string): Promise<SyncOutcome> {
   try {
     const res = await syncTestsDirect(classId);
     if (!res.ok) return { ok: false, reason: "not_linked" };
-    revalidatePath("/baholash");
+    revalidatePath("/dashboard/assignments");
     return {
       ok: true,
       classesCreated: res.report.classesCreated,
@@ -59,5 +65,21 @@ export async function syncTestsAction(classId: string): Promise<SyncOutcome> {
     };
   } catch {
     return { ok: false, reason: "failed" };
+  }
+}
+
+/** Import hisobotining tafsiloti — OAuth qaytishidagi `?report=<id>`.
+
+    Nomlar URL'ga chiqarilmaydi (havolani ulashgan odam begona oʻquvchi
+    va test nomlarini koʻrardi) — ular bazadan va FAQAT oʻz hisobotidan
+    oʻqiladi: `getImportReport()` `teacherId` boʻyicha filtrlaydi, begona
+    id boʻsh roʻyxat qaytaradi. */
+export async function importReportDetailsAction(reportId: string): Promise<SyncReportDetail[]> {
+  const id = z.string().min(1).max(100).safeParse(reportId);
+  if (!id.success) return [];
+  try {
+    return (await getImportReport(id.data))?.details ?? [];
+  } catch {
+    return [];
   }
 }

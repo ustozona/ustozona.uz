@@ -355,12 +355,23 @@ function useOpenSetFromUrl() {
     const existing = screen?.widgets.find((w) => w.kind === "presentation.v1" && !w.state.live);
     // Dars kartasidan kelgan sinf — jonli sessiyada oldindan tanlangan boʻladi.
     const classId = url.searchParams.get("classId") ?? undefined;
-    const state = { setId, index: 0, revealed: false, ...(classId ? { classId } : {}) };
+    /* `live=1` — Topshiriqlar → «Jonli dars» (bir bosish): vidjet jonli
+       sessiyani O'ZI boshlaydi (`PresentationWidget` → `autoLive`).
+       Sinfsiz maʼnosiz — sessiya sinf roʻyxatiga tayanadi. */
+    const autoLive = url.searchParams.get("live") === "1" && Boolean(classId);
+    const state = {
+      setId,
+      index: 0,
+      revealed: false,
+      ...(classId ? { classId } : {}),
+      ...(autoLive ? { autoLive: true } : {}),
+    };
     if (existing) patchWidgetState(existing.id, state);
     else addWidget("presentation.v1", undefined, state);
 
     url.searchParams.delete("setId");
     url.searchParams.delete("classId");
+    url.searchParams.delete("live");
     window.history.replaceState(window.history.state, "", url.pathname + url.search + url.hash);
   }, [hydrated]);
 }

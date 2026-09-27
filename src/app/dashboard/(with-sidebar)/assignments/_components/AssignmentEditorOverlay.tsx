@@ -15,10 +15,8 @@ import {
   CloudOff,
   ChevronRight,
   ChevronDown,
-  Loader2,
   ClipboardCheck,
   Info,
-  Users,
   Plus,
   MoreHorizontal,
   Copy,
@@ -37,10 +35,11 @@ import {
   type EditorSession,
 } from "@/store/useAssignmentEditorStore";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
-import { getSetIdForSessionAction } from "@/server/actions/assess-sessions";
-import { getSetAction, getSetMetaAction } from "@/server/actions/assess";
+import { getSetMetaAction } from "@/server/actions/assess";
 import type { SetMeta } from "@/server/dal/assess/sets";
-import type { ActivitySetRow } from "@/server/db/schema";
+import { useLaunchFlow } from "@/components/launch/useLaunchFlow";
+import { RunButtons } from "@/components/launch/RunButtons";
+import type { LaunchIntent } from "@/lib/launch-types";
 import {
   TOPIC_COLOR_HEX,
   classColor,
@@ -99,7 +98,6 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useResponsivePanelWidth } from "@/hooks/useResponsivePanelWidth";
 import StandardTagPicker from "./StandardTagPicker";
 import SetBuilderOverlay from "./test/SetBuilderOverlay";
-import SessionPanelModal from "./test/SessionPanelModal";
 import AttachTestDialog from "./AttachTestDialog";
 import { MaterialKindPicker } from "@/components/materials/MaterialKindPicker";
 
@@ -192,6 +190,7 @@ export default function AssignmentEditorOverlay({
   session: EditorSession;
 }) {
   const t = useTranslations("AssignmentsPage");
+  const tl = useTranslations("LaunchHub");
   const classId = session.classId;
   const classDataMap = useGradesStore((s) => s.classDataMap);
   const updateClass = useGradesStore((s) => s.updateClass);
@@ -208,7 +207,6 @@ export default function AssignmentEditorOverlay({
   const patchDraft = useAssignmentEditorStore((s) => s.patchDraft);
 
   const [panelOpen, setPanelOpen] = useState(true);
-  const [openingQuiz, setOpeningQuiz] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   /* Biriktirilgan toʻplam pasporti (nom · savol soni · maks. ball).
      Toʻplamning butun qoralamasi kerak emas — shuning uchun yengil amal. */
@@ -231,8 +229,10 @@ export default function AssignmentEditorOverlay({
     /** Yangi toʻplamning birinchi elementi — taqdimot slayd bilan boshlanadi. */
     firstShape?: "mcq" | "slide";
   } | null>(null);
-  const [sessionSet, setSessionSet] = useState<ActivitySetRow | null>(null);
-  const [sessionLoading, setSessionLoading] = useState(false);
+  /* Testni oʻquvchilarga berish — Topshiriqlar sahifasidagi bilan AYNAN
+     bir oqim («Darsda oʻtkazish» / «Uyga berish» → natija ekrani →
+     «Jurnalga»). Ilgari bu yerda alohida «Sessiya» modali ochilardi. */
+  const launchFlow = useLaunchFlow();
 
   const isDraft = session.kind === "draft";
   const payload = session.kind === "draft" ? session.payload : null;
@@ -364,29 +364,11 @@ export default function AssignmentEditorOverlay({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attachedSetId, setMeta, current.maxScore]);
 
-  /** Eski, sessiyadan nashr qilingan ustun — toʻplamini sessiya panelida
-      ochadi (`sourceSessionId` → `setId` → qator). */
-  async function handleOpenQuiz() {
-    if (!current.sourceSessionId || openingQuiz) return;
-    setOpeningQuiz(true);
-    const setId = await getSetIdForSessionAction(current.sourceSessionId);
-    if (setId) await openSessionPanel(setId);
-    setOpeningQuiz(false);
-  }
-
-  /** Sessiya paneli toʻliq qator talab qiladi (`classId`, `items`),
-      topshiriqda esa faqat `setId` bor — shuning uchun oldin olib kelamiz. */
-  async function openSessionPanel(setId: string) {
-    setSessionLoading(true);
-    try {
-      const row = await getSetAction(setId);
-      if (row) setSessionSet(row);
-      else toast.error(t("setMissing"));
-    } catch {
-      toast.error(t("setMissing"));
-    } finally {
-      setSessionLoading(false);
-    }
+  /** Eski, sessiyadan nashr qilingan ustun — oʻsha sessiyaning natija
+      ekrani ochiladi (qayta yozish, ochiq javoblar shu yerda). */
+  function handleOpenQuiz() {
+    if (!current.sourceSessionId) return;
+    launchFlow.openRun(current.sourceSessionId);
   }
 
   /** Yangi test tuzish — savol muharriri darhol ochiladi. `kind`/`setId`
@@ -418,10 +400,17 @@ export default function AssignmentEditorOverlay({
     setBuilder({ setId: attachedSetId });
   }
 
-  /** Sessiya paneli — testni jonli/mustaqil/qogʻoz yoʻli bilan oʻtkazish. */
-  function handleRunSession() {
-    if (!attachedSetId || sessionLoading) return;
-    void openSessionPanel(attachedSetId);
+  /** «Darsda oʻtkazish» / «Uyga berish» — Topshiriqlar roʻyxatidagi
+      tugmalar bilan bir xil oyna. Topshiriqning muddati bor boʻlsa uy
+      vazifasi standarti — shu sana. */
+  function handleRun(intent: LaunchIntent) {
+    if (!attachedSetId) return;
+    launchFlow.openLaunch(classId, {
+      setId: attachedSetId,
+      title: setMeta?.title ?? current.title,
+      intent,
+      dueDate: current.dueDate,
+    });
   }
 
   /** Toʻplam saqlandi — endi halqa haqiqiy. Sarlavha hali boʻsh boʻlsa
@@ -800,20 +789,8 @@ export default function AssignmentEditorOverlay({
               </p>
             </div>
           </button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="shrink-0 gap-1.5"
-            disabled={sessionLoading}
-            onClick={handleRunSession}
-          >
-            {sessionLoading ? (
-              <Loader2 className="size-3.5 animate-spin" />
-            ) : (
-              <Users className="size-3.5" />
-            )}
-            <span className="hidden sm:inline">{t("runSession")}</span>
-          </Button>
+          {/* Topshiriqlar roʻyxatidagi tugmalarning aynan oʻzi. */}
+          <RunButtons labels="sm" onRun={handleRun} />
           <Tooltip>
             <TooltipTrigger asChild>
               <button
@@ -838,8 +815,7 @@ export default function AssignmentEditorOverlay({
         <button
           type="button"
           onClick={handleOpenQuiz}
-          disabled={openingQuiz}
-          className="flex w-full items-center gap-3 rounded-xl border border-border p-4 text-left transition-colors hover:bg-muted/50 disabled:cursor-wait"
+          className="flex w-full items-center gap-3 rounded-xl border border-border p-4 text-left transition-colors hover:bg-muted/50"
         >
           <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
             <FileCheck2 className="size-5" />
@@ -848,13 +824,12 @@ export default function AssignmentEditorOverlay({
             <h4 className="truncate text-sm font-semibold text-foreground">
               {current.title}
             </h4>
-            <p className="text-xs text-muted-foreground">{t("kindTest")}</p>
+            {/* Bosilsa natija ekrani ochiladi — yozuv shuni aytadi. */}
+            <p className="text-xs text-muted-foreground">
+              {t("kindTest")} · {tl("viewResults")}
+            </p>
           </div>
-          {openingQuiz ? (
-            <Loader2 className="size-5 shrink-0 animate-spin text-muted-foreground" />
-          ) : (
-            <ChevronRight className="size-5 shrink-0 text-muted-foreground" />
-          )}
+          <ChevronRight className="size-5 shrink-0 text-muted-foreground" />
         </button>
       );
     }
@@ -1489,14 +1464,8 @@ export default function AssignmentEditorOverlay({
           />
         )}
 
-        {sessionSet && (
-          <SessionPanelModal
-            set={sessionSet}
-            classId={classId}
-            dueDate={current.dueDate}
-            onClose={() => setSessionSet(null)}
-          />
-        )}
+        {/* Oʻtkazish oynasi va natija ekrani — muharrir ustida. */}
+        {launchFlow.element}
       </div>
 
       <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>

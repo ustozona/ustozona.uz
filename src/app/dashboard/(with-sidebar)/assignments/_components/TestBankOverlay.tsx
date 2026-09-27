@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
   BadgeCheck, Check, ChevronLeft, ChevronRight, Globe, Library, Link as LinkIcon,
-  Play, Search, User, X,
+  Presentation, Search, User, X,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -88,12 +88,16 @@ export default function TestBankOverlay({
   className,
   onClose,
   onAssigned,
+  onRun,
 }: {
   classId: string;
   className: string;
   onClose: () => void;
   /** Toʻplam yaratilgach sahifa roʻyxatini yangilaydi. */
   onAssigned: () => void;
+  /** «Darsda oʻtkazish» — test shu sinfga qoʻshilgach oʻtkazish oynasi
+      (Topshiriqlardagi bilan bir xil). Berilmasa tugma chiqmaydi. */
+  onRun?: (setId: string, title: string) => void;
 }) {
   const t = useTranslations("TestBank");
 
@@ -212,22 +216,23 @@ export default function TestBankOverlay({
     }
   }
 
-  /** Berish. `startSession` — «Berish va boshlash» tugmasi.
+  /** «Sinfga qoʻshish» — test tanlangan sinf(lar)ning «Tayyor testlar»
+      roʻyxatiga tushadi. `run` — «Darsda oʻtkazish»: qoʻshiladi va
+      oʻtkazish oynasi JORIY sinf uchun darhol ochiladi.
 
-      Bitta chaqiruvda: toʻplam(lar) yaratiladi VA sessiya ochiladi.
-      Ilgari oʻqituvchi bankni yopib, kartani topib, sessiya panelini
-      ochib, «boshlash» ni bosishi kerak edi — toʻrtta ortiqcha bosish,
-      va ularning hech biri yangi qaror talab qilmasdi. */
-  async function handleAssign(test: BankTest, startSession: boolean) {
+      Ilgari bu yerda «Berish» va «Berish va boshlash» turardi. «Berish»
+      oʻquvchilarga hech narsa bermasdi (faqat roʻyxatga qoʻshardi),
+      «boshlash» esa qaysi turdagi ish ochilganini aytmasdi — ikkalasi
+      ham nomi bilan chalgʻitardi. Endi usulni oʻqituvchi Topshiriqlardagi
+      oynaning oʻzida tanlaydi (jonli dars, oʻyin, qogʻoz, pult...). */
+  async function handleAssign(test: BankTest, run: boolean) {
     if (targetClassIds.length === 0) {
       toast.error(t("pickClassFirst"));
       return;
     }
     setBusyId(test.id);
     try {
-      const res = await assignBankTestAction({
-        testId: test.id, classIds: targetClassIds, startSession,
-      });
+      const res = await assignBankTestAction({ testId: test.id, classIds: targetClassIds });
 
       if (!res.ok) {
         toast.error(
@@ -238,54 +243,40 @@ export default function TestBankOverlay({
         return;
       }
 
-      // Joriy sinf roʻyxatga tushgan boʻlsa kartochka «Berilgan» ga
+      // Joriy sinf roʻyxatga tushgan boʻlsa kartochka «Qoʻshilgan» ga
       // oʻtadi — javobni kutib qayta soʻramaymiz, aks holda tugma bir
       // lahza yana bosiladigan boʻlib qolardi.
       const touched = [...res.created, ...res.skipped];
-      if (touched.some((c) => c.classId === classId)) {
+      const here = touched.find((c) => c.classId === classId);
+      if (here) {
         setTests((prev) =>
           prev.map((x) => (x.id === test.id ? { ...x, alreadyInClass: true } : x))
         );
       }
       onAssigned();
 
+      // Allaqachon qoʻshilgan boʻlsa ham oʻtkazish mumkin — mavjud toʻplam bilan.
+      if (run && here && onRun) {
+        onRun(here.setId, res.title);
+        return;
+      }
+
       if (res.created.length === 0) {
-        // Hammasi allaqachon berilgan — bu xato emas, shunchaki
+        // Hammasi allaqachon qoʻshilgan — bu xato emas, shunchaki
         // aytiladi. Ilgari «duplicate» xato kabi koʻrinardi.
         toast.info(t("alreadyAssigned"));
         return;
       }
 
-      // Sessiya kodi — ustozning ekranda kutayotgan YAGONA narsasi.
-      // Toast ichida koʻrsatiladi va bosilsa havola nusxalanadi, ya'ni
-      // «kod qayerda?» degan qidiruv qadami butunlay yoʻqoladi.
-      const withCode = res.created.filter((c) => c.sessionCode);
-      const codes = withCode.map((c) => c.sessionCode!).join(", ");
-
-      toast.success(
-        startSession && codes ? t("assignedAndStarted", { codes }) : t("assigned"),
-        {
-          description: t("assignedDescription", {
-            title: res.title,
-            count: res.questionCount,
-            classes: res.created.length,
-            skipped: res.skipped.length,
-          }),
-          duration: startSession ? 15000 : 6000,
-          action: codes
-            ? {
-                label: t("copyLink"),
-                onClick: () => {
-                  const first = withCode[0].sessionCode!;
-                  navigator.clipboard.writeText(
-                    `${window.location.origin}/play/${first}`
-                  );
-                  toast.success(t("linkCopied"));
-                },
-              }
-            : undefined,
-        }
-      );
+      toast.success(t("assigned"), {
+        description: t("assignedDescription", {
+          title: res.title,
+          count: res.questionCount,
+          classes: res.created.length,
+          skipped: res.skipped.length,
+        }),
+        duration: 6000,
+      });
     } catch {
       toast.error(t("assignFailed"));
     } finally {
@@ -475,8 +466,9 @@ export default function TestBankOverlay({
                   test={test}
                   busy={busyId === test.id}
                   classCount={targetClassIds.length}
+                  canRun={Boolean(onRun)}
                   onPreview={() => openPreview(test)}
-                  onAssign={(start) => handleAssign(test, start)}
+                  onAssign={(run) => handleAssign(test, run)}
                 />
               ))}
             </div>
@@ -561,23 +553,31 @@ export default function TestBankOverlay({
 
           {/* Koʻrib turib darhol berish — oynani yopib kartani qayta
               qidirish qadami yoʻqoladi. */}
-          {previewFor && !previewFor.alreadyInClass && (
+          {previewFor && (!previewFor.alreadyInClass || (onRun && targetClassIds.length <= 1)) && (
             <div className="flex flex-wrap justify-end gap-2 pt-1">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={busyId === previewFor.id}
-                onClick={() => { handleAssign(previewFor, false); setPreviewFor(null); }}
-              >
-                {t("assign")}
-              </Button>
-              <Button
-                size="sm"
-                disabled={busyId === previewFor.id}
-                onClick={() => { handleAssign(previewFor, true); setPreviewFor(null); }}
-              >
-                <Play className="size-3.5" /> {t("assignAndStart")}
-              </Button>
+              {!previewFor.alreadyInClass && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={busyId === previewFor.id}
+                  title={t("assignHint")}
+                  onClick={() => { handleAssign(previewFor, false); setPreviewFor(null); }}
+                >
+                  {targetClassIds.length > 1
+                    ? t("assignN", { count: targetClassIds.length })
+                    : t("assign")}
+                </Button>
+              )}
+              {onRun && targetClassIds.length <= 1 && (
+                <Button
+                  size="sm"
+                  disabled={busyId === previewFor.id}
+                  title={t("assignAndStartHint")}
+                  onClick={() => { handleAssign(previewFor, true); setPreviewFor(null); }}
+                >
+                  <Presentation className="size-3.5" /> {t("assignAndStart")}
+                </Button>
+              )}
             </div>
           )}
         </DialogContent>
@@ -588,14 +588,17 @@ export default function TestBankOverlay({
 }
 
 function BankCard({
-  test, busy, classCount, onPreview, onAssign,
+  test, busy, classCount, canRun, onPreview, onAssign,
 }: {
   test: BankTest;
   busy: boolean;
-  /** Nechta sinfga beriladi — tugma matnida koʻrsatiladi. */
+  /** Nechta sinfga qoʻshiladi — tugma matnida koʻrsatiladi. */
   classCount: number;
+  /** «Darsda oʻtkazish» tugmasi chiqadimi (bitta sinf tanlanganda). */
+  canRun: boolean;
   onPreview: () => void;
-  onAssign: (startSession: boolean) => void;
+  /** `run` — qoʻshib, darhol oʻtkazish oynasini ochish. */
+  onAssign: (run: boolean) => void;
 }) {
   const t = useTranslations("TestBank");
   const Icon = TIER_ICON[test.tier];
@@ -636,41 +639,51 @@ function BankCard({
         </Badge>
       </div>
 
-      {/* ⛔ «Berilgan» — faqat JORIY sinf uchun. Boshqa sinflar
+      {/* ⛔ «Qoʻshilgan» — faqat JORIY sinf uchun. Boshqa sinflar
           tanlangan boʻlsa tugma ochiq qolishi kerak, aks holda
-          «8A da bor, 8B ga bera olmayman» holati chiqardi.
+          «8A da bor, 8B ga qoʻsha olmayman» holati chiqardi.
           Shuning uchun `classCount > 1` da bloklanmaydi — server
-          allaqachon berilganini `skipped` ga qoʻyadi. */}
-      {test.alreadyInClass && classCount <= 1 ? (
-        <Button size="sm" variant="outline" disabled className="mt-auto w-full gap-1.5">
-          <Check className="size-3.5" /> {t("assignedBadge")}
-        </Button>
-      ) : (
-        <div className="mt-auto flex gap-1.5">
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={busy}
-            onClick={() => onAssign(false)}
-            className="flex-1"
-            title={t("assignHint")}
-          >
-            {busy ? <Spinner className="size-3.5" /> : null}
-            {t("assign")}
-          </Button>
-          {/* ASOSIY amal — berish + sessiya + kod, bitta bosishda. */}
-          <Button
-            size="sm"
-            disabled={busy}
-            onClick={() => onAssign(true)}
-            className="flex-1 gap-1"
-            title={t("assignAndStartHint")}
-          >
-            <Play className="size-3.5" />
-            {classCount > 1 ? t("assignAndStartN", { count: classCount }) : t("assignAndStart")}
-          </Button>
-        </div>
-      )}
+          allaqachon qoʻshilganini `skipped` ga qoʻyadi.
+          «Darsda oʻtkazish» — faqat bitta (joriy) sinf tanlanganda:
+          oʻtkazish oynasi bitta sinf uchun ochiladi. Koʻp sinfga esa
+          faqat qoʻshiladi, har sinfda keyin alohida oʻtkaziladi. */}
+      {(() => {
+        const run = canRun && classCount <= 1;
+        const added = test.alreadyInClass && classCount <= 1;
+        return (
+          <div className="mt-auto flex gap-1.5">
+            {added ? (
+              <Button size="sm" variant="outline" disabled className="flex-1 gap-1.5">
+                <Check className="size-3.5" /> {t("assignedBadge")}
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={busy}
+                onClick={() => onAssign(false)}
+                className="flex-1"
+                title={t("assignHint")}
+              >
+                {busy ? <Spinner className="size-3.5" /> : null}
+                {classCount > 1 ? t("assignN", { count: classCount }) : t("assign")}
+              </Button>
+            )}
+            {run && (
+              <Button
+                size="sm"
+                disabled={busy}
+                onClick={() => onAssign(true)}
+                className="flex-1 gap-1"
+                title={t("assignAndStartHint")}
+              >
+                <Presentation className="size-3.5" />
+                {t("assignAndStart")}
+              </Button>
+            )}
+          </div>
+        );
+      })()}
     </div>
   );
 }

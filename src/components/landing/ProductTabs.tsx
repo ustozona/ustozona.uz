@@ -82,7 +82,8 @@ const TABS: {
   {
     key: "baholash",
     tone: "baholash",
-    href: "/baholash",
+    // `/baholash` arxivlandi — imkoniyatlar Topshiriqlarda (kirish kerak).
+    href: "/register",
     TabIcon: IconChartSquare,
     Mock: AssessmentMock,
     factIcons: [Smartphone, QrCode, ScanLine, House],
@@ -90,7 +91,7 @@ const TABS: {
   {
     key: "taqdimot",
     tone: "taqdimot",
-    href: "/baholash",
+    href: "/register",
     TabIcon: Presentation,
     Mock: PresentationMock,
     factIcons: [FileUp, MessageCircleQuestion, Smartphone, MonitorPlay],

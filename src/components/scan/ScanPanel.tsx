@@ -81,9 +81,22 @@ type Props = {
   ticket?: string;
   /** Berilsa — «Jonli skaner» tugmasi chiqadi (faqat telefon sahifasi). */
   plan?: LivePlan;
+  /** Qaysi yoʻldan kelindi. `cards` — Topshiriqlardagi «QR-kartalar»:
+      telefonda karta skaneri ASOSIY tugma boʻladi, noutbukdagi QR esa
+      telefonni shu rejimda ochadi. Standart — `sheets` (varaq). */
+  mode?: "sheets" | "cards";
+  /** Javoblar yozilgach (noutbuk oqimi) — natija ekranini ochish uchun. */
+  onApplied?: (report: { sessionId: string; studentsAdded: number; answersSaved: number }) => void;
 };
 
-export default function ScanPanel({ setId, classId, ticket, plan }: Props) {
+export default function ScanPanel({
+  setId,
+  classId,
+  ticket,
+  plan,
+  mode = "sheets",
+  onApplied,
+}: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -92,7 +105,12 @@ export default function ScanPanel({ setId, classId, ticket, plan }: Props) {
   const [sheets, setSheets] = useState<PendingSheet[]>([]);
   const [saving, setSaving] = useState(false);
   const [report, setReport] = useState<
-    { studentsAdded: number; answersSaved: number; skipped: { name: string; reason: string }[] } | null
+    {
+      sessionId: string;
+      studentsAdded: number;
+      answersSaved: number;
+      skipped: { name: string; reason: string }[];
+    } | null
   >(null);
   const [liveOpen, setLiveOpen] = useState(false);
   const [cardsOpen, setCardsOpen] = useState(false);
@@ -269,6 +287,7 @@ export default function ScanPanel({ setId, classId, ticket, plan }: Props) {
       // Kiritilgan varaqlar roʻyxatdan chiqadi — ikkinchi marta
       // bosilsa dublikat boʻlmasin.
       setSheets((prev) => prev.filter((s) => !ready.includes(s)));
+      onApplied?.(data.report);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Kiritilmadi");
     } finally {
@@ -287,13 +306,26 @@ export default function ScanPanel({ setId, classId, ticket, plan }: Props) {
             {/* Asosiy yoʻl — JONLI skaner: varaqni tutasiz, oʻzi
                 oʻqiydi. Surat tortish ikkinchi darajali boʻlib qoldi
                 (bitta varaqqa ~10 soniya vs ~1 soniya). */}
-            {plan && (
-              <Button size="lg" onClick={() => setLiveOpen(true)}>
-                <ScanLine className="size-4" />
-                Jonli skaner
+            {/* Topshiriqlardagi «QR-kartalar» dan kelingan boʻlsa karta
+                skaneri ASOSIY — oʻqituvchi aynan shu ish uchun QR ni
+                ochdi. Aks holda varaq skaneri birinchi. */}
+            {plan && mode === "cards" && (
+              <Button size="lg" onClick={() => setCardsOpen(true)}>
+                <IdCard className="size-4" />
+                QR-kartalarni skanerlash
               </Button>
             )}
             {plan && (
+              <Button
+                size={mode === "cards" ? "sm" : "lg"}
+                variant={mode === "cards" ? "outline" : "default"}
+                onClick={() => setLiveOpen(true)}
+              >
+                <ScanLine className={mode === "cards" ? "size-3.5" : "size-4"} />
+                Jonli skaner
+              </Button>
+            )}
+            {plan && mode !== "cards" && (
               <Button size="sm" variant="outline" onClick={() => setCardsOpen(true)}>
                 <IdCard className="size-3.5" />
                 QR-kartalar
@@ -319,6 +351,7 @@ export default function ScanPanel({ setId, classId, ticket, plan }: Props) {
         <HandoffBlock
           setId={setId}
           classId={classId}
+          mode={mode}
           onPickFile={() => fileRef.current?.click()}
           busy={busy}
         />
@@ -367,13 +400,13 @@ export default function ScanPanel({ setId, classId, ticket, plan }: Props) {
               hech qachon avtomatik emas (publish.ts qoidasi), shuning
               uchun oʻqituvchi qadamni bilib turishi kerak. */}
           <p className="text-sm text-muted-foreground">
-            Javoblar sessiyaga yozildi, lekin jurnalda hali yoʻq.{" "}
+            Javoblar yozildi, lekin jurnalda hali yoʻq.{" "}
             <Link href="/dashboard/assignments" className="underline underline-offset-2">
               Topshiriqlar
             </Link>{" "}
-            boʻlimida shu testning sessiya panelini oching → sessiyani
-            «Yopish» → jurnalga koʻchiring. Qolgan varaqlarni esa shu
-            yerda kiritishda davom etishingiz mumkin.
+            boʻlimining tepasida — «Hozir ochiq» roʻyxatida shu testni oching
+            va «Jurnalga yozish» ni bosing. Qolgan varaqlarni esa shu yerda
+            kiritishda davom etishingiz mumkin.
           </p>
         </div>
       )}
@@ -441,11 +474,13 @@ export default function ScanPanel({ setId, classId, ticket, plan }: Props) {
 function HandoffBlock({
   setId,
   classId,
+  mode,
   onPickFile,
   busy,
 }: {
   setId: string;
   classId: string;
+  mode: "sheets" | "cards";
   onPickFile: () => void;
   busy: boolean;
 }) {
@@ -458,7 +493,7 @@ function HandoffBlock({
     setLoading(true);
     setError(null);
     try {
-      setHandoff(await createScanHandoffAction({ setId, classId }));
+      setHandoff(await createScanHandoffAction({ setId, classId, mode }));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Havola tayyorlanmadi");
     } finally {
@@ -507,8 +542,11 @@ function HandoffBlock({
       <div className="flex min-w-0 flex-col gap-2">
         <p className="text-sm font-medium">Telefon kamerangizni shu QR ga tuting</p>
         <p className="text-sm text-muted-foreground">
-          Sahifa telefonda ochiladi — tizimga kirish shart emas. Varaqni suratga
-          olasiz, natija shu testga tushadi. Havola 2 soat amal qiladi.
+          Sahifa telefonda ochiladi — tizimga kirish shart emas.{" "}
+          {mode === "cards"
+            ? "Kamerani sinfga qaratasiz, kartalar savolma-savol oʻqiladi."
+            : "Varaqni suratga olasiz, natija shu testga tushadi."}{" "}
+          Havola 2 soat amal qiladi.
           Kamera oʻqiy olmasa — telefonni yaqinroq tuting yoki brauzerni
           kattalashtiring (Ctrl/⌘ va +).
         </p>

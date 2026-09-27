@@ -99,6 +99,24 @@ export function PresentationWidget({ widget }: { widget: DoskaWidget }) {
     }).catch(() => {});
   };
 
+  /* Topshiriqlar → «Jonli dars» (`/doska?…&live=1`): sessiya shu yerda,
+     BIR MARTA boshlanadi. Bayroq darhol oʻchiriladi — sahifa yangilansa
+     yoki vidjet qayta chizilsa ikkinchi sessiya ochilmasin. Xato jim:
+     oʻqituvchi «Jonli sessiya» tugmasi bilan qoʻlda boshlay oladi. */
+  const autoLive = Boolean(widget.state.autoLive);
+  const autoClassId = widget.state.classId as string | undefined;
+  const autoStarted = React.useRef(false);
+  React.useEffect(() => {
+    if (!autoLive || live || !setId || !autoClassId || autoStarted.current) return;
+    autoStarted.current = true;
+    patch(widget.id, { autoLive: false });
+    startLiveSessionAction({ setId, classId: autoClassId })
+      .then((info) =>
+        patch(widget.id, { live: info, index: 0, revealed: false, showJoin: true, classId: autoClassId }),
+      )
+      .catch(() => {});
+  }, [autoLive, live, setId, autoClassId, widget.id, patch]);
+
   if (!setId) {
     return (
       <SetPicker onPick={(id) => patch(widget.id, { setId: id, index: 0, revealed: false })} />
