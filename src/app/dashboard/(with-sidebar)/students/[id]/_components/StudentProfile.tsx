@@ -389,7 +389,7 @@ export default function StudentProfile({
   ];
 
   return (
-    <div className="flex flex-1 min-w-0 h-full min-h-0 gap-6 overflow-hidden py-4 pl-4 md:py-6 md:pl-6">
+    <div className="flex flex-1 min-w-0 lg:h-full min-h-0 gap-6 lg:overflow-hidden py-4 pl-4 md:py-6 md:pl-6">
       {/* ── Chap panel — bitta karta, ichida boʻlimlar ── */}
       <aside className="hidden w-[360px] shrink-0 flex-col overflow-hidden rounded-xl bg-card border border-border/50 shadow-sm lg:flex">
         {/* Oʻquvchi + switcher (sarlavha boʻlimi) */}
