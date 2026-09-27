@@ -4210,6 +4210,24 @@
     "llConflict": "Conflict",
     "llSkippedLabel": "Skipped"
   },
+  "WorkPlan": {
+    "title": "Work plan",
+    "today": "Today",
+    "nextLesson": "Next lesson",
+    "upNext": "Next topic",
+    "noUnit": "No unit",
+    "untitled": "Untitled topic",
+    "reserve": "Reserve lesson",
+    "taught": "Taught",
+    "use": "Use",
+    "useHint": "Put the topic into the title and the lesson day into the date",
+    "showAll": "Whole unit · {count} topics",
+    "showLess": "Show less",
+    "openLessons": "Lessons",
+    "empty": "This class has no work plan yet",
+    "emptyHint": "Upload a work plan on the Lessons page — today's topic will show here.",
+    "picked": "Topic added to the assignment"
+  },
   "AssignmentsPage": {
     "status_today": "Today",
     "statusHint_today": "Happens today — no grades entered yet.",

@@ -4096,6 +4096,24 @@
     "llConflict": "Nizo",
     "llSkippedLabel": "Oʻtkazildi"
   },
+  "WorkPlan": {
+    "title": "Ish reja",
+    "today": "Bugun",
+    "nextLesson": "Keyingi dars",
+    "upNext": "Navbatdagi mavzu",
+    "noUnit": "Boʻlimsiz",
+    "untitled": "Nomsiz mavzu",
+    "reserve": "Zaxira dars",
+    "taught": "Oʻtilgan",
+    "use": "Olish",
+    "useHint": "Mavzu nomini sarlavhaga, dars kunini sanaga qoʻyish",
+    "showAll": "Butun boʻlim · {count} mavzu",
+    "showLess": "Qisqartirish",
+    "openLessons": "Darslar",
+    "empty": "Bu sinfda hali ish reja yoʻq",
+    "emptyHint": "Darslar sahifasida ish rejani yuklang — bugungi mavzu shu yerda koʻrinadi.",
+    "picked": "Mavzu topshiriqqa qoʻyildi"
+  },
   "AssignmentsPage": {
     "status_today": "Bugun",
     "statusHint_today": "Bugun oʻtkaziladi — hali baho kiritilmagan.",
