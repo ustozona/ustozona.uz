@@ -221,7 +221,12 @@ export function applyBlockedDays(
   const out: Holiday[] = [];
 
   for (const h of cal.holidays) {
-    if (!h.range.start || !h.range.end || h.range.end < h.range.start) continue;
+    // Sanasi hali toʻliq kiritilmagan (yoki notoʻgʻri) yozuvda kun yoʻq —
+    // tanlovga taʼsir qilmaydi, oʻzgarishsiz qoladi (tashlab yuborilmaydi).
+    if (!h.range.start || !h.range.end || h.range.end < h.range.start) {
+      out.push(h);
+      continue;
+    }
     const runs: DateRange[] = [];
     let start: string | null = null;
     let prev: string | null = null;

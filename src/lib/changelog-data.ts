@@ -36,6 +36,14 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "darslar-oqimi-kalendar",
+    date: "2026-09-27",
+    type: "yaxshilandi",
+    title: "Dars oqimi taʼtil, jadval va zaxira darslarni hisobga oladi",
+    body: "Kunni bloklasangiz yoki taʼtil qoʻshsangiz, oʻsha kundagi darslar keyingi darslarga suriladi. Jadval oʻzgarsa, mos kelmay qolgan darslarni bir bosishda qayta joylaysiz. Mavzuga yana bir dars qoʻshish va boʻlim oxiriga zaxira dars qoʻyish mumkin — dars kechiksa zaxira ishlatiladi, keyingi boʻlimlar joyida qoladi.",
+    href: "/dashboard/lessons",
+  },
+  {
     id: "darslar-oqimi",
     date: "2026-09-27",
     type: "yangi",

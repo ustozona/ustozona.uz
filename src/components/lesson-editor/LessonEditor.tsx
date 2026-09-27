@@ -27,6 +27,7 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useLessonStore } from "@/store/useLessonStore";
+import { useLessonFlow } from "@/hooks/useLessonFlow";
 import { isTaught, lessonPlanState, type LessonPlanState } from "@/lib/lessons-data";
 import { todayKey } from "@/lib/date-keys";
 import { commitLessonsDelete } from "@/lib/sync/lessons-delete";
@@ -128,8 +129,18 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
   }, [backOrPush, lesson, tc]);
   const setLessonClasses = useLessonStore((s) => s.setLessonClasses);
   const setUnitForClass = useLessonStore((s) => s.setUnitForClass);
-  const addScheduleForClass = useLessonStore((s) => s.addScheduleForClass);
   const removeScheduleForClass = useLessonStore((s) => s.removeScheduleForClass);
+  /* Dars oqimi: muharrirda sana qoʻshish planner'dagi bogʻlash bilan bir
+     qoida (tartib boʻyicha joylanadi, qoʻshimcha sana / jadvaldan tashqari
+     vaqt — qadaladi); sanani olib tashlash boʻshliqni yopadi. */
+  const flow = useLessonFlow();
+  const addSchedule = (classId: string, date: string, startMin: number, endMin: number) =>
+    flow.place({ lessonId, classId, from: null, to: { date, startMin, endMin } });
+  const removeSchedule = (classId: string, idx: number) =>
+    flow.run({
+      classIds: [classId], closeGaps: true, decline: "keep",
+      mutate: () => removeScheduleForClass(lessonId, classId, idx),
+    });
   const setPlanState = useLessonStore((s) => s.setPlanState);
   const setTaught = useLessonStore((s) => s.setTaught);
   const standardSets = useStandardsStore((s) => s.sets);
@@ -571,6 +582,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
             </DropdownMenuContent>
           </DropdownMenu>
 
+          {flow.dialog}
           <AlertDialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
             <AlertDialogContent>
               <AlertDialogHeader>
@@ -753,8 +765,8 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
                     onClose={() => setActivePanel(null)}
                     onSetClasses={(classIds) => setLessonClasses(lessonId, classIds)}
                     onSetUnitForClass={(classId, unitId) => setUnitForClass(lessonId, classId, unitId)}
-                    onAddScheduleForClass={(classId, date, s, e) => addScheduleForClass(lessonId, classId, date, s, e)}
-                    onRemoveScheduleForClass={(classId, idx) => removeScheduleForClass(lessonId, classId, idx)}
+                    onAddScheduleForClass={addSchedule}
+                    onRemoveScheduleForClass={removeSchedule}
                     onSetStandards={(standards) => updateLesson(lessonId, { standards })}
                     onSetSetIds={(setIds) => updateLesson(lessonId, { setIds })}
                   />
@@ -804,8 +816,8 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
                   onClose={() => setActivePanel(null)}
                   onSetClasses={(classIds) => setLessonClasses(lessonId, classIds)}
                   onSetUnitForClass={(classId, unitId) => setUnitForClass(lessonId, classId, unitId)}
-                  onAddScheduleForClass={(classId, date, s, e) => addScheduleForClass(lessonId, classId, date, s, e)}
-                  onRemoveScheduleForClass={(classId, idx) => removeScheduleForClass(lessonId, classId, idx)}
+                  onAddScheduleForClass={addSchedule}
+                  onRemoveScheduleForClass={removeSchedule}
                   onSetStandards={(standards) => updateLesson(lessonId, { standards })}
                   onSetSetIds={(setIds) => updateLesson(lessonId, { setIds })}
                 />

@@ -27,6 +27,7 @@ import {
   panelCardContentClass,
 } from "@/components/DashboardPage";
 import { useLessonStore } from "@/store/useLessonStore";
+import { useLessonFlow } from "@/hooks/useLessonFlow";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { classColor } from "@/lib/grades-data";
 import { subjectLabel } from "@/lib/standards-data";
@@ -87,7 +88,8 @@ export function NextLessonsCard({ now }: { now: Date }) {
   const router = useRouter();
   const allLessons = useLessonStore((s) => s.lessons);
   const addLesson = useLessonStore((s) => s.addLesson);
-  const addScheduleForClass = useLessonStore((s) => s.addScheduleForClass);
+  // Dars oqimi: slotda yaratilgan mavzu planner'dagi kabi joylanadi (tartibni buzsa — qadaladi).
+  const flow = useLessonFlow();
   const versions = useTimetableStore((s) => s.versions);
   const calendar = useCalendarStore((s) => s.calendar);
   const [linkSlot, setLinkSlot] = useState<LinkLessonSlot | null>(null);
@@ -184,8 +186,11 @@ export function NextLessonsCard({ now }: { now: Date }) {
 
   const createLessonInSlot = (r: Row) => {
     const id = addLesson({ classId: r.classId, unitId: null, title: t("untitledTopic"), status: "Draft" });
-    addScheduleForClass(id, r.classId, r.date, r.startMin, r.endMin);
-    router.push(`/lessons/${id}`);
+    flow.place({
+      lessonId: id, classId: r.classId, from: null,
+      to: { date: r.date, startMin: r.startMin, endMin: r.endMin },
+      onSettled: () => router.push(`/lessons/${id}`),
+    });
   };
 
   // Sana kartadagi bargda turadi — har kun akkordeon (default ochiq), sarlavhada faqat: «Payshanba ——— 2 kundan keyin».
@@ -215,6 +220,7 @@ export function NextLessonsCard({ now }: { now: Date }) {
 
   return (
     <Card className={panelCardClass}>
+      {flow.dialog}
       <CardHeader className={cn(panelCardHeaderClass, "min-h-16 px-5 pt-4! pb-4!")}>
         <div className="flex min-w-0 items-center gap-2">
           <SectionIcon>

@@ -3,7 +3,7 @@ import {
   isPinned, isTaught, lessonClassIds, lessonOrderFor, lessonSessions, unitIdForClass,
   type Lesson, type LessonSession, type Unit,
 } from "@/lib/lessons-data";
-import { distributeTopics, slotKey } from "@/lib/ish-reja/distribute";
+import { classSlotsOn, distributeTopics, slotKey } from "@/lib/ish-reja/distribute";
 import type { SessionMove } from "@/lib/lesson-shift";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -122,6 +122,26 @@ export function classFlow(lessons: readonly Lesson[], units: readonly Unit[], cl
   return { classId, items, pool: [...pool.values()].sort(cmpSession), blocked, occupied };
 }
 
+/** Jadvalning `fromKey` kunidan boshlab `count` ta boʻsh sloti (taʼtil va
+    band slotlar oʻtkaziladi). Boshlangʻich kunda `afterMin` gacha boshlangan
+    slotlar, bugun esa allaqachon boshlanganlari ham band hisoblanadi;
+    oʻtmishdagi kun bugundan boshlanadi. */
+function freeSlotsFrom(
+  flow: ClassFlow, fromKey: string, afterMin: number, count: number,
+  occupied: Iterable<string>, env: FlowEnv,
+): (LessonSession | null)[] {
+  const from = fromKey < env.now.today ? env.now.today : fromKey;
+  const edge = Math.max(from === fromKey ? afterMin : -1, from === env.now.today ? env.now.nowMin : -1);
+  const occ = new Set(occupied);
+  for (const e of env.eventsForDate(from)) {
+    if (e.classId === flow.classId && e.startMin <= edge) occ.add(slotKey(from, e.startMin));
+  }
+  return distributeTopics({
+    classId: flow.classId, count, fromKey: from, toKey: env.toKey,
+    eventsForDate: env.eventsForDate, isHoliday: env.isHoliday, occupied: occ,
+  });
+}
+
 export type ReflowChange = {
   lessonId: string;
   /** Birinchi kelajakdagi sessiya — oldin va keyin (`null` — sigʻmadi). */
@@ -142,10 +162,11 @@ export type ReflowPlan = {
     kengaytirilgan yoki qisqartirilgan). */
 export function planReflow(flow: ClassFlow, pool: readonly LessonSession[], env: FlowEnv): ReflowPlan {
   const { classId, items } = flow;
+  // Taʼtil (bloklangan kun) sloti havzada boʻlmaydi — u yerdagi dars suriladi.
   const uniq = new Map<string, LessonSession>();
   for (const s of pool) {
     const k = keyOf(s);
-    if (!flow.blocked.has(k) && !isFrozen(s, env.now) && !uniq.has(k)) uniq.set(k, s);
+    if (!flow.blocked.has(k) && !isFrozen(s, env.now) && !env.isHoliday(s.date) && !uniq.has(k)) uniq.set(k, s);
   }
   const slots = [...uniq.values()].sort(cmpSession);
 
@@ -155,17 +176,10 @@ export function planReflow(flow: ClassFlow, pool: readonly LessonSession[], env:
     // oxiridan boshlanadi — slot toʻsiq bilan toʻqnashgan dars oldinroqqa
     // (bugunga) tortib yuborilmasin.
     const last = [...slots, ...items.flatMap((it) => it.sessions)].sort(cmpSession).at(-1);
-    const fromKey = last?.date ?? env.now.today;
-    const occupied = new Set([...flow.occupied, ...flow.blocked, ...uniq.keys()]);
-    // Boshlangʻich kunda oxirgi slotdan (yoki hozirdan) oldingi slotlar ham band.
-    const edge = last ? last.startMin : env.now.nowMin;
-    for (const e of env.eventsForDate(fromKey)) {
-      if (e.classId === classId && e.startMin <= edge) occupied.add(slotKey(fromKey, e.startMin));
-    }
-    const extra = distributeTopics({
-      classId, count: need - slots.length, fromKey, toKey: env.toKey,
-      eventsForDate: env.eventsForDate, isHoliday: env.isHoliday, occupied,
-    });
+    const extra = freeSlotsFrom(
+      flow, last?.date ?? env.now.today, last?.startMin ?? -1, need - slots.length,
+      [...flow.occupied, ...flow.blocked, ...uniq.keys()], env,
+    );
     for (const s of extra) if (s) slots.push(s);
   }
 
@@ -191,9 +205,80 @@ export function planReflow(flow: ClassFlow, pool: readonly LessonSession[], env:
   return { classId, moves, changes, overflow };
 }
 
-/** Sanalar tartibga mosmi: havzani oqimga berish joriy holatni qayta hosil qiladimi. */
+/** Sessiya sinf jadvalidagi biror slotda boshlanadimi. Sinfning shu sanada
+    amaldagi jadvalida umuman darsi boʻlmasa (jadval hali tuzilmagan) —
+    tekshirilmaydi, «mos» hisoblanadi. */
+export function isOnTimetable(s: LessonSession, classId: string, env: FlowEnv): boolean {
+  const events = env.eventsForDate(s.date);
+  if (!events.some((e) => e.classId === classId)) return true;
+  return classSlotsOn(events, classId, s.date).some((e) => s.startMin >= e.startMin && s.startMin < e.endMin);
+}
+
+/** Oqim darslarining jadvalda yoʻq vaqtga tushgan kelajakdagi sessiyalari
+    (jadval versiyasi oʻzgargach). Qadalgan darslar hisobga olinmaydi. */
+export function offTimetable(flow: ClassFlow, env: FlowEnv): LessonSession[] {
+  return flow.items
+    .flatMap((it) => it.sessions)
+    .filter((s) => !isOnTimetable(s, flow.classId, env))
+    .sort(cmpSession);
+}
+
+/** `fromKey` dan boshlab havzani jadvalning boʻsh slotlaridan qayta tuzish
+    (ixcham). Undan oldingi slotlar oʻz joyida qoladi. */
+function compactPool(flow: ClassFlow, fromKey: string, env: FlowEnv): LessonSession[] {
+  const kept = flow.pool.filter((s) => s.date < fromKey);
+  const need = flow.items.reduce((n, it) => n + it.sessions.length, 0);
+  const fresh = freeSlotsFrom(flow, fromKey, -1, Math.max(0, need - kept.length), [...flow.blocked, ...kept.map(keyOf)], env);
+  return [...kept, ...fresh.filter((s): s is LessonSession => !!s)];
+}
+
+/** Sanalarni tartibga moslash. Jadvalda yoʻq vaqtga tushgan dars boʻlsa —
+    oʻsha sanadan boshlab jadvalning boʻsh slotlariga qayta (ixcham)
+    joylanadi; aks holda oddiy qayta taqsimlash (taʼtil slotlari chiqadi). */
+export function planRealign(flow: ClassFlow, env: FlowEnv): ReflowPlan {
+  const off = offTimetable(flow, env);
+  return planReflow(flow, off.length ? compactPool(flow, off[0].date, env) : flow.pool, env);
+}
+
+/** Sanalar tartibga, jadvalga va taʼtillarga mosmi. */
 export function isFlowConsistent(flow: ClassFlow, env: FlowEnv): boolean {
-  return planReflow(flow, flow.pool, env).moves.length === 0;
+  return planReflow(flow, flow.pool, env).moves.length === 0 && offTimetable(flow, env).length === 0;
+}
+
+/** `after` dan keyingi birinchi slot — havzadan (`exclude` dagilardan
+    tashqari) yoki havza tugasa jadvalning birinchi boʻsh sloti. Oqimga
+    dars kiritish uchun «joy egasi»: dars shu slotni olib, keyingilar
+    bittadan suriladi (surish, choʻzish, zaxira dars). */
+export function nextSlotAfter(
+  flow: ClassFlow, after: LessonSession | null, exclude: ReadonlySet<string>, env: FlowEnv,
+): LessonSession | null {
+  const inPool = flow.pool.find((s) =>
+    (!after || cmpSession(s, after) > 0) && !exclude.has(keyOf(s)) && !env.isHoliday(s.date));
+  if (inPool) return inPool;
+  const last = [...(after ? [after] : []), ...flow.pool].sort(cmpSession).at(-1);
+  const [slot] = freeSlotsFrom(
+    flow, last?.date ?? env.now.today, last?.startMin ?? -1, 1,
+    [...flow.occupied, ...flow.blocked, ...exclude], env,
+  );
+  return slot;
+}
+
+/** Zaxira dars: ketma-ketlikda `lessonId` dan keyin, shu boʻlimda, oqimdagi
+    birinchi zaxira (dars oʻzi oqimda boʻlmasa ham — masalan oʻtib ketgan
+    sessiyasi surilayotganda). Surishda u «yutiladi» — keyingi boʻlimlar
+    joyidan qimirlamaydi. */
+export function reserveAfter(
+  lessons: readonly Lesson[], units: readonly Unit[], flow: ClassFlow, lessonId: string,
+): FlowItem | null {
+  const seq = flowSequence(lessons, units, flow.classId);
+  const pos = new Map(seq.map((l, i) => [l.id, i]));
+  const at = pos.get(lessonId);
+  const x = seq[at ?? -1];
+  if (at === undefined || !x) return null;
+  const rank = unitRanker(units, flow.classId)(x);
+  const byId = new Map(seq.map((l) => [l.id, l]));
+  return flow.items.find((it) =>
+    it.unitRank === rank && (pos.get(it.lessonId) ?? -1) > at && !!byId.get(it.lessonId)?.reserve) ?? null;
 }
 
 /* ── Darsni sanaga qoʻyish (planner'da tashlash, sana tahriri, bogʻlash) ──
@@ -211,7 +296,10 @@ export function isFlowConsistent(flow: ClassFlow, env: FlowEnv): boolean {
 
    B band-ligi planner koʻrinishi bilan bir xil oʻlchanadi: boshlanishi B
    oraligʻiga tushgan sessiya B da turibdi (08:05 dagi dars 08:00–08:45
-   slotida). Shunda dars aynan oʻsha sessiyaning oʻrnini oladi. */
+   slotida). Shunda dars aynan oʻsha sessiyaning oʻrnini oladi.
+
+   Jadvalda yoʻq vaqtga (masalan qoʻshimcha dars shanba kuni) qoʻyilgan dars
+   qadaladi — aks holda keyingi «Moslash» uni jadval slotiga qaytarib olardi. */
 
 /** Sessiya B oraligʻida boshlanadimi (planner'dagi «slotda turibdi» qoidasi). */
 function startsIn(s: LessonSession, to: LessonSession): boolean {
@@ -241,8 +329,10 @@ export function planDrop(opts: {
   from: LessonSession | null;
   to: LessonSession;
   now: FlowNow;
+  /** Slot sinf jadvalida bormi (berilmasa — har qanday vaqt jadvaldagi deb olinadi). */
+  onTimetable?: (s: LessonSession) => boolean;
 }): DropDecision {
-  const { lessons, units, classId, lessonId, from, to, now } = opts;
+  const { lessons, units, classId, lessonId, from, to, now, onTimetable } = opts;
   const plain: DropDecision = { kind: "plain" };
   const x = lessons.find((l) => l.id === lessonId);
   if (!x || isFrozen(to, now) || isTaught(x, classId)) return plain;
@@ -256,6 +346,12 @@ export function planDrop(opts: {
   const target = occupied[0]?.s ?? to;
   // Qadalgan dars qadalganicha koʻchadi; B dagi oqim darsi oldinga suriladi.
   if (isPinned(x, classId)) return { kind: "flow", target, setSession: true, pin: false, order: null };
+  // Allaqachon kelajakda darsi bor mavzuga QOʻSHIMCHA sana (muharrirdan) —
+  // qoʻlda tanlangan sana: mavzu qadaladi, aks holda qayta joylash yangi
+  // sanani boshqa darsga berib yuborardi.
+  if (!from && classSessions(x, classId).some((s) => !isFrozen(s, now))) {
+    return { kind: "flow", target, setSession: true, pin: true, order: null };
+  }
 
   const flow = classFlow(lessons, units, classId, now);
   const items = new Map(flow.items.map((it) => [it.lessonId, it]));
@@ -271,6 +367,9 @@ export function planDrop(opts: {
       order: placeInUnit(lessons, units, classId, x, y.lessonId, later ? "after" : "before"),
     };
   }
+
+  // B boʻsh va jadvalda yoʻq vaqt — qoʻlda tanlangan sana, qadaladi.
+  if (onTimetable && !onTimetable(to)) return { kind: "flow", target, setSession: true, pin: true, order: null };
 
   // B boʻsh: sana boʻyicha qoʻshnilar.
   let prev: FlowItem | null = null;

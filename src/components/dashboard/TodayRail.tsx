@@ -42,6 +42,7 @@ import { panelCardClass, panelCardHeaderClass, panelCardContentClass } from "@/c
 import { useTimetableStore } from "@/store/useTimetableStore";
 import { useCalendarStore } from "@/store/useCalendarStore";
 import { useLessonStore } from "@/store/useLessonStore";
+import { useLessonFlow } from "@/hooks/useLessonFlow";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { useTourRequest } from "@/components/tour/tour-request";
@@ -83,7 +84,8 @@ export function TodayRail({ now }: { now: Date }) {
   const router = useRouter();
   const scrollRef = useRef<HTMLDivElement>(null);
   const addLesson = useLessonStore((s) => s.addLesson);
-  const addScheduleForClass = useLessonStore((s) => s.addScheduleForClass);
+  // Dars oqimi: slotda yaratilgan mavzu planner'dagi kabi joylanadi (tartibni buzsa — qadaladi).
+  const flow = useLessonFlow();
   const [linkSlot, setLinkSlot] = useState<LinkLessonSlot | null>(null);
   const [selectedDate, setSelectedDate] = useState(() => new Date(now));
   const [weekStart, setWeekStart] = useState(() => startOfWeekMon(selectedDate));
@@ -218,8 +220,11 @@ export function TodayRail({ now }: { now: Date }) {
   //    boʻsh nom qoldirmaydi. ──
   const createLessonInSlot = (ev: RailEvent) => {
     const id = addLesson({ classId: ev.classId, unitId: null, title: t("untitledTopic"), status: "Draft" });
-    addScheduleForClass(id, ev.classId, selectedKey, ev.startMin, ev.endMin);
-    router.push(`/lessons/${id}`);
+    flow.place({
+      lessonId: id, classId: ev.classId, from: null,
+      to: { date: selectedKey, startMin: ev.startMin, endMin: ev.endMin },
+      onSettled: () => router.push(`/lessons/${id}`),
+    });
   };
 
   return (
@@ -228,6 +233,7 @@ export function TodayRail({ now }: { now: Date }) {
     // konteynerida edi, shuning uchun tur spotlight'i sarlavha va hafta
     // tasmasini tashlab ketardi (2026-08-18, sidebar bilan bir xil sabab).
     <Card data-tour="home-schedule" className={panelCardClass}>
+      {flow.dialog}
       {/* border-b-0: kontent (kun tasmasi) darhol davom etadi, ajratuvchi chiziq keraksiz — panel-language-v1 "no-divider" istisnosi */}
       <CardHeader className={cn(panelCardHeaderClass, "border-b-0 pt-4! pb-4!")}>
         <div className="flex min-w-0 items-center gap-2">

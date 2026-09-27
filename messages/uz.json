@@ -2080,6 +2080,10 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "darslar-oqimi-kalendar": {
+        "title": "Dars oqimi taʼtil, jadval va zaxira darslarni hisobga oladi",
+        "body": "Kunni bloklasangiz yoki taʼtil qoʻshsangiz, oʻsha kundagi darslar keyingi darslarga suriladi. Jadval oʻzgarsa, mos kelmay qolgan darslarni bir bosishda qayta joylaysiz. Mavzuga yana bir dars qoʻshish va boʻlim oxiriga zaxira dars qoʻyish mumkin — dars kechiksa zaxira ishlatiladi, keyingi boʻlimlar joyida qoladi."
+      },
       "darslar-oqimi": {
         "title": "Darslar endi bir-biriga bogʻlangan — sanalar oʻzi suriladi",
         "body": "Darslar tartibini oʻzgartirsangiz yoki darsni oʻchirsangiz, keyingi darslar jadvaldagi sanalarga oʻzi qayta joylashadi. «Rejalashtiruvchi»da darsni boshqa kunga olib borsangiz, orada qolganlar suriladi; muhim darsni esa sanasiga qadab qoʻyish mumkin. Har oʻzgarishni «Bekor qilish» bilan qaytarasiz."
@@ -4596,8 +4600,25 @@
     "unpinnedToast": "Qadash olindi — dars oqimga qaytdi",
     "pinnedHereToast": "Dars shu sanaga qadaldi",
     "pinnedLabel": "Sanaga qadalgan",
-    "mismatchChip": "Sanalar darslar tartibiga mos emas",
-    "realign": "Moslash"
+    "mismatchChip": "Sanalar tartib yoki jadvalga mos emas",
+    "realign": "Moslash",
+    "reserveTitle": "Zaxira dars",
+    "reserveAdd": "Zaxira dars qoʻshish",
+    "reserveAddedToast": "Zaxira dars qoʻshildi",
+    "reserveBadge": "Zaxira",
+    "reserveUsedToast": "Zaxira dars ishlatildi — keyingi boʻlimlar joyida qoldi",
+    "stretch": "Yana bir dars (+1)",
+    "shorten": "Bir darsga qisqartirish (−1)",
+    "stretchedToast": "Mavzu yana bir darsga choʻzildi",
+    "shortenedToast": "Mavzu bir darsga qisqardi",
+    "durationLabel": "{count} ta dars",
+    "holidayConflictToast": "{count} ta dars taʼtil kuniga tushib qoldi",
+    "timetableConflictToast": "{count} ta dars yangi jadvalda yoʻq vaqtga tushib qoldi",
+    "shiftAction": "Surish",
+    "realignAction": "Qayta joylash",
+    "blockShiftLessons": "Shu kundagi darslarni keyingi darslarga surish",
+    "dayAlreadyBlocked": "Bu kun allaqachon dam olish kuni: {name}",
+    "blocksMigratedToast": "{count} ta bloklangan kun oʻquv yili kalendariga koʻchirildi"
   },
   "Doska": {
     "widgets": {

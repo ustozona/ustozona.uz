@@ -43,6 +43,7 @@ import PeriodGrid, { type TimetableClass } from "@/components/timetable/PeriodGr
 import { TimetablePrintSheet } from "@/components/timetable/TimetablePrintSheet";
 import BellScheduleDialog from "@/components/timetable/BellScheduleDialog";
 import EffectiveDateDialog, { type EffectiveChoice } from "@/components/timetable/EffectiveDateDialog";
+import { useFlowCalendarWatch } from "@/hooks/useLessonFlow";
 import VersionChip, { versionRangeLabel } from "@/components/timetable/VersionChip";
 import TimetableCoverageBanner from "@/components/timetable/TimetableCoverageBanner";
 import { useTimetableStore } from "@/store/useTimetableStore";
@@ -145,6 +146,9 @@ export default function TimetablePage() {
   const activeCalendar = useCalendarStore((s) => s.calendar);
   const storeHydrated = useTimetableStore((s) => s._hasHydrated);
   const commitDraft = useTimetableStore((s) => s.commitDraft);
+  // Dars oqimi: jadval oʻzgargach yangi jadvalda yoʻq vaqtga tushgan darslarni
+  // qayta joylash toast orqali taklif qilinadi.
+  const lessonFlowDialog = useFlowCalendarWatch("timetable");
   const createVersion = useTimetableStore((s) => s.createVersion);
   const deleteVersion = useTimetableStore((s) => s.deleteVersion);
   const [today] = useState(() => getTodayKey());
@@ -1136,6 +1140,7 @@ export default function TimetablePage() {
       )}
 
       {/* "Qachondan kuchga kiradi?" — joriy jadval tahririda yoki "Yangi versiya…" da */}
+      {lessonFlowDialog}
       <EffectiveDateDialog
         open={effectiveDialogOpen}
         todayKey={today}

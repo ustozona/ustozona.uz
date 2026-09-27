@@ -2080,6 +2080,10 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "darslar-oqimi-kalendar": {
+        "title": "Sabaq aǵımı dem alıs, keste hám zapas sabaqlardı esapqa aladı",
+        "body": "Kúndi bloklasańız yamasa dem alıs qossańız, sol kúngi sabaqlar keyingi sabaqlarǵa súriledi. Keste ózgerse, sáykes kelmey qalǵan sabaqlardı bir basıwda qayta jaylastırasız. Temaǵa jáne bir sabaq qosıw hám bólim aqırına zapas sabaq qoyıw múmkin — keshikseńiz zapas paydalanıladı, keyingi bólimler ornında qaladı."
+      },
       "darslar-oqimi": {
         "title": "Sabaqlar endi bir-birine baylanıslı — sáneler ózi súriledi",
         "body": "Sabaqlar tártibin ózgertseńiz yamasa sabaqtı óshirseńiz, keyingi sabaqlar keste sánelerine ózi qayta jaylasadı. «Jobalawshı» bóliminde sabaqtı basqa kúnge alıp barsańız, arasındaǵı sabaqlar súriledi; áhmiyetli sabaqtı sánesine bekitip qoyıwǵa boladı. Hár ózgeristi biykar etiw múmkin."
@@ -4706,8 +4710,25 @@
     "unpinnedToast": "Bekitiw alındı — sabaq aǵımǵa qayttı",
     "pinnedHereToast": "Sabaq usı sánege bekitildi",
     "pinnedLabel": "Sánege bekitilgen",
-    "mismatchChip": "Sáneler sabaqlar tártibine sáykes emes",
-    "realign": "Sáykeslestiriw"
+    "mismatchChip": "Sáneler sabaqlar tártibine yamasa kestege sáykes emes",
+    "realign": "Sáykeslestiriw",
+    "reserveTitle": "Zapas sabaq",
+    "reserveAdd": "Zapas sabaq qosıw",
+    "reserveAddedToast": "Zapas sabaq qosıldı",
+    "reserveBadge": "Zapas",
+    "reserveUsedToast": "Zapas sabaq paydalanıldı — keyingi bólimler ornında qaldı",
+    "stretch": "Jáne bir sabaq (+1)",
+    "shorten": "Bir sabaqqa qısqartıw (−1)",
+    "stretchedToast": "Tema jáne bir sabaqqa sozıldı",
+    "shortenedToast": "Tema bir sabaqqa qısqardı",
+    "durationLabel": "{count} sabaq",
+    "holidayConflictToast": "{count} sabaq dem alıs kúnine túsip qaldı",
+    "timetableConflictToast": "{count} sabaq jańa kestede joq waqıtqa túsip qaldı",
+    "shiftAction": "Súriw",
+    "realignAction": "Qayta jaylastırıw",
+    "blockShiftLessons": "Usı kúngi sabaqlardı keyingi sabaqlarǵa súriw",
+    "dayAlreadyBlocked": "Bul kún aldınnan dem alıs kúni: {name}",
+    "blocksMigratedToast": "{count} bloklanǵan kún oqıw jılı kalendarına kóshirildi"
   },
   "Doska": {
     "widgets": {
