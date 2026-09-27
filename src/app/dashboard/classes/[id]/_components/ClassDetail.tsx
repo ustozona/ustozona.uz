@@ -107,7 +107,7 @@ export default function ClassDetail({ identity, initialSection }: Props) {
     <DashboardColumns
       template={columnsTemplate}
       xlTemplate={columnsXlTemplate}
-      className="h-full overflow-hidden p-4 md:p-6 lg:p-8"
+      className="lg:h-full lg:overflow-hidden p-4 md:p-6 lg:p-8"
     >
       {/* ───────────── LEFT: sinf identifikatori + boʻlim navigatsiyasi ───────────── */}
       <aside className="hidden lg:flex min-w-0 min-h-0 h-full">

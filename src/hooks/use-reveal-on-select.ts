@@ -8,6 +8,12 @@ import * as React from "react";
  *
  * Birinchi render (URL'dan tiklangan tanlov) va desktop tegilmaydi.
  * `prefers-reduced-motion` da sakrab oʻtadi.
+ *
+ * ⛔ `scrollIntoView` ISHLATILMAYDI: u `overflow: hidden` ota-bloklarni
+ * ham (dasturiy) aylantiradi — dashboard qobigʻida ular bor
+ * (`SidebarInset`, with-sidebar layout). Siljigan hidden-blokni barmoq
+ * bilan qaytarib boʻlmaydi → ekran «qotib qoladi» (2026-09-27, telefon).
+ * Shuning uchun faqat eng yaqin HAQIQIY scroll konteyneri aylantiriladi.
  */
 export function useRevealOnSelect<T extends HTMLElement>(key: unknown): React.RefObject<T | null> {
   const ref = React.useRef<T | null>(null);
@@ -21,8 +27,24 @@ export function useRevealOnSelect<T extends HTMLElement>(key: unknown): React.Re
     if (!key || !ref.current) return;
     if (!window.matchMedia("(max-width: 1023px)").matches) return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    ref.current.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+    const el = ref.current;
+    const scroller = scrollParent(el);
+    const top =
+      el.getBoundingClientRect().top -
+      (scroller ? scroller.getBoundingClientRect().top : 0) -
+      12;
+    (scroller ?? window).scrollBy({ top, behavior: reduce ? "auto" : "smooth" });
   }, [key]);
 
   return ref;
+}
+
+/** Eng yaqin foydalanuvchi aylantira oladigan ota (overflow-y: auto|scroll).
+    Topilmasa null — unda oyna (window) aylantiriladi. */
+function scrollParent(el: HTMLElement): HTMLElement | null {
+  for (let p = el.parentElement; p; p = p.parentElement) {
+    const oy = getComputedStyle(p).overflowY;
+    if ((oy === "auto" || oy === "scroll") && p.scrollHeight > p.clientHeight) return p;
+  }
+  return null;
 }
