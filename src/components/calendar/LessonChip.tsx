@@ -1,7 +1,7 @@
 "use client";
 
 import { type CSSProperties, type MouseEvent, type ReactNode } from "react";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check, Pin } from "lucide-react";
 import { ClassSwatch } from "@/components/ClassSwatch";
 import { classTints, CLASS_COLOR_HEX, type ClassColor } from "@/lib/class-colors";
 import { cn } from "@/lib/utils";
@@ -24,6 +24,7 @@ export function LessonChip({
   color,
   title,
   done = false,
+  pinned = false,
   trailing,
   onClick,
   className,
@@ -32,6 +33,8 @@ export function LessonChip({
   title: string;
   /** Bajarilgan dars — doira oʻrniga ✓. */
   done?: boolean;
+  /** Dars sanaga qadalgan — sarlavhadan keyin 📌 (dars oqimi uni surmaydi). */
+  pinned?: boolean;
   /** Hoverda oʻngda chiqadigan element. Berilmasa — sinf rangidagi "→" boksi.
       Planner oʻzining `⋮` menyusini shu yerga uzatadi. */
   trailing?: ReactNode;
@@ -55,6 +58,7 @@ export function LessonChip({
         <ClassSwatch hex={hex} />
       )}
       <span className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">{title}</span>
+      {pinned && <Pin className="size-3.5 shrink-0 text-muted-foreground" />}
       {/* Hover zonasi — ikkala variant ham AYNAN shu geometriyada VA AYNAN
           bir xil sinf-rangi toʻldirilgan ikonboks: default "→" ham,
           isteʼmolchi elementi (Planner `⋮` menyusi) ham. Ikkalasi ham shu

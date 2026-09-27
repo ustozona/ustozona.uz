@@ -14,7 +14,7 @@ import { CardTitle } from "@/components/ui/card";
 import { classTints, CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { ClassSwatch } from "@/components/ClassSwatch";
 import { useLessonStore } from "@/store/useLessonStore";
-import { commitLessonsDelete } from "@/lib/sync/lessons-delete";
+import { useLessonFlow } from "@/hooks/useLessonFlow";
 import { lessonClassIds, lessonSessions, lessonUnitIds, unitIdForClass, byLessonOrder, type Unit, type Lesson } from "@/lib/lessons-data";
 import { byNumber, lessonNumberOffset, ordinalsOf } from "@/lib/ordinals";
 import { ReorderList, useEscape, useReorderDraft } from "@/components/ReorderList";
@@ -69,11 +69,11 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
   const addLesson = useLessonStore((s) => s.addLesson);
   const updateUnit = useLessonStore((s) => s.updateUnit);
   const deleteUnit = useLessonStore((s) => s.deleteUnit);
-  const restoreUnit = useLessonStore((s) => s.restoreUnit);
-  const restoreLesson = useLessonStore((s) => s.restoreLesson);
   const deleteLesson = useLessonStore((s) => s.deleteLesson);
   const reorderUnits = useLessonStore((s) => s.reorderUnits);
   const reorderLessons = useLessonStore((s) => s.reorderLessons);
+  // Dars oqimi: tartib va oʻchirishdan keyin kelajakdagi sanalar qayta joylanadi.
+  const flow = useLessonFlow();
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
   const [editUnitTarget, setEditUnitTarget] = useState<Unit | null>(null);
   const [deleteUnitTarget, setDeleteUnitTarget] = useState<Unit | null>(null);
@@ -105,27 +105,23 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
     updateUnit(editUnitTarget.id, { title: editUnitTitle.trim(), description: editUnitDesc.trim() });
     setEditUnitTarget(null);
   };
+  /* Oʻchirish serverda muhrlangach store'dan olinadi; dars oqimi boʻshliqni
+     yopadi, «Bekor qilish» darslar, boʻlim va sanalarni birga qaytaradi. */
   const handleConfirmDeleteUnit = async () => {
     if (!deleteUnitTarget) return;
     const unit = deleteUnitTarget;
-    // Undo uchun: oʻchadigan darslar TOʻLIQ nusxada, saqlanadiganlar esa
-    // faqat id boʻyicha (ularga boʻlim bogʻlanishi qaytariladi).
+    const keep = keepLessonsOnUnitDelete;
     const affected = lessons.filter((l) => lessonUnitIds(l).includes(unit.id));
-    const removed = keepLessonsOnUnitDelete
-      ? []
-      : affected.filter((l) => !lessonUnitIds(l).some((uid) => uid !== unit.id));
-    const removedIds = new Set(removed.map((l) => l.id));
-    const detachedIds = affected.filter((l) => !removedIds.has(l.id)).map((l) => l.id);
-    deleteUnit(unit.id, { withLessons: !keepLessonsOnUnitDelete });
-    if (unit.id === selectedUnitId) setSelectedUnitId(null);
-    setDeleteUnitTarget(null);
-    toast.success(t("unitDeletedToast", { unit: `${uNo(unit)}. ${unit.title}` }), {
-      action: {
-        label: t("undo"),
-        onClick: () => {
-          removed.forEach((l) => restoreLesson(l));
-          restoreUnit(unit, [...detachedIds, ...removedIds]);
-        },
+    const removed = keep ? [] : affected.filter((l) => !lessonUnitIds(l).some((uid) => uid !== unit.id));
+    await flow.remove({
+      unitIds: [unit.id],
+      lessonIds: removed.map((l) => l.id),
+      classIds: [unit.classId, ...affected.flatMap(lessonClassIds)],
+      mutate: () => deleteUnit(unit.id, { withLessons: !keep }),
+      message: t("unitDeletedToast", { unit: `${uNo(unit)}. ${unit.title}` }),
+      onCommitted: () => {
+        if (unit.id === selectedUnitId) setSelectedUnitId(null);
+        setDeleteUnitTarget(null);
       },
     });
   };
@@ -154,9 +150,13 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
     reorderDraft.start(kind === "units" ? unitsForClass.map((u) => u.id) : lessonsForUnit.map((l) => l.id));
   };
   const endReorder = (save: boolean) => {
-    if (save && reorderDraft.order && reorderDraft.movedIds.size > 0) {
-      if (reorderKind === "units") reorderUnits(reorderDraft.order);
-      else reorderLessons(reorderDraft.order, classId);
+    const order = reorderDraft.order;
+    if (save && order && reorderDraft.movedIds.size > 0) {
+      flow.run({
+        classIds: [classId],
+        decline: "keep",
+        mutate: () => (reorderKind === "units" ? reorderUnits(order) : reorderLessons(order, classId)),
+      });
     }
     reorderDraft.stop();
     setReorderKind(null);
@@ -756,11 +756,12 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
                                   <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
                                   <AlertDialogAction
                                     className="bg-destructive text-white hover:bg-destructive/90"
-                                    onClick={() => void (async () => {
-                                    if (!(await commitLessonsDelete({ lessonIds: [lesson.id] }))) return;
-                                    deleteLesson(lesson.id);
-                                    toast.success(t("lessonDeletedToast"));
-                                  })()}
+                                    onClick={() => void flow.remove({
+                                      lessonIds: [lesson.id],
+                                      classIds: lessonClassIds(lesson),
+                                      mutate: () => deleteLesson(lesson.id),
+                                      message: t("lessonDeletedToast"),
+                                    })}
                                   >
                                     {t("delete")}
                                   </AlertDialogAction>
@@ -779,6 +780,7 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
         )}
       </div>
 
+      {flow.dialog}
       {unitModalOpen && (
         <CreateUnitModal
           defaultClassIds={[classId]}

@@ -2080,6 +2080,10 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "darslar-oqimi": {
+        "title": "Sabaqlar endi bir-birine baylanıslı — sáneler ózi súriledi",
+        "body": "Sabaqlar tártibin ózgertseńiz yamasa sabaqtı óshirseńiz, keyingi sabaqlar keste sánelerine ózi qayta jaylasadı. «Jobalawshı» bóliminde sabaqtı basqa kúnge alıp barsańız, arasındaǵı sabaqlar súriledi; áhmiyetli sabaqtı sánesine bekitip qoyıwǵa boladı. Hár ózgeristi biykar etiw múmkin."
+      },
       "doska-uslublar": {
         "title": "Doska: ózińizge unaǵan stildi tańlań hám paneldi ózińiz dúziń",
         "body": "Menyudaǵı «Kóriniw» bóliminde úsh stildiń birin tańlań: «Tınısh» — proektorda eń anıq, «Oyınshıq» — kishi klasslar ushın quwanıshlı hám reńli, «Doska» — jasıl doskadaǵı qaǵaz hám magnitler. Paneldi tómende, shep yamasa oń tárepte qaldırıw múmkin — interaktiv doskanıń qasında turıp islesenińiz qolay. Kerekli qurallardı «Barlıǵı» aynasınan panelge qadap qoyıń, qalǵanları sol aynada turadı."
@@ -4675,10 +4679,35 @@
     "yesTaught": "Awa, ótildi",
     "bumpNext": "Keyingi sabaqqa jıljıtıw",
     "bump": "Keyingi sabaqqa súr",
-    "bumpedToast": "{count} tema bir sabaqqa súrildi",
-    "bumpNoSlot": "Sońǵı temaǵa bos orın tabılmadı — sánesiz qaldı",
     "bumpNothing": "Bul tema kestege qoyılmaǵan — súriw ushın sessiya joq",
     "undo": "Biykarlaw"
+  },
+  "LessonFlow": {
+    "previewTitle": "{count} sabaqtıń sánesi ózgeredi",
+    "previewDescription": "Keleshektegi sáneler sabaqlar tártibi boyınsha qayta jaylastırıladı. Ótilgen hám bekitilgen sabaqlar ornında qaladı.",
+    "previewMismatch": "Sáneler aldın da tártipke sáykes emes edi — keleshektegi barlıq sabaqlar tártip boyınsha jaylasadı.",
+    "previewOverflow": "{count} sabaq oqıw jılınıń aqırına shekem kestege sıymaydı — sánesiz qaladı.",
+    "noSlot": "Sıymadı",
+    "close": "Jabıw",
+    "keepDates": "Sánelerge tiymew",
+    "onlyThisLesson": "Tek usı sabaqtı",
+    "cancel": "Biykar etiw",
+    "apply": "Sánelerdi súriw",
+    "undo": "Biykar etiw",
+    "shiftedToast": "{count} sabaqtıń sánesi súrildi",
+    "shiftedDescription": "{count} sabaq súrildi",
+    "overflowDescription": "{count} sıymadı",
+    "overflowToast": "{count} sabaq kestege sıymadı — sánesiz qaldı",
+    "noFreeSlot": "Kestede bos orın tabılmadı — sabaq súrilmedi",
+    "untitled": "Atsız tema",
+    "pin": "Sánege bekitiw",
+    "unpin": "Bekitiwdi alıw",
+    "pinnedToast": "Sabaq sánesine bekitildi",
+    "unpinnedToast": "Bekitiw alındı — sabaq aǵımǵa qayttı",
+    "pinnedHereToast": "Sabaq usı sánege bekitildi",
+    "pinnedLabel": "Sánege bekitilgen",
+    "mismatchChip": "Sáneler sabaqlar tártibine sáykes emes",
+    "realign": "Sáykeslestiriw"
   },
   "Doska": {
     "widgets": {

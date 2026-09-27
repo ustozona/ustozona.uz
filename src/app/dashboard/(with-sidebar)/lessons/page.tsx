@@ -21,13 +21,13 @@ import { classColor } from "@/lib/grades-data";
 import { useLiveClasses, useCreateClass } from "@/hooks/useLiveClasses";
 import { useClassIdParam, useUrlParam } from "@/hooks/useClassIdParam";
 import { useLessonStore } from "@/store/useLessonStore";
-import { commitLessonsDelete } from "@/lib/sync/lessons-delete";
-import { lessonClassIds, lessonSessions, lessonUnitIds, unitIdForClass, type Unit, type Lesson } from "@/lib/lessons-data";
+import { isPinned, lessonClassIds, lessonSessions, lessonUnitIds, unitIdForClass, type Unit, type Lesson } from "@/lib/lessons-data";
 import { byNumber, lessonNumberOffset, ordinalsOf } from "@/lib/ordinals";
 import { isTaught, lessonPlanState, byLessonOrder } from "@/lib/lessons-data";
 import { todayKey } from "@/lib/date-keys";
 import { needsTaughtConfirm } from "@/lib/lesson-shift";
-import { useLessonBump } from "@/hooks/useLessonBump";
+import { useFlowMismatch, useLessonFlow } from "@/hooks/useLessonFlow";
+import { flowSequence } from "@/lib/lesson-flow";
 import { useTourRequest } from "@/components/tour/tour-request";
 import {
   makeLessonsTourDemoClasses, makeLessonsTourDemoUnits, makeLessonsTourDemoLessons,
@@ -41,7 +41,7 @@ import { ClassFormModal } from "@/components/ClassFormModal";
 import CreateUnitModal from "@/components/CreateUnitModal";
 import IshRejaImportModal from "@/components/IshRejaImportModal";
 import UnitImportModal from "@/components/UnitImportModal";
-import { LibraryBig, FileText, Clock, Plus, Search, ArrowDownUp, Pencil, Trash2, FolderInput, ListChecks, FileCheck, CircleCheck, Check, SkipForward, X, CircleDashed, GripVertical } from "lucide-react";
+import { LibraryBig, FileText, Clock, Plus, Search, ArrowDownUp, Pencil, Trash2, FolderInput, ListChecks, FileCheck, CircleCheck, Check, SkipForward, X, CircleDashed, GripVertical, Pin, PinOff, CalendarSync } from "lucide-react";
 import { ReorderList, useEscape, useReorderDraft } from "@/components/ReorderList";
 import { BulkActionBar, BulkActionButton, BulkActionCount, BulkActionDivider } from "@/components/BulkActionBar";
 import {
@@ -139,10 +139,7 @@ export default function LessonsPage() {
   const addLesson = useLessonStore((s) => s.addLesson);
   const updateUnit = useLessonStore((s) => s.updateUnit);
   const deleteUnit = useLessonStore((s) => s.deleteUnit);
-  const restoreUnit = useLessonStore((s) => s.restoreUnit);
-  const restoreLesson = useLessonStore((s) => s.restoreLesson);
   const deleteLesson = useLessonStore((s) => s.deleteLesson);
-  const setUnitForClass = useLessonStore((s) => s.setUnitForClass);
   const reorderUnits = useLessonStore((s) => s.reorderUnits);
   const reorderLessons = useLessonStore((s) => s.reorderLessons);
   const setPlanState = useLessonStore((s) => s.setPlanState);
@@ -162,7 +159,10 @@ export default function LessonsPage() {
   const setTaught = useLessonStore((s) => s.setTaught);
   const tc = useTranslations("LessonCycle");
   const locale = useLocale();
-  const bumpLesson = useLessonBump();
+  // Dars oqimi: tartib/oʻchirish/koʻchirishdan keyin kelajakdagi sanalar qayta joylanadi.
+  const flow = useLessonFlow();
+  const bumpLesson = flow.bump;
+  const tf = useTranslations("LessonFlow");
   const today = todayKey();
   const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
   // Boʻlim tanlovi — sinf kabi `?unit=` URL param'ida. Ilgari oddiy
@@ -187,27 +187,24 @@ export default function LessonsPage() {
     updateUnit(editUnitTarget.id, { title: editUnitTitle.trim(), description: editUnitDesc.trim() });
     setEditUnitTarget(null);
   };
+  /* Oʻchirish serverda muhrlangach store'dan olinadi (`flow.remove`);
+     dars oqimi boʻshliqni yopadi. «Bekor qilish» — oqimning nusxasi:
+     darslar, boʻlim va surilgan sanalar birga qaytadi. */
   const handleConfirmDeleteUnit = async () => {
     if (!deleteUnitTarget) return;
     const unit = deleteUnitTarget;
-    // Undo uchun: oʻchadigan darslar TOʻLIQ nusxada, saqlanadiganlar esa
-    // faqat id boʻyicha (ularga boʻlim bogʻlanishi qaytariladi).
+    const keep = keepLessonsOnUnitDelete;
     const affected = lessons.filter((l) => lessonUnitIds(l).includes(unit.id));
-    const removed = keepLessonsOnUnitDelete
-      ? []
-      : affected.filter((l) => !lessonUnitIds(l).some((uid) => uid !== unit.id));
-    const removedIds = new Set(removed.map((l) => l.id));
-    const detachedIds = affected.filter((l) => !removedIds.has(l.id)).map((l) => l.id);
-    deleteUnit(unit.id, { withLessons: !keepLessonsOnUnitDelete });
-    if (unit.id === selectedUnitId) setSelectedUnitId(null);
-    setDeleteUnitTarget(null);
-    toast.success(t("unitDeletedToast", { unit: `${uNo(unit)}. ${unit.title}` }), {
-      action: {
-        label: t("undo"),
-        onClick: () => {
-          removed.forEach((l) => restoreLesson(l));
-          restoreUnit(unit, [...detachedIds, ...removedIds]);
-        },
+    const removed = keep ? [] : affected.filter((l) => !lessonUnitIds(l).some((uid) => uid !== unit.id));
+    await flow.remove({
+      unitIds: [unit.id],
+      lessonIds: removed.map((l) => l.id),
+      classIds: [unit.classId, ...affected.flatMap(lessonClassIds)],
+      mutate: () => deleteUnit(unit.id, { withLessons: !keep }),
+      message: t("unitDeletedToast", { unit: `${uNo(unit)}. ${unit.title}` }),
+      onCommitted: () => {
+        if (unit.id === selectedUnitId) setSelectedUnitId(null);
+        setDeleteUnitTarget(null);
       },
     });
   };
@@ -223,11 +220,16 @@ export default function LessonsPage() {
     };
   }, [deleteUnitTarget, lessons]);
 
-  const handleConfirmDeleteLesson = () => {
+  const handleConfirmDeleteLesson = async () => {
     if (!deleteLessonTarget) return;
-    deleteLesson(deleteLessonTarget.id);
-    setDeleteLessonTarget(null);
-    toast.success(t("lessonDeletedToast"));
+    const lesson = deleteLessonTarget;
+    await flow.remove({
+      lessonIds: [lesson.id],
+      classIds: lessonClassIds(lesson),
+      mutate: () => deleteLesson(lesson.id),
+      message: t("lessonDeletedToast"),
+      onCommitted: () => setDeleteLessonTarget(null),
+    });
   };
 
   // Sinf ALMASHSA boʻlim tanlovi bekor qilinadi (boshqa sinfning boʻlimi
@@ -312,9 +314,40 @@ export default function LessonsPage() {
   // «Koʻchirish → Yangi boʻlimga…»: boʻlim yaratilgach shu mavzu unga koʻchiriladi.
   const [pendingMoveLessonId, setPendingMoveLessonId] = useState<string | null>(null);
   const finishPendingMove = (unitId: string | null) => {
-    if (pendingMoveLessonId && unitId && selectedClassId) setUnitForClass(pendingMoveLessonId, selectedClassId, unitId);
+    if (pendingMoveLessonId && unitId && selectedClassId) moveLessonsToUnit([pendingMoveLessonId], selectedClassId, unitId);
     setPendingMoveLessonId(null);
   };
+
+  /* Mavzu(lar)ni boshqa boʻlimga koʻchirish — DnD, kontekst menyu va «Yangi
+     boʻlimga…» uchun bitta yoʻl. Koʻchgan mavzu boʻlim OXIRIGA qoʻyiladi
+     (eski tartib kaliti yangi boʻlimda hech narsani anglatmaydi); bir nechta
+     boʻlsa — oʻzaro ketma-ketlik tartibida (tanlash tartibida emas). Dars
+     oqimi sanalarni yangi tartibga moslaydi. */
+  const moveLessonsToUnit = (picked: string[], classId: string, targetUnitId: string | null, message?: string) => {
+    const st = useLessonStore.getState();
+    const seq = new Map(flowSequence(st.lessons, st.units, classId).map((l, i) => [l.id, i]));
+    const ids = [...picked].sort((a, b) => (seq.get(a) ?? Infinity) - (seq.get(b) ?? Infinity));
+    flow.run({
+      classIds: [classId],
+      decline: "keep",
+      message,
+      mutate: () => {
+        const s = useLessonStore.getState();
+        ids.forEach((id) => s.setUnitForClass(id, classId, targetUnitId));
+        const stay = useLessonStore.getState().lessons
+          .filter((l) => !ids.includes(l.id) && lessonClassIds(l).includes(classId) && unitIdForClass(l, classId) === targetUnitId)
+          .sort(byLessonOrder(classId))
+          .map((l) => l.id);
+        s.reorderLessons([...stay, ...ids], classId);
+      },
+    });
+  };
+  const togglePin = (lesson: Lesson) => {
+    if (effectiveClassId && !isDemoMode) flow.togglePin(lesson.id, effectiveClassId);
+  };
+  // Sanalar tartibga mos kelmasa (oqimdan oldingi maʼlumot, qoʻlda sana
+  // tahriri) — jimgina qayta yozilmaydi, «Moslash» taklif qilinadi.
+  const flowMismatch = useFlowMismatch(effectiveClassId && !isDemoMode ? effectiveClassId : null);
 
   // Mavzuni boʻlimlar oʻrtasida drag-and-drop bilan koʻchirish (bitta sinf konteksti, @dnd-kit).
   const dndSensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
@@ -346,15 +379,14 @@ export default function LessonsPage() {
     const targetUnitId = overId === "unit-none" ? null : overId.replace(/^unit-/, "");
     const moves = d.ids.map((id, k) => ({ id, from: d.from[k] })).filter((m) => m.from !== targetUnitId);
     if (moves.length === 0) return;
-    const classId = effectiveClassId;
-    moves.forEach((m) => setUnitForClass(m.id, classId, targetUnitId));
     if (d.ids.length > 1) setSelectedLessonIds(new Set());
     const target = targetUnitId ? unitsSource.find((u) => u.id === targetUnitId) : null;
     const unit = target ? `${uNo(target)}. ${target.title}` : t("noUnitTitle");
     const single = moves.length === 1 ? lessonsSource.find((l) => l.id === moves[0].id) : null;
-    toast.success(single ? t("lessonMovedToUnit", { lesson: single.title, unit }) : t("lessonsMovedToUnit", { count: moves.length, unit }), {
-      action: { label: t("undo"), onClick: () => moves.forEach((m) => setUnitForClass(m.id, classId, m.from)) },
-    });
+    moveLessonsToUnit(
+      moves.map((m) => m.id), effectiveClassId, targetUnitId,
+      single ? t("lessonMovedToUnit", { lesson: single.title, unit }) : t("lessonsMovedToUnit", { count: moves.length, unit }),
+    );
   };
 
   // «Boʻlim qoʻshish» — nusxa koʻchirish / Excel oynasi (batafsil oyna — uning ichidan).
@@ -586,9 +618,14 @@ export default function LessonsPage() {
     reorderDraft.start(kind === "units" ? unitsForClass.map((u) => u.id) : lessonsForUnit.map((l) => l.id));
   };
   const endReorder = (save: boolean) => {
-    if (save && reorderDraft.order && reorderDraft.movedIds.size > 0) {
-      if (reorderKind === "units") reorderUnits(reorderDraft.order);
-      else if (effectiveClassId) reorderLessons(reorderDraft.order, effectiveClassId);
+    const order = reorderDraft.order;
+    if (save && order && reorderDraft.movedIds.size > 0 && effectiveClassId) {
+      const classId = effectiveClassId;
+      flow.run({
+        classIds: [classId],
+        decline: "keep",
+        mutate: () => (reorderKind === "units" ? reorderUnits(order) : reorderLessons(order, classId)),
+      });
     }
     reorderDraft.stop();
     setReorderKind(null);
@@ -670,43 +707,41 @@ export default function LessonsPage() {
     const unitIds = [...selectedUnitIds];
     const { removed } = unitsBulkImpact;
     const removedUnits = unitsSource.filter((u) => selectedUnitIds.has(u.id));
+    const detached = lessonsSource.filter((l) => lessonUnitIds(l).some((u) => selectedUnitIds.has(u)));
     setBulkBusy(true);
-    const ok = await commitLessonsDelete({ unitIds, lessonIds: removed.map((l) => l.id) });
-    setBulkBusy(false);
-    if (!ok) return;
-    removed.forEach((l) => deleteLesson(l.id));
-    // Darslar allaqachon oʻchdi — bu yerda boʻlim faqat qolganlardan uziladi.
-    unitIds.forEach((id) => deleteUnit(id, { withLessons: false }));
-    if (effectiveUnitId && selectedUnitIds.has(effectiveUnitId)) setSelectedUnitId(null);
-    setBulkTarget(null);
-    endUnitPick();
-    toast.success(t("bulkUnitsDeletedToast", { units: removedUnits.length, lessons: removed.length }), {
-      action: {
-        label: t("undo"),
-        onClick: () => {
-          // Avval darslar (snapshot oʻz unitIdʼsini olib keladi), keyin boʻlimlar.
-          removed.forEach((l) => restoreLesson(l));
-          removedUnits.forEach((u) => restoreUnit(u, []));
-        },
+    await flow.remove({
+      unitIds,
+      lessonIds: removed.map((l) => l.id),
+      classIds: [...removedUnits.map((u) => u.classId), ...detached.flatMap(lessonClassIds)],
+      message: t("bulkUnitsDeletedToast", { units: removedUnits.length, lessons: removed.length }),
+      mutate: () => {
+        removed.forEach((l) => deleteLesson(l.id));
+        // Darslar allaqachon oʻchdi — bu yerda boʻlim faqat qolganlardan uziladi.
+        unitIds.forEach((id) => deleteUnit(id, { withLessons: false }));
+      },
+      onCommitted: () => {
+        if (effectiveUnitId && selectedUnitIds.has(effectiveUnitId)) setSelectedUnitId(null);
+        setBulkTarget(null);
+        endUnitPick();
       },
     });
+    setBulkBusy(false);
   };
 
   const handleBulkDeleteLessons = async () => {
     const { removed } = lessonsBulkImpact;
     setBulkBusy(true);
-    const ok = await commitLessonsDelete({ lessonIds: removed.map((l) => l.id) });
-    setBulkBusy(false);
-    if (!ok) return;
-    removed.forEach((l) => deleteLesson(l.id));
-    setBulkTarget(null);
-    endLessonPick();
-    toast.success(t("bulkLessonsDeletedToast", { lessons: removed.length }), {
-      action: {
-        label: t("undo"),
-        onClick: () => removed.forEach((l) => restoreLesson(l)),
+    await flow.remove({
+      lessonIds: removed.map((l) => l.id),
+      classIds: removed.flatMap(lessonClassIds),
+      message: t("bulkLessonsDeletedToast", { lessons: removed.length }),
+      mutate: () => removed.forEach((l) => deleteLesson(l.id)),
+      onCommitted: () => {
+        setBulkTarget(null);
+        endLessonPick();
       },
     });
+    setBulkBusy(false);
   };
 
   /* Tanlash rejimi kartaning OʻZ doirasini egallaydi: 44px glif katakchaga
@@ -896,6 +931,15 @@ export default function LessonsPage() {
             )}
             <ScrollArea className="h-full w-full">
               <div className="px-3 pt-4 pb-5 space-y-2">
+                {flowMismatch && !reorderKind && (
+                  <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/60 px-3 py-2 text-caption">
+                    <CalendarSync className="size-4 shrink-0 text-muted-foreground" />
+                    <span className="min-w-0 flex-1 font-medium text-foreground">{tf("mismatchChip")}</span>
+                    <Button size="sm" variant="outline" className="h-7 bg-card text-foreground" onClick={() => flow.realign(effectiveClassId!)}>
+                      {tf("realign")}
+                    </Button>
+                  </div>
+                )}
                 {reorderKind === "units" && reorderDraft.order ? (
                   <ReorderList ids={reorderDraft.order} onMove={reorderDraft.move} labels={reorderLabels}>
                     {(id, i, h) => {
@@ -1185,6 +1229,9 @@ export default function LessonsPage() {
                                     {lessonUnit && "· "}{when.weekday}, {when.time}
                                   </span>
                                 )}
+                                {effectiveClassId && isPinned(lesson, effectiveClassId) && (
+                                  <Pin className="size-3.5 shrink-0" aria-label={tf("pinnedLabel")} />
+                                )}
                               </div>
                             );
                           })()}
@@ -1234,10 +1281,17 @@ export default function LessonsPage() {
                       })()}
                       <ContextMenuSeparator />
                       {!isTaught(lesson, effectiveClassId) && lessonSessions(lesson).some((x) => x.classId === effectiveClassId) && (
-                        <ContextMenuItem className="gap-2 cursor-pointer" onClick={() => bumpLesson(lesson.id, effectiveClassId!)}>
-                          <SkipForward className="size-4" />
-                          {tc("bump")}
-                        </ContextMenuItem>
+                        <>
+                          <ContextMenuItem className="gap-2 cursor-pointer" onClick={() => bumpLesson(lesson.id, effectiveClassId!)}>
+                            <SkipForward className="size-4" />
+                            {tc("bump")}
+                          </ContextMenuItem>
+                          {/* Qadalgan dars oqim bilan surilmaydi; qadash olinsa oqimga qaytadi. */}
+                          <ContextMenuItem className="gap-2 cursor-pointer" onClick={() => togglePin(lesson)}>
+                            {isPinned(lesson, effectiveClassId!) ? <PinOff className="size-4" /> : <Pin className="size-4" />}
+                            {isPinned(lesson, effectiveClassId!) ? tf("unpin") : tf("pin")}
+                          </ContextMenuItem>
+                        </>
                       )}
                       {lessonsForUnit.length > 1 && (
                         <ContextMenuItem className="gap-2 cursor-pointer" onClick={() => startReorder("lessons")}>
@@ -1256,7 +1310,9 @@ export default function LessonsPage() {
                             <ContextMenuItem
                               key={target?.id ?? NONE}
                               className="gap-2 cursor-pointer"
-                              onClick={() => setUnitForClass(lesson.id, effectiveClassId!, target?.id ?? null)}
+                              onClick={() => moveLessonsToUnit([lesson.id], effectiveClassId!, target?.id ?? null, t("lessonMovedToUnit", {
+                                lesson: lesson.title, unit: target ? `${uNo(target)}. ${target.title}` : t("noUnitTitle"),
+                              }))}
                             >
                               <ClassSwatch
                                 hex={target ? selectedClassHex : "var(--muted-foreground)"} />
@@ -1364,6 +1420,8 @@ export default function LessonsPage() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {flow.dialog}
 
         <AlertDialog open={!!deleteLessonTarget} onOpenChange={(o) => !o && setDeleteLessonTarget(null)}>
           <AlertDialogContent>

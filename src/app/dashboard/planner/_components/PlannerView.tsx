@@ -10,7 +10,6 @@ import { fmtMin, type TimetableEvent } from "@/lib/timetable";
 import { classColor, type ClassInfo } from "@/lib/grades-data";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useLessonStore } from "@/store/useLessonStore";
-import { commitLessonsDelete } from "@/lib/sync/lessons-delete";
 import { useTimetableStore } from "@/store/useTimetableStore";
 import { useCalendarStore } from "@/store/useCalendarStore";
 import { resolveVersionForDate } from "@/lib/timetable-versions";
@@ -31,7 +30,9 @@ import { TimeGrid, type TimeGridColumn } from "@/components/calendar/TimeGrid";
 import { MonthGrid } from "@/components/calendar/MonthGrid";
 import { useCalendarFormat } from "@/components/calendar/format";
 import { getHolidayForDate, inRange } from "@/lib/academic-calendar";
-import { lessonSessions, lessonClassIds, unitIdForClass, isTaught, type Lesson } from "@/lib/lessons-data";
+import { lessonSessions, lessonClassIds, unitIdForClass, isTaught, isPinned, type Lesson } from "@/lib/lessons-data";
+import { useLessonFlow } from "@/hooks/useLessonFlow";
+import { isFrozen } from "@/lib/lesson-flow";
 import { todayKey } from "@/lib/date-keys";
 import { cn } from "@/lib/utils";
 import { subjectLabel } from "@/lib/standards-data";
@@ -66,7 +67,7 @@ import {
   Calendar as CalendarIcon, ChevronLeft, ChevronRight, PlusIcon, LinkIcon,
   FileText, Check, Trash2, Undo2, CalendarOff, Eye, EyeOff, X,
   SlidersHorizontal, Pencil, Search, Ban, Clock, CalendarPlus, MoreVertical,
-  Minus, ListFilter,
+  Minus, ListFilter, Pin, PinOff,
 } from "lucide-react";
 import {
   DndContext, PointerSensor, KeyboardSensor, useDraggable, useDroppable,
@@ -235,11 +236,14 @@ export default function PlannerView({ classId }: { classId?: string }) {
   const addLesson = useLessonStore((s) => s.addLesson);
   const updateLesson = useLessonStore((s) => s.updateLesson);
   const deleteLessonAction = useLessonStore((s) => s.deleteLesson);
-  const addScheduleForClass = useLessonStore((s) => s.addScheduleForClass);
   const moveSession = useLessonStore((s) => s.moveSession);
   const unscheduleSession = useLessonStore((s) => s.unscheduleSession);
-  const restoreLesson = useLessonStore((s) => s.restoreLesson);
   const setTaught = useLessonStore((s) => s.setTaught);
+  /* Dars oqimi: darsni sanaga qoʻyish (tashlash, sana tahriri, bogʻlash)
+     boshqa darslarni ham tartib boʻyicha suradi — `@/lib/lesson-flow`. */
+  const flow = useLessonFlow();
+  const tf = useTranslations("LessonFlow");
+  const togglePin = flow.togglePin;
 
   const [blockModal, setBlockModal] = useState<{ date: Date } | null>(null);
   const [blockLabel, setBlockLabel] = useState("");
@@ -556,8 +560,14 @@ export default function PlannerView({ classId }: { classId?: string }) {
       title: t("untitledTopic"),
       status: "Draft",
     });
-    addScheduleForClass(id, ev.classId, toDateKey(date), ev.startMin, ev.endMin);
-    router.push(`/lessons/${id}`);
+    // Oqim qoidasi: boʻlimsiz yangi mavzu ketma-ketlikni buzsa — shu slotga qadaladi.
+    // Muharrirga oqim yakunlangach oʻtiladi — oldindan koʻrish chiqsa, u
+    // sahifa bilan birga yoʻqolib ketmasin.
+    flow.place({
+      lessonId: id, classId: ev.classId, from: null,
+      to: { date: toDateKey(date), startMin: ev.startMin, endMin: ev.endMin },
+      onSettled: () => router.push(`/lessons/${id}`),
+    });
   }
 
   // ── Ulash (bitta mavzu; slot vaqti) ──
@@ -570,9 +580,12 @@ export default function PlannerView({ classId }: { classId?: string }) {
   function saveLink() {
     if (!linkModal || !lmLessonId) return;
     const linked = lessons.find((l) => l.id === lmLessonId);
-    addScheduleForClass(lmLessonId, linkModal.classId, toDateKey(linkModal.date), linkModal.startMin, linkModal.endMin);
     setLinkModal(null);
-    toast.success(t("lessonLinkedToast"), { description: linked?.title });
+    flow.place({
+      lessonId: lmLessonId, classId: linkModal.classId, from: null,
+      to: { date: toDateKey(linkModal.date), startMin: linkModal.startMin, endMin: linkModal.endMin },
+      message: t("lessonLinkedToast"), description: linked?.title,
+    });
   }
   const linkUnits = useMemo(
     () => (linkModal ? units.filter((u) => u.classId === linkModal.classId) : []),
@@ -613,30 +626,44 @@ export default function PlannerView({ classId }: { classId?: string }) {
       return;
     }
     updateLesson(editLesson.id, { title: emTitle.trim() || editLesson.title });
-    if (emDateStr !== editTarget.date || newStart !== editTarget.startMin || newEnd !== editTarget.endMin) {
+    setEditTarget(null);
+    if (emDateStr !== editTarget.date || newStart !== editTarget.startMin) {
+      // Sana/boshlanish oʻzgardi — planner'da tashlash bilan bir qoida (dars oqimi).
+      flow.place({
+        lessonId: editLesson.id, classId: editTarget.classId,
+        from: { date: editTarget.date, startMin: editTarget.startMin, endMin: editTarget.endMin },
+        to: { date: emDateStr, startMin: newStart, endMin: newEnd },
+        message: t("savedToast"),
+      });
+      return;
+    }
+    if (newEnd !== editTarget.endMin) {
       moveSession(editLesson.id, editTarget.classId, editTarget.date, editTarget.startMin, emDateStr, newStart, newEnd);
     }
-    setEditTarget(null);
     toast.success(t("savedToast"));
   }
   async function handleDelete() {
     if (!editLesson) return;
     const snap: Lesson = { ...editLesson }; // toʻliq snapshot (content/standards/scheduleByClass ham)
-    if (!(await commitLessonsDelete({ lessonIds: [snap.id] }))) return;
-    deleteLessonAction(snap.id);
-    setEditTarget(null);
-    toast(t("lessonDeletedToast"), {
+    // Boʻshliq yopiladi; «Bekor qilish» dars va surilgan sanalarni birga qaytaradi.
+    await flow.remove({
+      lessonIds: [snap.id],
+      classIds: lessonClassIds(snap),
+      message: t("lessonDeletedToast"),
       description: snap.title,
-      action: {
-        label: t("undo"),
-        onClick: () => { restoreLesson(snap); toast.success(t("lessonRestoredToast")); },
-      },
+      mutate: () => deleteLessonAction(snap.id),
+      onCommitted: () => setEditTarget(null),
     });
   }
 
-  /** Shu sinfning (dateKey, startMin) dan keyingi/oldingi BOʻSH sloti.
-      Ikki hafta ichida qidiriladi; band slotlar oʻtkazib yuboriladi. */
+  /** Shu sinfning (dateKey, startMin) dan keyingi/oldingi sloti. Ikki hafta
+      ichida qidiriladi. Oʻtilgan yoki qadalgan dars turgan slot, shuningdek
+      oʻtmishdagi har qanday band slot oʻtkazib yuboriladi; kelajakdagi oqim
+      darsi turgan slotga esa qoʻyiladi — dars oqimi ikkisining oʻrnini
+      almashtiradi. */
   function findAdjacentSlot(p: Placement, dateKey: string, dir: 1 | -1): { date: string; ev: TimetableEvent } | null {
+    const clock = new Date();
+    const frozenNow = { today: todayKey(), nowMin: clock.getHours() * 60 + clock.getMinutes() };
     const base = new Date(`${dateKey}T00:00:00`);
     for (let i = 0; i <= 14; i++) {
       const d = new Date(base);
@@ -648,8 +675,11 @@ export default function PlannerView({ classId }: { classId?: string }) {
       for (const ev of evs) {
         // Shu kunda joriy slotdan oldingilarni (yoʻnalishga qarab) tashlab ket
         if (i === 0 && (dir === 1 ? ev.startMin <= p.startMin : ev.startMin >= p.startMin)) continue;
+        // Oʻtmishda oqim ishlamaydi — u yerdagi har qanday dars slotni band qiladi.
+        const past = isFrozen({ date: key, startMin: ev.startMin, endMin: ev.endMin }, frozenNow);
         const occupied = (placedByDate.get(key) ?? []).some(
-          (q) => q.lesson.id !== p.lesson.id && placementInEvent(q, ev),
+          (q) => q.lesson.id !== p.lesson.id && placementInEvent(q, ev)
+            && (past || isTaught(q.lesson, p.classId) || isPinned(q.lesson, p.classId)),
         );
         if (occupied) continue;
         return { date: key, ev };
@@ -663,12 +693,23 @@ export default function PlannerView({ classId }: { classId?: string }) {
       toast.error(t("noFreeSlotToast"));
       return;
     }
-    moveSession(p.lesson.id, p.classId, dateKey, p.startMin, target.date, target.ev.startMin, target.ev.endMin);
-    toast.success(t("lessonMovedToast"), { description: p.lesson.title });
+    flow.place({
+      lessonId: p.lesson.id, classId: p.classId,
+      from: { date: dateKey, startMin: p.startMin, endMin: p.endMin },
+      to: { date: target.date, startMin: target.ev.startMin, endMin: target.ev.endMin },
+      message: t("lessonMovedToast"), description: p.lesson.title,
+    });
   }
+  /** Sessiyani bankka qaytarish — dars oqimdan chiqadi, boʻshliq yopiladi. */
   function unlinkPlacement(p: Placement, dateKey: string) {
-    unscheduleSession(p.lesson.id, p.classId, dateKey, p.startMin);
-    toast.success(t("returnedToBankToast"), { description: p.lesson.title });
+    flow.run({
+      classIds: [p.classId],
+      closeGaps: true,
+      decline: "keep",
+      message: t("returnedToBankToast"),
+      description: p.lesson.title,
+      mutate: () => unscheduleSession(p.lesson.id, p.classId, dateKey, p.startMin),
+    });
   }
 
   /* ── @dnd-kit: BARCHA yuzalar (haftalik toʻr, kunlik panel, oy toʻri) bitta
@@ -688,11 +729,12 @@ export default function PlannerView({ classId }: { classId?: string }) {
     const fromEnd = Number(fromEndS);
     const o = String(e.over.id).split("|");
 
+    let to: { date: string; startMin: number; endMin: number };
     if (o[0] === "D") {
       // Kunga tashlash — vaqt oʻzgarmaydi, faqat sana.
       const toDate = o[1];
       if (toDate === fromDate) return;
-      moveSession(lessonId, classId, fromDate, fromStart, toDate, fromStart, fromEnd);
+      to = { date: toDate, startMin: fromStart, endMin: fromEnd };
     } else if (o[0] === "S") {
       // Aniq slotga tashlash — sana ham, vaqt ham slotdan olinadi.
       const [, toDate, slotClassId, toStartS, toEndS] = o;
@@ -701,13 +743,17 @@ export default function PlannerView({ classId }: { classId?: string }) {
       const toStart = Number(toStartS);
       const toEnd = Number(toEndS);
       if (toDate === fromDate && toStart === fromStart) return;
-      moveSession(lessonId, classId, fromDate, fromStart, toDate, toStart, toEnd);
+      to = { date: toDate, startMin: toStart, endMin: toEnd };
     } else {
       return;
     }
 
     const moved = lessons.find((l) => l.id === lessonId);
-    toast.success(t("lessonMovedToast"), { description: moved?.title ?? t("lessonFallback") });
+    // Qoʻyish: dars shu joyga oʻtadi, orada qolganlar dars oqimi boʻyicha suriladi.
+    flow.place({
+      lessonId, classId, from: { date: fromDate, startMin: fromStart, endMin: fromEnd }, to,
+      message: t("lessonMovedToast"), description: moved?.title ?? t("lessonFallback"),
+    });
   }
 
   const slotClass = (m: SlotModal | null) => (m ? classInfoById(m.classId) : undefined);
@@ -774,6 +820,12 @@ export default function PlannerView({ classId }: { classId?: string }) {
           <div className="flex flex-col gap-2">
             <p className="text-sm font-semibold leading-snug text-foreground">{p.lesson.title}</p>
             <PillHoverTime startMin={p.startMin} endMin={p.endMin} />
+            {isPinned(p.lesson, p.classId) && (
+              <span className="flex items-center gap-1.5 text-caption text-muted-foreground">
+                <Pin className="size-3 shrink-0" />
+                {tf("pinnedLabel")}
+              </span>
+            )}
             <div className="flex items-center gap-1.5">
               {cls && <ClassBadge color={color} name={cls.name} />}
               <LessonCyclePills lesson={p.lesson} />
@@ -971,6 +1023,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                                         color={clsColor}
                                         title={p.lesson.title}
                                         done={p.lesson.status === "Completed"}
+                                        pinned={isPinned(p.lesson, p.classId)}
                                         trailing={
                                           <DropdownMenu>
                                             <DropdownMenuTrigger
@@ -993,6 +1046,12 @@ export default function PlannerView({ classId }: { classId?: string }) {
                                                 <ChevronLeft />
                                                 {t("shiftBackward")}
                                               </DropdownMenuItem>
+                                              {!isTaught(p.lesson, p.classId) && (
+                                                <DropdownMenuItem onClick={() => togglePin(p.lesson.id, p.classId)}>
+                                                  {isPinned(p.lesson, p.classId) ? <PinOff /> : <Pin />}
+                                                  {isPinned(p.lesson, p.classId) ? tf("unpin") : tf("pin")}
+                                                </DropdownMenuItem>
+                                              )}
                                               <DropdownMenuItem onClick={() => unlinkPlacement(p, key)}>
                                                 <Undo2 />
                                                 {t("detach")}
@@ -1031,7 +1090,9 @@ export default function PlannerView({ classId }: { classId?: string }) {
                           className="h-full transition hover:brightness-[0.97]"
                           leading={done
                             ? <Check className="size-3.5 shrink-0" strokeWidth={3} style={tints.textOnSolid} />
-                            : <FileText className="size-3.5 shrink-0" style={tints.textOnSolid} />}
+                            : isPinned(it.p.lesson, it.p.classId)
+                              ? <Pin className="size-3.5 shrink-0" style={tints.textOnSolid} />
+                              : <FileText className="size-3.5 shrink-0" style={tints.textOnSolid} />}
                           subtitle={
                             <span style={tints.textOnSolidMuted} className="flex min-w-0 items-center gap-1 truncate">
                               {minToHHMM(it.p.startMin)} — {minToHHMM(it.p.endMin)}
@@ -1584,6 +1645,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                                         color={clsColor}
                                         title={p.lesson.title}
                                         done={p.lesson.status === "Completed"}
+                                        pinned={isPinned(p.lesson, p.classId)}
                                         trailing={
                                           <DropdownMenu>
                                             <DropdownMenuTrigger
@@ -1606,6 +1668,12 @@ export default function PlannerView({ classId }: { classId?: string }) {
                                                 <ChevronLeft />
                                                 {t("shiftBackward")}
                                               </DropdownMenuItem>
+                                              {!isTaught(p.lesson, p.classId) && (
+                                                <DropdownMenuItem onClick={() => togglePin(p.lesson.id, p.classId)}>
+                                                  {isPinned(p.lesson, p.classId) ? <PinOff /> : <Pin />}
+                                                  {isPinned(p.lesson, p.classId) ? tf("unpin") : tf("pin")}
+                                                </DropdownMenuItem>
+                                              )}
                                               <DropdownMenuItem onClick={() => unlinkPlacement(p, dateKey)}>
                                                 <Undo2 />
                                                 {t("detach")}
@@ -1646,7 +1714,11 @@ export default function PlannerView({ classId }: { classId?: string }) {
                                 color={color}
                                 title={name}
                                 subtitle={l.title}
-                                leading={done ? <Check className="size-3.5 shrink-0" strokeWidth={3} style={tints.textOnSolid} /> : <FileText className="size-3.5 shrink-0" style={tints.textOnSolid} />}
+                                leading={done
+                                  ? <Check className="size-3.5 shrink-0" strokeWidth={3} style={tints.textOnSolid} />
+                                  : isPinned(l, p.classId)
+                                    ? <Pin className="size-3.5 shrink-0" style={tints.textOnSolid} />
+                                    : <FileText className="size-3.5 shrink-0" style={tints.textOnSolid} />}
                                 style={{ height: h }}
                                 className="h-full transition-all hover:brightness-95"
                                 actions={<LessonCycleBadge lesson={l} />}
@@ -1971,11 +2043,26 @@ export default function PlannerView({ classId }: { classId?: string }) {
                   <Check className="size-4" />
                   {isTaught(editLesson, editTarget?.classId) ? t("completedCheck") : t("markCompleted")}
                 </Button>
+                {editTarget && !isTaught(editLesson, editTarget.classId) && (
+                  <Button
+                    variant={isPinned(editLesson, editTarget.classId) ? "soft" : "outline"}
+                    size="sm" className="gap-1.5"
+                    onClick={() => togglePin(editLesson.id, editTarget.classId)}>
+                    {isPinned(editLesson, editTarget.classId) ? <PinOff className="size-4" /> : <Pin className="size-4" />}
+                    {isPinned(editLesson, editTarget.classId) ? tf("unpin") : tf("pin")}
+                  </Button>
+                )}
                 <Button variant="outline" size="sm" className="gap-1.5" onClick={() => {
                   if (!editTarget) return;
-                  unscheduleSession(editTarget.lessonId, editTarget.classId, editTarget.date, editTarget.startMin);
+                  const target = editTarget;
                   setEditTarget(null);
-                  toast.success(t("returnedToBankToast"));
+                  flow.run({
+                    classIds: [target.classId],
+                    closeGaps: true,
+                    decline: "keep",
+                    message: t("returnedToBankToast"),
+                    mutate: () => unscheduleSession(target.lessonId, target.classId, target.date, target.startMin),
+                  });
                 }}>
                   <Undo2 className="size-4" />
                   {t("returnToBank")}
@@ -1995,6 +2082,8 @@ export default function PlannerView({ classId }: { classId?: string }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {flow.dialog}
     </>
   );
 }

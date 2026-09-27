@@ -36,6 +36,14 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "darslar-oqimi",
+    date: "2026-09-27",
+    type: "yangi",
+    title: "Darslar endi bir-biriga bogʻlangan — sanalar oʻzi suriladi",
+    body: "Darslar tartibini oʻzgartirsangiz yoki darsni oʻchirsangiz, keyingi darslar jadvaldagi sanalarga oʻzi qayta joylashadi. «Rejalashtiruvchi»da darsni boshqa kunga olib borsangiz, orada qolganlar suriladi; muhim darsni esa sanasiga qadab qoʻyish mumkin. Har oʻzgarishni «Bekor qilish» bilan qaytarasiz.",
+    href: "/dashboard/lessons",
+  },
+  {
     id: "ustozona-games",
     date: "2026-09-26",
     type: "yangi",

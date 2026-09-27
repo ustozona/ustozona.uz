@@ -2080,6 +2080,10 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "darslar-oqimi": {
+        "title": "Lessons are now linked — dates move on their own",
+        "body": "Reorder lessons or delete one, and the lessons after it settle into your timetable dates automatically. In Planner, drag a lesson to another day and the lessons in between shift along; pin an important lesson to keep it on its date. Every change can be undone."
+      },
       "doska-uslublar": {
         "title": "Doska: pick a look and build your own panel",
         "body": "Under Appearance in the menu, choose one of three styles: Calm, the clearest on a projector; Playful, bright and fun for younger classes; or Board, with paper notes and magnets on a green board. The panel can sit at the bottom, left or right — handy when you stand beside an interactive board. Pin the tools you use from the All window; everything else stays there."
@@ -4674,10 +4678,35 @@
     "yesTaught": "Yes, taught",
     "bumpNext": "Move to next lesson",
     "bump": "Push to next lesson",
-    "bumpedToast": "{count} topics pushed by one lesson",
-    "bumpNoSlot": "No free slot for the last topic — it's now undated",
     "bumpNothing": "This topic isn't scheduled — nothing to push",
     "undo": "Undo"
+  },
+  "LessonFlow": {
+    "previewTitle": "{count, plural, one {# lesson} other {# lessons}} will move",
+    "previewDescription": "Upcoming dates are re-laid in lesson order. Taught and pinned lessons stay put.",
+    "previewMismatch": "Dates were already out of order — all upcoming lessons will follow the lesson order.",
+    "previewOverflow": "{count, plural, one {# lesson doesn't} other {# lessons don't}} fit before the end of the school year and will be left undated.",
+    "noSlot": "No slot",
+    "close": "Close",
+    "keepDates": "Keep dates",
+    "onlyThisLesson": "Only this lesson",
+    "cancel": "Cancel",
+    "apply": "Move dates",
+    "undo": "Undo",
+    "shiftedToast": "{count, plural, one {# lesson} other {# lessons}} rescheduled",
+    "shiftedDescription": "{count, plural, one {# lesson} other {# lessons}} rescheduled",
+    "overflowDescription": "{count} didn't fit",
+    "overflowToast": "{count, plural, one {# lesson didn’t fit and was left undated} other {# lessons didn’t fit and were left undated}}",
+    "noFreeSlot": "No free slot in the timetable — the lesson wasn’t moved",
+    "untitled": "Untitled topic",
+    "pin": "Pin to date",
+    "unpin": "Unpin",
+    "pinnedToast": "Lesson pinned to its date",
+    "unpinnedToast": "Unpinned — the lesson is back in the flow",
+    "pinnedHereToast": "Lesson pinned to this date",
+    "pinnedLabel": "Pinned to date",
+    "mismatchChip": "Dates don't match the lesson order",
+    "realign": "Align"
   },
   "Doska": {
     "widgets": {
