@@ -3,6 +3,7 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { admin } from "better-auth/plugins/admin";
+import { bearer } from "better-auth/plugins/bearer";
 import { ac, roles, ADMIN_ROLES } from "@/lib/auth-roles";
 import { db } from "./db/client";
 import * as schema from "./db/schema";
@@ -77,6 +78,10 @@ export const auth = betterAuth({
     }),
     // Telegram botida tasdiqlangan soʻrovdan sessiya (auth-telegram.ts).
     telegramAuth(),
+    // Mobil ilova: `Authorization: Bearer <sessiya tokeni>` — cookie oʻrnida.
+    // Sxemaga taʼsiri yoʻq; brauzer bu sarlavhani oʻzi yubormaydi, shuning
+    // uchun cookie oqimi va CSRF himoyasi oʻzgarmaydi.
+    bearer(),
     // Next 16 async cookies() bilan server action ichida cookie yozishni hal qiladi.
     // nextCookies() DOIM oxirgi plugin boʻlishi kerak.
     nextCookies(),

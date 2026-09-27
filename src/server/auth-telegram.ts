@@ -31,6 +31,30 @@ const bodySchema = z.object({
   secret: z.string().min(16).max(128),
 });
 
+/** BIR MARTALIK: `approved → consumed` shartli UPDATE. Ikki parallel
+    soʻrovdan faqat bittasi qator oladi — yaʼni bitta tasdiqdan ikkita
+    sessiya chiqmaydi. Sayt (cookie) va mobil ilova (bearer) uchun umumiy. */
+async function claimApprovedLogin(requestId: string, secret: string): Promise<string> {
+  const [claimed] = await db
+    .update(tgAuthRequests)
+    .set({ status: "consumed", consumedAt: new Date() })
+    .where(
+      and(
+        eq(tgAuthRequests.id, requestId),
+        eq(tgAuthRequests.kind, "login"),
+        eq(tgAuthRequests.status, "approved"),
+        eq(tgAuthRequests.browserSecretHash, hashSecret(secret)),
+        gt(tgAuthRequests.expiresAt, new Date())
+      )
+    )
+    .returning({ userId: tgAuthRequests.userId });
+
+  if (!claimed?.userId) {
+    throw new APIError("UNAUTHORIZED", { message: "TG_REQUEST_INVALID" });
+  }
+  return claimed.userId;
+}
+
 export const telegramAuth = () =>
   ({
     id: "ustozona-telegram",
@@ -41,28 +65,8 @@ export const telegramAuth = () =>
         async (ctx) => {
           if (ctx.request) throw new APIError("NOT_FOUND");
 
-          // BIR MARTALIK: `approved → consumed` shartli UPDATE. Ikki
-          // parallel soʻrovdan faqat bittasi qator oladi — yaʼni bitta
-          // tasdiqdan ikkita sessiya chiqmaydi.
-          const [claimed] = await db
-            .update(tgAuthRequests)
-            .set({ status: "consumed", consumedAt: new Date() })
-            .where(
-              and(
-                eq(tgAuthRequests.id, ctx.body.requestId),
-                eq(tgAuthRequests.kind, "login"),
-                eq(tgAuthRequests.status, "approved"),
-                eq(tgAuthRequests.browserSecretHash, hashSecret(ctx.body.secret)),
-                gt(tgAuthRequests.expiresAt, new Date())
-              )
-            )
-            .returning({ userId: tgAuthRequests.userId });
-
-          if (!claimed?.userId) {
-            throw new APIError("UNAUTHORIZED", { message: "TG_REQUEST_INVALID" });
-          }
-
-          const user = await ctx.context.internalAdapter.findUserById(claimed.userId);
+          const userId = await claimApprovedLogin(ctx.body.requestId, ctx.body.secret);
+          const user = await ctx.context.internalAdapter.findUserById(userId);
           if (!user) throw new APIError("UNAUTHORIZED", { message: "TG_USER_MISSING" });
 
           // Bloklangan foydalanuvchi — admin plagini hook'i shu yerda otadi.
@@ -71,6 +75,32 @@ export const telegramAuth = () =>
 
           await setSessionCookie(ctx, { session, user });
           return ctx.json({ ok: true });
+        }
+      ),
+
+      /* Mobil ilova: xuddi shu tasdiq, lekin cookie EMAS — sessiya tokeni
+         javobda qaytadi. Ilova uni `Authorization: Bearer` bilan yuboradi
+         (`bearer()` plagini, auth.ts). Sessiya sayt sessiyalari bilan bitta
+         jadvalda — Sozlamalardan koʻrinadi va bekor qilinadi. Faqat
+         serverdan chaqiriladi (`dal/mobile-auth.ts`). */
+      telegramMobileSignIn: createAuthEndpoint(
+        "/telegram/mobile-sign-in",
+        { method: "POST", body: bodySchema },
+        async (ctx) => {
+          if (ctx.request) throw new APIError("NOT_FOUND");
+
+          const userId = await claimApprovedLogin(ctx.body.requestId, ctx.body.secret);
+          const user = await ctx.context.internalAdapter.findUserById(userId);
+          if (!user) throw new APIError("UNAUTHORIZED", { message: "TG_USER_MISSING" });
+
+          const session = await ctx.context.internalAdapter.createSession(user.id);
+          if (!session) throw new APIError("INTERNAL_SERVER_ERROR");
+
+          return ctx.json({
+            token: session.token,
+            expiresAt: session.expiresAt.toISOString(),
+            user: { id: user.id, name: user.name, image: user.image ?? null },
+          });
         }
       ),
     },
