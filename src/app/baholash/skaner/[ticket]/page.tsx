@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { verifyScanTicket } from "@/server/baholash/scan-ticket";
 import { buildSheetPlan } from "@/server/dal/baholash-sheets";
 import { isConfigured } from "@/server/lessonlab/baholash";
-import ScanPanel from "../../_components/ScanPanel";
+import ScanPanel from "@/components/scan/ScanPanel";
 
 /* ════════════════════════════════════════════════════════════════════
    /baholash/skaner/<chipta> — TELEFONDAGI SAHIFA
@@ -28,10 +28,16 @@ export const metadata = {
 
 export default async function ScannerPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ ticket: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { ticket } = await params;
+  // `?mode=cards` — Topshiriqlardagi «QR-kartalar» dan: karta skaneri
+  // asosiy tugma boʻladi. Faqat koʻrinish tanlovi, ruxsat chiptada.
+  const query = searchParams ? await searchParams : undefined;
+  const mode = query?.mode === "cards" ? "cards" : "sheets";
   const parsed = verifyScanTicket(ticket);
 
   if (!parsed) {
@@ -46,7 +52,10 @@ export default async function ScannerPage({
     );
   }
 
-  if (!isConfigured()) {
+  /* Dvigatel faqat VARAQ surati uchun kerak. QR-karta skaneri brauzerda
+     ishlaydi (`lib/cards/detect.ts`) va javob `applyOmrScan` ga
+     dvigatelsiz yoziladi — karta rejimini bu tekshiruv toʻsmasin. */
+  if (mode !== "cards" && !isConfigured()) {
     return (
       <Shell>
         <h1 className="text-xl font-semibold">Skaner ulanmagan</h1>
@@ -79,7 +88,7 @@ export default async function ScannerPage({
     <Shell>
       <div className="flex flex-col gap-1">
         <Badge variant="outline" className="w-fit text-muted-foreground">
-          Qogʻoz test
+          {mode === "cards" ? "QR-kartalar" : "Qogʻoz test"}
         </Badge>
         <h1 className="text-xl font-semibold">{plan.title}</h1>
         <p className="text-sm text-muted-foreground">
@@ -94,6 +103,7 @@ export default async function ScannerPage({
         setId={parsed.setId}
         classId={parsed.classId}
         ticket={ticket}
+        mode={mode}
         plan={{
           testRef: plan.testRef,
           questionCount: plan.questionCount,
@@ -103,10 +113,10 @@ export default async function ScannerPage({
 
       <p className="text-xs text-muted-foreground">
         Kiritilgan natija kompyuterdagi{" "}
-        <Link href="/baholash" className="underline underline-offset-2">
-          Ustozona
+        <Link href="/dashboard/assignments" className="underline underline-offset-2">
+          Topshiriqlar
         </Link>{" "}
-        sahifasida ham koʻrinadi. Jurnalga koʻchirish Topshiriqlar boʻlimida —
+        boʻlimida ham koʻrinadi. Jurnalga yozish oʻsha yerda, bitta tugma bilan —
         u hech qachon avtomatik boʻlmaydi.
       </p>
     </Shell>

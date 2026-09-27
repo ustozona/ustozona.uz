@@ -25,8 +25,8 @@ export const HEADER_NAV: HeaderNavItem[] = [
   // olib boradi. `/#jurnal`, `#jurnal` emas: boshqa sahifadan ham ishlasin.
   { key: "jurnal", href: "/#jurnal" },
   // Games — LessonLab oʻyinlari Ustozona brendida (2026-09-26). Header'da
-  // «Baholash» oʻrnida turadi; oʻqituvchining test/OMR ish maydoni
-  // `/baholash` da oʻzgarishsiz qoladi va «Mahsulotlar» boʻlimida bor.
+  // «Baholash» oʻrnida turadi; oʻqituvchining test/OMR ish maydoni —
+  // Topshiriqlar boʻlimi (`/baholash` 2026-09-27 da arxivlandi).
   { key: "games", href: "/games" },
   { key: "blog", href: "/blog" },
 ];
@@ -113,7 +113,9 @@ export const PRODUCTS: Product[] = [
     slug: "baholash",
     name: "Ustozona baholash",
     tagline: "Onlayn test, qogʻoz test skaneri va QR-kartalar — natija jurnalga tushadi.",
-    href: "/baholash",
+    // Alohida sahifa arxivlandi — imkoniyat Topshiriqlar boʻlimida,
+    // mehmon roʻyxatdan oʻtib kiradi (docs/topshiriq-boshlash-markazi.md §8).
+    href: "/register",
     status: "live",
     statusLabel: "Mavjud",
   },

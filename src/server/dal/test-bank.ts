@@ -428,7 +428,7 @@ export async function assignBankTest(
         title,
         /* ⛔ `summative` — `formative` EMAS, va bu jiddiy farq.
            `publish.ts:52` formativ toʻplamni jurnalga koʻchirishni RAD
-           ETADI, `SessionPanelModal` esa «Jurnalga» tugmasini umuman
+           ETADI, natija ekrani (`RunMonitor`) esa «Jurnalga» tugmasini umuman
            chizmaydi. Yaʼni formativ qoldirilsa bankdan olingan test
            hech qachon baho ustuniga aylana olmasdi — Topshiriqlar
            sahifasining «jurnalga avtomatik ulanadi» vaʼdasi buzilardi,

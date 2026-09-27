@@ -4,13 +4,16 @@ import * as React from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
-import { ExternalLink, LayoutGrid, Maximize2, Send } from "lucide-react";
+import { toast } from "sonner";
+import { ClipboardCheck, ExternalLink, LayoutGrid, Link2, Maximize2, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { InlineBanner } from "@/components/ui/inline-banner";
 import { useSidebar } from "@/components/ui/sidebar";
 import { panelCardClass, panelCardHeaderClass } from "@/components/DashboardPage";
 import { GAME_LABEL_KEYS, gamePath, isGameFile, type GameFile } from "@/lib/games";
+import { findShell } from "@/lib/baholash-shells";
+import { useLaunchFlow } from "@/components/launch/useLaunchFlow";
 
 /* ════════════════════════════════════════════════════════════════════
    OʻYINLAR PANELI — Ustozona kartasi ichida toʻliq balandlikdagi iframe.
@@ -21,7 +24,15 @@ import { GAME_LABEL_KEYS, gamePath, isGameFile, type GameFile } from "@/lib/game
                              games/<nom>` ga almashadi (yangilansa yoki
                              ulashilsa oʻsha oʻyin ochiladi);
      → `ustozona-games:ctx`  mavzu (yorugʻ/qora) va til — foydalanuvchi
-                             Ustozona'da almashtirsa, oʻyinlar ham.
+                             Ustozona'da almashtirsa, oʻyinlar ham;
+                             `assign: true` — «Topshiriq qilib berish»
+                             shu yerda ishlaydi (tanlagich tugmasi shunda
+                             chiqadi).
+     ← `ustozona-games:assign` «shu oʻyinni topshiriq qilib berish» (oʻyin
+                             ichidagi test tanlagichidan) — Topshiriqlar
+                             bilan bir xil oʻtkazish oynasi ochiladi, oʻyin
+                             oldindan tanlangan. Xabarda faqat oʻyin NOMI:
+                             test va sinf shu oynada, Ustozona tomonida.
 
    Xavfsizlik (avvalgi `/games` qobigʻi bilan bir xil):
      • xabar faqat iframe origin'i VA oʻsha oynadan qabul qilinadi;
@@ -36,6 +47,23 @@ import { GAME_LABEL_KEYS, gamePath, isGameFile, type GameFile } from "@/lib/game
 
 const TELEGRAM_SETTINGS = "/dashboard/settings?section=telegram";
 const HINT_DISMISS_KEY = "ugames_link_hint_dismissed";
+
+/** Oʻz savollari bilan ishlaydigan oʻyinlar — sinfga «mashq» havolasi
+    sifatida beriladi, natija jurnalga tushmaydi (`baholash-shells.ts`
+    izohi: ularni «baholanadi» deb koʻrsatish oʻqituvchini aldardi). */
+const PRACTICE_GAMES = new Set<GameFile>(["xotira", "krossvord", "so-z-topish", "qaysi-katta"]);
+
+/** Oʻyin → baholanadigan qobiq id'si. `piyoda-poyga` — Poyganing boshqa
+    koʻrinishi (LessonLab'da `poyga.html` ga yoʻnaltiradi). */
+function shellFor(game: GameFile | null): string | null {
+  if (!game) return null;
+  if (game === "piyoda-poyga") return findShell("poyga")?.id ?? null;
+  return findShell(game)?.id ?? null;
+}
+
+/** Jonli oʻyin va uning sahifalari — LessonLab'ning oʻz oqimi (PIN bilan),
+    «Topshiriq qilib berish» tugmasi ularda maʼnosiz. */
+const OWN_FLOW_GAMES = new Set<GameFile>(["live-host", "live-play", "host"]);
 
 export default function GamesPanel({
   base,
@@ -52,6 +80,9 @@ export default function GamesPanel({
 }) {
   const t = useTranslations("GamesPage");
   const tRoutes = useTranslations("RouteLabels");
+  const tl = useTranslations("LaunchHub");
+  const launchFlow = useLaunchFlow();
+  const openLaunch = launchFlow.openLaunch;
   const locale = useLocale();
   const { resolvedTheme } = useTheme();
   const { open, setOpen, isMobile } = useSidebar();
@@ -96,12 +127,45 @@ export default function GamesPanel({
     }
   }, []);
 
-  // ← Oʻyinlar: qaysi oʻyin ochildi
+  /* «Topshiriq qilib berish» — Topshiriqlar bilan AYNAN bir oqim.
+     Baholanadigan oʻyin (Arqon, Poyga) yoki katalog → oʻtkazish oynasi:
+     sinf, test va «darsda yoki uyga» shu yerda tanlanadi, oʻyin oldindan
+     tanlangan. Mashq oʻyini → ochiq havola nusxalanadi (jurnalga emas). */
+  const assignGame = React.useCallback(
+    (target: GameFile | null) => {
+      if (target && PRACTICE_GAMES.has(target)) {
+        const url = `${window.location.origin}/games/${target}`;
+        navigator.clipboard
+          .writeText(url)
+          .then(() => toast.success(tl("practiceCopied"), { description: url }))
+          .catch(() => toast.info(url));
+        return;
+      }
+      const shellId = shellFor(target);
+      openLaunch(null, { mode: "game", ...(shellId ? { shellId } : {}) });
+    },
+    [openLaunch, tl],
+  );
+  // Tinglovchi bir marta ulanadi — eng yangi funksiya ref orqali
+  // (ref render paytida emas, effektda yangilanadi).
+  const assignRef = React.useRef(assignGame);
+  React.useEffect(() => {
+    assignRef.current = assignGame;
+  }, [assignGame]);
+
+  // ← Oʻyinlar: qaysi oʻyin ochildi / «sinfga berish»
   React.useEffect(() => {
     function onMessage(event: MessageEvent) {
       if (event.origin !== frameOrigin) return;
       if (event.source !== frameRef.current?.contentWindow) return;
       const data = event.data as { type?: unknown; game?: unknown } | null;
+      if (data?.type === "ustozona-games:assign") {
+        const target = data.game === "index" ? null : isGameFile(data.game) ? data.game : undefined;
+        // Roʻyxatdan tashqari nom — eʼtiborsiz (manzil orqali soxta qiymat).
+        if (target === undefined || (target && OWN_FLOW_GAMES.has(target))) return;
+        assignRef.current(target);
+        return;
+      }
       if (!data || data.type !== "ustozona-games:nav") return;
 
       const next = data.game === "index" ? null : isGameFile(data.game) ? data.game : undefined;
@@ -114,10 +178,12 @@ export default function GamesPanel({
     return () => window.removeEventListener("message", onMessage);
   }, [frameOrigin]);
 
-  // → Oʻyinlar: mavzu va til (yuklanganda va oʻzgarganda)
+  // → Oʻyinlar: mavzu va til (yuklanganda va oʻzgarganda). `assign` —
+  // «Topshiriq qilib berish» shu yerda ishlaydi, oʻyin ichidagi tanlagich
+  // tugmani faqat shunda chiqaradi (mehmon `/games` yubormaydi).
   const sendCtx = React.useCallback(() => {
     frameRef.current?.contentWindow?.postMessage(
-      { type: "ustozona-games:ctx", theme: themeNow(), lang: locale },
+      { type: "ustozona-games:ctx", theme: themeNow(), lang: locale, assign: true },
       frameOrigin
     );
   }, [frameOrigin, locale, themeNow]);
@@ -165,6 +231,8 @@ export default function GamesPanel({
   }
 
   const title = game ? tRoutes(GAME_LABEL_KEYS[game]) : t("catalog");
+  const practice = Boolean(game && PRACTICE_GAMES.has(game));
+  const canAssign = !game || !OWN_FLOW_GAMES.has(game);
   const standalone = `${base}/${game ? `${game}.html` : ""}`;
 
   return (
@@ -172,6 +240,23 @@ export default function GamesPanel({
       <Card className={panelCardClass}>
         <div className={`${panelCardHeaderClass} gap-2`}>
           <h1 className="min-w-0 flex-1 truncate text-title-sm">{title}</h1>
+          {/* «Topshiriq qilib berish» — har oʻquvchi oʻz telefonida,
+              darsda yoki uyda, natija jurnalga (Topshiriqlardagi oyna).
+              Mashq oʻyinida — «Mashq havolasi» (jurnalga tushmaydi). */}
+          {canAssign && (
+            <Button
+              size="sm"
+              variant={practice ? "outline" : "default"}
+              className={practice ? "shadow-none" : undefined}
+              onClick={() => assignGame(game)}
+              title={practice ? tl("practiceHint") : tl("assignGameHint")}
+            >
+              {practice ? <Link2 /> : <ClipboardCheck />}
+              <span className="max-sm:sr-only">
+                {practice ? tl("practiceShareShort") : tl("assignGame")}
+              </span>
+            </Button>
+          )}
           {game && (
             <Button variant="ghost" size="sm" onClick={toCatalog}>
               <LayoutGrid />
@@ -198,6 +283,8 @@ export default function GamesPanel({
             </div>
           </InlineBanner>
         )}
+
+        {launchFlow.element}
 
         {src && (
           <iframe

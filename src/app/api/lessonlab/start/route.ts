@@ -26,7 +26,7 @@ export async function GET(request: Request) {
   const url = authorizeUrl(pending, redirectUri(request));
   if (!url) {
     return Response.redirect(
-      new URL("/baholash?import=notconfigured", request.url), 302);
+      new URL("/dashboard/assignments?import=notconfigured", request.url), 302);
   }
 
   /* `?class=<uuid>` boʻlsa — TEST koʻchirish, boʻlmasa sinf/oʻquvchi.

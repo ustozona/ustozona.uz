@@ -14,6 +14,7 @@ import { requireTeacher } from "@/server/session";
 import { hashParticipantToken } from "@/server/play/session";
 import { scoreResponse } from "@/lib/assess/score";
 import { scanOmrSheet } from "@/server/lessonlab/baholash";
+import type { PultPlan } from "@/lib/launch-types";
 import { buildSheetPlan, type SheetPlan } from "./baholash-sheets";
 import { getSet } from "./assess/sets";
 
@@ -340,6 +341,55 @@ export async function previewOmrScan(input: {
     roster: plan.roster,
     sheets,
     warnings: warnAbout(questions),
+  };
+}
+
+/* ── PULT: savollar va roʻyxat (Topshiriqlar → «Pult») ────────────── */
+
+/** Pult rejimi uchun reja — noutbukdagi oʻqituvchi ekrani.
+
+    Pult javoblari QOGʻOZ VARAQ bilan aynan bir yoʻldan yoziladi
+    (`applyOmrScan`, kalit — savol raqami). Shuning uchun raqamlanish
+    shu fayldagi `loadPaperQuestions()` ning OʻZIDAN olinadi: alohida
+    hisoblansa, oʻchirilgan savol bitta joyda raqamni surib, boshqasida
+    surmasdi va 3-savol javobi 5-savolga yozilardi.
+
+    Pult raqami = roʻyxatdagi tartib raqami (`roster[].no`) — QR-karta
+    va varaq QR'i bilan bir xil qoida, qoʻshimcha bogʻlash jadvali yoʻq.
+
+    Toʻgʻri javob QAYTADI — bu OʻQITUVCHI ekrani («Javobni koʻrsatish»),
+    cookie sessiyasi majburiy (chipta yoʻli yoʻq). Oʻquvchi qurilmasiga
+    hech narsa bormaydi. */
+export async function buildPultPlan(setId: string, classId: string): Promise<PultPlan> {
+  const teacher = await requireTeacher();
+  // Egalik: test va sinf shu oʻqituvchiniki (`buildSheetPlan` ichida).
+  const plan = await buildSheetPlan(setId, classId);
+  const { setItems } = await loadSetItems(setId);
+  const questions = await loadPaperQuestions(plan, setItems);
+  const session = await findPaperSession(teacher.id, setId, classId);
+  const entered = session ? await enteredStudentIds(session.id) : new Set<string>();
+
+  return {
+    title: plan.title,
+    className: plan.className,
+    roster: plan.roster,
+    questions: questions.map((q) => {
+      const content = q.content as {
+        stem?: string;
+        options?: { id: string; text: string; isCorrect?: boolean }[];
+      };
+      // Pultda 4 tugma — varaqdagi kabi faqat A–D.
+      const options = (content.options ?? []).slice(0, LETTERS.length);
+      return {
+        no: q.no,
+        stem: content.stem ?? "",
+        options: options.map((o, i) => ({ letter: LETTERS[i], text: o.text })),
+        correct: options.flatMap((o, i) => (o.isCorrect ? [LETTERS[i]] : [])),
+        gradable: Boolean(q.itemId),
+        truncated: q.optionCount > LETTERS.length,
+      };
+    }),
+    alreadyEntered: [...entered],
   };
 }
 

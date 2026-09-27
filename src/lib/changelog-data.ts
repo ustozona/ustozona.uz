@@ -36,6 +36,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "topshiriq-boshlash-markazi",
+    date: "2026-09-27",
+    type: "yangi",
+    title: "Topshiriqlar: testni darsda oʻtkazing yoki uyga bering — bir bosishda",
+    body: "Test yonida endi ikkita aniq tugma bor: «Darsda oʻtkazish» (jonli dars, oʻyin, mustaqil test, qogʻoz test, QR-kartalar yoki pult) va «Uyga berish» (muddat bilan, havola va QR orqali). Kim qoʻshildi, kim tugatdi va kim necha foiz olgani bitta ekranda — natija jurnalga bitta tugma bilan yoziladi.",
+    cta: "Topshiriqlarni ochish",
+    href: "/dashboard/assignments",
+  },
+  {
     id: "darslar-oqimi-kalendar",
     date: "2026-09-27",
     type: "yaxshilandi",
@@ -308,7 +317,7 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     title: "Telefonsiz sinf uchun QR-kartalar",
     body:
       "Har oʻquvchiga bitta karta chop etiladi — javob berish uchun kartani burab koʻtaradi (A/B/C/D), qurilma kerak emas. Kamerani sinfga qaratsangiz, barcha javoblar bir zumda oʻqiladi.",
-    href: "/baholash",
+    href: "/dashboard/assignments",
   },
   {
     id: "baholash-live-scanner",
@@ -317,7 +326,7 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     title: "Qogʻoz test — endi bitta-bitta surat kerak emas",
     body:
       "Javob varaqlarini telefon kamerasiga tutib turasiz — har varaq oʻzi topilib oʻqiladi, natija darhol ekranda koʻrinadi. Suratga olib yuklash yoʻli ham ishlayveradi.",
-    href: "/baholash",
+    href: "/dashboard/assignments",
   },
   {
     id: "baholash-phone-handoff",
@@ -326,7 +335,7 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     title: "Qogʻoz test — telefonga havola yubormasdan oʻtish",
     body:
       "Kompyuterda \"Telefonda skanerlash\" tugmasini bossangiz, ekranda QR chiqadi. Telefon kamerasini shunga tutsangiz, tizimga kirmasdan skaner sahifasi ochiladi.",
-    href: "/baholash",
+    href: "/dashboard/assignments",
   },
   {
     id: "baholash-paper-scan-launch",
@@ -335,7 +344,7 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     title: "Qogʻoz test — javob varaqlarini Ustozonaning oʻzida tekshirish",
     body:
       "Baholash boʻlimida endi javob varaqlarini chop etib, telefon kamerasi bilan tekshirish mumkin. Natija darhol sinf jurnaliga tayyor holda tushadi — qoʻlda kiritish shart emas.",
-    href: "/baholash",
+    href: "/dashboard/assignments",
   },
   {
     id: "assignments-draft-tests-visible",

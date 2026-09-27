@@ -20,8 +20,9 @@ import GamesFrame from "../_components/GamesFrame";
    manzil orqali iframe'ga ixtiyoriy yoʻl yuborib boʻlmaydi.
 
    Sahifa OCHIQ (kirish shart emas): oʻquvchi PIN bilan qoʻshiladi,
-   mehmon katalogni koʻradi. Oʻqituvchining test/OMR ish maydoni
-   `/baholash` da oʻzgarishsiz qoladi.
+   mehmon katalogni koʻradi. Oʻqituvchining test/OMR ish maydoni —
+   Topshiriqlar boʻlimi («Darsda oʻtkazish» / «Uyga berish»;
+   `/baholash` arxivlandi).
 
    KIRGAN OʻQITUVCHI esa `/dashboard/games` ga yoʻnaltiriladi: u yerda
    oʻyinlar Ustozona'ning oʻz yon paneli va sarlavhasi ichida ochiladi

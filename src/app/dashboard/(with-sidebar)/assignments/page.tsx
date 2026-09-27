@@ -5,8 +5,8 @@ import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
-  ClipboardList, Plus, FileCheck2, Copy, Trash2, Tag, Library, Columns3, Users,
-  PenLine, MoreHorizontal,
+  ClipboardList, Plus, FileCheck2, Copy, Trash2, Tag, Library, Columns3,
+  PenLine, MoreHorizontal, RefreshCw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
@@ -50,12 +50,18 @@ import {
   useAssignmentEditorStore, makeDraftPayload,
 } from "@/store/useAssignmentEditorStore";
 import {
-  deleteSetAction, getSetAction, listSetsWithPublishStateAction,
+  deleteSetAction, listSetsWithPublishStateAction,
 } from "@/server/actions/assess";
-import type { ActivitySetRow } from "@/server/db/schema";
 import SetBuilderOverlay from "./_components/test/SetBuilderOverlay";
-import SessionPanelModal from "./_components/test/SessionPanelModal";
 import TestBankOverlay from "./_components/TestBankOverlay";
+import { useLaunchFlow } from "@/components/launch/useLaunchFlow";
+import { ActiveRuns, useClassRuns } from "@/components/launch/ActiveRuns";
+import { RUN_INTENTS, RunButtons, useRunIntentLabels } from "@/components/launch/RunButtons";
+import { LAUNCH_INTENTS } from "@/components/launch/launch-modes";
+import type { LaunchIntent } from "@/lib/launch-types";
+import {
+  IMPORT_PARAMS, LessonLabSyncDialog, importStatusFromParams, type ImportStatus,
+} from "@/components/launch/LessonLabSyncDialog";
 import { useTourRequest } from "@/components/tour/tour-request";
 import { TourDemoBanner } from "@/components/tour/TourDemoBanner";
 import {
@@ -82,6 +88,8 @@ export default function AssignmentsPage() {
   const t = useTranslations("AssignmentsPage");
   const tb = useTranslations("TestBank");
   const tMaterial = useTranslations("MaterialKinds");
+  const tl = useTranslations("LaunchHub");
+  const runText = useRunIntentLabels();
   const searchParams = useSearchParams();
   const openId = searchParams.get("assignment");
 
@@ -125,12 +133,11 @@ export default function AssignmentsPage() {
   const [pendingSets, setPendingSets] = useState<
     { id: string; title: string; itemCount: number }[]
   >([]);
-  /* Toʻplam amallari — savol muharriri, sessiya paneli, oʻchirish. Ilgari
-     uchalasi ham "Testlar (5-A)" oraliq overlay'ida edi; u sidebar'dan
-     olib tashlangan `/dashboard/baholash` sahifasining qoldigʻi bo'lib,
-     ortiqcha toʻliq-ekran qavati qoʻshardi. Roʻyxatning uyi — shu sahifa. */
+  /* Toʻplam amallari — savol muharriri, oʻchirish. Ilgari "Testlar (5-A)"
+     oraliq overlay'ida edi; u sidebar'dan olib tashlangan
+     `/dashboard/baholash` sahifasining qoldigʻi bo'lib, ortiqcha
+     toʻliq-ekran qavati qoʻshardi. Roʻyxatning uyi — shu sahifa. */
   const [builderSetId, setBuilderSetId] = useState<string | null>(null);
-  const [sessionSet, setSessionSet] = useState<ActivitySetRow | null>(null);
   const [deleteSet, setDeleteSet] = useState<{ id: string; title: string } | null>(null);
   /* Test banki — LessonLab bazasidan tayyor test tanlash. Ayni shu
      sahifada, chunki bank testi ham «tayyorlangan test» boʻlib tushadi:
@@ -141,6 +148,42 @@ export default function AssignmentsPage() {
      uchun signal `bankOpen` emas, alohida hisoblagich — aks holda
      yangilanish faqat oyna yopilganda boʻlardi. */
   const [bankVersion, setBankVersion] = useState(0);
+
+  /* ── OʻTKAZISH MARKAZI (docs/topshiriq-boshlash-markazi.md) ─────────
+     Test → «Darsda oʻtkazish» (jonli dars / oʻyin / mustaqil / qogʻoz /
+     karta / pult) yoki «Uyga berish» → natija ekrani → «Jurnalga». «Hozir ochiq» — sinfning ochiq
+     va natijasi kutilayotgan ishlari, sahifa tepasida: oʻqituvchi uy
+     vazifasini berib ketib, ertaga «qayerda edi?» deb qidirmasin.
+
+     Ilgari bu yerda «Sessiya» modali turardi (holat inglizcha, jurnalga
+     koʻchirish alohida toifa tanlab, `alert()` bilan) — oʻrnini shu oqim
+     egalladi. `/baholash` ish maydoni ham shu yerga koʻchdi (arxivlandi). */
+  const { runs, refresh: refreshRuns } = useClassRuns(isDemoMode ? null : selectedClassId);
+  const launchFlow = useLaunchFlow({
+    onChanged: () => {
+      refreshRuns();
+      // Jurnalga yozilgan test «Tayyor testlar» dan ustunga oʻtadi.
+      setBankVersion((v) => v + 1);
+    },
+    onOpenBank: () => setBankOpen(true),
+    onCreateNew: () => handleCreateClick(),
+  });
+
+  /* LessonLab'dan olish — `?import=…` bilan qaytilsa (OAuth) oyna
+     natija bilan ochiladi va parametrlar URL'dan tozalanadi: manzil
+     ulashilsa yoki yangilansa xabar qayta chiqmasin. */
+  const [llOpen, setLlOpen] = useState(false);
+  const [importStatus, setImportStatus] = useState<ImportStatus | null>(null);
+  useEffect(() => {
+    const sp = new URLSearchParams(window.location.search);
+    const status = importStatusFromParams(sp);
+    if (!status) return;
+    setImportStatus(status);
+    setLlOpen(true);
+    for (const key of IMPORT_PARAMS) sp.delete(key);
+    const qs = sp.toString();
+    window.history.replaceState(null, "", window.location.pathname + (qs ? `?${qs}` : ""));
+  }, []);
 
   /* Roʻyxat QACHON yangilanadi.
 
@@ -191,13 +234,23 @@ export default function AssignmentsPage() {
     return () => {
       alive = false;
     };
-  }, [selectedClassId, editorSession, builderSetId, sessionSet, bankVersion]);
+  }, [selectedClassId, editorSession, builderSetId, bankVersion]);
 
-  /** Toʻplamning sessiya paneli — panel toʻliq qator talab qiladi. */
-  async function openSetSession(setId: string) {
-    const row = await getSetAction(setId).catch(() => null);
-    if (row) setSessionSet(row);
-    else toast.error(t("setMissing"));
+  /** Testni sinfga berish — «Qanday oʻtkazamiz?» oynasi. */
+  /** «Darsda oʻtkazish» / «Uyga berish» — test va niyat allaqachon
+      maʼlum, oyna toʻgʻri keyingi savoldan ochiladi. */
+  function launchSet(
+    set: { id: string; title: string },
+    intent: LaunchIntent,
+    dueDate?: string | null,
+  ) {
+    if (!selectedClassId) return;
+    launchFlow.openLaunch(selectedClassId, {
+      setId: set.id,
+      title: set.title,
+      intent,
+      dueDate: dueDate ?? undefined,
+    });
   }
 
   function handleDeleteSetConfirm() {
@@ -410,15 +463,35 @@ export default function AssignmentsPage() {
                   <Button
                     variant="outline"
                     onClick={() => setBankOpen(true)}
-                    className="gap-1.5 font-semibold"
+                    className="gap-1.5 font-semibold shadow-none"
                   >
                     <Library className="size-4" />
                     <span className="hidden sm:inline">{tb("openButton")}</span>
                   </Button>
-                  <Button onClick={() => handleCreateClick()} className="gap-1.5 font-semibold">
+                  <Button
+                    variant="outline"
+                    onClick={() => handleCreateClick()}
+                    className="gap-1.5 font-semibold shadow-none"
+                  >
                     <Plus className="size-4" />
-                    {t("createButton")}
+                    <span className="hidden sm:inline">{t("createButton")}</span>
                   </Button>
+                  {/* Sarlavhada «Boshlash» YOʻQ: «nimani?» degan savol
+                      qoldirardi. Testni berish — har test qatorida
+                      («Darsda oʻtkazish» / «Uyga berish»). */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" aria-label={t("actionsMenu")} className="text-muted-foreground">
+                        <MoreHorizontal className="size-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem className="gap-2" onSelect={() => setLlOpen(true)}>
+                        <RefreshCw className="size-4" />
+                        {tl("llMenu")}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
 
@@ -426,7 +499,7 @@ export default function AssignmentsPage() {
                 {/* Boʻsh holat — toifa ham, tayyor test ham yoʻq. `groups`
                     endi BOʻSH toifalarni ham qamraydi, shuning uchun shart
                     `totalCount` emas: toifasi bor sinf boʻsh koʻrinmasin. */}
-                {groups.length === 0 && orphanSets.length === 0 && !draftCard ? (
+                {groups.length === 0 && orphanSets.length === 0 && !draftCard && runs.length === 0 ? (
                   <Empty className="h-full border-0">
                     <EmptyHeader>
                       <EmptyMedia><Illustration name="29" className="h-32 text-black dark:text-white" /></EmptyMedia>
@@ -442,6 +515,10 @@ export default function AssignmentsPage() {
                 ) : (
                   <ScrollArea className="h-full w-full">
                     <div className="flex flex-col gap-6 p-5">
+                      {/* Ochiq va natijasi kutilayotgan ishlar — ENG tepada:
+                          bular hozir davom etayotgan dars va uy vazifalari. */}
+                      <ActiveRuns runs={runs} onOpen={launchFlow.openRun} />
+
                       {/* Tugallanmagan qoralama — eng tepada, chunki u
                           oʻqituvchining yarim qolgan ishi. */}
                       {draftCard && (
@@ -527,10 +604,13 @@ export default function AssignmentsPage() {
                                     </button>
                                     <Badge size="sm"
                                       variant="outline"
-                                      className="shrink-0 text-muted-foreground"
+                                      className="hidden shrink-0 text-muted-foreground sm:inline-flex"
                                     >
                                       {t("questionCount", { count: set.itemCount })}
                                     </Badge>
+                                    {/* KOʻRINADIGAN asosiy amal — test tayyor,
+                                        keyingi qadam uni oʻquvchilarga berish. */}
+                                    <RunButtons labels="sm" onRun={(intent) => launchSet(set, intent)} />
                                     <DropdownMenu>
                                       <DropdownMenuTrigger asChild>
                                         <Button
@@ -543,13 +623,19 @@ export default function AssignmentsPage() {
                                         </Button>
                                       </DropdownMenuTrigger>
                                       <DropdownMenuContent align="end">
-                                        <DropdownMenuItem
-                                          className="gap-2"
-                                          onSelect={() => void openSetSession(set.id)}
-                                        >
-                                          <Users className="size-4" />
-                                          {t("runSession")}
-                                        </DropdownMenuItem>
+                                        {RUN_INTENTS.map((intent) => {
+                                          const Icon = LAUNCH_INTENTS[intent].icon;
+                                          return (
+                                            <DropdownMenuItem
+                                              key={intent}
+                                              className="gap-2"
+                                              onSelect={() => launchSet(set, intent)}
+                                            >
+                                              <Icon className="size-4" />
+                                              {runText[intent].label}
+                                            </DropdownMenuItem>
+                                          );
+                                        })}
                                         <DropdownMenuSeparator />
                                         <DropdownMenuItem
                                           variant="destructive"
@@ -564,13 +650,19 @@ export default function AssignmentsPage() {
                                   </div>
                                 </ContextMenuTrigger>
                                 <ContextMenuContent>
-                                  <ContextMenuItem
-                                    className="gap-2"
-                                    onSelect={() => void openSetSession(set.id)}
-                                  >
-                                    <Users className="size-4" />
-                                    {t("runSession")}
-                                  </ContextMenuItem>
+                                  {RUN_INTENTS.map((intent) => {
+                                    const Icon = LAUNCH_INTENTS[intent].icon;
+                                    return (
+                                      <ContextMenuItem
+                                        key={intent}
+                                        className="gap-2"
+                                        onSelect={() => launchSet(set, intent)}
+                                      >
+                                        <Icon className="size-4" />
+                                        {runText[intent].label}
+                                      </ContextMenuItem>
+                                    );
+                                  })}
                                   <ContextMenuSeparator />
                                   <ContextMenuItem
                                     variant="destructive"
@@ -806,6 +898,18 @@ export default function AssignmentsPage() {
                                             {kindLabel}
                                           </span>
                                           <AssignmentStatusChip status={status} />
+                                          {/* Test biriktirilgan ustun — uni oʻquvchilarga
+                                              berish shu yerdan, muharrirni ochmasdan.
+                                              Muddati bor boʻlsa uy vazifasi standarti
+                                              shu sana boʻladi. */}
+                                          {a.setId && (
+                                            <RunButtons
+                                              labels="md"
+                                              onRun={(intent) =>
+                                                launchSet({ id: a.setId!, title: a.title }, intent, a.dueDate)
+                                              }
+                                            />
+                                          )}
                                           {/* Amal endi KOʻRINADI. Oʻng-tugma
                                               menyusi yagona yoʻl boʻlib
                                               qolgan edi — sichqonchasiz yoki
@@ -823,6 +927,22 @@ export default function AssignmentsPage() {
                                               </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
+                                              {a.setId &&
+                                                RUN_INTENTS.map((intent) => {
+                                                  const Icon = LAUNCH_INTENTS[intent].icon;
+                                                  return (
+                                                    <DropdownMenuItem
+                                                      key={intent}
+                                                      className="gap-2"
+                                                      onSelect={() =>
+                                                        launchSet({ id: a.setId!, title: a.title }, intent, a.dueDate)
+                                                      }
+                                                    >
+                                                      <Icon className="size-4" />
+                                                      {runText[intent].label}
+                                                    </DropdownMenuItem>
+                                                  );
+                                                })}
                                               <DropdownMenuItem
                                                 className="gap-2"
                                                 onSelect={() => handleDuplicate(a)}
@@ -844,6 +964,22 @@ export default function AssignmentsPage() {
                                         </div>
                                       </ContextMenuTrigger>
                                       <ContextMenuContent>
+                                        {a.setId &&
+                                          RUN_INTENTS.map((intent) => {
+                                            const Icon = LAUNCH_INTENTS[intent].icon;
+                                            return (
+                                              <ContextMenuItem
+                                                key={intent}
+                                                className="gap-2"
+                                                onSelect={() =>
+                                                  launchSet({ id: a.setId!, title: a.title }, intent, a.dueDate)
+                                                }
+                                              >
+                                                <Icon className="size-4" />
+                                                {runText[intent].label}
+                                              </ContextMenuItem>
+                                            );
+                                          })}
                                         <ContextMenuItem className="gap-2" onSelect={() => handleDuplicate(a)}>
                                           <Copy className="size-4" />
                                           {t("duplicate")}
@@ -883,6 +1019,10 @@ export default function AssignmentsPage() {
           className={classData?.info.name ?? ""}
           onClose={() => setBankOpen(false)}
           onAssigned={() => setBankVersion((v) => v + 1)}
+          onRun={(setId, title) => {
+            setBankOpen(false);
+            launchFlow.openLaunch(selectedClassId, { setId, title, intent: "class" });
+          }}
         />
       )}
 
@@ -896,14 +1036,19 @@ export default function AssignmentsPage() {
         />
       )}
 
-      {/* Sessiya sinfsiz boshlanmaydi — roʻyxat ham, baho ham sinfdan
-          keladi. Bu yerda sinf doim tanlangan (toʻplamlar roʻyxati
-          shundan yuklanadi), shart faqat tipni toraytiradi. */}
-      {sessionSet && selectedClassId && (
-        <SessionPanelModal
-          set={sessionSet}
+      {/* Oʻtkazish oynasi, natija ekrani va pult rejimi. */}
+      {launchFlow.element}
+
+      {llOpen && (
+        <LessonLabSyncDialog
           classId={selectedClassId}
-          onClose={() => setSessionSet(null)}
+          hasClasses={Object.keys(classDataMap).length > 0}
+          status={importStatus}
+          onClose={() => {
+            setLlOpen(false);
+            setImportStatus(null);
+          }}
+          onSynced={() => setBankVersion((v) => v + 1)}
         />
       )}
 

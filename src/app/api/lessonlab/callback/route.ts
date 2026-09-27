@@ -16,8 +16,11 @@ import { bridgeTelegramIdentity } from "@/server/dal/cross-platform";
 
 export const dynamic = "force-dynamic";
 
+/* Natija Topshiriqlar sahifasida koʻrsatiladi — `/baholash` arxivlangan
+   (docs/topshiriq-boshlash-markazi.md §8). Sahifa `?import=` ni oʻqib
+   LessonLab oynasini natija bilan ochadi. */
 function back(request: Request, params: Record<string, string>) {
-  const url = new URL("/baholash", request.url);
+  const url = new URL("/dashboard/assignments", request.url);
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
   return Response.redirect(url, 302);
 }
@@ -96,6 +99,8 @@ export async function GET(request: Request) {
 
     return back(request, {
       import: "ok",
+      // Testlar shu sinfga tushdi — sahifa aynan oʻsha sinfni ochsin.
+      ...(targetClass ? { classId: targetClass } : {}),
       ...(reportId ? { report: reportId } : {}),
       classes: String(report.classesCreated),
       students: String(report.studentsCreated),

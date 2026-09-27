@@ -25,8 +25,11 @@ const instrumentSerif = Instrument_Serif({
 const TASKS: { href: string; tone: LandingTone; Icon: ComponentType<{ className?: string }> }[] = [
   { href: "/doska", tone: "doska", Icon: IconTimer },
   { href: "/doska", tone: "doska", Icon: IconTrafficLight },
-  { href: "/baholash", tone: "baholash", Icon: ListChecks },
-  { href: "/baholash", tone: "taqdimot", Icon: Presentation },
+  // Test va taqdimot — kirgan oʻqituvchi uchun; `/register` kirgan
+  // foydalanuvchini oʻzi dashboard'ga oʻtkazadi (proxy.ts).
+  // `/baholash` arxivlandi (docs/topshiriq-boshlash-markazi.md §8).
+  { href: "/register", tone: "baholash", Icon: ListChecks },
+  { href: "/register", tone: "taqdimot", Icon: Presentation },
   { href: "#jurnal", tone: "jurnal", Icon: UserCheck },
   { href: "#jurnal", tone: "jurnal", Icon: Sparkles },
 ];
