@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useState, useMemo, useEffect, useRef, type ReactNode } from "react";
 import { useComposedRefs } from "@/lib/compose-refs";
+import { useRevealOnSelect } from "@/hooks/use-reveal-on-select";
 import { useLocale, useTranslations } from "next-intl";
 import { MONTHS_UZ_SHORT, DAYS_UZ_SHORT } from "@/lib/localization";
 import { dateKeyToDate } from "@/lib/date-keys";
@@ -466,6 +467,8 @@ export default function LessonsPage() {
   const selectedClass = isDemoMode
     ? demoClasses![0]
     : liveClasses.find((c) => c.id === selectedClassId) ?? null;
+  // Telefonda boʻlim tanlanganda darslar ustuniga oʻtish (u pastda turadi).
+  const lessonsColumnRef = useRevealOnSelect<HTMLDivElement>(selectedUnitId);
   const selectedUnit = effectiveUnitId && effectiveUnitId !== NONE
     ? unitsSource.find((u) => u.id === effectiveUnitId) ?? null
     : null;
@@ -1069,6 +1072,7 @@ export default function LessonsPage() {
 
         {/* ── Column 3: Mavzular ── */}
         <div
+          ref={lessonsColumnRef}
           data-tour="lessons-list"
           className="min-w-0 min-h-0 bg-card rounded-xl border border-border flex flex-col overflow-hidden lg:h-full max-lg:min-h-[50svh]"
         >
