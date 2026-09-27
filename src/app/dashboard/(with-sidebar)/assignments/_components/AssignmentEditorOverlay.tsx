@@ -39,6 +39,7 @@ import { getSetMetaAction } from "@/server/actions/assess";
 import type { SetMeta } from "@/server/dal/assess/sets";
 import { useLaunchFlow } from "@/components/launch/useLaunchFlow";
 import { RunButtons } from "@/components/launch/RunButtons";
+import { WorkPlanCard } from "@/components/work-plan/WorkPlanCard";
 import type { LaunchIntent } from "@/lib/launch-types";
 import {
   TOPIC_COLOR_HEX,
@@ -191,6 +192,7 @@ export default function AssignmentEditorOverlay({
 }) {
   const t = useTranslations("AssignmentsPage");
   const tl = useTranslations("LaunchHub");
+  const tw = useTranslations("WorkPlan");
   const classId = session.classId;
   const classDataMap = useGradesStore((s) => s.classDataMap);
   const updateClass = useGradesStore((s) => s.updateClass);
@@ -1048,6 +1050,20 @@ export default function AssignmentEditorOverlay({
                   className="h-auto rounded-xl bg-muted/40 px-4 py-3 text-base font-semibold shadow-none"
                 />
               </div>
+
+              {/* ISH REJA — yangi topshiriqda eslatma: bugun qaysi mavzu,
+                  oldingi va keyingilari (Darslar sahifasidan). «Olish» —
+                  mavzu nomi sarlavhaga, dars kuni sanaga. */}
+              {isDraft && (
+                <WorkPlanCard
+                  classId={classId}
+                  onPick={(row) => {
+                    patch({ title: row.lesson.title });
+                    if (row.date && row.date >= todayKey()) setDateFor(classId, row.date);
+                    toast.success(tw("picked"));
+                  }}
+                />
+              )}
 
               {/* YOʻRIQNOMA (R203) — maydon tipda, bazada, sync'da va oltita
                   tilda tayyor edi, lekin hech qayerda chizilmasdi. Referensda

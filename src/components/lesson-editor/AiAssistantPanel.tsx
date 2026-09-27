@@ -327,7 +327,7 @@ type AttachedDoc = { uri: string; mimeType: string; name: string };
 export default function AiAssistantPanel({
   lessonContext, classIds = [], lessonId, onClose, onInsert, pendingPrompt, onPendingPromptSent,
 }: {
-  lessonContext: { title?: string; classes?: string; unit?: string; content?: string; standards?: { id: string; desc: string }[]; durationMin?: number };
+  lessonContext: { title?: string; classes?: string; unit?: string; content?: string; standards?: { id: string; desc: string }[]; durationMin?: number; plan?: string };
   /** Dars biriktirilgan sinf id'lari — anonim sinf-statistika konteksti uchun. */
   classIds?: string[];
   /** Chat tarixini serverda saqlash uchun (yoʻq boʻlsa tarix saqlanmaydi). */

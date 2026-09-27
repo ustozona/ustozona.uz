@@ -292,3 +292,23 @@ Yangi jadval ham, ustun ham yoʻq. Hammasi mavjud sxemaga tushadi:
 5. **Pult bogʻlanishini saqlash** — pult buzilsa raqam almashishi uchun
    (hozir tartib raqami qoidasi).
 6. **Telegram eslatma** — uy vazifasi muddatidan oldin botdan xabar.
+
+## 11. Ish reja eslatmasi («+ Yaratish»)
+
+Yangi topshiriq muharririda, sarlavha ostida — sinfning choraklik ish
+rejasi (`components/work-plan/WorkPlanCard.tsx`, mantiq —
+`lib/work-plan.ts`). Ekranni egallamaydi: yopiq holatda bitta qator
+(«Bugun: 05. Reading…»), ochilganda joriy mavzu atrofi (2 oldingi ·
+joriy · 2 keyingi), «Butun boʻlim» — chorakning hamma mavzusi.
+
+Joriy mavzu: shu kuni darsi bor mavzu → boʻlmasa eng yaqin keyingi
+sanali mavzu → sana umuman boʻlmasa oʻtilmagan birinchi mavzu (koʻp
+oʻqituvchida reja import qilingan, sanalar hali joylanmagan).
+
+«Olish» — mavzu nomi sarlavhaga, dars kuni sanaga (oʻtmishdagi kun
+qoʻyilmaydi). Reja bu yerda tahrirlanmaydi — manba Darslar sahifasi.
+
+**AI:** dars AI yordamchisi va «AI bilan reja tuzish» soʻroviga shu
+darsning oldingi · joriy · keyingi mavzulari qoʻshiladi
+(`lesson.plan` → `/api/ustozona-ai`): reja ketma-ketlikka mos boʻladi,
+keyingi mavzu materiali oldindan berilmaydi.

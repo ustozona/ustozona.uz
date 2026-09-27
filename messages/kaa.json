@@ -4211,6 +4211,24 @@
     "llConflict": "Qarama-qarsılıq",
     "llSkippedLabel": "Ótkerildi"
   },
+  "WorkPlan": {
+    "title": "Is rejesi",
+    "today": "Búgin",
+    "nextLesson": "Keyingi sabaq",
+    "upNext": "Gezektegi tema",
+    "noUnit": "Bólimsiz",
+    "untitled": "Atsız tema",
+    "reserve": "Zapas sabaq",
+    "taught": "Ótilgen",
+    "use": "Alıw",
+    "useHint": "Tema atın sarlawhaǵa, sabaq kúnin sánege qoyıw",
+    "showAll": "Pútin bólim · {count} tema",
+    "showLess": "Qısqartıw",
+    "openLessons": "Sabaqlar",
+    "empty": "Bul klassta ele is rejesi joq",
+    "emptyHint": "Sabaqlar betinde is rejesin júkleń — búgingi tema usı jerde kórinedi.",
+    "picked": "Tema tapsırmaǵa qoyıldı"
+  },
   "AssignmentsPage": {
     "status_today": "Búgin",
     "statusHint_today": "Búgin ótkeriledi — ele baha kirgizilmegen.",

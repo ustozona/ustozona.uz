@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { useEditor, EditorContent } from "@tiptap/react";
@@ -27,6 +27,7 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useLessonStore } from "@/store/useLessonStore";
+import { workPlanFor, workPlanPrompt } from "@/lib/work-plan";
 import { useLessonFlow } from "@/hooks/useLessonFlow";
 import { isTaught, lessonPlanState, type LessonPlanState } from "@/lib/lessons-data";
 import { todayKey } from "@/lib/date-keys";
@@ -98,6 +99,14 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
   const lesson = useLessonStore((s) => s.lessons.find((l) => l.id === lessonId));
   const units = useLessonStore((s) => s.units);
   const allLessons = useLessonStore((s) => s.lessons);
+  /* AI soʻroviga sinfning ish rejasi (oldingi · shu · keyingi mavzular) —
+     reja va mashqlar ketma-ketlikka mos boʻlsin (`lib/work-plan.ts`). */
+  const aiPlan = useMemo(() => {
+    const cid = lesson ? lessonClassIds(lesson)[0] : undefined;
+    if (!cid) return undefined;
+    const plan = workPlanFor(allLessons, units, cid, todayKey(), lesson!.id);
+    return plan ? workPlanPrompt(plan) : undefined;
+  }, [allLessons, units, lesson]);
   const updateLesson = useLessonStore((s) => s.updateLesson);
   const addLesson = useLessonStore((s) => s.addLesson);
   const deleteLesson = useLessonStore((s) => s.deleteLesson);
@@ -722,6 +731,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
                       content: editor?.getHTML(),
                       standards: attachedStandards,
                       durationMin,
+                      plan: aiPlan,
                     }}
                     classIds={lessonClassIds(lesson)}
                     lessonId={lesson.id}
@@ -789,6 +799,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
                     content: editor?.getHTML(),
                     standards: attachedStandards,
                     durationMin,
+                    plan: aiPlan,
                   }}
                   classIds={lessonClassIds(lesson)}
                   lessonId={lesson.id}

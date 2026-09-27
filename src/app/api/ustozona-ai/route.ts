@@ -134,7 +134,7 @@ export async function POST(req: Request) {
 
   let body: {
     messages?: AiChatMessage[];
-    lesson?: { title?: string; classes?: string; unit?: string; content?: string; standards?: { id?: string; desc?: string }[]; durationMin?: number };
+    lesson?: { title?: string; classes?: string; unit?: string; content?: string; standards?: { id?: string; desc?: string }[]; durationMin?: number; plan?: string };
     /** Sinf statistikasi (anonim) kontekstga qoʻshilsinmi — panel toggle. */
     useClassData?: boolean;
     classIds?: string[];
@@ -165,6 +165,13 @@ export async function POST(req: Request) {
   const durationCtx = L?.durationMin ? `\nDars davomiyligi: ${L.durationMin} daqiqa` : "";
   const lessonCtx = L && (L.title || L.content || L.classes || L.unit || standardsList.length || L.durationMin)
     ? `\n\n— Joriy dars konteksti —\nSarlavha: ${L.title || "(nomsiz)"}\nSinf(lar): ${L.classes || "—"}\nBoʻlim: ${L.unit || "—"}${durationCtx}${standardsCtx}\nMatn (HTML): ${(L.content || "").slice(0, 6000) || "(boʻsh)"}`
+    : "";
+  /* Sinfning choraklik ish rejasi — shu darsdan oldingi va keyingi
+     mavzular (`lib/work-plan.ts`). Reja, mashq va savollar ketma-ketlikka
+     mos boʻlsin: oʻtilgan mavzuni takrorlash, keyingisini oldindan
+     aytmaslik. Mijoz yuboradi — bu yerda faqat uzunlik cheklanadi. */
+  const planCtx = typeof L?.plan === "string" && L.plan.trim()
+    ? `\n\n— Sinfning ish rejasi (choraklik) —\n${L.plan.slice(0, 1500)}\nReja, topshiriq va savollarni SHU ketma-ketlikka moslab tuz: JORIY mavzuga tayan, oldingi mavzulardan takrorlash qoʻshish mumkin, keyingi mavzular materialini oldindan berma.`
     : "";
 
   // Sinf statistikasi (anonim agregat) — faqat toggle yoqilganda.
@@ -243,7 +250,7 @@ export async function POST(req: Request) {
 
   const abort = new AbortController();
   const iterator = streamChat({
-    system: SYSTEM + lessonCtx + docCtx,
+    system: SYSTEM + lessonCtx + planCtx + docCtx,
     messages: messages.map((m) => ({ role: m.role, content: m.content })),
     signal: abort.signal,
     doc,
