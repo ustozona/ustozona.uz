@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { usePathname } from "next/navigation"
 import { Slot } from "radix-ui"
 import { cva, type VariantProps } from "class-variance-authority"
 import { PanelLeftIcon } from "lucide-react"
@@ -67,6 +68,16 @@ function SidebarProvider({
 }) {
   const isMobile = useIsMobile()
   const [openMobile, setOpenMobile] = React.useState(false)
+
+  // Telefonda menyu (Sheet) sahifa tanlanganda oʻzi yopiladi — aks holda
+  // yangi sahifa menyu ortida qolib ketardi. Render paytidagi holat
+  // moslash naqshi (effekt emas): qoʻshimcha kadr/miltillash yoʻq.
+  const pathname = usePathname()
+  const [lastPath, setLastPath] = React.useState(pathname)
+  if (pathname !== lastPath) {
+    setLastPath(pathname)
+    setOpenMobile(false)
+  }
 
   const [_open, _setOpen] = React.useState(defaultOpen)
   const open = openProp ?? _open
