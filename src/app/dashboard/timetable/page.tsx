@@ -677,13 +677,13 @@ export default function TimetablePage() {
   const selectedRangeLabel = selectedVersion ? versionRangeLabel(versions, selectedVersion) : "";
 
   return (
-    <DashboardPageLayout className="h-full">
+    <DashboardPageLayout className="lg:h-full">
       <TourDemoBanner tourId="timetable" active={isDemoMode} />
       {/* Chap ustun minmax bilan: sidebar ochilib joy torayganda ham panel
           300px dan tor boʻlmaydi — kartalar siqilib qolmaydi. */}
       <div className={cn(dashboardSplitGridClass, "grid-cols-1 lg:grid-cols-[minmax(300px,1fr)_3fr]")}>
-        {/* ── Left: Sinflar ── */}
-        <div className="min-w-0 min-h-0 grid">
+        {/* ── Left: Sinflar ── (telefonda jadvaldan keyin, oʻz ekranida) */}
+        <div className="min-w-0 min-h-0 grid max-lg:order-last max-lg:h-[70svh]">
         <Card className={cn(panelCardClass)} data-tour="timetable-class-selector">
           {/* Header */}
           <CardHeader className={cn(panelCardHeaderClass, "gap-3 border-b min-h-16 px-5 pt-4! pb-4!")}>
@@ -795,12 +795,12 @@ export default function TimetablePage() {
         </Card>
         </div>
 
-      {/* ── Right: Dars jadvali ── */}
-      <div className="min-w-0 min-h-0 grid">
+      {/* ── Right: Dars jadvali ── (telefonda birinchi, bir ekran — ichida aylanadi) */}
+      <div className="min-w-0 min-h-0 grid max-lg:order-first max-lg:h-[calc(100svh-8rem)] max-lg:min-h-[480px]">
         <Card className={panelCardClass} data-tour="timetable-grid">
           {/* Header */}
           {/* border-b-0: ostida darhol jadval grid chizigʻi boshlanadi, ikkinchi ajratuvchi ortiqcha — panel-language-v1 "no-divider" istisnosi */}
-          <CardHeader className={cn(panelCardHeaderClass, "border-b-0 gap-3 pt-4! pb-4!")}>
+          <CardHeader className={cn(panelCardHeaderClass, "border-b-0 gap-3 pt-4! pb-4! max-md:flex-wrap")}>
             {/* Chap: sarlavha + versiya satri (ostki qatorda) */}
             <div className="flex min-w-0 flex-1 items-center gap-3">
               <SectionIcon>
@@ -828,7 +828,7 @@ export default function TimetablePage() {
               variant="pill"
               value={snapMode}
               onValueChange={setSnapMode}
-              className="shrink-0"
+              className="shrink-0 max-md:order-last max-md:w-full"
               aria-label={t("viewModeAria")}
               options={[
                 { value: "free", label: t("calendarMode"), icon: <CalendarDays className="size-4" /> },
@@ -994,7 +994,12 @@ export default function TimetablePage() {
                 const day = col + 1;
                 return {
                   key: String(day),
-                  header: fmt.dayName(day),
+                  header: (
+                    <>
+                      <span className="md:hidden">{fmt.dayShort(day)}</span>
+                      <span className="max-md:hidden">{fmt.dayName(day)}</span>
+                    </>
+                  ),
                   headerProps: { className: "min-w-0 truncate py-3 text-center text-sm font-medium text-foreground/80" },
                   columnProps: {
                     onDragOver: (e) => { if (readOnly || isDemoMode) return; e.preventDefault(); e.dataTransfer.dropEffect = grabOffsetRef.current != null ? "move" : "copy"; if (dragOverDay !== day) setDragOverDay(day); },

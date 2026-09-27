@@ -843,7 +843,7 @@ export default function AttendanceView({
         )}
         <Card className={cn("min-w-0", panelCardClass)} style={{ height: "100%" }}>
           {/* Header */}
-          <CardHeader className={cn(panelCardHeaderClass, "justify-between gap-3 min-h-16 px-5 pt-4! pb-4!")}>
+          <CardHeader className={cn(panelCardHeaderClass, "justify-between gap-3 min-h-16 px-5 pt-4! pb-4! max-md:flex-wrap")}>
             <div className="flex items-center gap-3 shrink-0">
               <SectionIcon><Calendar /></SectionIcon>
               <CardTitle className="flex items-baseline gap-1.5">
@@ -856,8 +856,9 @@ export default function AttendanceView({
               </CardTitle>
             </div>
 
-            {/* Davr granularligi — Oy | Chorak (demo/turda va choraksiz oʻquv yilida yashirin) — markazda */}
-            <div className="flex flex-1 items-center justify-center">
+            {/* Davr granularligi — Oy | Chorak (demo/turda va choraksiz oʻquv yilida yashirin) — markazda.
+                Telefonda alohida qatorga tushadi — sarlavha va tugmalar bilan ustma-ust chiqmaydi. */}
+            <div className="flex flex-1 items-center justify-center max-md:order-last max-md:basis-full">
               {!demoMode && isCalendarConfigured(calendar) && (
                 <SegmentedToggle
                   variant="pill"
