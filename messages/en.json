@@ -2080,6 +2080,10 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "darslar-oqimi-kalendar": {
+        "title": "Linked lessons now respect days off, the timetable and buffer lessons",
+        "body": "Block a day or add a holiday and that day’s lessons shift to the following lessons. When the timetable changes, re-lay the lessons that no longer fit in one click. You can give a topic one more lesson and add a buffer lesson at the end of a unit — if you fall behind, the buffer is used and later units stay in place."
+      },
       "darslar-oqimi": {
         "title": "Lessons are now linked — dates move on their own",
         "body": "Reorder lessons or delete one, and the lessons after it settle into your timetable dates automatically. In Planner, drag a lesson to another day and the lessons in between shift along; pin an important lesson to keep it on its date. Every change can be undone."
@@ -4705,8 +4709,25 @@
     "unpinnedToast": "Unpinned — the lesson is back in the flow",
     "pinnedHereToast": "Lesson pinned to this date",
     "pinnedLabel": "Pinned to date",
-    "mismatchChip": "Dates don't match the lesson order",
-    "realign": "Align"
+    "mismatchChip": "Dates don’t match the lesson order or timetable",
+    "realign": "Align",
+    "reserveTitle": "Buffer lesson",
+    "reserveAdd": "Add buffer lesson",
+    "reserveAddedToast": "Buffer lesson added",
+    "reserveBadge": "Buffer",
+    "reserveUsedToast": "Buffer lesson used — later units stayed in place",
+    "stretch": "One more lesson (+1)",
+    "shorten": "Shorten by one lesson (−1)",
+    "stretchedToast": "Topic extended by one lesson",
+    "shortenedToast": "Topic shortened by one lesson",
+    "durationLabel": "{count, plural, one {# lesson} other {# lessons}}",
+    "holidayConflictToast": "{count, plural, one {# lesson falls} other {# lessons fall}} on a day off",
+    "timetableConflictToast": "{count, plural, one {# lesson is} other {# lessons are}} at a time not in the new timetable",
+    "shiftAction": "Shift",
+    "realignAction": "Re-lay",
+    "blockShiftLessons": "Shift this day’s lessons to the next lessons",
+    "dayAlreadyBlocked": "This day is already a day off: {name}",
+    "blocksMigratedToast": "{count, plural, one {# blocked day was} other {# blocked days were}} moved to the school-year calendar"
   },
   "Doska": {
     "widgets": {

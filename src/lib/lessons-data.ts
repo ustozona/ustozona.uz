@@ -80,6 +80,10 @@ export type Lesson = {
       qadalgan darsni surmaydi va uning slotini band deb chetlab oʻtadi.
       `lessons.data` JSONB ichida, migratsiyasiz. */
   pinnedByClass?: Record<string, boolean>;
+  /** Zaxira dars — boʻlim oxiridagi mavzusiz slot (takrorlash / qayta
+      oʻtish). Dars kechiksa «Keyingi darsga sur» uni ishlatadi va keyingi
+      boʻlimlar joyidan qimirlamaydi. `lessons.data` JSONB ichida. */
+  reserve?: boolean;
   /** Oxirgi tahrir vaqti (ISO) — muharrir headerida nisbiy koʻrsatiladi. */
   updatedAt?: string;
 };

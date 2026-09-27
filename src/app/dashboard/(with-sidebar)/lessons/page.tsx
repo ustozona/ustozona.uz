@@ -27,7 +27,7 @@ import { isTaught, lessonPlanState, byLessonOrder } from "@/lib/lessons-data";
 import { todayKey } from "@/lib/date-keys";
 import { needsTaughtConfirm } from "@/lib/lesson-shift";
 import { useFlowMismatch, useLessonFlow } from "@/hooks/useLessonFlow";
-import { flowSequence } from "@/lib/lesson-flow";
+import { flowSequence, isFrozen } from "@/lib/lesson-flow";
 import { useTourRequest } from "@/components/tour/tour-request";
 import {
   makeLessonsTourDemoClasses, makeLessonsTourDemoUnits, makeLessonsTourDemoLessons,
@@ -41,7 +41,7 @@ import { ClassFormModal } from "@/components/ClassFormModal";
 import CreateUnitModal from "@/components/CreateUnitModal";
 import IshRejaImportModal from "@/components/IshRejaImportModal";
 import UnitImportModal from "@/components/UnitImportModal";
-import { LibraryBig, FileText, Clock, Plus, Search, ArrowDownUp, Pencil, Trash2, FolderInput, ListChecks, FileCheck, CircleCheck, Check, SkipForward, X, CircleDashed, GripVertical, Pin, PinOff, CalendarSync } from "lucide-react";
+import { LibraryBig, FileText, Clock, Plus, Search, ArrowDownUp, Pencil, Trash2, FolderInput, ListChecks, FileCheck, CircleCheck, Check, SkipForward, X, CircleDashed, GripVertical, Pin, PinOff, CalendarSync, CalendarPlus, ListPlus, ListMinus } from "lucide-react";
 import { ReorderList, useEscape, useReorderDraft } from "@/components/ReorderList";
 import { BulkActionBar, BulkActionButton, BulkActionCount, BulkActionDivider } from "@/components/BulkActionBar";
 import {
@@ -342,6 +342,14 @@ export default function LessonsPage() {
       },
     });
   };
+  /** Mavzuning shu sinfdagi darslar soni (davomiylik) va kelajakdagi darsi bormi. */
+  const sessionCount = (lesson: Lesson) =>
+    effectiveClassId ? lessonSessions(lesson).filter((x) => x.classId === effectiveClassId).length : 0;
+  const futureCount = (lesson: Lesson) =>
+    effectiveClassId
+      ? lessonSessions(lesson).filter((x) => x.classId === effectiveClassId && !isFrozen(x, { today, nowMin })).length
+      : 0;
+  const hasFutureSession = (lesson: Lesson) => futureCount(lesson) > 0;
   const togglePin = (lesson: Lesson) => {
     if (effectiveClassId && !isDemoMode) flow.togglePin(lesson.id, effectiveClassId);
   };
@@ -935,7 +943,7 @@ export default function LessonsPage() {
                   <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/60 px-3 py-2 text-caption">
                     <CalendarSync className="size-4 shrink-0 text-muted-foreground" />
                     <span className="min-w-0 flex-1 font-medium text-foreground">{tf("mismatchChip")}</span>
-                    <Button size="sm" variant="outline" className="h-7 bg-card text-foreground" onClick={() => flow.realign(effectiveClassId!)}>
+                    <Button size="sm" variant="outline" className="h-7 bg-card text-foreground" onClick={() => flow.realign([effectiveClassId!])}>
                       {tf("realign")}
                     </Button>
                   </div>
@@ -1109,6 +1117,16 @@ export default function LessonsPage() {
                   <Search className="size-4" />
                 </Button>
               ))}
+              {/* Zaxira dars — boʻlim oxiriga, oqimga kiritiladi (kechikishni yutadi). */}
+              {effectiveUnitId && effectiveClassId && !isDemoMode && lessonsForUnit.length > 0 && (
+                <Button
+                  variant="ghost" size="icon" title={tf("reserveAdd")} aria-label={tf("reserveAdd")}
+                  className="text-muted-foreground hover:text-foreground"
+                  onClick={() => flow.addReserve(effectiveClassId, effectiveUnitId === NONE ? null : effectiveUnitId)}
+                >
+                  <CalendarPlus className="size-4" />
+                </Button>
+              )}
               {effectiveUnitId && lessonsForUnit.length > 0 && (
                 <Button size="sm" className="h-9 gap-1.5 ml-1 px-3" onClick={effectiveUnitId === NONE ? handleNewLesson : handleNewLessonChoice}>
                   <Plus className="size-3.5" />
@@ -1229,8 +1247,14 @@ export default function LessonsPage() {
                                     {lessonUnit && "· "}{when.weekday}, {when.time}
                                   </span>
                                 )}
+                                {effectiveClassId && sessionCount(lesson) > 1 && (
+                                  <span className="shrink-0 tabular-nums">· {tf("durationLabel", { count: sessionCount(lesson) })}</span>
+                                )}
                                 {effectiveClassId && isPinned(lesson, effectiveClassId) && (
                                   <Pin className="size-3.5 shrink-0" aria-label={tf("pinnedLabel")} />
+                                )}
+                                {lesson.reserve && (
+                                  <span className="shrink-0 rounded-full border border-dashed border-border px-1.5 text-tag font-semibold">{tf("reserveBadge")}</span>
                                 )}
                               </div>
                             );
@@ -1291,6 +1315,22 @@ export default function LessonsPage() {
                             {isPinned(lesson, effectiveClassId!) ? <PinOff className="size-4" /> : <Pin className="size-4" />}
                             {isPinned(lesson, effectiveClassId!) ? tf("unpin") : tf("pin")}
                           </ContextMenuItem>
+                          {/* Davomiylik: mavzu yana bir darsni oladi / bittaga qisqaradi — keyingilar suriladi. */}
+                          {hasFutureSession(lesson) && !isDemoMode && (
+                            <>
+                              <ContextMenuItem className="gap-2 cursor-pointer" onClick={() => flow.stretch(lesson.id, effectiveClassId!, 1)}>
+                                <ListPlus className="size-4" />
+                                {tf("stretch")}
+                              </ContextMenuItem>
+                              {/* Kelajakda kamida bitta dars qolsin — oʻtgan darslar hisobga olinmaydi. */}
+                              {futureCount(lesson) > 1 && (
+                                <ContextMenuItem className="gap-2 cursor-pointer" onClick={() => flow.stretch(lesson.id, effectiveClassId!, -1)}>
+                                  <ListMinus className="size-4" />
+                                  {tf("shorten")}
+                                </ContextMenuItem>
+                              )}
+                            </>
+                          )}
                         </>
                       )}
                       {lessonsForUnit.length > 1 && (

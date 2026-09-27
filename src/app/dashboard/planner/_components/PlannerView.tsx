@@ -29,11 +29,11 @@ import { ClassSwatch } from "@/components/ClassSwatch";
 import { TimeGrid, type TimeGridColumn } from "@/components/calendar/TimeGrid";
 import { MonthGrid } from "@/components/calendar/MonthGrid";
 import { useCalendarFormat } from "@/components/calendar/format";
-import { getHolidayForDate, inRange } from "@/lib/academic-calendar";
+import { applyBlockedDays, getHolidayForDate, inRange, type Holiday } from "@/lib/academic-calendar";
 import { lessonSessions, lessonClassIds, unitIdForClass, isTaught, isPinned, type Lesson } from "@/lib/lessons-data";
 import { useLessonFlow } from "@/hooks/useLessonFlow";
 import { isFrozen } from "@/lib/lesson-flow";
-import { todayKey } from "@/lib/date-keys";
+import { addDaysKey, todayKey } from "@/lib/date-keys";
 import { cn } from "@/lib/utils";
 import { subjectLabel } from "@/lib/standards-data";
 import { toast } from "sonner";
@@ -42,6 +42,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { DateKeyPicker } from "@/components/ui/date-key-picker";
 import { Label } from "@/components/ui/label";
 import { SectionIcon } from "@/components/ui/section-icon";
@@ -93,9 +94,24 @@ import { makePlannerTourDemo } from "@/components/tour/planner-tour-demo";
    `lessonSessions()` orqali sintez qilinadi — migratsiyasiz mos ishlaydi.
    ════════════════════════════════════════════════════════════════════ */
 
-const BLOCKED_KEY = "murabbiyona-blocked-days";
+/** Eski, faqat shu brauzerda saqlangan bloklangan kunlar. Endi ular
+    kalendar taʼtillari (`kind: "other"`) — sinxronlanadi va dars oqimi
+    ularni chetlab oʻtadi. Kalit bir marta koʻchiriladi va oʻchiriladi. */
+const LEGACY_BLOCKED_KEY = "murabbiyona-blocked-days";
 
-type BlockedDay = { date: string; label: string };
+type LegacyBlockedDay = { date: string; label: string };
+
+/** Diapazondagi kun kalitlari ("YYYY-MM-DD"), chegaralar ham. */
+function rangeKeys(r: { start: string; end: string }): string[] {
+  const out: string[] = [];
+  if (r.start && r.end) for (let k = r.start; k <= r.end; k = addDaysKey(k, 1)) out.push(k);
+  return out;
+}
+
+/** Planner'da bloklangan bitta kun — kalendardagi «boshqa» turidagi taʼtil. */
+function blockHoliday(key: string, name: string): Holiday {
+  return { id: `b-${Date.now().toString(36)}-${key}`, name, range: { start: key, end: key }, kind: "other" };
+}
 type SlotModal = { date: Date; classId: string; startMin: number; endMin: number };
 /** Kalendarga joylangan bitta sessiya (dars + qaysi sinf + vaqt). */
 type Placement = { lesson: Lesson; classId: string; startMin: number; endMin: number };
@@ -216,7 +232,6 @@ export default function PlannerView({ classId }: { classId?: string }) {
 
   const [view, setView] = useState<"week" | "month">("week");
   const [anchor, setAnchor] = useState(() => new Date());
-  const [blocked, setBlocked] = useState<BlockedDay[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [nowMin, setNowMin] = useState(0);
   const [showOffDays, setShowOffDays] = useState(false);
@@ -246,6 +261,11 @@ export default function PlannerView({ classId }: { classId?: string }) {
   const togglePin = flow.togglePin;
 
   const [blockModal, setBlockModal] = useState<{ date: Date } | null>(null);
+  // Bloklangan kundagi darslar surilsinmi (standart — ha).
+  const [blockShift, setBlockShift] = useState(true);
+  const setHolidays = useCalendarStore((s) => s.setHolidays);
+  const updateHoliday = useCalendarStore((s) => s.updateHoliday);
+  const removeHoliday = useCalendarStore((s) => s.removeHoliday);
   const [blockLabel, setBlockLabel] = useState("");
 
   const [linkModal, setLinkModal] = useState<SlotModal | null>(null);
@@ -264,8 +284,6 @@ export default function PlannerView({ classId }: { classId?: string }) {
   // ── Hydrate ──
   useEffect(() => {
     try {
-      const rawB = localStorage.getItem(BLOCKED_KEY);
-      if (rawB) setBlocked(JSON.parse(rawB));
       const rawZ = localStorage.getItem(ZOOM_KEY);
       if (rawZ) {
         const z = Number(rawZ);
@@ -284,10 +302,38 @@ export default function PlannerView({ classId }: { classId?: string }) {
     setZoom((z) => Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, z + delta)));
   }
 
+  // Eski (brauzerdagi) bloklangan kunlarni kalendarga bir marta koʻchirish —
+  // faol oʻquv yili boʻlgandagina (aks holda yozuv saqlanmaydi, keyinga qoladi).
+  // Faqat bugundan keyingi va oʻquv yili ichidagi kunlar koʻchadi: oʻtgan
+  // kunlar davomat hisobini oʻzgartirmasin. Oʻqituvchiga xabar beriladi.
+  const calendarHydrated = useCalendarStore((s) => s._hasHydrated);
+  const hasActiveYear = useCalendarStore((s) => s.years.some((y) => y.isActive));
   useEffect(() => {
-    if (!hydrated) return;
-    try { localStorage.setItem(BLOCKED_KEY, JSON.stringify(blocked)); } catch {}
-  }, [blocked, hydrated]);
+    if (!calendarHydrated || !hasActiveYear) return;
+    let legacy: LegacyBlockedDay[] = [];
+    try {
+      const raw = localStorage.getItem(LEGACY_BLOCKED_KEY);
+      if (!raw) return;
+      legacy = JSON.parse(raw) as LegacyBlockedDay[];
+    } catch {
+      return;
+    }
+    const st = useCalendarStore.getState();
+    const cal = st.calendar;
+    const today = todayKey();
+    const added: Holiday[] = [];
+    for (const b of Array.isArray(legacy) ? legacy : []) {
+      if (!b?.date || b.date < today) continue;
+      if (cal.range.start && cal.range.end && !inRange(b.date, cal.range)) continue;
+      if (getHolidayForDate(cal, b.date) || added.some((h) => h.range.start === b.date)) continue;
+      added.push(blockHoliday(b.date, b.label || t("blockedDay")));
+    }
+    if (added.length) {
+      st.setHolidays([...cal.holidays, ...added]);
+      toast.info(tf("blocksMigratedToast", { count: added.length }));
+    }
+    try { localStorage.removeItem(LEGACY_BLOCKED_KEY); } catch {}
+  }, [calendarHydrated, hasActiveYear, t, tf]);
 
   useEffect(() => {
     const tick = () => { const n = new Date(); setNowMin(n.getHours() * 60 + n.getMinutes()); };
@@ -331,18 +377,25 @@ export default function PlannerView({ classId }: { classId?: string }) {
     const c: ClassColor = info ? liveClassColor(info) : "gray";
     return { name: info?.name ?? t("unknownClass"), color: c, tints: classTints(c) };
   };
-  const blockedSet = useMemo(() => new Set(blocked.map((b) => b.date)), [blocked]);
-  const blockedMap = useMemo(() => new Map(blocked.map((b) => [b.date, b.label])), [blocked]);
+  /* Bloklangan kun = kalendardagi «boshqa» turidagi taʼtil (planner'dan
+     belgilanadi); qolgan taʼtil/bayramlar — oʻquv yili sozlamalaridan. */
+  const blockedHolidays = useMemo(
+    () => calendar.holidays.filter((h) => h.kind === "other").sort((a, b) => a.range.start.localeCompare(b.range.start)),
+    [calendar.holidays],
+  );
+  const blockedMap = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const h of blockedHolidays) for (const k of rangeKeys(h.range)) m.set(k, h.name);
+    return m;
+  }, [blockedHolidays]);
+  const blockedSet = useMemo(() => new Set(blockedMap.keys()), [blockedMap]);
 
   /** Bloklangan kunlar roʻyxati (popover uchun) — sana boʻyicha tartiblangan. */
-  const blockedList = useMemo(
-    () => [...blocked].sort((a, b) => a.date.localeCompare(b.date)),
-    [blocked],
-  );
+  const blockedList = blockedHolidays;
   /** Oʻquv yili bayramlari (popover uchun, faqat oʻqish uchun) — boshlanish
       sanasi boʻyicha tartiblangan. */
   const holidayList = useMemo(
-    () => [...calendar.holidays].sort((a, b) => a.range.start.localeCompare(b.range.start)),
+    () => calendar.holidays.filter((h) => h.kind !== "other").sort((a, b) => a.range.start.localeCompare(b.range.start)),
     [calendar.holidays],
   );
   /** "kk-monthname" (kichik harf) — kun panelidagi sarlavha bilan bir xil format. */
@@ -520,32 +573,68 @@ export default function PlannerView({ classId }: { classId?: string }) {
   // ── Bayram ──
   function openBlockModal(date: Date) {
     setBlockLabel(blockedMap.get(toDateKey(date)) ?? "");
+    setBlockShift(true);
     setBlockModal({ date });
+  }
+  /** Kunni blokdan chiqarish: faqat shu kunni qoplagan «boshqa» turidagi
+      yozuv(lar) oʻzgaradi (koʻp kunlik blok ikkiga boʻlinadi, nomi saqlanadi);
+      taʼtil/bayramlar va sanasi toʻliq boʻlmagan yozuvlarga tegilmaydi. */
+  function unblockDay(key: string) {
+    const cal = useCalendarStore.getState().calendar;
+    setHolidays(cal.holidays.flatMap((h) =>
+      h.kind === "other" && inRange(key, h.range)
+        ? applyBlockedDays({ ...cal, holidays: [h] }, rangeKeys(h.range).filter((k) => k !== key), h.name)
+        : [h]));
   }
   function saveBlock() {
     if (!blockModal) return;
     const key = toDateKey(blockModal.date);
     const label = blockLabel.trim();
-    const lessonsOnDay = placedByDate.get(key)?.length ?? 0;
-    setBlocked((prev) => {
-      const without = prev.filter((b) => b.date !== key);
-      if (!label) return without;
-      return [...without, { date: key, label }];
-    });
     setBlockModal(null);
     setBlockLabel("");
-    if (label) {
-      toast.success(t("dayBlockedToast"), {
-        description: lessonsOnDay > 0 ? t("dayBlockedWithLessonsHint", { count: lessonsOnDay }) : undefined,
-      });
-    } else {
+    if (!label) {
+      if (blockedSet.has(key)) unblockDay(key);
       toast.success(t("blockRemovedToast"));
+      return;
     }
+    const cal = useCalendarStore.getState().calendar;
+    const existing = getHolidayForDate(cal, key);
+    if (existing) {
+      // Planner'da qoʻyilgan bir kunlik blok — faqat nomi yangilanadi. Boshqa
+      // taʼtil/bayram (yoki koʻp kunlik blok) sozlamalarda tahrirlanadi.
+      if (existing.kind === "other" && existing.range.start === key && existing.range.end === key) {
+        updateHoliday(existing.id, { name: label });
+        toast.success(t("dayBlockedToast"));
+      } else {
+        toast.info(tf("dayAlreadyBlocked", { name: existing.name }));
+      }
+      return;
+    }
+    const holiday = blockHoliday(key, label);
+    const block = () => setHolidays([...useCalendarStore.getState().calendar.holidays, holiday]);
+    // Taʼtil hamma sinflarga tegishli — sinf sahifasidagi planner faqat bitta
+    // sinfni koʻrsatsa ham, shu kundagi barcha darslar hisobga olinadi.
+    const onDay = lessons.flatMap((l) => lessonSessions(l)).filter((x) => x.date === key);
+    // Dars oqimi: taʼtil kunidagi slot havzadan chiqadi — shu kundagi darslar
+    // keyingi darslarga, ulardan keyingilar ham bittadan suriladi.
+    if (blockShift && onDay.length) {
+      flow.run({
+        classIds: [...new Set(onDay.map((q) => q.classId))],
+        decline: "keep",
+        message: t("dayBlockedToast"),
+        mutate: block,
+        undoExtra: () => removeHoliday(holiday.id),
+      });
+      return;
+    }
+    block();
+    toast.success(t("dayBlockedToast"), {
+      description: onDay.length > 0 ? t("dayBlockedWithLessonsHint", { count: onDay.length }) : undefined,
+    });
   }
   function removeBlock() {
     if (!blockModal) return;
-    const k = toDateKey(blockModal.date);
-    setBlocked((p) => p.filter((b) => b.date !== k));
+    unblockDay(toDateKey(blockModal.date));
     setBlockModal(null);
     toast.success(t("blockRemovedToast"));
   }
@@ -1268,13 +1357,13 @@ export default function PlannerView({ classId }: { classId?: string }) {
                         </div>
                       ))}
                       {blockedList.map((b) => (
-                        <div key={b.date} className="group flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted">
+                        <div key={b.id} className="group flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted">
                           <Ban className="size-3.5 shrink-0 text-muted-foreground" />
-                          <span className="min-w-0 flex-1 truncate">{b.label || t("blockedDay")}</span>
-                          <span className="shrink-0 text-xs text-muted-foreground">{shortDate(b.date)}</span>
+                          <span className="min-w-0 flex-1 truncate">{b.name || t("blockedDay")}</span>
+                          <span className="shrink-0 text-xs text-muted-foreground">{shortDate(b.range.start)}</span>
                           <button
                             type="button"
-                            onClick={() => setBlocked((p) => p.filter((x) => x.date !== b.date))}
+                            onClick={() => removeHoliday(b.id)}
                             className="shrink-0 rounded p-0.5 text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
                             aria-label={t("removeBlock")}
                           >
@@ -1895,6 +1984,12 @@ export default function PlannerView({ classId }: { classId?: string }) {
               onChange={(e) => setBlockLabel(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && saveBlock()}
             />
+            {blockModal && !blockedSet.has(toDateKey(blockModal.date)) && lessons.some((l) => lessonSessions(l).some((x) => x.date === toDateKey(blockModal.date))) && (
+              <Label className="mt-3 flex items-center gap-2 text-body font-normal">
+                <Checkbox checked={blockShift} onCheckedChange={(v) => setBlockShift(v === true)} />
+                {tf("blockShiftLessons")}
+              </Label>
+            )}
           </div>
           <DialogFooter className="sm:justify-between">
             {blockModal && blockedSet.has(toDateKey(blockModal.date)) ? (

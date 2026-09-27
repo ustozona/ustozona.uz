@@ -1,8 +1,9 @@
 # Bogʻlangan darslar (dars oqimi) — taklif
 
-Holat: **1-bosqich qurildi** (2026-09-27, branch `maxdum/darslar-oqimi`).
+Holat: **1-bosqich** — PR #221 (2026-09-27, prodda). **2-bosqich** qurildi
+(branch `maxdum/darslar-oqimi-2`) — 3.11 boʻlim. 3-bosqich (vizual) hali yoʻq.
 Ochiq savollar (6-boʻlim) taklif qilingan variantlar bilan yopildi.
-Amalga oshirilgan model — **3.3 «Slot havzasi»**; 2- va 3-bosqich hali yoʻq.
+Amalga oshirilgan model — **3.3 «Slot havzasi»**.
 
 Maqsad: darslar bir-biriga ulangan boʻlsin. Bitta darsning sanasi yoki
 tartibi oʻzgarsa, keyingilari oʻz-oʻzidan yangi sanalarga joylashsin.
@@ -213,8 +214,48 @@ qilinadi. Jimgina qayta yozilmaydi.
 - `flowExcludedByClass?: Record<string, boolean>` — oqimdan tashqari
   (gʻoya/zaxira mavzu, avtomatik joylanmaydi).
 
-Zaxira dars (3.7) — `units` jadvaliga ustun yoki alohida `Lesson` turi;
-2-bosqichda hal qilinadi.
+Zaxira dars (3.7) — `Lesson.reserve?: boolean` (alohida jadval yoki tur
+emas; 3.11). `flowExcludedByClass` hali kerak boʻlmadi — sanasiz dars
+allaqachon oqimdan tashqarida.
+
+### 3.11 2-bosqich — qanday qurildi
+
+**Taʼtil (bloklangan kun).** Taʼtil kunidagi slot havzada boʻlmaydi —
+u yerdagi dars va keyingilar bittadan suriladi, boshqa boʻshliqlar
+saqlanadi. Bloklangan kun endi bitta manbada: kalendar taʼtillari.
+Planner'dagi «kunni bloklash» avval faqat shu brauzerda saqlanardi va
+oqim uni koʻrmasdi — endi u `kind: "other"` taʼtil sifatida kalendarga
+yoziladi (sinxronlanadi). Eski brauzer yozuvlaridan faqat bugundan keyingi
+va oʻquv yili ichidagi kunlar bir marta koʻchiriladi (oʻtgan kunlar davomat
+hisobini oʻzgartirmasin), oʻqituvchiga xabar beriladi. Bloklash/blokni
+olish faqat oʻsha «boshqa» yozuvga tegadi — taʼtil diapazonlari boʻlinmaydi.
+- Planner'da bloklashda «Shu kundagi darslarni keyingi darslarga surish»
+  belgisi (standart — yoqilgan); «Bekor qilish» kalendarni ham qaytaradi.
+- Sozlamalarda taʼtil qoʻshilsa/surilsa darslar oʻzicha sakramaydi —
+  toast: «3 ta dars taʼtil kuniga tushib qoldi · Surish». Toast faqat
+  toʻqnashuvlar KOʻPAYGANDA chiqadi — avvaldan borlari har tahrirda
+  qayta chiqmaydi (jadval kuzatuvida ham shunday).
+
+**Jadval versiyasi.** Jadval oʻzgargach oqim darsi yangi jadvalda yoʻq
+vaqtga tushib qolsa — toast: «N ta dars yangi jadvalda yoʻq vaqtga tushib
+qoldi · Qayta joylash». Qayta joylash oʻsha sanadan boshlab jadvalning
+boʻsh slotlariga **ixcham** quyadi (undan oldingisi joyida;
+`planRealign`). Jadvali umuman tuzilmagan sinf tekshirilmaydi.
+Jadvalda yoʻq vaqtga qoʻlda qoʻyilgan dars (masalan qoʻshimcha dars)
+avtomatik qadaladi — aks holda «Moslash» uni qaytarib olardi.
+
+**«Moslash» chipi** endi uchala holatni koʻradi: tartib buzilgan, taʼtilga
+tushgan, jadvalda yoʻq vaqtga tushgan.
+
+**Davomiylik.** Kontekst menyuda «Yana bir dars (+1)» — mavzu keyingi
+slotni oladi, keyingilar bittadan suriladi; «Bir darsga qisqartirish
+(−1)» — oxirgi dars olinadi, boʻshliq yopiladi. Kartada «2 ta dars».
+
+**Zaxira dars.** Darslar ustunida «Zaxira dars qoʻshish» — boʻlim oxiriga
+«Zaxira dars» qoʻshiladi va oqimga kiritiladi (keyingilar bittadan
+suriladi). «Keyingi darsga sur» shu boʻlimda keyinroq zaxira boʻlsa,
+uning slotini «yutadi» (zaxira bankka qaytadi) — keyingi boʻlimlar
+joyidan qimirlamaydi.
 
 ---
 
@@ -243,7 +284,7 @@ Uch koʻrinish, oddiydan murakkabga:
    oʻchirish, planner tashlash va sana tahriri shu orqali; qadash; toast +
    undo; oldindan koʻrish; sigʻmay qolish chipi; mavjud maʼlumotni moslash.
 2. **Kalendar hodisalari:** bloklangan kun va jadval versiyasi triggerlari;
-   davomiylik (choʻzish); zaxira darslar.
+   davomiylik (choʻzish); zaxira darslar. ✅ (3.11)
 3. **Vizual:** Zanjir → Yoʻl xaritasi → planner hover.
 
 ## 6. Savollar — qaror (2026-09-27)
@@ -255,8 +296,12 @@ Uch koʻrinish, oddiydan murakkabga:
    chipi va oldindan koʻrish orqali.
 4. Oldindan koʻrish chegarasi — **5 dars**.
 
-Hali qilinmagan (1-bosqich ichida ham): dars muharririda sana tahriri
-(`addScheduleForClass` / `removeScheduleForClass`), Materiallar va import
-oynasidagi oʻchirish oqimga ulanmagan — ular boʻshliq qoldiradi, oqim
-uni saqlaydi. Yangi dars sanasiz yaratiladi, shuning uchun «boʻlim
-oʻrtasiga yangi dars» hali oqimni surmaydi.
+Dars muharririda sana qoʻshish/olib tashlash, bosh sahifadagi «Bugun» va
+«Keyingi darslar»dan slotda yaratish ham oqim orqali (2-bosqich). Kelajakda
+darsi bor mavzuga muharrirdan QOʻSHIMCHA sana qoʻyilsa — mavzu qadaladi
+(qoʻlda tanlangan sana).
+
+Hali qilinmagan: Materiallar va import oynasidagi oʻchirish oqimga
+ulanmagan — ular boʻshliq qoldiradi, oqim uni saqlaydi. Yangi dars sanasiz
+yaratiladi, shuning uchun «boʻlim oʻrtasiga yangi dars» oqimni surmaydi
+(zaxira dars bundan mustasno).

@@ -56,6 +56,7 @@ import { SettingsCard, SettingRow } from "./SettingsShared";
 import YearStrip from "./YearStrip";
 import CreateSemesterModal from "./CreateSemesterModal";
 import RolloverWizard from "./RolloverWizard";
+import { useFlowCalendarWatch } from "@/hooks/useLessonFlow";
 
 /* ════════════════════════════════════════════════════════════════════
    "OʻQUV YILI" SOZLAMALARI — kalendar boshqaruvi
@@ -421,6 +422,9 @@ export default function AcademicYearSection() {
   const activeClasses = useLiveClasses();
   const [highlighted, setHighlighted] = React.useState<string | null>(null);
   const rowRefs = React.useRef<Map<string, HTMLDivElement>>(new Map());
+  // Dars oqimi: taʼtil qoʻshilsa/surilsa, oʻsha kunlarga tushgan darslarni
+  // surish toast orqali taklif qilinadi (oldindan koʻrish oynasi shu yerda).
+  const lessonFlowDialog = useFlowCalendarWatch("holidays");
 
   // Lentada segment bosilganda tegishli qatorga scroll qilib, qisqa vaqt yoritadi.
   const scrollToRow = (kind: "quarter" | "holiday", id: string) => {
@@ -527,6 +531,7 @@ export default function AcademicYearSection() {
   return (
     <>
       <ArchiveYearBanner />
+      {lessonFlowDialog}
 
       <SettingsCard
         title={
