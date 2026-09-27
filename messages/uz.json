@@ -2080,6 +2080,10 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "darslar-oqimi": {
+        "title": "Darslar endi bir-biriga bogʻlangan — sanalar oʻzi suriladi",
+        "body": "Darslar tartibini oʻzgartirsangiz yoki darsni oʻchirsangiz, keyingi darslar jadvaldagi sanalarga oʻzi qayta joylashadi. «Rejalashtiruvchi»da darsni boshqa kunga olib borsangiz, orada qolganlar suriladi; muhim darsni esa sanasiga qadab qoʻyish mumkin. Har oʻzgarishni «Bekor qilish» bilan qaytarasiz."
+      },
       "doska-uslublar": {
         "title": "Doskaga oʻzingizga yoqqan uslubni tanlang va panelni oʻzingiz tuzing",
         "body": "Menyudagi «Koʻrinish»da uchta uslubdan birini tanlang: «Sokin» — proyektorda eng aniq, «Oʻyinchoq» — kichik sinflar uchun quvnoq va rangli, «Doska» — yashil doskadagi qogʻoz va magnitlar. Panelni pastda, chap yoki oʻng chetda qoldirish mumkin — interaktiv doska yonida turib ishlasangiz qulay. Kerakli vositalarni «Hammasi» oynasidan panelga qadab qoʻying, qolganlari oʻsha oynada turadi."
@@ -4565,10 +4569,35 @@
     "yesTaught": "Ha, oʻtildi",
     "bumpNext": "Keyingi darsga surish",
     "bump": "Keyingi darsga sur",
-    "bumpedToast": "{count} ta mavzu bir darsga surildi",
-    "bumpNoSlot": "Oxirgi mavzuga jadvalda boʻsh joy topilmadi — sanasiz qoldi",
     "bumpNothing": "Bu mavzu jadvalga qoʻyilmagan — surish uchun sessiya yoʻq",
     "undo": "Bekor qilish"
+  },
+  "LessonFlow": {
+    "previewTitle": "{count} ta dars sanasi oʻzgaradi",
+    "previewDescription": "Kelajakdagi sanalar darslar tartibi boʻyicha qayta joylanadi. Oʻtilgan va qadalgan darslar joyida qoladi.",
+    "previewMismatch": "Sanalar avval ham tartibga mos emas edi — kelajakdagi hamma darslar tartib boʻyicha joylanadi.",
+    "previewOverflow": "{count} ta dars oʻquv yili oxirigacha jadvalga sigʻmaydi — sanasiz qoladi.",
+    "noSlot": "Sigʻmadi",
+    "close": "Yopish",
+    "keepDates": "Sanalarga tegmaslik",
+    "onlyThisLesson": "Faqat shu darsni",
+    "cancel": "Bekor qilish",
+    "apply": "Sanalarni surish",
+    "undo": "Bekor qilish",
+    "shiftedToast": "{count} ta dars sanasi surildi",
+    "shiftedDescription": "{count} ta dars surildi",
+    "overflowDescription": "{count} tasi jadvalga sigʻmadi",
+    "overflowToast": "{count} ta dars jadvalga sigʻmadi — sanasiz qoldi",
+    "noFreeSlot": "Jadvalda boʻsh slot topilmadi — dars surilmadi",
+    "untitled": "Nomsiz mavzu",
+    "pin": "Sanaga qadash",
+    "unpin": "Qadashni olish",
+    "pinnedToast": "Dars sanasiga qadaldi",
+    "unpinnedToast": "Qadash olindi — dars oqimga qaytdi",
+    "pinnedHereToast": "Dars shu sanaga qadaldi",
+    "pinnedLabel": "Sanaga qadalgan",
+    "mismatchChip": "Sanalar darslar tartibiga mos emas",
+    "realign": "Moslash"
   },
   "Doska": {
     "widgets": {

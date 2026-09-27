@@ -76,6 +76,10 @@ export type Lesson = {
       tokenni saqlaydi (`Task.taughtRevSeen`); reconciler shu bilan dars
       belgisi yoki vazifa holatidan qaysi biri yangiroq ekanini ajratadi. */
   taughtRevByClass?: Record<string, string>;
+  /** Sinf → dars shu sanalarga qadalgan. Dars oqimi (`@/lib/lesson-flow`)
+      qadalgan darsni surmaydi va uning slotini band deb chetlab oʻtadi.
+      `lessons.data` JSONB ichida, migratsiyasiz. */
+  pinnedByClass?: Record<string, boolean>;
   /** Oxirgi tahrir vaqti (ISO) — muharrir headerida nisbiy koʻrsatiladi. */
   updatedAt?: string;
 };
@@ -86,6 +90,11 @@ export function lessonOrderFor(l: Lesson, classId: string | null | undefined): n
 }
 export const byLessonOrder = (classId: string | null | undefined) => (a: Lesson, b: Lesson) =>
   lessonOrderFor(a, classId) - lessonOrderFor(b, classId);
+
+/** Dars shu sinfda sanaga qadalganmi (oqim uni surmaydi). */
+export function isPinned(l: Lesson, classId: string): boolean {
+  return !!l.pinnedByClass?.[classId];
+}
 
 /** Dars oʻtilganmi. Eski «Tugallandi» (`status: "Completed"`) mavzular ham
     oʻtilgan hisoblanadi — maʼlumot koʻchirilmaydi. */

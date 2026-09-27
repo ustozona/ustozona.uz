@@ -65,6 +65,16 @@ function scheduleMapOf(l: Lesson): Record<string, LessonSession[]> {
   return {};
 }
 
+/** Sinfda sessiya qolmasa, qadash ham olinadi: bankka qaytgan dars keyin
+    qayta bogʻlanganda jimgina «qadalgan» boʻlib, oqimdan chetda qolmasin. */
+function prunePins(l: Lesson, scheduleByClass: Record<string, LessonSession[]>): Partial<Lesson> {
+  if (!l.pinnedByClass) return {};
+  const kept = Object.fromEntries(
+    Object.entries(l.pinnedByClass).filter(([cid, on]) => on && (scheduleByClass[cid]?.length ?? 0) > 0),
+  );
+  return Object.keys(kept).length === Object.keys(l.pinnedByClass).length ? {} : { pinnedByClass: kept };
+}
+
 /** `orderedIds` dagi elementlarga `number = oʻrin + 1`; qiymati oʻzgarmaganlar aynan oʻsha obyekt qoladi. */
 function renumber<T extends { id: string; number: number }>(items: T[], orderedIds: string[]): T[] {
   const pos = new Map(orderedIds.map((id, i) => [id, i + 1]));
@@ -137,6 +147,12 @@ interface LessonState {
   unscheduleSession: (id: string, classId: string, date: string, startMin: number) => void;
   /** Oʻchirilgan darsni TOʻLIQ (content/standards/scheduleByClass bilan) qaytarish. */
   restoreLesson: (lesson: Lesson) => void;
+  /** Darsni shu sinfda sanasiga qadash / qadashni olish (dars oqimi uni surmaydi). */
+  setPinned: (id: string, classId: string, pinned: boolean) => void;
+  /** Amal oldidagi nusxani id boʻyicha qaytarish (dars oqimi «Bekor qilish»):
+      mavjud yozuv almashtiriladi, oʻchirilgani qayta qoʻshiladi. Nusxada
+      yoʻq yozuvlarga tegilmaydi. */
+  restoreSnapshot: (snap: { lessons: Lesson[]; units: Unit[] }) => void;
   /** Aʼzo BOʻLMAGAN sinflarga tegishli jadval yozuvlarini tozalash. Nechta
       yozuv olib tashlangani qaytadi (0 = holat izchil, store tegilmaydi). */
   pruneOrphanSessions: () => number;
@@ -221,7 +237,7 @@ export const useLessonStore = create<LessonState>()(
       })),
       unscheduleLesson: (id) => set((s) => ({
         lessons: s.lessons.map((l) => l.id === id ? {
-          ...l, status: "Unscheduled", scheduleByClass: {},
+          ...l, ...prunePins(l, {}), status: "Unscheduled", scheduleByClass: {},
           scheduledDate: undefined, startMin: undefined, endMin: undefined, date: undefined, time: undefined,
         } : l),
       })),
@@ -301,7 +317,10 @@ export const useLessonStore = create<LessonState>()(
             const status: LessonStatus = !has && l.status === "Scheduled" ? "Unscheduled"
               : has && l.status === "Unscheduled" ? "Scheduled" : l.status;
             const primary = (l.classIds && l.classIds[0]) || l.classId;
-            return { ...l, scheduleByClass, status, ...(classId === primary ? legacyScheduleFields(scheduleByClass[primary]) : {}) };
+            return {
+              ...l, scheduleByClass, status, ...prunePins(l, scheduleByClass),
+              ...(classId === primary ? legacyScheduleFields(scheduleByClass[primary]) : {}),
+            };
           }),
         };
       }),
@@ -315,7 +334,7 @@ export const useLessonStore = create<LessonState>()(
           if (nextArr.length) scheduleByClass[classId] = nextArr; else delete scheduleByClass[classId];
           const primary = (l.classIds && l.classIds[0]) || l.classId;
           return {
-            ...l, scheduleByClass,
+            ...l, scheduleByClass, ...prunePins(l, scheduleByClass),
             status: (anySessions(scheduleByClass) ? l.status : "Unscheduled") as LessonStatus,
             ...(classId === primary ? legacyScheduleFields(scheduleByClass[primary]) : {}),
           };
@@ -325,6 +344,27 @@ export const useLessonStore = create<LessonState>()(
       restoreLesson: (lesson) => set((s) => (
         s.lessons.some((l) => l.id === lesson.id) ? s : { lessons: [...s.lessons, lesson] }
       )),
+
+      setPinned: (id, classId, pinned) => set((s) => ({
+        lessons: s.lessons.map((l) => {
+          if (l.id !== id || !!l.pinnedByClass?.[classId] === pinned) return l;
+          const pinnedByClass = { ...l.pinnedByClass };
+          if (pinned) pinnedByClass[classId] = true; else delete pinnedByClass[classId];
+          return { ...l, pinnedByClass };
+        }),
+      })),
+
+      restoreSnapshot: (snap) => set((s) => {
+        const replace = <T extends { id: string }>(cur: T[], back: T[]): T[] => {
+          if (!back.length) return cur;
+          const byId = new Map(back.map((x) => [x.id, x]));
+          const out = cur.map((x) => byId.get(x.id) ?? x);
+          const present = new Set(cur.map((x) => x.id));
+          for (const x of back) if (!present.has(x.id)) out.push(x);
+          return out;
+        };
+        return { lessons: replace(s.lessons, snap.lessons), units: replace(s.units, snap.units) };
+      }),
 
       /* Aʼzolik (`classIds`) — yagona haqiqat: dars roʻyxatlari, «Ulash»
          nomzodlari, boʻlim filtri — hammasi shundan oʻqiydi. `scheduleByClass`
@@ -378,7 +418,7 @@ export const useLessonStore = create<LessonState>()(
           const unitByClass = Object.fromEntries(Object.entries(seedUnit).filter(([cid]) => classIds.includes(cid)));
           const scheduleByClass = Object.fromEntries(Object.entries(seedSched).filter(([cid]) => classIds.includes(cid)));
           return {
-            ...l, classIds, unitByClass, scheduleByClass,
+            ...l, classIds, unitByClass, scheduleByClass, ...prunePins(l, scheduleByClass),
             classId: primary ?? l.classId,
             unitId: primary ? (unitByClass[primary] ?? null) : l.unitId,
             ...legacyScheduleFields(primary ? scheduleByClass[primary] : undefined),
@@ -424,7 +464,7 @@ export const useLessonStore = create<LessonState>()(
           if (next.length) scheduleByClass[classId] = next; else delete scheduleByClass[classId];
           const primary = (l.classIds && l.classIds[0]) || l.classId;
           return {
-            ...l, scheduleByClass,
+            ...l, scheduleByClass, ...prunePins(l, scheduleByClass),
             status: (anySessions(scheduleByClass) ? l.status : "Unscheduled") as LessonStatus,
             ...(classId === primary ? legacyScheduleFields(scheduleByClass[primary]) : {}),
           };
