@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { Select as SelectPrimitive } from "radix-ui";
 
@@ -22,7 +23,10 @@ import { cn } from "@/lib/utils";
  * Tanlangan sinf (trigger va roʻyxatdagi joriy qator) — tint fon + sinf
  * rangidagi chegara + toʻyingan glif + qalin matn; ✓ belgisi yoʻq, tanlov
  * glifning oʻzida. Hover — sinf rangining 5% tinti + glif `scale(1.08)`;
- * klaviatura — `.list-row:focus-visible` halqasi.
+ * roʻyxatdagi joriy qator (pointer ham, strelka ham) — xuddi shunday, Radix
+ * `data-highlighted` orqali, halqasiz. Trigger halqasi — faqat klaviatura
+ * bilan kelinganda va sinf rangida (kulrang `.list-row:focus-visible` emas:
+ * Radix dasturiy fokus beradi, u sichqonchada ham yonardi).
  *
  * Semantika — Radix Select: trigger `combobox`, roʻyxat `listbox`, yuqori/
  * pastki strelka, harf bilan qidirish, Esc.
@@ -40,6 +44,11 @@ export function ClassSelect({
   className?: string;
   "aria-label": string;
 }) {
+  // Trigger halqasi faqat klaviatura bilan kelinganda (globals.css izohi):
+  // `:focus-visible` Radix'ning dasturiy fokusida sichqonchada ham yonadi.
+  // Tab bilan kirish — `keyup` yangi fokuslangan triggerda keladi; roʻyxatda
+  // strelka/Enter — `keydown`; har qanday bosish belgini oʻchiradi.
+  const [keyboard, setKeyboard] = useState(false);
   const selected = classes.find((c) => c.id === value);
   if (!selected) return null;
   const tints = classTints(classColor(selected));
@@ -48,6 +57,9 @@ export function ClassSelect({
     <SelectPrimitive.Root value={value} onValueChange={onValueChange}>
       <SelectPrimitive.Trigger
         data-slot="class-select"
+        data-keyboard={keyboard || undefined}
+        onKeyUp={() => setKeyboard(true)}
+        onPointerDown={() => setKeyboard(false)}
         data-active
         aria-label={`${ariaLabel}: ${selected.name}`}
         title={selected.name}
@@ -64,7 +76,7 @@ export function ClassSelect({
         </SelectPrimitive.Icon>
       </SelectPrimitive.Trigger>
 
-      <SelectContent position="popper" sideOffset={4}>
+      <SelectContent position="popper" sideOffset={4} onKeyDown={() => setKeyboard(true)}>
         {classes.map((c) => {
           const itemTints = classTints(classColor(c));
           const isSelected = c.id === value;
@@ -72,6 +84,8 @@ export function ClassSelect({
             <SelectPrimitive.Item
               key={c.id}
               value={c.id}
+              data-slot="class-select-item"
+              onPointerDown={() => setKeyboard(false)}
               title={c.name}
               data-active={isSelected || undefined}
               style={classRowStyle(itemTints, isSelected)}
