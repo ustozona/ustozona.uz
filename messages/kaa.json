@@ -2080,6 +2080,14 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "tezkor-yaratish": {
+        "title": "«+ Jaratıw»: sabaqqa 1–2 minutta tayarlanıń — AI test, interaktiv sabaq, aqıl kartası",
+        "body": "Tapsırma jaratıp atırǵanda búgingi sáne, waqıt hám is rejesindegi tema birden turadı — bir basıw menen AI test, interaktiv sabaq (túsindiriw slaydları hám arasında «túsindińizbe?» sorawları), prezentatsiya, aqıl kartası yamasa infografika tayarlaydı. Barlıǵın kórip shıǵıp redaktorlaysız, keyin sabaqta ótkeresiz yamasa úyge beresiz. Proektor bolmasa — qaǵaz, QR-kartalar yamasa pult penen ótkeriń, súwretlerdi basıp shıǵarıń.",
+        "cta": "Tapsırmalardı ashıw"
+      },
+      "orqaga-tugmasi": {
+        "title": "Sabaq hám tapsırma redaktorında «← Artqa» túymesi — klasslar dizimine emes, bir qádem artqa"
+      },
       "topshiriq-boshlash-markazi": {
         "title": "Tapsırmalar: testti sabaqta ótkeriń yamasa úyge beriń — bir basıw menen",
         "body": "Test janında endi eki anıq túyme bar: «Sabaqta ótkeriw» (tiri sabaq, oyın, óz betinshe test, qaǵaz test, QR-kartalar yamasa pult) hám «Úyge beriw» (múddet penen, siltew hám QR arqalı). Kim qosıldı, kim tamamladı hám kim neshe procent aldı — bir ekranda, al nátiyje jurnalǵa bir túyme menen jazıladı.",
@@ -4229,6 +4237,112 @@
     "emptyHint": "Sabaqlar betinde is rejesin júkleń — búgingi tema usı jerde kórinedi.",
     "picked": "Tema tapsırmaǵa qoyıldı"
   },
+  "BackButton": {
+    "label": "Artqa"
+  },
+  "QuickCreate": {
+    "title": "Tez jaratıw",
+    "subtitle": "Temanı tańlań — AI bir neshe sekundta tayarlaydı, siz kórip shıǵasız",
+    "timezone": "Waqıt zonası: {zone}",
+    "lessonStartsIn": "Sabaq {range} · {minutes} minuttan keyin",
+    "lessonAt": "Búgin sabaq {range}",
+    "lessonNow": "Sabaq júrip atır ({range}) · {minutes} minut qaldı",
+    "lessonDone": "Búgingi sabaq tawsıldı ({range})",
+    "nextLessonOn": "Keyingi sabaq: {date}",
+    "topicLabel": "Tema",
+    "topicPlaceholder": "Temanı jazıń yamasa is rejesinen alıń",
+    "topicFromPlanToday": "Is rejesinen — búgingi sabaqtıń teması",
+    "topicFromPlanNext": "Is rejesinen — keyingi sabaqtıń teması",
+    "topicFromPlan": "Is rejesinen",
+    "topicCustom": "Ózińiz jazǵan tema",
+    "topicRequired": "Aldın temanı jazıń",
+    "aiLabel": "AI járdeminde tayarlaw",
+    "kinds": {
+      "test": {
+        "title": "Test",
+        "hint": "{count} soraw · ózi bahalanadı"
+      },
+      "lesson": {
+        "title": "Interaktiv sabaq",
+        "hint": "Túsindiriw + arasında «túsindińizbe?» sorawları"
+      },
+      "slides": {
+        "title": "Prezentatsiya",
+        "hint": "7–10 slayd · smart doska yamasa proektor"
+      },
+      "mindmap": {
+        "title": "Aqıl kartası",
+        "hint": "Ekranǵa yamasa basıp shıǵarıp doskaǵa"
+      },
+      "infographic": {
+        "title": "Infografika",
+        "hint": "Tiykarǵı faktler bir súwrette"
+      },
+      "plan": {
+        "title": "45 minutlıq sabaq rejesi",
+        "hint": "Reje sheberi — «Sabaqlar» betinde",
+        "hintNew": "Jańa sabaq ashıladı — «Sabaqlar» betinde"
+      }
+    },
+    "countLabel": "Sorawlar",
+    "levelLabel": "Qıyınlıq",
+    "levels": {
+      "easy": "Ańsat",
+      "mixed": "Aralas",
+      "hard": "Qıyın"
+    },
+    "noteAdd": "Qálew qosıw",
+    "notePlaceholder": "Mısalı: turmıslıq mısallar menen, rus tilinde, hálsizirek oqıwshılar ushın",
+    "generating": "Tayarlanbaqta…",
+    "generatingHint": "Ádette 10–30 sekund",
+    "cancel": "Biykar etiw",
+    "ready": "Tayar! Kórip shıǵıń, kerek bolsa redaktorlań",
+    "readyHint": "Usı ayda qalǵan AI krediti: {count}",
+    "templatesLabel": "Tayar úlgi — birden, AI kerek emes",
+    "templates": {
+      "warmup": "Sabaq bası: aqıl hújimi",
+      "check": "«Túsindińizbe?» sorawnaması",
+      "exit": "Shıǵıw bileti"
+    },
+    "tpl": {
+      "warmupCloud": "«{topic}» degende oyıńızǵa ne keledi? Bir sóz jazıń.",
+      "warmupCloudNoTopic": "Búgingi tema haqqında oyıńızǵa kelgen bir sózdi jazıń.",
+      "warmupPoll": "Bul tema haqqında qanshelli bilesiz?",
+      "warmupOpt1": "Hesh nárse bilmeymen",
+      "warmupOpt2": "Azmaz bilemen",
+      "warmupOpt3": "Jaqsı bilemen",
+      "checkPoll": "Temanı qanshelli túsindińiz?",
+      "checkOpt1": "Tolıq túsindim",
+      "checkOpt2": "Bólekan túsindim",
+      "checkOpt3": "Túsinbedim — qaytadan túsindiriń",
+      "exitCloud": "Búgingi sabaqtı bir sóz benen táriypleń.",
+      "exitOpen": "Búgin úyrengen eń áhmiyetli nárseńiz ne? Ne túsiniksiz qaldı?"
+    },
+    "manualLabel": "Ózim dúzemen",
+    "attachExisting": "Tayar testti tańlaw",
+    "noMonitor": "Proektor yamasa smart doska joq pa? Test tayar bolǵanda «Sabaqta ótkeriw» → «Qaǵaz test», «QR-kartalar» yamasa «Pult» — sizge tek telefonıńız kerek. Aqıl kartası menen infografikanı basıp shıǵarıp, doskaǵa ilip qoyıw múmkin.",
+    "manualGrading": "Shıǵarma, diktant yamasa awızsha juwap sıyaqlı qolda bahalanatuǵın jumıs ushın hesh nárse tańlaw shárt emes — joqarıdaǵı «Jaratıw» jeterli.",
+    "errors": {
+      "auth": "Sessiya tawsıldı — qaytadan kiriń",
+      "not_configured": "AI házirshe sazlanbaǵan — administratorǵa xabar beriń",
+      "bad_request": "Temanı tekserip, qaytadan urınıp kóriń",
+      "quota": "Usı aydıń AI krediti tawsıldı — keyingi aydıń basında jańalanadı",
+      "failed": "AI juwap bere almadı. Azdan soń qaytadan urınıp kóriń",
+      "unreadable": "AI juwabı tolıq kelmedi — jáne bir ret basıń",
+      "network": "Internet baylanısın tekserip, qaytadan urınıp kóriń"
+    },
+    "visual": {
+      "titleMindmap": "Aqıl kartası",
+      "titleInfographic": "Infografika",
+      "toDeck": "Prezentatsiyaǵa qosıw",
+      "download": "PNG júklep alıw",
+      "print": "Basıp shıǵarıw",
+      "regenerate": "Qaytadan jaratıw",
+      "uploading": "Qosılmaqta…",
+      "renderFailed": "Súwretti sızıw múmkin bolmadı — qaytadan urınıp kóriń",
+      "uploadFailed": "Súwret saqlanbadı — qaytadan urınıp kóriń"
+    }
+  },
   "AssignmentsPage": {
     "status_today": "Búgin",
     "statusHint_today": "Búgin ótkeriledi — ele baha kirgizilmegen.",
@@ -4242,10 +4356,6 @@
     "deleteSetFailed": "Testti óshirip bolmadı",
     "attachNewTest": "Jańa test dúziw",
     "attachExisting": "Bar testten tanlaw",
-    "contentCreate": "Jaratıw",
-    "contentAttach": "Tirkew",
-    "gradingModeLabel": "Bahalaw usılı",
-    "gradingManual": "Qolda",
     "gradingAuto": "Avtomat",
     "attachExistingTitle": "Qaysı test tirkelsin?",
     "attachFromThisClass": "Usı klassta dúzilgen",

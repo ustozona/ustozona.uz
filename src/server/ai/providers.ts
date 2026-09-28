@@ -63,6 +63,11 @@ export type StreamChatArgs = {
   chainOverride?: ProviderId[];
   /** Telemetriya: javob bergan provayder (birinchi delta kelganda chaqiriladi). */
   onProvider?: (id: ProviderId) => void;
+  /** Javob faqat JSON boʻlsin (AI materiallar, `lib/ai-materials.ts`).
+      Gemini buni `responseMimeType` bilan kafolatlaydi; boshqalarga
+      yuborilmaydi (Groq JSON rejimi streaming bilan ishlamaydi) — ular
+      uchun prompt va yumshoq tahlil yetadi. */
+  json?: boolean;
 };
 
 export type ProviderId = "gemini" | "groq" | "openrouter";
@@ -142,8 +147,13 @@ async function* streamGemini(args: StreamChatArgs): AsyncGenerator<string> {
           ...(args.tools
             ? { tools: [{ functionDeclarations: args.tools.declarations }] }
             : {}),
-          ...(MAX_OUTPUT_TOKENS
-            ? { generationConfig: { maxOutputTokens: MAX_OUTPUT_TOKENS } }
+          ...(MAX_OUTPUT_TOKENS || args.json
+            ? {
+                generationConfig: {
+                  ...(MAX_OUTPUT_TOKENS ? { maxOutputTokens: MAX_OUTPUT_TOKENS } : {}),
+                  ...(args.json ? { responseMimeType: "application/json" } : {}),
+                },
+              }
             : {}),
         }),
         signal: args.signal,

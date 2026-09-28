@@ -4114,6 +4114,112 @@
     "emptyHint": "Darslar sahifasida ish rejani yuklang — bugungi mavzu shu yerda koʻrinadi.",
     "picked": "Mavzu topshiriqqa qoʻyildi"
   },
+  "BackButton": {
+    "label": "Orqaga"
+  },
+  "QuickCreate": {
+    "title": "Tezkor yaratish",
+    "subtitle": "Mavzuni tanlang — AI bir necha soniyada tayyorlaydi, siz koʻrib chiqasiz",
+    "timezone": "Vaqt mintaqasi: {zone}",
+    "lessonStartsIn": "Dars {range} · {minutes} daqiqadan keyin",
+    "lessonAt": "Bugun dars {range}",
+    "lessonNow": "Dars ketmoqda ({range}) · {minutes} daqiqa qoldi",
+    "lessonDone": "Bugungi dars tugadi ({range})",
+    "nextLessonOn": "Keyingi dars: {date}",
+    "topicLabel": "Mavzu",
+    "topicPlaceholder": "Mavzuni yozing yoki ish rejadan oling",
+    "topicFromPlanToday": "Ish rejadan — bugungi dars mavzusi",
+    "topicFromPlanNext": "Ish rejadan — keyingi dars mavzusi",
+    "topicFromPlan": "Ish rejadan",
+    "topicCustom": "Oʻzingiz yozgan mavzu",
+    "topicRequired": "Avval mavzuni yozing",
+    "aiLabel": "AI bilan tayyorlash",
+    "kinds": {
+      "test": {
+        "title": "Test",
+        "hint": "{count} ta savol · oʻzi baholanadi"
+      },
+      "lesson": {
+        "title": "Interaktiv dars",
+        "hint": "Tushuntirish + orada «tushundimi?» savollari"
+      },
+      "slides": {
+        "title": "Taqdimot",
+        "hint": "7–10 slayd · smartdoska yoki proyektor"
+      },
+      "mindmap": {
+        "title": "Aqliy xarita",
+        "hint": "Ekranga yoki chop etib doskaga"
+      },
+      "infographic": {
+        "title": "Infografika",
+        "hint": "Asosiy faktlar bitta rasmda"
+      },
+      "plan": {
+        "title": "45 daqiqalik dars rejasi",
+        "hint": "Reja ustasi — Darslar sahifasida",
+        "hintNew": "Yangi dars ochiladi — Darslar sahifasida"
+      }
+    },
+    "countLabel": "Savollar",
+    "levelLabel": "Qiyinlik",
+    "levels": {
+      "easy": "Oson",
+      "mixed": "Aralash",
+      "hard": "Qiyin"
+    },
+    "noteAdd": "Istak qoʻshish",
+    "notePlaceholder": "Masalan: hayotiy misollar bilan, rus tilida, kuchsizroq oʻquvchilar uchun",
+    "generating": "Tayyorlanmoqda…",
+    "generatingHint": "Odatda 10–30 soniya",
+    "cancel": "Bekor qilish",
+    "ready": "Tayyor! Koʻrib chiqing, kerak boʻlsa tahrirlang",
+    "readyHint": "Bu oy qolgan AI krediti: {count}",
+    "templatesLabel": "Tayyor shablon — darhol, AI kerak emas",
+    "templates": {
+      "warmup": "Dars boshi: aqliy hujum",
+      "check": "«Tushundingizmi?» soʻrovi",
+      "exit": "Chiqish chiptasi"
+    },
+    "tpl": {
+      "warmupCloud": "«{topic}» deganda xayolingizga nima keladi? Bitta soʻz yozing.",
+      "warmupCloudNoTopic": "Bugungi mavzu haqida xayolingizga kelgan bitta soʻzni yozing.",
+      "warmupPoll": "Bu mavzu haqida qancha bilasiz?",
+      "warmupOpt1": "Hech narsa bilmayman",
+      "warmupOpt2": "Ozgina bilaman",
+      "warmupOpt3": "Yaxshi bilaman",
+      "checkPoll": "Mavzuni qanchalik tushundingiz?",
+      "checkOpt1": "Toʻliq tushundim",
+      "checkOpt2": "Qisman tushundim",
+      "checkOpt3": "Tushunmadim — yana tushuntiring",
+      "exitCloud": "Bugungi darsni bitta soʻz bilan ifodalang.",
+      "exitOpen": "Bugun oʻrgangan eng muhim narsangiz nima? Nima tushunarsiz qoldi?"
+    },
+    "manualLabel": "Oʻzim tuzaman",
+    "attachExisting": "Tayyor testni tanlash",
+    "noMonitor": "Proyektor yoki smartdoska yoʻqmi? Test tayyor boʻlgach «Darsda oʻtkazish» → «Qogʻoz test», «QR-kartalar» yoki «Pult» — sizga faqat telefoningiz kerak. Aqliy xarita va infografikani chop etib doskaga ilish mumkin.",
+    "manualGrading": "Insho, diktant yoki ogʻzaki javob kabi qoʻlda baholanadigan ish uchun hech narsa tanlash shart emas — yuqoridagi «Yaratish» yetarli.",
+    "errors": {
+      "auth": "Sessiya tugagan — qayta kiring",
+      "not_configured": "AI hozircha sozlanmagan — administratorga xabar bering",
+      "bad_request": "Mavzuni tekshirib, qayta urinib koʻring",
+      "quota": "Bu oyning AI krediti tugadi — keyingi oy boshida yangilanadi",
+      "failed": "AI javob bera olmadi. Birozdan soʻng qayta urinib koʻring",
+      "unreadable": "AI javobi chala keldi — yana bir marta bosing",
+      "network": "Internet aloqasini tekshirib, qayta urinib koʻring"
+    },
+    "visual": {
+      "titleMindmap": "Aqliy xarita",
+      "titleInfographic": "Infografika",
+      "toDeck": "Taqdimotga qoʻshish",
+      "download": "PNG yuklab olish",
+      "print": "Chop etish",
+      "regenerate": "Qayta yaratish",
+      "uploading": "Qoʻshilmoqda…",
+      "renderFailed": "Rasmni chizib boʻlmadi — qayta urinib koʻring",
+      "uploadFailed": "Rasm saqlanmadi — qayta urinib koʻring"
+    }
+  },
   "AssignmentsPage": {
     "status_today": "Bugun",
     "statusHint_today": "Bugun oʻtkaziladi — hali baho kiritilmagan.",
@@ -4127,10 +4233,6 @@
     "deleteSetFailed": "Testni oʻchirib boʻlmadi",
     "attachNewTest": "Yangi test tuzish",
     "attachExisting": "Mavjud testdan tanlash",
-    "contentCreate": "Yaratish",
-    "contentAttach": "Biriktirish",
-    "gradingModeLabel": "Baholash usuli",
-    "gradingManual": "Qoʻlda",
     "gradingAuto": "Avtomatik",
     "attachExistingTitle": "Qaysi test biriktirilsin?",
     "attachFromThisClass": "Shu sinfda tuzilgan",

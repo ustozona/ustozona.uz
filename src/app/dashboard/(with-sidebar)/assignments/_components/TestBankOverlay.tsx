@@ -5,14 +5,14 @@ import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
-  BadgeCheck, Check, ChevronLeft, ChevronRight, Globe, Library, Link as LinkIcon,
+  BadgeCheck, Check, ChevronLeft, ChevronRight, Globe, Link as LinkIcon,
   Presentation, Search, User, X,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { SectionIcon } from "@/components/ui/section-icon";
+import { BackButton } from "@/components/ui/back-button";
 import { SegmentedToggle } from "@/components/ui/segmented-toggle";
 import { Spinner } from "@/components/ui/spinner";
 import { TypographyMuted } from "@/components/ui/typography";
@@ -299,9 +299,7 @@ export default function TestBankOverlay({
       {/* Sarlavha */}
       <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border px-5 py-4">
         <div className="flex min-w-0 flex-1 items-center gap-3">
-          <SectionIcon>
-            <Library />
-          </SectionIcon>
+          <BackButton onClick={onClose} />
           <div className="min-w-0">
             <h1 className="min-w-0 truncate text-lg font-semibold text-foreground">
               {t("title")}

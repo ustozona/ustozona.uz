@@ -36,6 +36,21 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "tezkor-yaratish",
+    date: "2026-09-28",
+    type: "yangi",
+    title: "«+ Yaratish»: darsga 1–2 daqiqada tayyorlaning — AI test, interaktiv dars, aqliy xarita",
+    body: "Topshiriq yaratayotganda bugungi sana, soat va ish rejadagi mavzu oʻzi turadi — bir bosishda AI test, interaktiv dars (tushuntirish slaydlari va orada «tushundimi?» savollari), taqdimot, aqliy xarita yoki infografika tayyor boʻladi. Hammasini koʻrib chiqib tahrirlaysiz, keyin darsda oʻtkazasiz yoki uyga berasiz. Proyektor boʻlmasa — qogʻoz, QR-kartalar yoki pult bilan oʻtkazing, rasmlarni chop eting.",
+    cta: "Topshiriqlarni ochish",
+    href: "/dashboard/assignments",
+  },
+  {
+    id: "orqaga-tugmasi",
+    date: "2026-09-28",
+    type: "yaxshilandi",
+    title: "Dars va topshiriq muharririda «← Orqaga» tugmasi — bir qadam orqaga qaytadi, sinflar roʻyxatiga emas",
+  },
+  {
     id: "topshiriq-boshlash-markazi",
     date: "2026-09-27",
     type: "yangi",

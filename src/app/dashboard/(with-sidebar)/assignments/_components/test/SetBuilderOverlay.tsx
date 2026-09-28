@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SectionIcon } from "@/components/ui/section-icon";
+import { BackButton } from "@/components/ui/back-button";
 import { FileCheck2 } from "lucide-react";
 import {
   AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter,
@@ -42,6 +43,7 @@ export default function SetBuilderOverlay({
   setId,
   initialTitle,
   firstShape = "mcq",
+  initialQuestions,
   onClose,
   onSaved,
 }: {
@@ -53,6 +55,10 @@ export default function SetBuilderOverlay({
   initialTitle?: string;
   /** Yangi toʻplamning birinchi elementi: test savoli yoki slayd (taqdimot). */
   firstShape?: DraftQuestion["shape"];
+  /** Tayyor qoralama (AI yoki shablon, «+ Yaratish» → Tezkor yaratish).
+      Nom ham berilgan boʻlsa, jim avtosaqlash uni odatdagidek 2 soniyada
+      yozadi va topshiriqqa ulaydi — oʻqituvchi koʻrib chiqib tahrirlaydi. */
+  initialQuestions?: DraftQuestion[];
   onClose: () => void;
   onSaved: (set: ActivitySetRow) => void;
 }) {
@@ -69,10 +75,12 @@ export default function SetBuilderOverlay({
   const [stageTheme, setStageTheme] = useState("violet");
   const [stageFont, setStageFont] = useState<StageFontId>(stageFontOf(null).id);
   const [stageStyle, setStageStyle] = useState<StageStyleId>(stageStyleOf(null).id);
-  const [questions, setQuestions] = useState<DraftQuestion[]>(() =>
+  const [questions, setQuestions] = useState<DraftQuestion[]>(() => {
+    if (setId) return [];
+    if (initialQuestions?.length) return initialQuestions;
     // Taqdimot sarlavha slaydidan boshlanadi — birinchi ekran mavzu nomi.
-    setId ? [] : [firstShape === "slide" ? { ...newQuestion("slide"), slideLayout: "title" } : newQuestion(firstShape)]
-  );
+    return [firstShape === "slide" ? { ...newQuestion("slide"), slideLayout: "title" } : newQuestion(firstShape)];
+  });
   const [activeKey, setActiveKey] = useState<string | null>(null);
   const [panel, setPanel] = useState<BuilderPanel>("properties");
   const [saving, setSaving] = useState(false);
@@ -445,9 +453,8 @@ export default function SetBuilderOverlay({
       )}
     >
       <header className="flex min-h-16 shrink-0 items-center gap-3 border-b border-border px-4">
-        <SectionIcon className="shrink-0">
-          <FileCheck2 />
-        </SectionIcon>
+        {/* «← Orqaga» — topshiriq muharririga qaytadi (yopish bilan bir yoʻl). */}
+        <BackButton onClick={requestClose} disabled={saving} />
         <Input
           value={title}
           onChange={(e) => setTitle(e.target.value)}

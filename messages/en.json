@@ -2080,6 +2080,14 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "tezkor-yaratish": {
+        "title": "«+ Create»: get ready for a lesson in 1–2 minutes — AI test, interactive lesson, mind map",
+        "body": "When you create an assignment, today’s date, the time and the topic from your work plan are already there — one click and AI prepares a test, an interactive lesson (explanation slides with “got it?” questions in between), a presentation, a mind map or an infographic. You review and edit everything, then run it in class or assign it as homework. No projector? Run it on paper, with QR cards or clickers, and print the pictures.",
+        "cta": "Open Assignments"
+      },
+      "orqaga-tugmasi": {
+        "title": "Lesson and assignment editors now have a «← Back» button — one step back, not to the class list"
+      },
       "topshiriq-boshlash-markazi": {
         "title": "Assignments: run a test in class or assign it as homework — in one click",
         "body": "Each test now has two clear buttons: «Run in class» (live lesson, game, self-paced test, paper test, QR cards or clickers) and «Assign as homework» (with a due date, via link and QR). Who joined, who finished and what everyone scored — on one screen, and results go to the gradebook with a single button.",
@@ -4228,6 +4236,112 @@
     "emptyHint": "Upload a work plan on the Lessons page — today's topic will show here.",
     "picked": "Topic added to the assignment"
   },
+  "BackButton": {
+    "label": "Back"
+  },
+  "QuickCreate": {
+    "title": "Quick create",
+    "subtitle": "Pick a topic — AI drafts it in seconds, you review",
+    "timezone": "Time zone: {zone}",
+    "lessonStartsIn": "Lesson {range} · in {minutes} min",
+    "lessonAt": "Lesson today {range}",
+    "lessonNow": "Lesson in progress ({range}) · {minutes} min left",
+    "lessonDone": "Today’s lesson has ended ({range})",
+    "nextLessonOn": "Next lesson: {date}",
+    "topicLabel": "Topic",
+    "topicPlaceholder": "Type a topic or take one from the work plan",
+    "topicFromPlanToday": "From the work plan — today’s lesson topic",
+    "topicFromPlanNext": "From the work plan — next lesson topic",
+    "topicFromPlan": "From the work plan",
+    "topicCustom": "Your own topic",
+    "topicRequired": "Type a topic first",
+    "aiLabel": "Prepare with AI",
+    "kinds": {
+      "test": {
+        "title": "Test",
+        "hint": "{count} questions · graded automatically"
+      },
+      "lesson": {
+        "title": "Interactive lesson",
+        "hint": "Explanation + “got it?” questions in between"
+      },
+      "slides": {
+        "title": "Presentation",
+        "hint": "7–10 slides · smartboard or projector"
+      },
+      "mindmap": {
+        "title": "Mind map",
+        "hint": "On screen or printed for the board"
+      },
+      "infographic": {
+        "title": "Infographic",
+        "hint": "Key facts in one picture"
+      },
+      "plan": {
+        "title": "45-minute lesson plan",
+        "hint": "Plan wizard — on the Lessons page",
+        "hintNew": "Opens a new lesson — on the Lessons page"
+      }
+    },
+    "countLabel": "Questions",
+    "levelLabel": "Difficulty",
+    "levels": {
+      "easy": "Easy",
+      "mixed": "Mixed",
+      "hard": "Hard"
+    },
+    "noteAdd": "Add a request",
+    "notePlaceholder": "For example: with real-life examples, in Russian, for weaker students",
+    "generating": "Preparing…",
+    "generatingHint": "Usually 10–30 seconds",
+    "cancel": "Cancel",
+    "ready": "Ready! Review it and edit if needed",
+    "readyHint": "AI credits left this month: {count}",
+    "templatesLabel": "Ready-made template — instant, no AI",
+    "templates": {
+      "warmup": "Warm-up: brainstorm",
+      "check": "“Got it?” poll",
+      "exit": "Exit ticket"
+    },
+    "tpl": {
+      "warmupCloud": "What comes to mind when you hear “{topic}”? Write one word.",
+      "warmupCloudNoTopic": "Write one word that comes to mind about today’s topic.",
+      "warmupPoll": "How much do you know about this topic?",
+      "warmupOpt1": "Nothing yet",
+      "warmupOpt2": "A little",
+      "warmupOpt3": "Quite a lot",
+      "checkPoll": "How well did you understand the topic?",
+      "checkOpt1": "Fully",
+      "checkOpt2": "Partly",
+      "checkOpt3": "Not really — please explain again",
+      "exitCloud": "Describe today’s lesson in one word.",
+      "exitOpen": "What is the most important thing you learned today? What is still unclear?"
+    },
+    "manualLabel": "I’ll make it myself",
+    "attachExisting": "Choose an existing test",
+    "noMonitor": "No projector or smartboard? Once the test is ready: «Run in class» → «Paper test», «QR cards» or «Clickers» — all you need is your phone. You can print the mind map and infographic and put them up on the board.",
+    "manualGrading": "For work you grade by hand (essay, dictation, oral answer) you don’t need to pick anything — the «Create» button at the top is enough.",
+    "errors": {
+      "auth": "Your session has expired — please sign in again",
+      "not_configured": "AI isn’t set up yet — please tell your administrator",
+      "bad_request": "Check the topic and try again",
+      "quota": "This month’s AI credits are used up — they renew at the start of next month",
+      "failed": "AI couldn’t respond. Please try again in a moment",
+      "unreadable": "The AI reply came back incomplete — click once more",
+      "network": "Check your internet connection and try again"
+    },
+    "visual": {
+      "titleMindmap": "Mind map",
+      "titleInfographic": "Infographic",
+      "toDeck": "Add to presentation",
+      "download": "Download PNG",
+      "print": "Print",
+      "regenerate": "Regenerate",
+      "uploading": "Adding…",
+      "renderFailed": "Couldn’t draw the picture — please try again",
+      "uploadFailed": "The picture wasn’t saved — please try again"
+    }
+  },
   "AssignmentsPage": {
     "status_today": "Today",
     "statusHint_today": "Happens today — no grades entered yet.",
@@ -4241,10 +4355,6 @@
     "deleteSetFailed": "Could not delete the test",
     "attachNewTest": "Build a new test",
     "attachExisting": "Pick an existing test",
-    "contentCreate": "Create",
-    "contentAttach": "Attach",
-    "gradingModeLabel": "Grading method",
-    "gradingManual": "Manual",
     "gradingAuto": "Automatic",
     "attachExistingTitle": "Which test should be attached?",
     "attachFromThisClass": "Created in this class",

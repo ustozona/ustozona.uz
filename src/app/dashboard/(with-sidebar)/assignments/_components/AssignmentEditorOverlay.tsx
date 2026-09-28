@@ -11,7 +11,6 @@ import {
   Check,
   Tag,
   Star,
-  Library,
   CloudOff,
   ChevronRight,
   ChevronDown,
@@ -22,8 +21,6 @@ import {
   Copy,
   Trash2,
   SlidersHorizontal,
-  PenLine,
-  Zap,
   Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -40,6 +37,13 @@ import type { SetMeta } from "@/server/dal/assess/sets";
 import { useLaunchFlow } from "@/components/launch/useLaunchFlow";
 import { RunButtons } from "@/components/launch/RunButtons";
 import { WorkPlanCard } from "@/components/work-plan/WorkPlanCard";
+import {
+  QuickCreatePanel,
+  type BuilderInit,
+  type QuickTopic,
+} from "./quick-create/QuickCreatePanel";
+import type { DraftQuestion } from "./test/builder/types";
+import { BackButton } from "@/components/ui/back-button";
 import type { LaunchIntent } from "@/lib/launch-types";
 import {
   TOPIC_COLOR_HEX,
@@ -57,7 +61,6 @@ import { MONTHS_UZ_SHORT, DAYS_UZ_SUN } from "@/lib/localization";
 import { todayKey, dateKeyToDate } from "@/lib/date-keys";
 import { ClassSwatch, ClassSwatchStack } from "@/components/ClassSwatch";
 import { ClassChip } from "@/components/ClassChip";
-import { SectionIcon } from "@/components/ui/section-icon";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { AssignmentStatusChip } from "@/components/AssignmentStatusChip";
@@ -88,7 +91,6 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 import { DateKeyPicker } from "@/components/ui/date-key-picker";
-import { SegmentedToggle } from "@/components/ui/segmented-toggle";
 import {
   Tooltip,
   TooltipContent,
@@ -100,7 +102,6 @@ import { useResponsivePanelWidth } from "@/hooks/useResponsivePanelWidth";
 import StandardTagPicker from "./StandardTagPicker";
 import SetBuilderOverlay from "./test/SetBuilderOverlay";
 import AttachTestDialog from "./AttachTestDialog";
-import { MaterialKindPicker } from "@/components/materials/MaterialKindPicker";
 
 const NO_TOPIC_VALUE = "__no_topic__";
 
@@ -216,10 +217,9 @@ export default function AssignmentEditorOverlay({
   /* Mavjud testni tanlash oynasi — toʻplam muharrirdan tashqarida ham
      tugʻiladi (bank, oldingi ishlar), ularni ulash yoʻli kerak. */
   const [attachOpen, setAttachOpen] = useState(false);
-  /** «Yaratish» bosilganda shakl kartalari ochiladi (default — yopiq). */
-  const [showKinds, setShowKinds] = useState(false);
-  /** Baholash usuli tanlovi — faqat koʻrinish uchun, bazaga yozilmaydi. */
-  const [autoGrading, setAutoGrading] = useState(false);
+  /** Tezkor yaratish mavzusi. `null` — ish rejadagi joriy mavzu turadi;
+      «Olish» (ish reja kartasi) yoki qoʻlda yozish uni belgilaydi. */
+  const [quickTopic, setQuickTopic] = useState<QuickTopic | null>(null);
   /* Savol muharriri va sessiya paneli TOʻGʻRIDAN-TOʻGʻRI ochiladi.
      Ilgari orada "Testlar (5-A)" roʻyxati turardi — sidebar'dan olib
      tashlangan `/dashboard/baholash` sahifasining qoldigʻi. U uchinchi
@@ -230,6 +230,10 @@ export default function AssignmentEditorOverlay({
     setId?: string;
     /** Yangi toʻplamning birinchi elementi — taqdimot slayd bilan boshlanadi. */
     firstShape?: "mcq" | "slide";
+    /** Tezkor yaratishdan tayyor qoralama (AI yoki shablon). */
+    initialQuestions?: DraftQuestion[];
+    /** Qoralamaning oʻz nomi — topshiriq sarlavhasi boʻsh boʻlsa ishlatiladi. */
+    initialTitle?: string;
   } | null>(null);
   /* Testni oʻquvchilarga berish — Topshiriqlar sahifasidagi bilan AYNAN
      bir oqim («Darsda oʻtkazish» / «Uyga berish» → natija ekrani →
@@ -255,7 +259,6 @@ export default function AssignmentEditorOverlay({
      yagona sharti (R215/R216). `sourceSessionId` esa ESKI, sessiyadan
      tugʻilgan ustunlar uchun: ular biriktirilmagan, nashr qilingan. */
   const attachedSetId = current.setId;
-  const Icon = isDeck ? Presentation : FileCheck2;
   const groupKey = assignmentGroupKey(current);
   const isDue = !!current.dueDate;
   const topics = classData?.topics ?? [];
@@ -387,6 +390,18 @@ export default function AssignmentEditorOverlay({
   function handleAttachDeck() {
     setAttachOpen(false);
     setBuilder({ firstShape: "slide" });
+  }
+
+  /** Tezkor yaratish natijasi (AI yoki shablon) — toʻplam muharriri shu
+      qoralama bilan ochiladi. Jim avtosaqlash uni 2 soniyada yozadi va
+      `handleSetSaved` orqali topshiriqqa ulaydi — oʻqituvchi koʻrib chiqadi. */
+  function handleQuickBuild(init: BuilderInit) {
+    setAttachOpen(false);
+    setBuilder({
+      firstShape: init.firstShape,
+      initialQuestions: init.questions,
+      initialTitle: init.title,
+    });
   }
 
   /** Mavjud toʻplam tanlandi — halqa darhol bogʻlanadi. */
@@ -836,107 +851,22 @@ export default function AssignmentEditorOverlay({
       );
     }
 
-    /* Baholash usuli — IKKI TANLOV, yozuvsiz.
-
-       Maktabdagi ishlarning koʻpchiligi qoʻlda baholanadi (insho, diktant,
-       masala yechish, ogʻzaki javob, laboratoriya ishi, normativ). Avtomatik
-       baholanadigani esa amalda bitta — test. Shu sabab «Qoʻlda» BOSHLANGʻICH
-       holat: eng koʻp yoʻl hech narsa bosmasdan kechadi.
-
-       Tanlov SAQLANMAYDI — u faqat shu muharrirdagi koʻrinishni boshqaradi.
-       Bazada baholash usuli baribir `setId` dan hisoblanadi (test bor →
-       avtomatik). Agar tanlov ustun boʻlib saqlansa, «avtomatik» deb
-       belgilab test biriktirmagan topshiriq ikki xil haqiqatga ega boʻlib
-       qolardi ([[assignment-content-is-attachment]]). Shu bois bu yerda
-       tanlov — YOʻLNI OCHUVCHI tugma, maʼlumot emas. */
+    /* Mazmun biriktirilmagan — TEZKOR YARATISH (quick-create/QuickCreatePanel).
+       Ilgari bu yerda «Baholash usuli: Qoʻlda | Avtomatik» tanlovi turardi
+       va yaratish yoʻli «Avtomatik» ortida yashirin edi; tanlov hech narsani
+       saqlamasdi. Endi yoʻl doim ochiq, qoʻlda baholanadigan ish uchun esa
+       hech narsa tanlash shart emas — «Yaratish» baribir ustun tugʻdiradi. */
     return (
-      <div className="flex flex-col gap-4">
-        {/* Yorliq TEPADA emas, YONIDA — sarlavha va yoʻriqnomadan farqli
-            oʻlaroq bu maydon bitta kichkina boshqaruv. Yorliq ustiga
-            qoʻyilsa ikki qator egallab, oʻzidan katta joy olardi. Yonma-yon
-            qoʻyilganda bitta qatorda oʻqiladi: «Baholash usuli — Qoʻlda».
-            GitHub/Linear sozlama qatorlari shu naqshda. */}
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <span className="text-label text-muted-foreground">
-            {t("gradingModeLabel")}
-          </span>
-          <SegmentedToggle
-            variant="pill"
-            value={autoGrading ? "auto" : "manual"}
-            onValueChange={(v) => {
-              setAutoGrading(v === "auto");
-              if (v === "manual") setShowKinds(false);
-            }}
-            options={[
-              {
-                value: "manual",
-                label: t("gradingManual"),
-                icon: <PenLine className="size-3.5" />,
-              },
-              {
-                value: "auto",
-                label: t("gradingAuto"),
-                icon: <Zap className="size-3.5" />,
-              },
-            ]}
-          />
-        </div>
-
-        {/* Tugmalar KATTA — va bu endi xavfsiz. Ilgari ular boshlangʻich
-            koʻrinishda turgani uchun ixtiyoriy qadamni majburiydek
-            koʻrsatardi; hozir esa faqat «Avtomatik» ataylab tanlangach
-            chiqadi. Yaʼni oʻqituvchi allaqachon kontent soʻragan — endi
-            uni yaxshi koʻrinadigan nishon bilan taʼminlash kerak.
-
-            Ikkalasi TENG oʻlchamda: «yangi tuzaman» va «tayyorini olaman»
-            boshqa-boshqa savolga javob beradi, biri ikkinchisidan muhim
-            emas. */}
-        {autoGrading && (
-          <div className="grid gap-3 sm:grid-cols-2">
-            {(
-              [
-                {
-                  key: "create",
-                  icon: Plus,
-                  label: t("contentCreate"),
-                  active: showKinds,
-                  onClick: () => setShowKinds((v) => !v),
-                },
-                {
-                  key: "attach",
-                  icon: Library,
-                  label: t("contentAttach"),
-                  active: false,
-                  onClick: () => setAttachOpen(true),
-                },
-              ] as const
-            ).map(({ key, icon: Icon, label, active, onClick }) => (
-              <button
-                key={key}
-                type="button"
-                aria-pressed={active}
-                onClick={onClick}
-                className={cn(
-                  "flex flex-col items-center gap-2 rounded-card border border-border bg-card px-4 py-5 text-sm font-medium text-foreground transition-colors hover:bg-muted/40",
-                  active && "border-foreground/30 bg-muted/50",
-                )}
-              >
-                <Icon className="size-5" />
-                {label}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {autoGrading && showKinds && (
-          <MaterialKindPicker
-            onPick={(kind) => {
-              if (kind === "test") handleAttachTest();
-              else if (kind === "deck") handleAttachDeck();
-            }}
-          />
-        )}
-      </div>
+      <QuickCreatePanel
+        classId={classId}
+        isDraft={isDraft}
+        topic={quickTopic}
+        fallbackTitle={current.title}
+        onTopicChange={setQuickTopic}
+        onOpenBuilder={handleQuickBuild}
+        onManual={(kind) => (kind === "deck" ? handleAttachDeck() : handleAttachTest())}
+        onAttachExisting={() => setAttachOpen(true)}
+      />
     );
   }
 
@@ -946,9 +876,8 @@ export default function AssignmentEditorOverlay({
         {/* Sarlavha */}
         <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border px-5 py-4">
           <div className="flex min-w-0 flex-1 items-center gap-3">
-            <SectionIcon>
-              <Icon />
-            </SectionIcon>
+            {/* «← Orqaga» — ostidagi sahifaga qaytadi (qoralama saqlanadi). */}
+            <BackButton onClick={handleCloseRequest} />
             <h1 className="min-w-0 truncate text-lg font-semibold text-foreground">
               {current.title || t("untitledDeck")}
             </h1>
@@ -1059,11 +988,23 @@ export default function AssignmentEditorOverlay({
                   classId={classId}
                   onPick={(row) => {
                     patch({ title: row.lesson.title });
+                    setQuickTopic({ text: row.lesson.title, lessonId: row.lesson.id });
                     if (row.date && row.date >= todayKey()) setDateFor(classId, row.date);
                     toast.success(tw("picked"));
                   }}
                 />
               )}
+
+              {/* Boʻlim ATAYLAB NOMSIZ. «Kontent» — dasturchi soʻzi edi:
+                  oʻqituvchi test yoki taqdimotni «kontent» deb oʻylamaydi, va
+                  «Materiallar» deb nomlansa sidebar'dagi sahifa bilan
+                  chalkashardi. Nomsiz qoldirish taʼlim platformalari orasida keng tarqalgan naqsh —
+                  u ham bu joyni nomlamaydi.
+                  Joyi — sarlavha va ish rejadan keyin, yoʻriqnomadan OLDIN:
+                  «+ Yaratish» ning asosiy ishi shu (tezkor yaratish yoki
+                  biriktirilgan test va uning «Darsda oʻtkazish» tugmalari),
+                  yoʻriqnoma va standart esa ixtiyoriy. */}
+              <div className="flex flex-col gap-3">{renderContent()}</div>
 
               {/* YOʻRIQNOMA (R203) — maydon tipda, bazada, sync'da va oltita
                   tilda tayyor edi, lekin hech qayerda chizilmasdi. Referensda
@@ -1088,13 +1029,6 @@ export default function AssignmentEditorOverlay({
                 value={current.standardIds ?? []}
                 onChange={(next) => patch({ standardIds: next.length ? next : undefined })}
               />
-
-              {/* Boʻlim ATAYLAB NOMSIZ. «Kontent» — dasturchi soʻzi edi:
-                  oʻqituvchi test yoki taqdimotni «kontent» deb oʻylamaydi, va
-                  «Materiallar» deb nomlansa sidebar'dagi sahifa bilan
-                  chalkashardi. Nomsiz qoldirish taʼlim platformalari orasida keng tarqalgan naqsh —
-                  u ham bu joyni nomlamaydi. */}
-              <div className="flex flex-col gap-3">{renderContent()}</div>
             </div>
           </div>
 
@@ -1472,8 +1406,11 @@ export default function AssignmentEditorOverlay({
             classId={classId}
             setId={builder.setId}
             firstShape={builder.firstShape}
+            initialQuestions={builder.initialQuestions}
             initialTitle={
-              builder.setId ? undefined : current.title.trim() || undefined
+              builder.setId
+                ? undefined
+                : current.title.trim() || builder.initialTitle || undefined
             }
             onSaved={(set) => handleSetSaved(set)}
             onClose={() => setBuilder(null)}
