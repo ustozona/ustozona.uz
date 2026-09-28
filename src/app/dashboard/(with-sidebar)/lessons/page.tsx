@@ -686,16 +686,6 @@ export default function LessonsPage() {
   const fmtFlowDate = useFlowDateLabel();
   const spanLabel = (s: { start: string; end: string } | undefined) =>
     s?.start ? (s.start === s.end ? fmtFlowDate(s.start) : `${fmtFlowDate(s.start)} – ${fmtFlowDate(s.end)}`) : null;
-  const removeReserveForOverflow = (id: string) => {
-    if (!effectiveClassId) return;
-    void flow.remove({
-      lessonIds: [id],
-      classIds: [effectiveClassId],
-      mutate: () => deleteLesson(id),
-      message: tf("reserveRemovedToast"),
-      fillOverflow: true,
-    });
-  };
   const viewToggle = !isDemoMode && (
     <SegmentedToggle
       variant="pill"
@@ -977,7 +967,6 @@ export default function LessonsPage() {
                 <OverflowChip
                   forecast={baseForecast}
                   titles={lessonTitles}
-                  onRemoveReserve={removeReserveForOverflow}
                   onShorten={(id) => flow.shortenForOverflow(id, effectiveClassId!)}
                 />
               )}
@@ -1043,7 +1032,6 @@ export default function LessonsPage() {
                   <OverflowChip
                     forecast={baseForecast}
                     titles={lessonTitles}
-                    onRemoveReserve={removeReserveForOverflow}
                     onShorten={(id) => flow.shortenForOverflow(id, effectiveClassId!)}
                   />
                 )}
@@ -1225,16 +1213,6 @@ export default function LessonsPage() {
                   <Search className="size-4" />
                 </Button>
               ))}
-              {/* Zaxira dars — boʻlim oxiriga, oqimga kiritiladi (kechikishni yutadi). */}
-              {effectiveUnitId && effectiveClassId && !isDemoMode && lessonsForUnit.length > 0 && (
-                <Button
-                  variant="ghost" size="icon" title={tf("reserveAdd")} aria-label={tf("reserveAdd")}
-                  className="text-muted-foreground hover:text-foreground"
-                  onClick={() => flow.addReserve(effectiveClassId, effectiveUnitId === NONE ? null : effectiveUnitId)}
-                >
-                  <CalendarPlus className="size-4" />
-                </Button>
-              )}
               {effectiveUnitId && lessonsForUnit.length > 0 && (
                 <Button size="sm" className="h-9 gap-1.5 ml-1 px-3" onClick={effectiveUnitId === NONE ? handleNewLesson : handleNewLessonChoice}>
                   <Plus className="size-3.5" />
@@ -1371,9 +1349,6 @@ export default function LessonsPage() {
                                 )}
                                 {effectiveClassId && isPinned(lesson, effectiveClassId) && (
                                   <Pin className="size-3.5 shrink-0" aria-label={tf("pinnedLabel")} />
-                                )}
-                                {lesson.reserve && (
-                                  <span className="shrink-0 rounded-full border border-dashed border-border px-1.5 text-tag font-semibold">{tf("reserveBadge")}</span>
                                 )}
                               </div>
                             );

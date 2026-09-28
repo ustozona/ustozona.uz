@@ -25,8 +25,6 @@ export type PlanRow = {
   /** Eng yaqin kelgusi (boʻlmasa oxirgi) dars kuni, "YYYY-MM-DD". */
   date: string | null;
   taught: boolean;
-  /** Zaxira dars — mavzusiz slot. */
-  reserve: boolean;
 };
 
 export type PlanAnchor = "lesson" | "today" | "next" | "untaught";
@@ -63,20 +61,19 @@ export function workPlanFor(
     no: i + 1,
     date: rowDate(lesson, classId, today),
     taught: isTaught(lesson, classId),
-    reserve: !!lesson.reserve,
   }));
 
   let idx = anchorLessonId ? all.findIndex((r) => r.lesson.id === anchorLessonId) : -1;
   let anchor: PlanAnchor = "lesson";
   if (idx < 0) {
     anchor = "today";
-    idx = all.findIndex((r) => r.date === today && !r.reserve);
+    idx = all.findIndex((r) => r.date === today);
   }
   if (idx < 0) {
     anchor = "next";
     let best: string | null = null;
     all.forEach((r, i) => {
-      if (r.reserve || !r.date || r.date <= today) return;
+      if (!r.date || r.date <= today) return;
       if (best === null || r.date < best) {
         best = r.date;
         idx = i;
@@ -85,7 +82,7 @@ export function workPlanFor(
   }
   if (idx < 0) {
     anchor = "untaught";
-    idx = all.findIndex((r) => !r.taught && !r.reserve);
+    idx = all.findIndex((r) => !r.taught);
     if (idx < 0) idx = all.length - 1;
   }
 
@@ -106,7 +103,6 @@ export function workPlanPrompt(plan: WorkPlan, around = 2): string {
   const to = Math.min(plan.rows.length - 1, plan.current + around);
   for (let i = from; i <= to; i++) {
     const r = plan.rows[i];
-    if (r.reserve) continue;
     const tag = i === plan.current ? "JORIY" : i < plan.current ? "oldingi" : "keyingi";
     lines.push(`- [${tag}] ${r.no}. ${r.lesson.title || "—"}${r.date ? ` (${r.date})` : ""}${r.taught ? " — oʻtilgan" : ""}`);
   }
