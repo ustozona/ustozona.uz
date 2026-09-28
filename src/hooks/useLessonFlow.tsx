@@ -14,7 +14,7 @@ import { addDaysKey, todayKey } from "@/lib/date-keys";
 import { isPinned, lessonClassIds, unitIdForClass, type Lesson, type LessonSession, type Unit } from "@/lib/lessons-data";
 import {
   classFlow, classSessions, flowSequence, isFlowConsistent, isFrozen, isOnTimetable, nextSlotAfter,
-  flowForecast, offTimetable, planDrop, planRealign, planReflow, reserveAfter,
+  flowForecast, offTimetable, planDrop, planRealign, planReflow,
   type ClassFlow, type FlowDraft, type FlowEnv, type FlowForecast, type ReflowPlan,
 } from "@/lib/lesson-flow";
 import { slotKey } from "@/lib/ish-reja/distribute";
@@ -114,7 +114,6 @@ export type FlowNewLessonArgs = {
   classId: string;
   unitId: string | null;
   title: string;
-  reserve?: boolean;
   onSettled?: (id: string) => void;
 };
 
@@ -219,14 +218,11 @@ export function useLessonFlow(): {
   remove: (p: FlowRemoveArgs) => Promise<boolean>;
   /** Qadash / qadashni olish. */
   togglePin: (lessonId: string, classId: string) => void;
-  /** «Keyingi darsga sur»: dars bir slot kechikadi, keyingilar ham suriladi
-      (shu boʻlimda zaxira dars boʻlsa — u ishlatiladi). */
+  /** «Keyingi darsga sur»: dars bir slot kechikadi, keyingilar ham suriladi */
   bump: (lessonId: string, classId: string) => void;
   /** Davomiylik: +1 — dars yana bir slotni oladi, keyingilar suriladi;
       −1 — oxirgi sessiya olinadi, boʻshliq yopiladi. */
   stretch: (lessonId: string, classId: string, delta: 1 | -1) => void;
-  /** Boʻlim oxiriga zaxira dars qoʻshish va uni oqimga kiritish. */
-  addReserve: (classId: string, unitId: string | null) => void;
   /** Sanasiz darsni oqimga kiritish: tartibdagi oldingi oqim darsidan keyingi
       slotni oladi, keyingilar bittadan suriladi. Oqim boʻsh boʻlsa — sanasiz qoladi. */
   joinFlow: (lessonId: string, classId: string, opts?: FlowJoinOptions) => void;
@@ -441,8 +437,6 @@ export function useLessonFlow(): {
        qaytib, oʻz tartibidagi birinchi slotni oladi, keyingilar bittadan
        suriladi, oxirgisi yangi boʻsh slotga tushadi;
      - kelajakdagi dars oʻz slotini boʻshatadi (`dropSlots`) — natija bir xil.
-     Shu boʻlimda keyinroq zaxira dars boʻlsa, uning sloti «yutiladi»
-     (zaxira bankka qaytadi) — keyingi boʻlimlar joyidan qimirlamaydi.
      Qadalgan dars surilsa qadash olinadi: sanasi endi qatʼiy emas. */
   const bump = (lessonId: string, classId: string) => {
     const st = useLessonStore.getState();
@@ -466,23 +460,18 @@ export function useLessonFlow(): {
       }
     }
     const future = sessions.find((s) => !isFrozen(s, e.now));
-    const reserve = reserveAfter(st.lessons, st.units, flow, lessonId);
-    const slot = reserve?.sessions[0];
     run({
       classIds: [classId],
       decline: "revert",
       // Surish hammasini bittadan siljitadi — oddiy holatda soʻramasdan qoʻllanadi.
       previewOver: Infinity,
       dropSlots: !missed && future ? [future] : [],
-      closeGaps: !!reserve,
-      message: reserve ? t("reserveUsedToast") : undefined,
       mutate: () => {
         const s = useLessonStore.getState();
         if (isPinned(x, classId)) s.setPinned(lessonId, classId, false);
         if (missed && placeholder) {
           s.moveSession(lessonId, classId, missed.date, missed.startMin, placeholder.date, placeholder.startMin, placeholder.endMin);
         }
-        if (reserve && slot) s.unscheduleSession(reserve.lessonId, classId, slot.date, slot.startMin);
       },
     });
   };
@@ -555,10 +544,9 @@ export function useLessonFlow(): {
     });
   };
 
-  const newLesson = ({ classId, unitId, title, reserve, onSettled }: FlowNewLessonArgs) => {
+  const newLesson = ({ classId, unitId, title, onSettled }: FlowNewLessonArgs) => {
     const s = useLessonStore.getState();
     const id = s.addLesson({ classId, unitId, title, status: "Draft" });
-    if (reserve) s.updateLesson(id, { reserve: true });
     // `addLesson` raqami sinf tartibini (`orderByClass`, koʻp sinfli darslar)
     // hisobga olmaydi — dars boʻlimning aynan oxiriga qoʻyiladi.
     const cur = useLessonStore.getState();
@@ -566,12 +554,8 @@ export function useLessonFlow(): {
       .filter((l) => l.id !== id && unitIdForClass(l, classId) === unitId)
       .map((l) => l.id);
     s.reorderLessons([...inUnit, id], classId);
-    joinFlow(id, classId, { message: reserve ? t("reserveAddedToast") : undefined, onSettled: () => onSettled?.(id) });
+    joinFlow(id, classId, { onSettled: () => onSettled?.(id) });
     return id;
-  };
-
-  const addReserve = (classId: string, unitId: string | null) => {
-    newLesson({ classId, unitId, title: t("reserveTitle"), reserve: true });
   };
 
   const removeFromFlow = (lessonId: string, classId: string, o: { fillOverflow?: boolean } = {}) => {
@@ -611,7 +595,7 @@ export function useLessonFlow(): {
     />
   );
 
-  return { run, place, remove, togglePin, bump, stretch, addReserve, joinFlow, newLesson, removeFromFlow, shortenForOverflow, realign, dialog };
+  return { run, place, remove, togglePin, bump, stretch, joinFlow, newLesson, removeFromFlow, shortenForOverflow, realign, dialog };
 }
 
 /* ── Kalendar va jadval oʻzgarishini kuzatish ──

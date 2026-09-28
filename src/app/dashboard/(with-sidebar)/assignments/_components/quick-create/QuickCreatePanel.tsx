@@ -220,7 +220,7 @@ export function QuickCreatePanel({
     () => (hydrated ? workPlanFor(lessons, units, classId, today) : null),
     [hydrated, lessons, units, classId, today],
   );
-  const planRow = plan && !plan.rows[plan.current]?.reserve ? plan.rows[plan.current] : null;
+  const planRow = plan?.rows[plan.current] ?? null;
   const auto: QuickTopic = planRow
     ? { text: planRow.lesson.title, lessonId: planRow.lesson.id }
     : { text: fallbackTitle };

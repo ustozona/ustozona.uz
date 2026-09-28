@@ -140,7 +140,7 @@ export function WorkPlanCard({
                         isCur ? "font-semibold text-foreground" : row.taught ? "text-muted-foreground" : "text-foreground",
                       )}
                     >
-                      {row.reserve ? t("reserve") : row.lesson.title || t("untitled")}
+                      {row.lesson.title || t("untitled")}
                     </span>
                   </span>
                   {isCur && (
@@ -154,20 +154,18 @@ export function WorkPlanCard({
                   <span className="w-14 shrink-0 text-right text-caption tabular-nums text-muted-foreground">
                     {row.date ? fmt(row.date) : "—"}
                   </span>
-                  {!row.reserve && (
-                    <button
-                      type="button"
-                      onClick={() => onPick(row)}
-                      title={t("useHint")}
-                      className={cn(
-                        "inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-caption font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
-                        !isCur && "opacity-0 focus-visible:opacity-100 group-hover:opacity-100",
-                      )}
-                    >
-                      <CornerDownLeft className="size-3" />
-                      {t("use")}
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => onPick(row)}
+                    title={t("useHint")}
+                    className={cn(
+                      "inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-caption font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+                      !isCur && "opacity-0 focus-visible:opacity-100 group-hover:opacity-100",
+                    )}
+                  >
+                    <CornerDownLeft className="size-3" />
+                    {t("use")}
+                  </button>
                 </li>
               );
             })}

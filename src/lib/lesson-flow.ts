@@ -248,7 +248,7 @@ export function isFlowConsistent(flow: ClassFlow, env: FlowEnv): boolean {
 /** `after` dan keyingi birinchi slot — havzadan (`exclude` dagilardan
     tashqari) yoki havza tugasa jadvalning birinchi boʻsh sloti. Oqimga
     dars kiritish uchun «joy egasi»: dars shu slotni olib, keyingilar
-    bittadan suriladi (surish, choʻzish, zaxira dars). */
+    bittadan suriladi (surish, choʻzish). */
 export function nextSlotAfter(
   flow: ClassFlow, after: LessonSession | null, exclude: ReadonlySet<string>, env: FlowEnv,
 ): LessonSession | null {
@@ -261,24 +261,6 @@ export function nextSlotAfter(
     [...flow.occupied, ...flow.blocked, ...exclude], env,
   );
   return slot;
-}
-
-/** Zaxira dars: ketma-ketlikda `lessonId` dan keyin, shu boʻlimda, oqimdagi
-    birinchi zaxira (dars oʻzi oqimda boʻlmasa ham — masalan oʻtib ketgan
-    sessiyasi surilayotganda). Surishda u «yutiladi» — keyingi boʻlimlar
-    joyidan qimirlamaydi. */
-export function reserveAfter(
-  lessons: readonly Lesson[], units: readonly Unit[], flow: ClassFlow, lessonId: string,
-): FlowItem | null {
-  const seq = flowSequence(lessons, units, flow.classId);
-  const pos = new Map(seq.map((l, i) => [l.id, i]));
-  const at = pos.get(lessonId);
-  const x = seq[at ?? -1];
-  if (at === undefined || !x) return null;
-  const rank = unitRanker(units, flow.classId)(x);
-  const byId = new Map(seq.map((l) => [l.id, l]));
-  return flow.items.find((it) =>
-    it.unitRank === rank && (pos.get(it.lessonId) ?? -1) > at && !!byId.get(it.lessonId)?.reserve) ?? null;
 }
 
 /* ── Darsni sanaga qoʻyish (planner'da tashlash, sana tahriri, bogʻlash) ──
@@ -444,7 +426,6 @@ export type ForecastRow = {
   /** «2.3» (boʻlim.dars); boʻlimsiz — uzluksiz raqam. */
   index: string;
   state: ForecastState;
-  reserve: boolean;
   /** Hozirgi sana: kelajakdagi birinchi sessiya, boʻlmasa oxirgisi. */
   current: LessonSession | null;
   /** Prognoz sanasi (oqim darslari; qoralamada — yangi tartib boʻyicha); sanasizda `null`. */
@@ -547,7 +528,6 @@ export function flowForecast(
       unitId,
       index: r < unitCount ? `${r + 1}.${k}` : String(i + 1),
       state,
-      reserve: !!l.reserve,
       current,
       projected: tail.has(l.id) ? null : plan ? got[0] ?? null : current,
       projectedLast: tail.has(l.id) ? null : plan ? got.at(-1) ?? null : future.at(-1) ?? current,
