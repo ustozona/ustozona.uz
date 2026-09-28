@@ -1,11 +1,13 @@
 import "server-only";
-import { and, eq, inArray, isNull } from "drizzle-orm";
+import { randomUUID } from "node:crypto";
+import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
-import { attendanceRecords, attendanceStatuses, classes } from "@/server/db/schema";
-import { requireTeacher } from "@/server/session";
+import { assignments, attendanceRecords, attendanceStatuses, classes, grades } from "@/server/db/schema";
+import { ForbiddenError, requireTeacher } from "@/server/session";
 import { assertTeachesClass, visibleClassIds } from "@/server/workspace";
 import { activeClassRoster } from "@/server/dal/class-roster";
 import { applyAttendanceBatch } from "@/server/dal/attendance";
+import { applyGradesBatch } from "@/server/dal/grades";
 import { BUILTIN_STATUSES } from "@/lib/attendance-data";
 import { getTimetablePayload } from "@/server/dal/timetable";
 import { normalizeLegacyVersions, resolveVersionForDate } from "@/lib/timetable-versions";
@@ -157,4 +159,91 @@ export async function setMobileAttendance(
   if (recordsUpsert.length === 0) return;
   // Egalik filtri va idempotent upsert — saytdagi bilan aynan bir yoʻl.
   await applyAttendanceBatch({ statusesUpsert: [], statusesDelete: [], recordsUpsert, recordsDelete: [] });
+}
+
+/* ── Tezkor baho ─────────────────────────────────────────────────────
+   Faqat oʻqituvchining OʻZ ustunlari (assignments.teacherId) va sinfning
+   joriy roʻyxati. Yozish saytdagi `applyGradesBatch` orqali — egalik va
+   koʻrinuvchanlik filtrlari oʻsha yerda ham ikkinchi marta ishlaydi.
+   Yangi ustun boʻlimsiz (`topicId: null`) yaratiladi — jurnal uni
+   «Boʻlimsiz» guruhida koʻrsatadi; oʻqituvchi keyin saytda koʻchira oladi. */
+
+export type MobileGradeColumn = { id: string; title: string; maxScore: number; date: string | null };
+
+export type MobileGradeSheet = {
+  classId: string;
+  columns: MobileGradeColumn[];
+  column: MobileGradeColumn | null;
+  students: { id: string; name: string; score: number | null }[];
+};
+
+async function ownColumns(teacherId: string, classId: string): Promise<MobileGradeColumn[]> {
+  const rows = await db
+    .select({ id: assignments.id, title: assignments.title, maxScore: assignments.maxScore, date: assignments.date, createdAt: assignments.createdAt })
+    .from(assignments)
+    .where(and(eq(assignments.teacherId, teacherId), eq(assignments.classId, classId)));
+  rows.sort((a, b) => (b.date ?? "").localeCompare(a.date ?? "") || b.createdAt.getTime() - a.createdAt.getTime());
+  return rows.slice(0, 30).map(({ id, title, maxScore, date }) => ({ id, title, maxScore, date }));
+}
+
+export async function getMobileGrades(classId: string, columnId: string | null): Promise<MobileGradeSheet> {
+  const ctx = await assertTeachesClass(classId);
+  const [columns, roster] = await Promise.all([ownColumns(ctx.teacherId, classId), activeClassRoster(classId)]);
+  const column = columnId ? columns.find((c) => c.id === columnId) ?? null : columns[0] ?? null;
+  const scores = column
+    ? await db
+        .select({ studentId: grades.studentId, score: grades.score })
+        .from(grades)
+        .where(and(eq(grades.teacherId, ctx.teacherId), eq(grades.assignmentId, column.id)))
+    : [];
+  const byStudent = new Map(scores.map((s) => [s.studentId, s.score]));
+  return {
+    classId,
+    columns,
+    column,
+    students: roster.map((s) => ({ id: s.id, name: s.name, score: column ? byStudent.get(s.id) ?? null : null })),
+  };
+}
+
+export async function createMobileColumn(
+  classId: string,
+  title: string,
+  maxScore: number,
+  date: string
+): Promise<string> {
+  const ctx = await assertTeachesClass(classId);
+  const [{ n }] = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(assignments)
+    .where(and(eq(assignments.teacherId, ctx.teacherId), eq(assignments.classId, classId)));
+  const id = randomUUID();
+  await applyGradesBatch({
+    classesUpsert: [], classesDelete: [], studentsUpsert: [], studentsDelete: [],
+    topicsUpsert: [], topicsDelete: [], assignmentsDelete: [], gradesUpsert: [], gradesDelete: [],
+    assignmentsUpsert: [{ id, classId, topicId: null, title, maxScore, date, kind: "manual", sortOrder: n }],
+  });
+  return id;
+}
+
+export async function setMobileGrades(
+  classId: string,
+  columnId: string,
+  scores: { studentId: string; score: number | null }[]
+): Promise<void> {
+  const ctx = await assertTeachesClass(classId);
+  const [column] = (await ownColumns(ctx.teacherId, classId)).filter((c) => c.id === columnId);
+  if (!column) throw new ForbiddenError("Bu ustunga ruxsat yoʻq");
+  const rosterIds = new Set((await activeClassRoster(classId)).map((s) => s.id));
+  const valid = scores.filter(
+    (s) => rosterIds.has(s.studentId) && (s.score === null || (s.score >= 0 && s.score <= column.maxScore))
+  );
+  const upserts = valid.filter((s) => s.score !== null);
+  const deletes = valid.filter((s) => s.score === null);
+  if (!upserts.length && !deletes.length) return;
+  await applyGradesBatch({
+    classesUpsert: [], classesDelete: [], studentsUpsert: [], studentsDelete: [],
+    topicsUpsert: [], topicsDelete: [], assignmentsUpsert: [], assignmentsDelete: [],
+    gradesUpsert: upserts.map((s) => ({ studentId: s.studentId, assignmentId: columnId, score: s.score, isDraft: false, missing: null })),
+    gradesDelete: deletes.map((s) => ({ studentId: s.studentId, assignmentId: columnId })),
+  });
 }
