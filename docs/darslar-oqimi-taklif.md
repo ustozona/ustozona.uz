@@ -106,10 +106,24 @@ buzardi. Oʻrniga havza modeli (`src/lib/lesson-flow.ts`, sof funksiyalar):
   xil). Davomiylik = kelajakdagi sessiyalar soni.
 - **Havza (S)** — F egallagan kelajakdagi slotlar.
 - **Qayta joylash** — S ni F ga tartib boʻyicha ketma-ket beradi. Havza
-  yetmasa, oxirgi slotdan keyingi boʻsh jadval slotlari qoʻshiladi
-  (`distributeTopics`); ortib qolsa, oxirgi slotlar boʻshaydi; joy
-  topilmasa dars sanasiz qoladi (`to: null`).
-- **Boʻshliqlar saqlanadi** — havza ichidagi boʻsh kun toʻldirilmaydi.
+  yetmasa, keyingi boʻsh jadval slotlari qoʻshiladi (taʼtil va band slot
+  oʻtkaziladi); ortib qolsa, oxirgi slotlar boʻshaydi; joy topilmasa dars
+  sanasiz qoladi (`to: null`).
+- **Boʻsh slot kechikishni yutadi** (2026-09-28 dan) — dars surilayotganda
+  (havza yetmay qolganda: slot boʻshatildi, taʼtilga tushdi, bitta slotga
+  ikki dars kiritildi) yoʻlida dars biriktirilmagan slot boʻlsa, oʻsha
+  slotga tushadi; surilish shu yerda toʻxtaydi, keyingilar joyidan
+  qimirlamaydi. Dars oʻz sanasidan oldinga boʻsh slotga tortilmaydi.
+  Tartiblash, planner'da tashlash va oʻchirishda havza yetadi — sof oʻrin
+  almashtirish, boʻsh slotga tegilmaydi (tashlangan dars aynan tashlangan
+  slotga tushadi). Ilgari boʻsh kun sanaga «mixlangan» edi — dars uni
+  sakrab oʻtib, butun reja bir kun kechikardi.
+- **Slot bandligi** planner qoidasi bilan: slotda biror dars boshlansa
+  (08:05 dagi dars 08:00–08:45 slotida), u boʻsh emas — jadval vaqtidan
+  siljigan dars ustiga boshqa dars qoʻyilmaydi.
+- **Ataylab darssiz qoldiriladigan vaqt**: butun kun — taʼtil / «kunni
+  bloklash» (barcha sinflar uchun); bitta sinfning sloti (masalan nazorat
+  ishi) — shu slotga qadalgan dars. Ikkalasi ham toʻlmaydi.
 - **Toʻsiqlar** — oʻtilgan va qadalgan darslar: ketma-ketlikdagi oʻrni
   hisobga olinmaydi, slotini oqim chetlab oʻtadi.
 - **Oʻtmish muzlatilgan** — bugundan oldingi yoki bugun boshlangan sessiya.
@@ -387,6 +401,12 @@ Oqim boʻshliqlari yopildi (2026-09-28):
   va tezkor mavzu yaratish ataylab sanasiz qoladi.
 - **Oʻchirish.** Dars muharriri va Materiallardagi oʻchirish ham `flow.remove`
   orqali — boʻshliq yopiladi.
+- **Surilish boʻsh slotda toʻxtaydi.** «Keyingi darsga sur», taʼtil, yangi
+  dars kiritish va choʻzishda (+1) surilayotgan dars birinchi boʻsh (dars
+  biriktirilmagan) slotga tushadi — undan keyingilar qimirlamaydi
+  (`assignSlots`, `nextSlotAfter`). Tartiblash va tashlash — oldingidek. Misol: Du / Chor / Ju
+  darslari, juma boʻsh; dushanba mavzusi surilsa — Chor, Ju oladi, keyingi
+  hafta oʻzgarmaydi. Oʻchirish (boʻshliqni yopish) oʻzgarmagan.
 - **Import bekor qilinishi ataylab oqimdan tashqarida.** Import mavjud
   darslarni surmaydi (faqat boʻsh slotlarni oladi), shuning uchun bekor
   qilishda boʻshliqni yopish boshqa darslarni import oldidagi joyidan

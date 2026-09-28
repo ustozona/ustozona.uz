@@ -434,8 +434,8 @@ export function useLessonFlow(): {
 
   /* «Keyingi darsga sur» ham oqimning bir holati:
      - oʻtmishdagi (oʻtilmagan) sessiya kelajakka olinadi — dars oqimga
-       qaytib, oʻz tartibidagi birinchi slotni oladi, keyingilar bittadan
-       suriladi, oxirgisi yangi boʻsh slotga tushadi;
+       qaytib, oʻz tartibidagi birinchi slotni oladi, keyingilar birinchi
+       boʻsh (dars biriktirilmagan) slotgacha bittadan suriladi;
      - kelajakdagi dars oʻz slotini boʻshatadi (`dropSlots`) — natija bir xil.
      Qadalgan dars surilsa qadash olinadi: sanasi endi qatʼiy emas. */
   const bump = (lessonId: string, classId: string) => {
@@ -451,9 +451,10 @@ export function useLessonFlow(): {
     const missed = sessions.filter((s) => isFrozen(s, e.now)).at(-1);
     let placeholder: LessonSession | null = null;
     if (missed) {
-      // Joy egasi — havzadagi birinchi BEGONA slot (dars oʻz sessiyasiga
-      // koʻchsa davomiyligi oshmay qoladi); yoʻq boʻlsa birinchi boʻsh slot.
-      placeholder = nextSlotAfter(flow, null, new Set(sessions.map((s) => slotKey(s.date, s.startMin))), e);
+      // Joy egasi — oʻtkazib yuborilgan darsdan keyingi birinchi slot: dars
+      // biriktirilmagan boʻsh slot (hech kim surilmaydi) yoki havzadagi
+      // birinchi BEGONA slot (dars oʻz sessiyasiga koʻchsa davomiyligi oshmay qoladi).
+      placeholder = nextSlotAfter(flow, missed, new Set(sessions.map((s) => slotKey(s.date, s.startMin))), e);
       if (!placeholder) {
         toast.info(t("noFreeSlot"));
         return;

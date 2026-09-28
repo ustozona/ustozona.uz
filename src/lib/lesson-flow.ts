@@ -4,6 +4,7 @@ import {
   type Lesson, type LessonSession, type Unit,
 } from "@/lib/lessons-data";
 import { classSlotsOn, distributeTopics, slotKey } from "@/lib/ish-reja/distribute";
+import { addDaysKey } from "@/lib/date-keys";
 import type { SessionMove } from "@/lib/lesson-shift";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -18,14 +19,20 @@ import type { SessionMove } from "@/lib/lesson-shift";
    sessiyalari soni.
 
    Havza (S) — F egallab turgan kelajakdagi slotlar. Qayta joylash S ni
-   F ga tartib boʻyicha ketma-ket beradi:
-   - havza yetmasa, oxirgi slotdan keyingi boʻsh jadval slotlari
-     qoʻshiladi (import taqsimoti bilan bir qoida — `distributeTopics`);
+   F ga tartib boʻyicha ketma-ket beradi (`assignSlots`):
+   - dars surilayotganda yoʻlida dars biriktirilmagan boʻsh jadval sloti
+     boʻlsa — oʻsha slotga tushadi, surilish shu yerda toʻxtaydi, undan
+     keyingilar joyidan qimirlamaydi (boʻsh slot kechikishni yutadi);
+   - havza yetmasa, keyingi boʻsh jadval slotlari qoʻshiladi (import
+     taqsimoti bilan bir qoida — taʼtil va band slot oʻtkaziladi);
    - ortib qolsa, oxirgi slotlar boʻshaydi;
    - joy topilmasa, dars sanasiz qoladi (`to: null`).
 
-   Havza ichidagi boʻshliqlar (ataylab boʻsh qoldirilgan kunlar) saqlanadi —
-   oqim ularni toʻldirmaydi. Nima qimirlamaydi:
+   Dars oʻz sanasidan OLDINGA boʻsh slotga tortilmaydi — boʻsh kun faqat
+   surilish yetib kelganda toʻladi; tartiblash va oʻchirishda boʻsh slotga
+   tegilmaydi. Ataylab darssiz qoldiriladigan vaqt: butun kun — taʼtil /
+   «kunni bloklash» (barcha sinflar); bitta sinfning sloti (masalan nazorat
+   ishi) — shu slotga qadalgan dars. Ikkalasi ham toʻlmaydi. Nima qimirlamaydi:
    - oʻtmish (bugundan oldin yoki bugun boshlangan dars);
    - oʻtilgan va qadalgan darslar — ular toʻsiq, oqim ularni chetlab oʻtadi;
    - sanasiz darslar — oqimda emas.
@@ -157,38 +164,147 @@ export type ReflowPlan = {
   overflow: string[];
 };
 
-/** Havzani oqimga tartib boʻyicha beradi. `pool` — qayta joylashda
-    ishlatiladigan slotlar (odatda `flow.pool`; amalga qarab
-    kengaytirilgan yoki qisqartirilgan). */
-export function planReflow(flow: ClassFlow, pool: readonly LessonSession[], env: FlowEnv): ReflowPlan {
-  const { classId, items } = flow;
-  // Taʼtil (bloklangan kun) sloti havzada boʻlmaydi — u yerdagi dars suriladi.
+/** Havzaning ishlatsa boʻladigan slotlari (vaqt boʻyicha, takrorsiz). Taʼtil
+    (bloklangan kun), toʻsiq va oʻtmish chiqariladi — u yerdagi dars suriladi. */
+function usablePool(flow: ClassFlow, pool: readonly LessonSession[], env: FlowEnv): LessonSession[] {
   const uniq = new Map<string, LessonSession>();
   for (const s of pool) {
     const k = keyOf(s);
     if (!flow.blocked.has(k) && !isFrozen(s, env.now) && !env.isHoliday(s.date) && !uniq.has(k)) uniq.set(k, s);
   }
-  const slots = [...uniq.values()].sort(cmpSession);
+  return [...uniq.values()].sort(cmpSession);
+}
 
-  const need = items.reduce((n, it) => n + it.sessions.length, 0);
-  if (slots.length < need) {
-    // Kengaytma havzaning ham, oqim darslarining hozirgi sessiyalarining ham
-    // oxiridan boshlanadi — slot toʻsiq bilan toʻqnashgan dars oldinroqqa
-    // (bugunga) tortib yuborilmasin.
-    const last = [...slots, ...items.flatMap((it) => it.sessions)].sort(cmpSession).at(-1);
-    const extra = freeSlotsFrom(
-      flow, last?.date ?? env.now.today, last?.startMin ?? -1, need - slots.length,
-      [...flow.occupied, ...flow.blocked, ...uniq.keys()], env,
-    );
-    for (const s of extra) if (s) slots.push(s);
+/** Sinf jadvalining boʻsh slotlari — bugundan `until` (standart — yil oxiri)
+    gacha; taʼtil, boshlangan va band slotlar oʻtkaziladi. Slot band — unda
+    `taken` dagi biror sessiya boshlansa (planner qoidasi: 08:05 dagi dars
+    08:00–08:45 slotida turibdi), shuning uchun jadval vaqtidan siljigan dars
+    ustiga boshqa dars qoʻyilmaydi. Roʻyxat kerak boʻlgancha kunma-kun quriladi. */
+function freeSlotFinder(classId: string, taken: Iterable<string>, env: FlowEnv, until = env.toKey) {
+  const starts = new Map<string, number[]>();
+  for (const k of taken) {
+    const i = k.lastIndexOf("|");
+    const date = k.slice(0, i);
+    const min = Number(k.slice(i + 1));
+    const onDay = starts.get(date);
+    if (onDay) onDay.push(min);
+    else starts.set(date, [min]);
   }
+  const last = until < env.toKey ? until : env.toKey;
+  const list: LessonSession[] = [];
+  const used = new Set<string>();
+  let day = env.now.today;
+  const grow = (): boolean => {
+    if (day > last) return false;
+    if (!env.isHoliday(day)) {
+      const busy = starts.get(day) ?? [];
+      for (const e of classSlotsOn(env.eventsForDate(day), classId, day)) {
+        const s: LessonSession = { date: day, startMin: e.startMin, endMin: e.endMin };
+        if (isFrozen(s, env.now) || busy.some((m) => m === e.startMin || (m > e.startMin && m < e.endMin))) continue;
+        list.push(s);
+      }
+    }
+    day = addDaysKey(day, 1);
+    return true;
+  };
+  return {
+    /** `after` dan keyingi birinchi ishlatilmagan boʻsh slot. */
+    next(after: LessonSession | null): LessonSession | null {
+      // Roʻyxat vaqt boʻyicha oʻsadi — boshlanish oʻrni ikkilik qidiruv bilan.
+      let lo = 0;
+      let hi = list.length;
+      while (after && lo < hi) {
+        const m = (lo + hi) >> 1;
+        if (cmpSession(list[m], after) > 0) hi = m;
+        else lo = m + 1;
+      }
+      for (let i = lo; ; i++) {
+        while (i >= list.length) if (!grow()) return null;
+        const s = list[i];
+        if ((!after || cmpSession(s, after) > 0) && !used.has(keyOf(s))) return s;
+      }
+    },
+    take(s: LessonSession) {
+      used.add(keyOf(s));
+    },
+  };
+}
+
+type FreeSlotFinder = ReturnType<typeof freeSlotFinder>;
+
+type SlotDemand = {
+  id: string;
+  /** Hozirgi kelajakdagi sessiyalar (sanasiz dumda — boʻsh). */
+  current: readonly LessonSession[];
+  n: number;
+};
+
+/** Slotlarni tartib boʻyicha beradi — `planReflow` va prognoz uchun yagona
+    qoida. Har sessiya navbatdagi havza slotini oladi. Istisno — surilish:
+    havza yetmasa (dars sloti boʻshatildi, taʼtilga tushdi yoki bitta slotga
+    ikki dars kiritildi), navbatdagi havza sloti sessiyaning hozirgi
+    sanasidan (va oldingi sessiyadan) keyin boʻlsa-yu, orada dars
+    biriktirilmagan boʻsh jadval sloti boʻlsa — sessiya oʻsha boʻsh slotga
+    tushadi. Ishlatilmay qolgan havza sloti keyingi darsga oʻtadi, shuning
+    uchun undan keyingilar joyidan qimirlamaydi. Havza yetsa (tartiblash,
+    planner'da tashlash, oʻchirish) — sof oʻrin almashtirish, boʻsh slotga
+    tegilmaydi. Havza tugasa — keyingi boʻsh slotlar. */
+function assignSlots(
+  flow: ClassFlow, slots: readonly LessonSession[], demand: readonly SlotDemand[], env: FlowEnv,
+): Map<string, (LessonSession | null)[]> {
+  // Kelishgan oqimda boʻsh slot umuman soʻralmaydi — qidiruv kerak boʻlganda quriladi.
+  let finder: FreeSlotFinder | null = null;
+  const free = () => (finder ??= freeSlotFinder(flow.classId, [...flow.occupied, ...flow.blocked, ...slots.map(keyOf)], env));
+  // Havzadan tashqariga chiqadigan sessiyalar soni — shuncha surilish boʻsh
+  // slotda toʻxtashi mumkin. Sanasiz dum (`current` boʻsh) hisobga kirmaydi:
+  // prognozda oqim darslari `planReflow` dagidek joylanadi.
+  let budget = Math.max(0, demand.reduce((n, d) => n + d.current.length, 0) - slots.length);
+  const out = new Map<string, (LessonSession | null)[]>();
+  let vi = 0;
+  let cursor: LessonSession | null = null;
+  for (const d of demand) {
+    const got: (LessonSession | null)[] = [];
+    for (let j = 0; j < d.n; j++) {
+      const v = slots[vi] ?? null;
+      const cur = d.current[j] ?? null;
+      // Chegara — hozirgi sana va oldingi sessiyaning kechrogʻi: dars oʻz
+      // sanasidan oldinga boʻsh slotga tortilmaydi. Navbatdagi havza sloti
+      // chegaradan keyin boʻlmasa, surilish yoʻq — boʻsh slot izlanmaydi.
+      const bound: LessonSession | null = cur && (!cursor || cmpSession(cur, cursor) > 0) ? cur : cursor;
+      const gap: LessonSession | null = !v ? free().next(bound)
+        : budget > 0 && bound && cmpSession(v, bound) > 0 ? free().next(bound) : null;
+      let s: LessonSession | null;
+      if (gap && (!v || cmpSession(gap, v) < 0)) {
+        free().take(gap);
+        if (v) budget--;
+        s = gap;
+      } else {
+        s = v;
+        if (v) vi++;
+      }
+      got.push(s);
+      if (s) cursor = s;
+    }
+    out.set(d.id, got);
+  }
+  return out;
+}
+
+/** Havzani oqimga tartib boʻyicha beradi. `pool` — qayta joylashda
+    ishlatiladigan slotlar (odatda `flow.pool`; amalga qarab
+    kengaytirilgan yoki qisqartirilgan). */
+export function planReflow(flow: ClassFlow, pool: readonly LessonSession[], env: FlowEnv): ReflowPlan {
+  const { classId, items } = flow;
+  const assigned = assignSlots(
+    flow, usablePool(flow, pool, env),
+    items.map((it) => ({ id: it.lessonId, current: it.sessions, n: it.sessions.length })), env,
+  );
 
   const moves: SessionMove[] = [];
   const changes: ReflowChange[] = [];
   const overflow: string[] = [];
-  let cursor = 0;
   for (const it of items) {
-    const next = it.sessions.map(() => slots[cursor++] ?? null);
+    const next = assigned.get(it.lessonId) ?? [];
     const nextKeys = new Set(next.flatMap((s) => (s ? [keyOf(s)] : [])));
     const oldKeys = new Set(it.sessions.map(keyOf));
     const removed = it.sessions.filter((s) => !nextKeys.has(keyOf(s)));
@@ -246,21 +362,24 @@ export function isFlowConsistent(flow: ClassFlow, env: FlowEnv): boolean {
 }
 
 /** `after` dan keyingi birinchi slot — havzadan (`exclude` dagilardan
-    tashqari) yoki havza tugasa jadvalning birinchi boʻsh sloti. Oqimga
-    dars kiritish uchun «joy egasi»: dars shu slotni olib, keyingilar
-    bittadan suriladi (surish, choʻzish). */
+    tashqari) yoki undan oldin kelsa, dars biriktirilmagan boʻsh jadval
+    sloti; havza tugasa jadvalning birinchi boʻsh sloti. Oqimga dars
+    kiritish uchun «joy egasi»: boʻsh slot boʻlsa hech kim surilmaydi,
+    aks holda dars shu slotni olib, keyingilar birinchi boʻsh slotgacha
+    suriladi (surish, choʻzish). `after` yoʻq — oqim boshidan oldingi vaqt
+    oraliq emas, havzaning birinchi sloti. */
 export function nextSlotAfter(
   flow: ClassFlow, after: LessonSession | null, exclude: ReadonlySet<string>, env: FlowEnv,
 ): LessonSession | null {
   const inPool = flow.pool.find((s) =>
     (!after || cmpSession(s, after) > 0) && !exclude.has(keyOf(s)) && !env.isHoliday(s.date));
-  if (inPool) return inPool;
-  const last = [...(after ? [after] : []), ...flow.pool].sort(cmpSession).at(-1);
-  const [slot] = freeSlotsFrom(
-    flow, last?.date ?? env.now.today, last?.startMin ?? -1, 1,
-    [...flow.occupied, ...flow.blocked, ...exclude], env,
-  );
-  return slot;
+  if (inPool && !after) return inPool;
+  // Havza sloti bor — faqat undan oldingi boʻsh slot kerak (qidiruv oʻsha
+  // kunda toʻxtaydi); yoʻq — havza oxiridan keyingi birinchi boʻsh slot.
+  const from = inPool ? after : [...(after ? [after] : []), ...flow.pool].sort(cmpSession).at(-1) ?? null;
+  const free = freeSlotFinder(flow.classId, [...flow.occupied, ...flow.blocked, ...exclude], env, inPool?.date)
+    .next(from);
+  return inPool && (!free || cmpSession(inPool, free) < 0) ? inPool : free;
 }
 
 /* ── Darsni sanaga qoʻyish (planner'da tashlash, sana tahriri, bogʻlash) ──
@@ -469,34 +588,16 @@ export function flowForecast(
   // u faqat qolgan boʻsh slotlarni oladi: sigʻish hisobi uchun, sana emas
   // (`joinFlow` qilinmaguncha u sanasiz).
   const tail = new Set<string>();
-  const queue: { id: string; n: number }[] = flow.items.map((it) => ({ id: it.lessonId, n: it.sessions.length }));
+  const demand: SlotDemand[] = flow.items.map((it) => ({ id: it.lessonId, current: it.sessions, n: it.sessions.length }));
   seq.forEach((l, i) => {
     if (!items.has(l.id) && firstFlow >= 0 && i > firstFlow && !isTaught(l, classId) && !isPinned(l, classId)
       && classSessions(l, classId).length === 0) {
-      queue.push({ id: l.id, n: 1 });
+      demand.push({ id: l.id, current: [], n: 1 });
       tail.add(l.id);
     }
   });
-
-  // Havza — `planReflow` dagi qoida bilan bir xil.
-  const uniq = new Map<string, LessonSession>();
-  for (const s of flow.pool) {
-    const k = keyOf(s);
-    if (!flow.blocked.has(k) && !isFrozen(s, env.now) && !env.isHoliday(s.date) && !uniq.has(k)) uniq.set(k, s);
-  }
-  const slots = [...uniq.values()].sort(cmpSession);
-  const need = queue.reduce((n, q) => n + q.n, 0);
-  if (firstFlow >= 0 && slots.length < need) {
-    const last = [...slots, ...flow.items.flatMap((it) => it.sessions)].sort(cmpSession).at(-1);
-    const extra = freeSlotsFrom(
-      flow, last?.date ?? env.now.today, last?.startMin ?? -1, need - slots.length,
-      [...flow.occupied, ...flow.blocked, ...uniq.keys()], env,
-    );
-    for (const s of extra) if (s) slots.push(s);
-  }
-  const assigned = new Map<string, (LessonSession | null)[]>();
-  let cursor = 0;
-  for (const q of queue) assigned.set(q.id, Array.from({ length: q.n }, () => slots[cursor++] ?? null));
+  // Havza va taqsimot — `planReflow` dagi qoida bilan bir xil.
+  const assigned = assignSlots(flow, usablePool(flow, flow.pool, env), demand, env);
 
   // Raqam: boʻlim tartibi . boʻlim ichidagi oʻrin; boʻlimsiz — uzluksiz.
   const rankOf = unitRanker(units, classId);
