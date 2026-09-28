@@ -312,3 +312,80 @@ qoʻyilmaydi). Reja bu yerda tahrirlanmaydi — manba Darslar sahifasi.
 darsning oldingi · joriy · keyingi mavzulari qoʻshiladi
 (`lesson.plan` → `/api/ustozona-ai`): reja ketma-ketlikka mos boʻladi,
 keyingi mavzu materiali oldindan berilmaydi.
+
+## 12. Tezkor yaratish («+ Yaratish» markazi)
+
+Maqsad: oʻqituvchi darsga tayyorgarliksiz kirgan boʻlsa ham 1–2
+daqiqada bolalar uchun ish tayyorlay olsin. Muharrirda sarlavha va ish
+reja kartasidan keyin — `assignments/_components/quick-create/`.
+
+**Vaqt.** Qurilma mintaqasida jonli soat, hafta kuni, sana va yil
+(`hooks/useNow.ts`, daqiqa chegarasida yangilanadi). Sinfning bugungi
+darsi ish rejada boʻlsa — «Dars 10:00–10:45 · 18 daqiqadan keyin» yoki
+«Dars ketmoqda · 12 daqiqa qoldi». Mintaqa nomi sichqoncha ostida.
+
+**Mavzu.** Ish rejadagi bugungi (boʻlmasa keyingi) mavzu oʻzi turadi,
+«Olish» uni almashtiradi, oʻqituvchi istalganini yozadi. Mavzu ish reja
+darsiga bogʻlangan boʻlsa, AI soʻroviga shu dars atrofidagi reja qoʻshiladi.
+
+**AI bilan** (`/api/ustozona-ai/generate`, mantiq — `lib/ai-materials.ts`):
+
+| Tugma | Natija | Qayerga tushadi |
+|---|---|---|
+| Test | 5/10/15 ta 4 variantli savol | Toʻplam muharriri → avtomatik baholanadi |
+| Interaktiv dars | Sarlavha → dars boshi (soʻz buluti/soʻrov) → 2–3 slayd + «tushundimi?» savoli (×2–3) → xulosa → chiqish chiptasi | Toʻplam muharriri (taqdimot) |
+| Taqdimot | 7–10 slayd | Toʻplam muharriri (taqdimot) |
+| Aqliy xarita, Infografika | 16:9 PNG rasm | Koʻrish oynasi: taqdimotga qoʻshish · chop etish (A4) · PNG |
+
+- Javob **JSON**, streaming emas: Gemini'da `responseMimeType`, qolgan
+  provayderlarda prompt + yumshoq tahlil (kod bloki qobigʻi, oxirgi vergul,
+  1 dan sanalgan javob, harf javob — hammasi tuzatiladi; yaroqsiz
+  savol tashlanadi, butun javob emas).
+- Test variantlari tahlildan keyin **aralashtiriladi** — model toʻgʻri
+  javobni koʻpincha A ga qoʻyadi.
+- Kvota va provayder zanjiri dars AI yordamchisi bilan bir xil: bitta
+  generatsiya — bitta xabar krediti. Xato kodi qaytadi, matnni mijoz
+  oʻz tilida koʻrsatadi.
+- Natija **hech qachon toʻgʻridan-toʻgʻri oʻquvchiga ketmaydi**: toʻplam
+  muharriri qoralama bilan ochiladi, jim avtosaqlash uni topshiriqqa
+  ulaydi, oʻqituvchi koʻrib, tahrirlab, keyin «Darsda oʻtkazish».
+- Rasm (aqliy xarita, infografika) SVG → `<canvas>` → PNG; ranglar sinf
+  rang dvigatelidan, matn eni tizim shrifti bilan oʻlchanadi. Slaydga
+  «Katta media» maketi bilan tushadi — yangi slayd turi kerak boʻlmadi.
+
+**45 daqiqalik dars rejasi** — ikkinchi AI yoʻli ochilmaydi: Darslar
+sahifasidagi Reja ustasi shu mavzuning darsida ochiladi
+(`/lessons/<id>?panel=plan`). Mavzu ish rejada boʻlmasa — «Boʻlimsiz»
+ga yangi dars qoʻshiladi (boʻlimlar tartibi buzilmaydi). «← Orqaga»
+oʻqituvchini topshiriq qoralamasiga qaytaradi (sessiya global).
+
+**Tayyor shablonlar** (AI kerak emas, darhol): dars boshi — aqliy hujum
+(soʻz buluti + «qancha bilasiz?»), «Tushundingizmi?» soʻrovi, chiqish
+chiptasi. Matnlar oʻqituvchi tilida.
+
+**Qoʻlda** — boʻsh test/taqdimot (`MaterialKindPicker`, «tez orada»
+turlari joyida) va «Tayyor testni tanlash».
+
+**Proyektorsiz sinf** — test «Qogʻoz test», «QR-kartalar» yoki «Pult»
+bilan oʻtadi (faqat oʻqituvchi telefoni), aqliy xarita va infografika
+chop etiladi.
+
+Ilgari bu joyda «Baholash usuli: Qoʻlda | Avtomatik» tanlovi turardi va
+yaratish yoʻli «Avtomatik» ortida yashirin edi. Tanlov hech narsani
+saqlamasdi — u faqat yoʻl ochuvchi edi. Endi yoʻl doim ochiq; qoʻlda
+baholanadigan ish uchun hech narsa tanlash shart emas, «Yaratish»
+baribir jurnal ustunini tugʻdiradi (R214).
+
+**«← Orqaga»** (`components/ui/back-button.tsx`) — toʻliq ekranli
+oynalarning chap yuqori burchagida, ilgari bezak ikonka turgan joyda:
+topshiriq muharriri (ostidagi sahifaga, qoralama saqlanadi), toʻplam
+muharriri, test banki, dars muharriri (ilova tarixida orqaga; toʻgʻridan
+kirilgan boʻlsa — Darslar sahifasi, shu sinf VA boʻlim bilan).
+
+### Keyingi qadamlar
+
+1. Toʻplam muharririda «AI bilan savol qoʻshish» — mavjud slaydlar
+   boʻyicha tekshiruv savoli.
+2. Taqdimotni PPTX qilib yuklab olish (internetsiz smartdoska uchun).
+3. Rasm generatsiyasi (hozirgi provayderlar faqat matn beradi) — slaydga
+   rasm hozircha qurilmadan yuklanadi.

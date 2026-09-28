@@ -45,7 +45,7 @@ import {
   AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter,
   AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction,
 } from "@/components/ui/alert-dialog";
-import { lessonClassIds, lessonSessions, type Lesson } from "@/lib/lessons-data";
+import { lessonClassIds, lessonSessions, unitIdForClass, type Lesson } from "@/lib/lessons-data";
 import { notePendingReplace } from "@/lib/app-history";
 import { useBackOrPush } from "@/hooks/useBackOrPush";
 import EditorToolbar from "./EditorToolbar";
@@ -74,7 +74,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useResponsivePanelWidth } from "@/hooks/useResponsivePanelWidth";
-import { SectionIcon } from "@/components/ui/section-icon";
+import { BackButton } from "@/components/ui/back-button";
 
 const PANEL_EASE = [0.2, 0, 0, 1] as const;
 const PANEL_DURATION = 0.2;
@@ -88,7 +88,15 @@ const PLAN_META = {
   taught: { cls: "bg-success/10 text-success hover:bg-success/15", itemCls: "focus:bg-success/10 focus:text-success", iconCls: "text-success", Icon: CircleCheck, key: "taught" },
 } as const;
 
-export default function LessonEditor({ lessonId }: { lessonId: string }) {
+export default function LessonEditor({
+  lessonId,
+  initialPanel = "details",
+}: {
+  lessonId: string;
+  /** Ochilganda qaysi yon panel turadi — `?panel=plan` (Topshiriqlar →
+      «45 daqiqalik dars rejasi» Reja ustasini darhol ochadi). */
+  initialPanel?: "details" | "ai" | "plan";
+}) {
   const t = useTranslations("LessonEditor");
   const tToolbar = useTranslations("LessonEditorToolbar");
   const tc = useTranslations("LessonCycle");
@@ -130,9 +138,13 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
         cancel: { label: tc("later"), onClick: () => {} },
       });
     }
+    /* Zaxira manzil (toʻgʻridan-toʻgʻri havola bilan kirilganda) — shu
+       sinf VA boʻlim: ilgari faqat `classId` edi va oʻqituvchi mavzular
+       roʻyxati oʻrniga sinflar/boʻlimlar ustuniga tushib qolardi. */
+    const unitId = lesson && classId ? unitIdForClass(lesson, classId) : null;
     backOrPush(
       classId
-        ? `/dashboard/lessons?classId=${encodeURIComponent(classId)}`
+        ? `/dashboard/lessons?classId=${encodeURIComponent(classId)}&unit=${encodeURIComponent(unitId ?? "__none__")}`
         : "/dashboard/lessons"
     );
   }, [backOrPush, lesson, tc]);
@@ -154,7 +166,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
   const setTaught = useLessonStore((s) => s.setTaught);
   const standardSets = useStandardsStore((s) => s.sets);
 
-  const [activePanel, setActivePanel] = useState<"details" | "ai" | "plan" | null>("details");
+  const [activePanel, setActivePanel] = useState<"details" | "ai" | "plan" | null>(initialPanel);
   /* Reja ustasidan AI yordamchisiga uzatiladigan soʻrov (PlanWizardPanel). */
   const [pendingPrompt, setPendingPrompt] = useState<{ id: number; text: string } | null>(null);
   /* Taqdimot rejimi — dars matnidan slaydlar (LessonPresenter). */
@@ -474,9 +486,8 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
       {/* ── Top bar ── */}
       <header className="no-print h-14 shrink-0 flex items-center justify-between gap-4 px-4 bg-card border-b border-border">
         <div className="flex items-center gap-3 min-w-0">
-          <SectionIcon>
-            <FileText className="size-5 text-foreground" />
-          </SectionIcon>
+          {/* «← Orqaga» — kelgan joyga (Darslar: shu sinf va boʻlim). */}
+          <BackButton onClick={closeEditor} />
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 min-w-0">
               <h1
