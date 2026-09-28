@@ -47,6 +47,7 @@ import { AddFromRosterDialog } from "@/components/students/AddFromRosterDialog";
 import { MoveStudentsDialog } from "@/components/students/MoveStudentsDialog";
 import type { ClassIdentity } from "@/lib/class-id";
 import { useCollator } from "@/lib/use-collator";
+import { formatStudentCode, studentProfileHref } from "@/lib/student-profile";
 
 /* ── Tiplar va yordamchilar (students sahifasi bilan bir xil mantiq) ── */
 type Status = "active" | "archived";
@@ -124,7 +125,7 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
 
   useEffect(() => { setSelectedStudentId(null); setSearch(""); }, [classId]);
 
-  const openProfile = (id: string) => router.push(`/dashboard/students/${encodeURIComponent(id)}`);
+  const openProfile = (id: string) => router.push(studentProfileHref(id, { classId }));
 
   const handleCreate = (data: NewStudentInput) => {
     const name = `${data.firstName} ${data.lastName}`.trim();
@@ -170,11 +171,11 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
             .map((d) => d.date)
         )
       : new Set<string>();
-    return (data?.students ?? []).map((s, i) => ({
+    return (data?.students ?? []).map((s) => ({
       id: s.id,
       name: s.name,
       initials: s.initials,
-      studentId: `ID-${1001 + i}`,
+      studentId: formatStudentCode(s.studentNumber) ?? "—",
       grade: computeGrade(data, s.id),
       attendance: weightedRate(records, s.id, statusWeights(attendanceStatuses), lessonDates)?.pct ?? null,
       status: (s.status ?? "active") as Status,

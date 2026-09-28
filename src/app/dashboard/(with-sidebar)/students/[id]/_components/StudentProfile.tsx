@@ -4,10 +4,17 @@ import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
-import { getStudentProfile, locateStudent } from "@/lib/student-profile";
+import {
+  getStudentProfile,
+  listStudentClasses,
+  resolveStudentClassId,
+  studentProfileHref,
+} from "@/lib/student-profile";
 import { useUrlParam, setUrlParam } from "@/hooks/useClassIdParam";
 import { useBackOrPush } from "@/hooks/useBackOrPush";
 import { useGradesStore } from "@/store/useGradesStore";
+import { useClassStore } from "@/store/useClassStore";
+import { patchStudentEverywhere } from "@/lib/student-patch";
 import { useAttendanceStore } from "@/store/useAttendanceStore";
 import { useCalendarStore } from "@/store/useCalendarStore";
 import { useTimetableStore } from "@/store/useTimetableStore";
@@ -45,7 +52,7 @@ import {
 } from "@/components/ui/command";
 import { Calendar } from "@/components/ui/calendar";
 import { uz } from "date-fns/locale";
-import { ClassSwatch } from "@/components/ClassSwatch";
+import { ClassChipGroup } from "@/components/ClassChipGroup";
 import RelativesSection from "./RelativesSection";
 import OverviewTab from "./OverviewTab";
 import AssignmentsTab from "./AssignmentsTab";
@@ -99,23 +106,44 @@ export default function StudentProfile({
   const router = useRouter();
   const backOrPush = useBackOrPush();
   const classDataMap = useGradesStore((s) => s.classDataMap);
-  const updateClass = useGradesStore((s) => s.updateClass);
+  const setClassDataMap = useGradesStore((s) => s.setClassDataMap);
   const hydrated = useGradesStore((s) => s._hasHydrated);
 
-  // Qaysi guruh kontekstida koʻrilayapti — oʻquvchilar roʻyxatidan kelgan
-  // `?classId=`. Oʻquvchi 2+ guruhda boʻlishi mumkin, param boʻlmasa esa
-  // birinchi topilgani olinadi ([[student-profile]] izohiga qarang).
+  // Sinf konteksti — `?classId=`. Oʻquvchi 2+ sinfda boʻlishi mumkin; baho,
+  // davomat, topshiriq, xulq-atvor va oldingi/keyingi oʻquvchi shu sinfdan
+  // olinadi, tanlov esa chap paneldagi sinf chiplarida
+  // ([[student-profile]] «Sinf konteksti» izohi).
   // `contextHydrated` SHART: param bir kadr kechikib oʻqiladi va usiz
-  // oʻquvchi tasodifiy guruhda topilardi — davomat, roʻyxat va oldingi/keyingi
-  // oʻquvchi bir zumga notoʻgʻri guruhdan koʻrinib, keyin almashardi.
-  const [contextClassId, , contextHydrated] = useUrlParam("classId");
+  // oʻquvchi notoʻgʻri sinfda topilib, bir zumdan keyin almashardi.
+  const [contextClassId, setContextClassId, contextHydrated] = useUrlParam("classId");
+  // Paramʼsiz kirilganda (Bosh sahifa, Ctrl+K…) — oxirgi tanlangan sinf,
+  // oʻquvchi u yerda boʻlmasa uning birinchi faol sinfi.
+  const lastClassId = useClassStore((s) => s.selectedClassId);
+  const prefsHydrated = useClassStore((s) => s._hasHydrated);
+  const studentClasses = useMemo(
+    () => listStudentClasses(classDataMap, studentId),
+    [classDataMap, studentId]
+  );
+  const classId = useMemo(
+    () => resolveStudentClassId(studentClasses, [contextClassId, lastClassId]) ?? undefined,
+    [studentClasses, contextClassId, lastClassId]
+  );
+  // Kontekst qachon ANIQ: URL yaroqli sinfni koʻrsatsa — darhol; aks holda
+  // «oxirgi tanlangan sinf» ham kerak, u esa sinf sozlamalari bilan ALOHIDA
+  // yuklanadi. Usiz birinchi sinf tanlanib, quyidagi effekt uni URLʼga
+  // qotirib qoʻyardi va oxirgi tanlov hech qachon ishlamasdi.
+  const contextReady =
+    contextHydrated &&
+    (prefsHydrated || studentClasses.some((c) => c.id === contextClassId));
+
+  // Aniqlangan kontekst URLʼga yoziladi — breadcrumb shu paramʼni oʻqiydi,
+  // yangilashda (F5) ham sinf oʻzgarmaydi.
+  useEffect(() => {
+    if (contextReady && classId && classId !== contextClassId) setContextClassId(classId);
+  }, [contextReady, classId, contextClassId, setContextClassId]);
 
   // Davomat — jonli manba (Davomat sahifasi bilan bir xil: recordsByClass +
-  // real dars kunlari + vaznlar). classId oʻquvchi joylashuvidan aniqlanadi.
-  const classId = useMemo(
-    () => locateStudent(classDataMap, studentId, contextClassId)?.classId,
-    [classDataMap, studentId, contextClassId]
-  );
+  // real dars kunlari + vaznlar).
   const attendanceRecords = useAttendanceStore((s) => (classId ? s.recordsByClass[classId] : undefined)) ?? EMPTY_RECORDS;
   const attendanceStatuses = useAttendanceStore((s) => s.statuses);
   const calendar = useCalendarStore((s) => s.calendar);
@@ -132,9 +160,9 @@ export default function StudentProfile({
         classDataMap,
         studentId,
         { records: attendanceRecords, lessonDays, weights: attendanceWeights },
-        contextClassId
+        classId
       ),
-    [classDataMap, studentId, attendanceRecords, lessonDays, attendanceWeights, contextClassId]
+    [classDataMap, studentId, attendanceRecords, lessonDays, attendanceWeights, classId]
   );
 
   // Active tab URL'da (`?tab=`) saqlanadi — oʻquvchilar orasida oʻtganda saqlanib qoladi
@@ -180,17 +208,11 @@ export default function StudentProfile({
 
   const go = useCallback(
     (id: string | null) => {
-      if (id) {
-        const params = new URLSearchParams();
-        if (tab !== "overview") params.set("tab", tab);
-        // Guruh konteksti qoʻshni oʻquvchiga ham koʻchadi — `prevId`/`nextId`
-        // oʻsha guruh roʻyxatidan olingan.
-        if (contextClassId) params.set("classId", contextClassId);
-        const q = params.toString();
-        router.push(`/dashboard/students/${encodeURIComponent(id)}${q ? `?${q}` : ""}`);
-      }
+      // Sinf konteksti qoʻshni oʻquvchiga ham koʻchadi — `prevId`/`nextId`
+      // oʻsha sinf roʻyxatidan olingan.
+      if (id) router.push(studentProfileHref(id, { classId, tab: tab === "overview" ? null : tab }));
     },
-    [router, tab, contextClassId]
+    [router, tab, classId]
   );
 
   const prevId = profile?.location.prevId ?? null;
@@ -199,8 +221,13 @@ export default function StudentProfile({
   // Klaviatura: ← / → bilan oʻquvchilar orasida oʻtish
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      // Strelkani oʻzi ishlatadigan element (sinf chiplari — radio guruhi)
+      // uni allaqachon qayta ishlagan: aks holda bitta bosish ham sinfni
+      // almashtirar, ham qoʻshni oʻquvchiga oʻtib ketardi.
+      if (e.defaultPrevented) return;
       const el = e.target as HTMLElement | null;
       if (el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable)) return;
+      if (el?.closest("[role=radiogroup]")) return;
       if (e.key === "ArrowLeft") go(prevId);
       else if (e.key === "ArrowRight") go(nextId);
     };
@@ -238,8 +265,8 @@ export default function StudentProfile({
   const deleteNote = useCallback((id: string) => deleteNoteEntry(id), [deleteNoteEntry]);
 
   // ── Hydration tugamagan — hali "topilmadi" deb ham, profilni koʻrsatib ham
-  //    boʻlmaydi (yuqoridagi `contextHydrated` izohiga qarang) ──
-  if (!contextHydrated || (!profile && !hydrated)) {
+  //    boʻlmaydi (yuqoridagi `contextReady` izohiga qarang) ──
+  if (!contextReady || (!profile && !hydrated)) {
     return (
       <div className="flex flex-1 min-h-0 gap-6 p-6">
         <Skeleton className="w-72 shrink-0 rounded-2xl" />
@@ -358,28 +385,36 @@ export default function StudentProfile({
       parentPhone: draft.parentPhone?.trim() || undefined,
       studentPhone: draft.studentPhone?.trim() || undefined,
     });
-    if (location?.classId) {
-      updateClass(location.classId, (cd) => ({
-        ...cd,
-        students: cd.students.map((s) =>
-          s.id === studentId ? {
-            ...s,
-            name: trimmedName,
-            initials: (fn[0] + (ln[0] || "")).toUpperCase(),
-            gender: draft.gender,
-            birthDate: draft.birthDate,
-            parentName: draft.parentName?.trim() || undefined,
-            parentPhone: draft.parentPhone?.trim() || undefined,
-            studentPhone: draft.studentPhone?.trim() || undefined,
-          } : s
-        ),
-      }));
-    }
+    // Shaxsiy maʼlumot sinfsiz — oʻquvchi turgan HAR sinfdagi nusxa yangilanadi
+    // (`patchStudentEverywhere` izohi).
+    setClassDataMap((m) =>
+      patchStudentEverywhere(m, studentId, {
+        name: trimmedName,
+        initials: (fn[0] + (ln[0] || "")).toUpperCase(),
+        gender: draft.gender,
+        birthDate: draft.birthDate,
+        parentName: draft.parentName?.trim() || undefined,
+        parentPhone: draft.parentPhone?.trim() || undefined,
+        studentPhone: draft.studentPhone?.trim() || undefined,
+      })
+    );
     setCardEditing(false);
     setGenderOpen(false);
     setBirthDateOpen(false);
     toast.success(t("toastSaved"));
   };
+
+  // Arxivlangan sinf chip boʻlib chiqmaydi — faqat aynan u ochilgan boʻlsa
+  // (masalan oʻtgan yil jurnalidan kelinganda).
+  const classChips = (className: string) => (
+    <ClassChipGroup
+      className={className}
+      classes={studentClasses.filter((c) => !c.archivedAt || c.id === location.classId)}
+      value={location.classId}
+      onValueChange={setContextClassId}
+      aria-label={t("classContext")}
+    />
+  );
 
   const TABS: { id: TabId; label: string; sub: string; icon: React.ComponentType<{ className?: string }>; count?: number }[] = [
     { id: "overview", label: t("tabOverview"), sub: t("tabOverviewSub"), icon: BarChart3 },
@@ -441,10 +476,7 @@ export default function StudentProfile({
                   </PopoverContent>
                 </Popover>
               </div>
-              <TypographyMuted className="mt-0.5 inline-flex items-center gap-1.5">
-                <ClassSwatch hex={hex} />
-                {location.classInfo.name} · {studentCode}
-              </TypographyMuted>
+              {studentCode && <TypographyMuted className="mt-0.5 tabular-nums">{studentCode}</TypographyMuted>}
             </div>
             {!cardEditing && (
               <Button
@@ -459,6 +491,8 @@ export default function StudentProfile({
               </Button>
             )}
           </div>
+          {/* Sinf konteksti — sahifadagi sinfga oid maʼlumot shu tanlovdan */}
+          {classChips("mt-4")}
         </div>
 
         {/* Boʻlimlar — bitta karta ichida, chiziq bilan ajratilgan (scroll) */}
@@ -686,6 +720,8 @@ export default function StudentProfile({
 
       {/* ── Asosiy maydon ── */}
       <div className="flex min-w-0 min-h-0 flex-1 flex-col overflow-hidden">
+        {/* Chap panel lg dan kichikda yashirin — sinf konteksti bu yerga chiqadi */}
+        {classChips("mb-4 mr-4 shrink-0 md:mr-6 lg:hidden")}
         {/* Header card — bir qatorda: breadcrumb · boʻlim tablari · oʻquvchilar paginatsiyasi */}
         <Tabs
           value={tab}

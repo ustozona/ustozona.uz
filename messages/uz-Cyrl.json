@@ -975,6 +975,7 @@
     "submitImport": "{count} та ўқувчини қўшиш"
   },
   "StudentProfile": {
+    "classContext": "Синф",
     "prevStudent": "Олдинги ўқувчи",
     "nextStudent": "Кейинги ўқувчи",
     "notFoundTitle": "Ўқувчи топилмади",

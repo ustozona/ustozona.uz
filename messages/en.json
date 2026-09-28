@@ -975,6 +975,7 @@
     "submitImport": "Add {count} students"
   },
   "StudentProfile": {
+    "classContext": "Class",
     "prevStudent": "Previous student",
     "nextStudent": "Next student",
     "notFoundTitle": "Student not found",

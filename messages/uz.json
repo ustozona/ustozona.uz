@@ -975,6 +975,7 @@
     "submitImport": "{count} ta oʻquvchini qoʻshish"
   },
   "StudentProfile": {
+    "classContext": "Sinf",
     "prevStudent": "Oldingi oʻquvchi",
     "nextStudent": "Keyingi oʻquvchi",
     "notFoundTitle": "Oʻquvchi topilmadi",

@@ -48,6 +48,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { SegmentedToggle } from "@/components/ui/segmented-toggle";
 import { ATT_COLORS } from "@/lib/attendance-colors";
+import { studentProfileHref } from "@/lib/student-profile";
 /* Donut faqat oʻquvchi ismiga sichqoncha tekkanda chiziladi (HoverCard),
    lekin statik import boʻlgani uchun diagramma kutubxonasi sahifa
    ochilishi bilan yuklanardi. */
@@ -94,12 +95,13 @@ const PREVIEW_LEGEND: { key: keyof AttendanceWindow; labelKey: string; Icon: typ
 
 /** Avatar + ism + sinf + profildagi davomat charti (donut + holatlar) + profil tugmasi. */
 function AttendancePreview({
-  student, classLabel, classHex, summary,
+  student, classLabel, classHex, summary, profileHref,
 }: {
   student: { id: string; name: string; initials: string };
   classLabel: string;
   classHex: string;
   summary: AttendanceWindow;
+  profileHref: string;
 }) {
   const t = useTranslations("AttendanceView");
   return (
@@ -135,7 +137,7 @@ function AttendancePreview({
         ))}
       </div>
       <Button asChild size="sm" className="w-full font-semibold">
-        <a href={`/dashboard/students/${student.id}`}>
+        <a href={profileHref}>
           {t("openProfile")}
           <ArrowRight className="size-4" />
         </a>
@@ -993,7 +995,7 @@ export default function AttendanceView({
                           <div className="flex items-center gap-3">
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <a className="relative group/avatar rounded-full block shrink-0" href={`/dashboard/students/${student.id}`}>
+                                <a className="relative group/avatar rounded-full block shrink-0" href={studentProfileHref(student.id, { classId })}>
                                   <Avatar size="default" style={{ "--avatar-bg": classHex } as React.CSSProperties}>
                                     <AvatarFallback className="bg-[var(--avatar-bg)] font-semibold text-white">
                                       {student.initials}
@@ -1017,6 +1019,7 @@ export default function AttendanceView({
                                   classLabel={className}
                                   classHex={classHex}
                                   summary={quarterSummaryOf(student.id)}
+                                  profileHref={studentProfileHref(student.id, { classId })}
                                 />
                               </HoverCardContent>
                             </HoverCard>

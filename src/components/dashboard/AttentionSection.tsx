@@ -38,6 +38,7 @@ import {
 } from "@/lib/attention";
 import { dateToKey } from "@/lib/date-keys";
 import { cn } from "@/lib/utils";
+import { studentProfileHref } from "@/lib/student-profile";
 
 /* ════════════════════════════════════════════════════════════════════
    EʼTIBOR KERAK — ABC signallari (redesign M4). Engine — lib/attention.ts
@@ -148,29 +149,33 @@ export function AttentionSection({ now }: { now: Date }) {
       label: t("actionAttendance"),
       href: `/dashboard/attendance?classId=${encodeURIComponent(s.classId)}`,
     };
+    const profile = (studentId: string) => ({
+      label: t("actionProfile"),
+      href: studentProfileHref(studentId, { classId: s.classId }),
+    });
     switch (s.kind) {
       case "absent-streak":
       case "low-attendance":
-        return [{ label: t("actionProfile"), href: `/dashboard/students/${s.studentId}` }, attendance];
+        return [profile(s.studentId), attendance];
       case "grade-drop":
         return [
-          { label: t("actionProfile"), href: `/dashboard/students/${s.studentId}` },
+          profile(s.studentId),
           { label: t("actionGrades"), href: `/dashboard/grades?classId=${encodeURIComponent(s.classId)}` },
         ];
       case "behavior-cluster":
         return [
-          { label: t("actionProfile"), href: `/dashboard/students/${s.studentId}` },
+          profile(s.studentId),
           { label: t("actionBehavior"), href: "/dashboard/behavior" },
         ];
       case "attendance-missing":
         return [{ ...attendance, label: t("actionEnter") }];
       case "grade-rise":
         return [
-          { label: t("actionProfile"), href: `/dashboard/students/${s.studentId}` },
+          profile(s.studentId),
           { label: t("actionGrades"), href: `/dashboard/grades?classId=${encodeURIComponent(s.classId)}` },
         ];
       case "attendance-recovery":
-        return [{ label: t("actionProfile"), href: `/dashboard/students/${s.studentId}` }, attendance];
+        return [profile(s.studentId), attendance];
     }
   };
 

@@ -42,7 +42,9 @@ export function StudentsTable({
 }: {
   rows: StudentOverviewRow[];
   scrolled?: boolean;
-  onSelect: (studentId: string) => void;
+  /** `classId` — qator qaysi sinfniki: bola 2+ sinfda boʻlsa jadvalda har
+      sinf uchun alohida qator turadi va profil aynan oʻsha sinfda ochilishi kerak. */
+  onSelect: (studentId: string, classId: string) => void;
   /** Bitta sinf doirasida koʻrsatilganda "Sinf" ustuni ortiqcha (barcha
       qatorda bir xil qiymat) — shu holatda yashiriladi. */
   hideClassColumn?: boolean;
@@ -123,7 +125,7 @@ export function StudentsTable({
               const delta = r.trendDelta;
               const stable = delta === null || Math.abs(delta) < STAT_DEADBAND_PP;
               return (
-                <TableRow key={r.studentId} className="group cursor-pointer" onClick={() => onSelect(r.studentId)}>
+                <TableRow key={`${r.classId}:${r.studentId}`} className="group cursor-pointer" onClick={() => onSelect(r.studentId, r.classId)}>
                   <TableCell className="whitespace-nowrap py-3 pl-4 pr-3">
                     <div className="flex items-center gap-3">
                       <div

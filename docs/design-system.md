@@ -53,6 +53,7 @@ yozilmaydi va mahalliy nusxa yaratilmaydi:
 | Sinf nomi qatorning **asosiy** matni (sinflar roʻyxati, tanlovchi, breadcrumb, meta-qator) | `<ClassSwatch hex={…} />` + oddiy matn |
 | Sinf nomi **oʻqiladigan yorliq** boshqa mazmun ichida (dars kartasi, jadval qatori) | `<ClassBadge color={…} name={…} />` |
 | Sinf nomi **bosiladigan chip** (formada tanlangan sinf, krestcha bilan) | `<ClassChip color={…} name={…} onRemove={…} />` |
+| Bir nechta sinfdan **bittasini tanlash** (oʻquvchi profilidagi sinf konteksti) | `<ClassChipGroup classes={…} value={…} onValueChange={…} />` |
 | **Nechta** sinf — ustma-ust taxlangan doiralar | `<ClassSwatchStack hexes={…} />` |
 | **Sinflar paneli** (`ClassListPanel`) — sinf navigatsiyasi | Sinf ikonkasi `classIcon(key)` 36px tint doirada, `data-slot="class-glyph"` + qator `.list-row--glyph` |
 
@@ -92,6 +93,15 @@ qoladi. Shu sabab u yerda 12px.
 oʻlcham prop'i bilan emas, **alohida nom** bilan ajratilgan — chaqiruv joyida
 «kattasinimi, kichiginimi?» degan savol tugʻilmasin. Ikkalasi ham rang
 retseptini `classTints()`dan oladi, qoʻlda `color-mix` yozilmaydi.
+
+`ClassChipGroup` — `ClassChip` anatomiyasidagi chiplar radio guruhi (Radix
+RadioGroup: strelkalar, Tab bilan bitta toʻxtash). Tanlangan chip aynan
+`ClassChip` koʻrinishida (tint fon, chegarasiz); tanlanmagani — shaffof fon +
+1px `--border` konturi, muted matn. Holat rang bilan emas, **shakl** bilan
+ham farqlanadi (toʻldirilgan ⇄ kontur, WCAG 1.4.1). Ikkalasida ham 1px
+chegara bor (tanlanganda shaffof) — holat almashganda oʻlcham sakramaydi.
+Sinf **bitta** boʻlsa ham chip chiqadi: kontekst har doim bir joyda va bir
+shaklda turadi.
 
 Anatomiya 4pt gridда (§6.5) va §3 boshqaruv shkalasidan chiqariladi, tanlanmaydi:
 

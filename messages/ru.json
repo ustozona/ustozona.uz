@@ -975,6 +975,7 @@
     "submitImport": "Добавить учеников: {count}"
   },
   "StudentProfile": {
+    "classContext": "Класс",
     "prevStudent": "Предыдущий ученик",
     "nextStudent": "Следующий ученик",
     "notFoundTitle": "Ученик не найден",

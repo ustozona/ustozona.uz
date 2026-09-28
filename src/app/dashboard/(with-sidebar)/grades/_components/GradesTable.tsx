@@ -92,6 +92,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { studentProfileHref } from "@/lib/student-profile";
 
 function LetterAvg({
   percent,
@@ -148,12 +149,14 @@ function StudentNamePreview({
   classHex,
   level,
   trend,
+  profileHref,
 }: {
   student: { id: string; name: string; initials: string };
   classLabel: string;
   classHex: string;
   level: number;
   trend: number | null;
+  profileHref: string;
 }) {
   const t = useTranslations("GradesTable");
   const journalScale = useClassStore((s) => s.journalScale);
@@ -201,7 +204,7 @@ function StudentNamePreview({
         </div>
       </div>
       <Button asChild size="sm" className="w-full font-semibold">
-        <Link href={`/dashboard/students/${encodeURIComponent(student.id)}`}>
+        <Link href={profileHref}>
           {t("openProfile")}
           <ArrowRight className="size-4" />
         </Link>
@@ -740,7 +743,7 @@ export default function GradesTable({
                     <HoverCard openDelay={250} closeDelay={100}>
                       <HoverCardTrigger asChild>
                         <Link
-                          href={`/dashboard/students/${encodeURIComponent(s.id)}`}
+                          href={studentProfileHref(s.id, { classId: classData.info.id })}
                           className="group/name flex h-full w-full items-center gap-3 px-3 py-3 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
                         >
                           <Avatar className="size-7">
@@ -773,6 +776,7 @@ export default function GradesTable({
                           classHex={classHex}
                           level={total.percent}
                           trend={trend}
+                          profileHref={studentProfileHref(s.id, { classId: classData.info.id })}
                         />
                       </HoverCardContent>
                     </HoverCard>

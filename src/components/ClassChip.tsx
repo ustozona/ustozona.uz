@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { X } from "lucide-react";
 
 import { ClassSwatch } from "@/components/ClassSwatch";
@@ -39,6 +40,20 @@ import { cn } from "@/lib/utils";
  *
  * Masofalar 4pt gridда (`docs/design-system.md` §6.5): gap 4, padding 8.
  */
+
+/** Chip qobigʻi — `ClassChip` va `ClassChipGroup` UMUMIY anatomiyasi
+    (24px, 12px matn, gap 4). Padding ataylab kirmaydi: krestchali chipda
+    oʻng padding nol. Bitta joyda — guruhdagi tanlangan chip oddiy chipdan
+    vaqt oʻtib farqlanib ketmasin. */
+export const CLASS_CHIP_SHELL =
+  "inline-flex h-6 min-w-0 items-center gap-1 rounded-full text-xs font-medium";
+
+/** Chip rangi — `classTints().badge` fon + `.text` siyoh (badge bilan bir xil retsept). */
+export function classChipStyle(color: ClassColor): CSSProperties {
+  const tints = classTints(color);
+  return { ...tints.badge, ...tints.text };
+}
+
 export function ClassChip({
   color,
   name,
@@ -53,13 +68,12 @@ export function ClassChip({
   removeLabel?: string;
   className?: string;
 }) {
-  const tints = classTints(color);
   return (
     <span
       data-slot="class-chip"
-      style={{ ...tints.badge, ...tints.text }}
+      style={classChipStyle(color)}
       className={cn(
-        "inline-flex h-6 min-w-0 items-center gap-1 rounded-full text-xs font-medium",
+        CLASS_CHIP_SHELL,
         onRemove ? "pl-2 pr-0" : "px-2",
         className,
       )}
