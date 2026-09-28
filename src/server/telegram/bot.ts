@@ -288,7 +288,11 @@ async function onCallback(q: TgCallbackQuery) {
   }
 
   if (data.startsWith("h:")) {
-    const requestId = data.slice(2);
+    const [requestId, choice] = data.slice(2).split(":");
+    if (choice === "new") {
+      await answerCallbackQuery(q.id);
+      return onNewAccountChosen(chatId, messageId, telegramId, requestId);
+    }
     await db
       .update(tgAuthRequests)
       .set({ status: "has_account", decidedAt: new Date() })
@@ -303,9 +307,14 @@ async function onCallback(q: TgCallbackQuery) {
     await editMessageText(
       chatId,
       messageId,
-      "Unda avval saytda <b>email bilan kiring</b>, keyin Sozlamalar → Telegram → «Ulash» ni bosing. " +
-        "Shunda ikkinchi akkaunt ochilmaydi va hamma maʼlumotingiz joyida qoladi."
+      "Unda avval saytda <b>email yoki Google bilan kiring</b>, keyin Sozlamalar → Telegram → «Ulash» ni bosing. " +
+        "Shunda ikkinchi akkaunt ochilmaydi va hamma maʼlumotingiz joyida qoladi.\n\n" +
+        "Parolni eslamasangiz — kirish sahifasida «Parolni unutdingizmi?» ni bosing.",
+      { inline_keyboard: [[{ text: "🌐 Saytga kirish", url: `${SITE}/login` }]] }
     );
+    // Avval «Yangisini ochaman» bosilgan boʻlsa, telefon klaviaturasi ochiq
+    // qolgan. Tahrirlangan xabar uni yopa olmaydi (inline tugma bor) —
+    // alohida xabar kerak.
     await sendMessage(chatId, "👌", { remove_keyboard: true });
     return;
   }
@@ -371,12 +380,48 @@ async function onCodePicked(
     await editMessageText(chatId, messageId, "⌛ Bu soʻrov eskirgan. Saytda tugmani qayta bosing.");
     return;
   }
+  /* ⚠️ Telefon klaviaturasi SAVOLDAN KEYIN. Ilgari u darhol chiqardi va
+     «Email akkauntim bor» xabar ostida kichkina tugma boʻlib qolardi —
+     odam katta tugmani bosib, eski hisobi turib IKKINCHI hisob ochardi
+     (2026-09-27/28 da ikki holat). Endi ikkala yoʻl teng tugma.
+
+     Ikkalasi `h:` ostida: LessonLab jarayoni Ustozona'ga faqat `c:`,
+     `h:`, `m:` callback'larini uzatadi (docs/telegram-bot.md). */
   await editMessageText(
     chatId,
     messageId,
-    "👋 Bu Telegram bilan Ustozonada akkaunt yoʻq — yangisini ochamiz.\n\n" +
-      "Buning uchun pastdagi <b>«📱 Raqamni yuborish»</b> tugmasini bosing.",
-    { inline_keyboard: [[{ text: "Email akkauntim bor", callback_data: `h:${req.id}` }]] }
+    "👋 Bu Telegram Ustozonadagi hech bir akkauntga ulanmagan.\n\n" +
+      "Ilgari saytda (email yoki Google bilan) akkaunt ochganmisiz?",
+    {
+      inline_keyboard: [
+        [{ text: "🔑 Ha, akkauntim bor", callback_data: `h:${req.id}` }],
+        [{ text: "🆕 Yoʻq, yangisini ochaman", callback_data: `h:${req.id}:new` }],
+      ],
+    }
+  );
+}
+
+/** «Yangisini ochaman» — endi telefon soʻraladi, akkaunt raqam kelgach ochiladi. */
+async function onNewAccountChosen(chatId: number, messageId: number, telegramId: string, requestId: string) {
+  const [req] = await db
+    .select({ id: tgAuthRequests.id })
+    .from(tgAuthRequests)
+    .where(
+      and(
+        eq(tgAuthRequests.id, requestId),
+        eq(tgAuthRequests.telegramId, telegramId),
+        eq(tgAuthRequests.status, "awaiting_phone"),
+        gt(tgAuthRequests.expiresAt, new Date())
+      )
+    );
+  if (!req) {
+    await editMessageText(chatId, messageId, "⌛ Bu soʻrov eskirgan. Saytda tugmani qayta bosing.");
+    return;
+  }
+  await editMessageText(
+    chatId,
+    messageId,
+    "🆕 Yangi akkaunt ochamiz.\n\nPastdagi <b>«📱 Raqamni yuborish»</b> tugmasini bosing."
   );
   await sendMessage(chatId, "Telefon raqamingiz:", PHONE_KEYBOARD);
 }
