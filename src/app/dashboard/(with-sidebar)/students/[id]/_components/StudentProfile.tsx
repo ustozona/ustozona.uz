@@ -52,7 +52,7 @@ import {
 } from "@/components/ui/command";
 import { Calendar } from "@/components/ui/calendar";
 import { uz } from "date-fns/locale";
-import { ClassChipGroup } from "@/components/ClassChipGroup";
+import { ClassSelect } from "@/components/ClassSelect";
 import RelativesSection from "./RelativesSection";
 import OverviewTab from "./OverviewTab";
 import AssignmentsTab from "./AssignmentsTab";
@@ -89,6 +89,17 @@ const UZ_MONTHS = [
 ];
 
 const EMPTY_RECORDS: AttendanceRecord[] = [];
+
+/** ←/→ oʻquvchi almashtirish yorligʻi ishlamaydigan joylar — strelkani oʻzi
+    ishlatadigan (yoki ishlatishi kutiladigan) vidjetlar va ochiq qatlamlar:
+    sinf tanlagichi roʻyxati, jinsi menyusi, tugʻilgan sana kalendari
+    (`grid`), popover/dialog. Har vidjetni alohida qoʻshib borish oʻrniga —
+    bitta roʻyxat; bosish bu yerda qoʻshni oʻquvchiga oʻtkazib, tahrir
+    draftini yoʻqotardi.
+    `tablist` ataylab YOʻQ: profil tablari strelka bilan harakatlanmaydi, tab
+    bosilgach ←/→ bilan oʻquvchi almashtirish odatiy oqim. */
+const ARROW_KEY_WIDGETS =
+  "[role=listbox], [role=menu], [role=menubar], [role=radiogroup], [role=grid], [role=slider], [role=dialog], [role=alertdialog]";
 
 const TAB_IDS: TabId[] = ["overview", "assignments", "notes", "behavior"];
 function normalizeTab(t?: string): TabId {
@@ -221,13 +232,12 @@ export default function StudentProfile({
   // Klaviatura: ← / → bilan oʻquvchilar orasida oʻtish
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      // Strelkani oʻzi ishlatadigan element (sinf chiplari — radio guruhi)
-      // uni allaqachon qayta ishlagan: aks holda bitta bosish ham sinfni
-      // almashtirar, ham qoʻshni oʻquvchiga oʻtib ketardi.
+      // Strelkani oʻzi ishlatadigan element uni allaqachon qayta ishlagan
+      // boʻlsa — tegilmaydi.
       if (e.defaultPrevented) return;
       const el = e.target as HTMLElement | null;
       if (el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable)) return;
-      if (el?.closest("[role=radiogroup]")) return;
+      if (el?.closest(ARROW_KEY_WIDGETS)) return;
       if (e.key === "ArrowLeft") go(prevId);
       else if (e.key === "ArrowRight") go(nextId);
     };
@@ -404,11 +414,10 @@ export default function StudentProfile({
     toast.success(t("toastSaved"));
   };
 
-  // Arxivlangan sinf chip boʻlib chiqmaydi — faqat aynan u ochilgan boʻlsa
+  // Arxivlangan sinf roʻyxatga chiqmaydi — faqat aynan u ochilgan boʻlsa
   // (masalan oʻtgan yil jurnalidan kelinganda).
-  const classChips = (className: string) => (
-    <ClassChipGroup
-      className={className}
+  const classSelect = (
+    <ClassSelect
       classes={studentClasses.filter((c) => !c.archivedAt || c.id === location.classId)}
       value={location.classId}
       onValueChange={setContextClassId}
@@ -492,7 +501,10 @@ export default function StudentProfile({
             )}
           </div>
           {/* Sinf konteksti — sahifadagi sinfga oid maʼlumot shu tanlovdan */}
-          {classChips("mt-4")}
+          <div className="mt-5">
+            <TypographyLabel className="mb-2 block">{t("classContext")}</TypographyLabel>
+            {classSelect}
+          </div>
         </div>
 
         {/* Boʻlimlar — bitta karta ichida, chiziq bilan ajratilgan (scroll) */}
@@ -721,7 +733,7 @@ export default function StudentProfile({
       {/* ── Asosiy maydon ── */}
       <div className="flex min-w-0 min-h-0 flex-1 flex-col overflow-hidden">
         {/* Chap panel lg dan kichikda yashirin — sinf konteksti bu yerga chiqadi */}
-        {classChips("mb-4 mr-4 shrink-0 md:mr-6 lg:hidden")}
+        <div className="mb-4 mr-4 shrink-0 md:mr-6 lg:hidden">{classSelect}</div>
         {/* Header card — bir qatorda: breadcrumb · boʻlim tablari · oʻquvchilar paginatsiyasi */}
         <Tabs
           value={tab}
