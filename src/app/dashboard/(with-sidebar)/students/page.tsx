@@ -7,6 +7,8 @@ import { useTranslations } from "next-intl";
 import { CLASS_COLOR_HEX, classTints } from "@/lib/class-colors";
 import { gradeBadgeClass as gradeBadge } from "@/lib/score-colors";
 import { classColor, type Student } from "@/lib/grades-data";
+import { formatStudentCode, studentProfileHref } from "@/lib/student-profile";
+import { patchStudentEverywhere } from "@/lib/student-patch";
 import { studentSummary } from "@/lib/grades-stats";
 import { studentStats } from "@/lib/attendance-data";
 import { useClassIdParam } from "@/hooks/useClassIdParam";
@@ -155,10 +157,7 @@ export default function StudentsPage() {
   // Profil qaysi guruh kontekstida ochilayotganini biladi: oʻquvchi 2+ guruhda
   // boʻlishi mumkin va `prevId`/`nextId`, roʻyxat, davomat oʻshanga bogʻliq.
   const openProfile = (id: string) =>
-    router.push(
-      `/dashboard/students/${encodeURIComponent(id)}` +
-        (selectedClassId ? `?classId=${encodeURIComponent(selectedClassId)}` : "")
-    );
+    router.push(studentProfileHref(id, { classId: selectedClassId }));
   /* Koʻchirish oynasi — bittalab ham, belgilangan guruh ham shu holatga
      tushadi (bir xil oyna, ikki chaqiruv joyi). */
   const [moveTargets, setMoveTargets] = useState<{ id: string; name: string }[]>([]);
@@ -216,6 +215,7 @@ export default function StudentsPage() {
   // Yozishlar updateClass orqali → GradesServerSync serverga sinxronlaydi.
   const classDataMap = useGradesStore((s) => s.classDataMap);
   const updateClass = useGradesStore((s) => s.updateClass);
+  const setClassDataMap = useGradesStore((s) => s.setClassDataMap);
   const attendanceRecords = useAttendanceStore((s) =>
     selectedClassId ? s.recordsByClass[selectedClassId] : undefined
   );
@@ -261,7 +261,7 @@ export default function StudentsPage() {
         id: s.id,
         name: s.name,
         initials: s.initials,
-        studentId: s.studentNumber != null ? `ID-${1000 + s.studentNumber}` : "—",
+        studentId: formatStudentCode(s.studentNumber) ?? "—",
         // Jurnal bilan bir xil kanonik hisob (summativ, vaznli, Q/T chiqarilgan)
         grade: Math.round(
           studentSummary(s.id, data.assignments, data.grades, data.topics).summative
@@ -314,12 +314,10 @@ export default function StudentsPage() {
       : "minmax(0,1fr) minmax(0,3fr)";
 
   // ── Amallar — hammasi useGradesStore'ga yoziladi (server sync avtomatik) ──
+  // Holat va shaxsiy maydonlar `students` qatorida — bola turgan HAR sinf
+  // nusxasi birga yangilanadi (`patchStudentEverywhere` izohi).
   const setStatus = (id: string, status: Status) => {
-    if (!selectedClassId) return;
-    updateClass(selectedClassId, (cd) => ({
-      ...cd,
-      students: cd.students.map((s) => (s.id === id ? { ...s, status } : s)),
-    }));
+    setClassDataMap((m) => patchStudentEverywhere(m, id, { status }));
   };
 
   /* Holat faqat kontekst menyu (yoki guruhaviy amal) orqali oʻzgaradi.
@@ -334,10 +332,7 @@ export default function StudentsPage() {
   const handleBulkStatus = (status: Status) => {
     if (!selectedClassId || selectedRowIds.size === 0) return;
     const ids = selectedRowIds;
-    updateClass(selectedClassId, (cd) => ({
-      ...cd,
-      students: cd.students.map((s) => (ids.has(s.id) ? { ...s, status } : s)),
-    }));
+    setClassDataMap((m) => patchStudentEverywhere(m, ids, { status }));
     setSelectedRowIds(new Set());
   };
 
@@ -357,24 +352,17 @@ export default function StudentsPage() {
   const handleEditSave = (data: NewStudentInput) => {
     if (!editTarget || !selectedClassId) return;
     const name = `${data.firstName} ${data.lastName}`.trim();
-    updateClass(selectedClassId, (cd) => ({
-      ...cd,
-      students: cd.students.map((s) =>
-        s.id === editTarget.id
-          ? {
-              ...s,
-              name,
-              initials: makeInitials(data.firstName, data.lastName),
-              gender: data.gender,
-              birthDate: data.birthDate,
-              parentName: data.parentName,
-              parentPhone: data.parentPhone,
-              studentPhone: data.studentPhone,
-              avatarImage: data.avatarImage,
-            }
-          : s
-      ),
-    }));
+    setClassDataMap((m) =>
+      patchStudentEverywhere(m, editTarget.id, {
+        name,
+        initials: makeInitials(data.firstName, data.lastName),
+        gender: data.gender,
+        birthDate: data.birthDate,
+        parentName: data.parentName,
+        parentPhone: data.parentPhone,
+        studentPhone: data.studentPhone,
+      })
+    );
     setEditTarget(null);
     toast.success(t("toastUpdated"));
   };

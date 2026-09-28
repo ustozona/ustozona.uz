@@ -975,6 +975,7 @@
     "submitImport": "{count} oqıwshını qosıw"
   },
   "StudentProfile": {
+    "classContext": "Klass",
     "prevStudent": "Aldınǵı oqıwshı",
     "nextStudent": "Keyingi oqıwshı",
     "notFoundTitle": "Oqıwshı tabılmadı",

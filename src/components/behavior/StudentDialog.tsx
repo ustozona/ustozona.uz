@@ -34,6 +34,7 @@ import { BehaviorEmoji } from "./BehaviorEmoji";
 import { ReportPanel } from "./ReportPanel";
 import type { SkillType } from "./SkillFormDialog";
 import { useClassStreaks } from "./useClassStreaks";
+import { studentProfileHref } from "@/lib/student-profile";
 
 /* ════════════════════════════════════════════════════════════════════
    Bitta-oʻquvchi modali (chap navigatsiyali kartochka UX):
@@ -145,7 +146,7 @@ export function StudentDialog({
         <DialogHeader className="border-b border-border px-6 py-4 text-left">
           <div className="flex items-center gap-3">
             <Link
-              href={`/dashboard/students/${encodeURIComponent(student.id)}?tab=behavior`}
+              href={studentProfileHref(student.id, { classId, tab: "behavior" })}
               className="group -m-1.5 flex min-w-0 flex-1 items-center gap-3 rounded-lg p-1.5 transition-colors hover:bg-muted/60"
             >
               <Avatar size="lg" className="size-11 shrink-0">

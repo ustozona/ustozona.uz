@@ -975,6 +975,7 @@
     "submitImport": "{count} окуучуну кошуу"
   },
   "StudentProfile": {
+    "classContext": "Класс",
     "prevStudent": "Мурунку окуучу",
     "nextStudent": "Кийинки окуучу",
     "notFoundTitle": "Окуучу табылган жок",

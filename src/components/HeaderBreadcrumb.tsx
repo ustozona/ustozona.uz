@@ -21,7 +21,8 @@ import { cn } from "@/lib/utils";
 import { ROUTE_LABEL_KEYS } from "@/lib/route-labels";
 import { CLASS_SECTIONS } from "@/app/dashboard/classes/[id]/_components/sections";
 import { useGradesStore } from "@/store/useGradesStore";
-import { locateStudent } from "@/lib/student-profile";
+import { locateStudent, studentProfileHref } from "@/lib/student-profile";
+import { useClassStore } from "@/store/useClassStore";
 import { classColor } from "@/lib/grades-data";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { subjectLabel } from "@/lib/standards-data";
@@ -52,6 +53,9 @@ function useBreadcrumbs(): Crumb[] {
   // jonli hook orqali oʻqiladi. Sinf boʻgʻini ham, oʻquvchi boʻgʻinining guruh
   // konteksti ham shundan oladi.
   const classIdParam = useClassIdParamValue(pathname);
+  // Profil bilan bir xil nomzodlar (`locateStudent` izohi) — param hali
+  // yozilmagan birinchi kadrda ham ikkalasi bitta sinfni koʻrsatsin.
+  const lastClassId = useClassStore((s) => s.selectedClassId);
 
   return React.useMemo(() => {
     const segments = pathname.split("/").filter(Boolean); // ["dashboard", ...]
@@ -71,7 +75,7 @@ function useBreadcrumbs(): Crumb[] {
 
       if (prevSegment === "students" && segments[i]) {
         const studentId = decodeURIComponent(segments[i]);
-        const location = locateStudent(classDataMap, studentId, classIdParam);
+        const location = locateStudent(classDataMap, studentId, [classIdParam, lastClassId]);
         if (location) {
           crumbs.push({
             kind: "student-class-switcher",
@@ -108,7 +112,7 @@ function useBreadcrumbs(): Crumb[] {
     }
 
     return crumbs;
-  }, [pathname, searchParams, classDataMap, tSections, classIdParam]);
+  }, [pathname, searchParams, classDataMap, tSections, classIdParam, lastClassId]);
 }
 
 /* ── Umumiy: qidiruvli tanlovchi boʻgʻin (Popover+Command, StudentProfile
@@ -326,20 +330,15 @@ function StudentSwitcherCrumb({
   const searchParams = useSearchParams();
   const classDataMap = useGradesStore((s) => s.classDataMap);
   const classIdParam = useClassIdParamValue(pathname);
+  const lastClassId = useClassStore((s) => s.selectedClassId);
   const location = React.useMemo(
-    () => locateStudent(classDataMap, studentId, classIdParam),
-    [classDataMap, studentId, classIdParam]
+    () => locateStudent(classDataMap, studentId, [classIdParam, lastClassId]),
+    [classDataMap, studentId, classIdParam, lastClassId]
   );
 
-  const go = (id: string) => {
-    const params = new URLSearchParams();
-    const tab = searchParams.get("tab");
-    if (tab) params.set("tab", tab);
-    // Guruh konteksti qoʻshni oʻquvchiga ham koʻchadi — roʻyxat oʻsha guruhdan.
-    if (classIdParam) params.set("classId", classIdParam);
-    const q = params.toString();
-    router.push(`/dashboard/students/${encodeURIComponent(id)}${q ? `?${q}` : ""}`);
-  };
+  // Sinf konteksti qoʻshni oʻquvchiga ham koʻchadi — roʻyxat oʻsha sinfdan.
+  const go = (id: string) =>
+    router.push(studentProfileHref(id, { classId: location?.classId, tab: searchParams.get("tab") }));
 
   if (!location) {
     return <BreadcrumbPage className="max-w-[10rem] truncate sm:max-w-[16rem]">{label}</BreadcrumbPage>;

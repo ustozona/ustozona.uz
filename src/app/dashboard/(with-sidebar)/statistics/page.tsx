@@ -18,6 +18,7 @@ import { OverviewPanel } from "./_components/OverviewPanel";
 import { StudentsTablePanel } from "./_components/StudentsTablePanel";
 import { ClassStatsView } from "./_components/ClassStatsView";
 import { StatsTabs, type StatsTabItem } from "./_components/StatsTabs";
+import { studentProfileHref } from "@/lib/student-profile";
 
 /** Sahifa tablari — endi FAQAT "koʻrinish" oʻqini boshqaradi (Umumiy/
     Oʻquvchilar), sinf tanlangan-tanlanmaganidan qatʼi nazar bir xil ikkita
@@ -138,7 +139,7 @@ export default function StatisticsPage() {
           <div className="flex min-w-0 min-h-0 flex-1 flex-col">
             {group === "students" ? (
               <StudentsTablePanel
-                onSelectStudent={(id) => router.push(`/dashboard/students/${id}`)}
+                onSelectStudent={(id, rowClassId) => router.push(studentProfileHref(id, { classId: rowClassId }))}
                 period={period}
                 calendar={calendar}
                 classId={selectedClassId ?? undefined}

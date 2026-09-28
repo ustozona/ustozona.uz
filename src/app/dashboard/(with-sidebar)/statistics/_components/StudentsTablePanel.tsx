@@ -30,7 +30,7 @@ type TierFilter = "all" | Exclude<AbsenceTier, null>;
 export function StudentsTablePanel({
   onSelectStudent, period, calendar, classId,
 }: {
-  onSelectStudent: (studentId: string) => void;
+  onSelectStudent: (studentId: string, classId: string) => void;
   period: StatPeriod | null;
   calendar: AcademicYearCalendar;
   /** Berilsa, roʻyxat shu sinf oʻquvchilari bilan cheklanadi (sinf detali

@@ -975,6 +975,7 @@
     "submitImport": "{count} оқушыны қосу"
   },
   "StudentProfile": {
+    "classContext": "Сынып",
     "prevStudent": "Алдыңғы оқушы",
     "nextStudent": "Келесі оқушы",
     "notFoundTitle": "Оқушы табылмады",

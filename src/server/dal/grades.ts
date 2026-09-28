@@ -304,11 +304,18 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
   for (const part of chunks(studentUpserts)) {
     // Bola va uning sinfga yozilishi — bitta tranzaksiyada (sinf holati
     // bilan bir xil sabab: yarim yozuv qolmasin).
+    // Bitta bola bir nechta sinfda turadi: shaxsiy maydoni tahrirlansa,
+    // batch'da u HAR sinfdan bir qatordan keladi. Bitta `INSERT … ON
+    // CONFLICT` ichida bir xil kalit ikki marta boʻlsa Postgres butun
+    // buyruqni rad etadi («cannot affect row a second time») va tranzaksiya
+    // qulaydi — shuning uchun `students` ga id boʻyicha bittadan (oxirgisi)
+    // yoziladi. Yozilishlar esa sinf boʻyicha alohida — ular hammasi ketadi.
+    const uniqueStudents = [...new Map(part.map((s) => [s.id, s])).values()];
     await db.transaction(async (tx) => {
     await tx
       .insert(students)
       .values(
-        part.map((s) => ({
+        uniqueStudents.map((s) => ({
           id: s.id,
           workspaceId: ctx.workspaceId,
           name: s.name,

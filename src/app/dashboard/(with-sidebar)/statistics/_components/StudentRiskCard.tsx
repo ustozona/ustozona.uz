@@ -8,6 +8,7 @@ import { AppleEmojiSprite } from "@/components/ui/apple-emoji";
 import type { StudentRiskSummary } from "@/lib/attention";
 import { DashboardSectionCard } from "@/components/DashboardSectionCard";
 import { cn } from "@/lib/utils";
+import { studentProfileHref } from "@/lib/student-profile";
 
 /** Sinf-markazli xom signal roʻyxatlari oʻrniga oʻquvchi-markazli agregat
     koʻrinish (EWS composite-risk naqshi): bitta oʻquvchi bir necha
@@ -52,7 +53,7 @@ export function StudentRiskCard({
           return (
             <Link
               key={s.studentId}
-              href={`/dashboard/students/${s.studentId}`}
+              href={studentProfileHref(s.studentId, { classId: s.classId })}
               className="group/row -mx-1.5 flex items-start gap-3 rounded-md px-1.5 py-3 transition-colors hover:bg-muted/40"
             >
               <span
@@ -109,7 +110,7 @@ export function PositiveStudentsStrip({
         {positive.map((s) => (
           <Link
             key={s.studentId}
-            href={`/dashboard/students/${s.studentId}`}
+            href={studentProfileHref(s.studentId, { classId: s.classId })}
             className="flex items-center gap-1.5 rounded-full border border-success/30 bg-success/10 px-3 py-1.5 text-xs font-medium text-success transition-colors hover:bg-success/15"
           >
             <span className="truncate">{s.studentName}</span>

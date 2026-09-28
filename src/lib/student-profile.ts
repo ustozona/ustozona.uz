@@ -117,7 +117,8 @@ export type StudentProfile = {
   id: string;
   name: string;
   initials: string;
-  studentCode: string;
+  /** `null` — raqam hali maʼlum emas (`formatStudentCode`). */
+  studentCode: string | null;
   gender?: "male" | "female";
   birthDate?: string;
   parentName?: string;
@@ -157,27 +158,84 @@ function buildLocation(
   };
 }
 
-/** `preferredClassId` — oʻquvchi 2+ guruhda boʻlishi mumkin ([[multi-teacher-shared-student]]),
-    shuning uchun QAYSI guruh kontekstida koʻrilayotgani chaqiruvchidan keladi
-    (odatda `?classId=`). Berilmasa yoki oʻquvchi u yerda boʻlmasa — birinchi
-    topilgan guruh olinadi; u holda `prevId`/`nextId` va roʻyxat oʻquvchi
-    kelgan guruhga emas, tasodifiy guruhga tegishli boʻlib qolishi mumkin. */
+/* ─── Sinf konteksti ─────────────────────────────────────────────────────────
+   Oʻquvchi 2+ sinfda boʻlishi mumkin ([[multi-teacher-shared-student]]), profil
+   esa bir paytda BITTA sinf kontekstida koʻrsatiladi: baho, topshiriq, davomat,
+   xulq-atvor va oldingi/keyingi oʻquvchi — hammasi sinfga oid. Shaxsiy
+   maʼlumot va qaydlar sinfsiz, kontekst ularga tegmaydi.
+
+   Qaysi sinflar chiqadi — `classDataMap` ning oʻzi hal qiladi: u serverda
+   `visibleClassIds("data")` bilan yuklanadi, yaʼni oʻqituvchi faqat oʻzi
+   dars beradigan sinflarni koʻradi (admin — hammasini). Hamkasbning sinfi
+   bu yerga umuman kelmaydi, alohida filtr kerak emas.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+/** Oʻquvchi turgan sinflar — Sinflar paneli tartibida, faollari oldin,
+    arxivlanganlari oxirida. */
+export function listStudentClasses(
+  classDataMap: Record<string, ClassData>,
+  studentId: string
+): ClassInfo[] {
+  const found = Object.values(classDataMap)
+    .filter((cd) => cd.students.some((s) => s.id === studentId))
+    .map((cd) => cd.info);
+  return [...found.filter((c) => !c.archivedAt), ...found.filter((c) => c.archivedAt)];
+}
+
+/** Profil qaysi sinf kontekstida ochilishi. `studentClasses` —
+    `listStudentClasses` natijasi (chaqiruvchida odatda memo'langan, xarita
+    qayta aylanmasin). `candidates` — ustuvorlik tartibida (odatda
+    `?classId=`, keyin oxirgi tanlangan sinf); oʻquvchi turmagan nomzod
+    oʻtkazib yuboriladi. Hech biri mos kelmasa — oʻquvchining birinchi FAOL
+    sinfi, tasodifiy emas. */
+export function resolveStudentClassId(
+  studentClasses: readonly ClassInfo[],
+  candidates: readonly (string | null | undefined)[] = []
+): string | null {
+  for (const id of candidates) {
+    if (id && studentClasses.some((c) => c.id === id)) return id;
+  }
+  return studentClasses[0]?.id ?? null;
+}
+
+/** `candidates` — `resolveStudentClassId` bilan bir xil. Profil ham,
+    breadcrumb ham bir xil nomzodlarni bersin (`?classId=`, oxirgi tanlangan
+    sinf) — aks holda ikkalasi turli sinfni koʻrsatadi. */
 export function locateStudent(
   classDataMap: Record<string, ClassData>,
   studentId: string,
-  preferredClassId?: string | null
+  candidates: readonly (string | null | undefined)[] = []
 ): StudentLocation | null {
-  if (preferredClassId) {
-    const data = classDataMap[preferredClassId];
-    const index = data?.students.findIndex((s) => s.id === studentId) ?? -1;
-    if (data && index !== -1) return buildLocation(preferredClassId, data, index);
-  }
-  for (const [classId, data] of Object.entries(classDataMap)) {
-    const index = data.students.findIndex((s) => s.id === studentId);
-    if (index === -1) continue;
-    return buildLocation(classId, data, index);
-  }
-  return null;
+  const classId = resolveStudentClassId(listStudentClasses(classDataMap, studentId), candidates);
+  if (!classId) return null;
+  const data = classDataMap[classId];
+  return buildLocation(classId, data, data.students.findIndex((s) => s.id === studentId));
+}
+
+/** Profilga havola. Sinf konteksti maʼlum boʻlsa (davomat, jurnal, sinf
+    sahifasi) — albatta bering: aks holda profil oʻquvchining boshqa sinfida
+    ochilishi mumkin. */
+export function studentProfileHref(
+  studentId: string,
+  { classId, tab }: { classId?: string | null; tab?: string | null } = {}
+): string {
+  const params = new URLSearchParams();
+  if (tab) params.set("tab", tab);
+  if (classId) params.set("classId", classId);
+  const q = params.toString();
+  return `/dashboard/students/${encodeURIComponent(studentId)}${q ? `?${q}` : ""}`;
+}
+
+/** Oʻquvchining oʻzgarmas raqami ("ID-1042") — `students.studentNumber`
+    dan, roʻyxatdagi oʻrnidan EMAS: oʻrin sinfga qarab farq qiladi va bitta
+    bola ikki sinfda ikki xil ID bilan chiqardi.
+
+    `null` — raqam hali maʼlum emas: uni DB insert paytida beradi, sync esa
+    uni mijozga qaytarmaydi, shuning uchun shu sessiyada qoʻshilgan oʻquvchida
+    raqam keyingi yuklashgacha yoʻq. Chaqiruvchi qator/matnni yashiradi yoki
+    jadvalda «—» qoʻyadi — soxta raqam oʻylab topilmaydi. */
+export function formatStudentCode(studentNumber: number | null | undefined): string | null {
+  return studentNumber != null ? `ID-${1000 + studentNumber}` : null;
 }
 
 // ─── Seed yordamchilari (deterministik) ──────────────────────────────────────
@@ -457,7 +515,7 @@ export function getStudentProfile(
   attendanceInput: AttendanceInput,
   preferredClassId?: string | null
 ): StudentProfile | null {
-  const location = locateStudent(classDataMap, studentId, preferredClassId);
+  const location = locateStudent(classDataMap, studentId, [preferredClassId]);
   if (!location) return null;
   const data = classDataMap[location.classId];
   const student = data.students[location.index];
@@ -482,7 +540,7 @@ export function getStudentProfile(
     id: student.id,
     name: student.name,
     initials: student.initials,
-    studentCode: `ID-${1001 + location.index}`,
+    studentCode: formatStudentCode(student.studentNumber),
     gender: student.gender,
     birthDate: student.birthDate,
     parentName: student.parentName,
