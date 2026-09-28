@@ -2106,6 +2106,10 @@
         "body": "Each test now has two clear buttons: «Run in class» (live lesson, game, self-paced test, paper test, QR cards or clickers) and «Assign as homework» (with a due date, via link and QR). Who joined, who finished and what everyone scored — on one screen, and results go to the gradebook with a single button.",
         "cta": "Open Assignments"
       },
+      "darslar-oqimi-vizual": {
+        "title": "See your lesson sequence: a chain, a yearly roadmap and a “doesn't fit” warning",
+        "body": "A chain beside the lessons list shows each lesson's state, and new dates appear instantly while you reorder. In the Roadmap view, units are bars across the year — drag them to reorder. If lessons won't fit before year end, you see which ones and what you can shorten. In the planner, hovering a lesson highlights the previous and next lesson in its sequence."
+      },
       "darslar-oqimi-qoldiq": {
         "title": "A new lesson takes its place in the sequence, and a deleted one leaves no gap — later lessons shift on their own"
       },
@@ -5072,6 +5076,37 @@
     "reserveTitle": "Buffer lesson",
     "reserveAdd": "Add buffer lesson",
     "reserveAddedToast": "Buffer lesson added",
+    "state": {
+      "taught": "Taught",
+      "pinned": "Pinned",
+      "flow": "In sequence",
+      "past": "In the past, not taught",
+      "unscheduled": "No date",
+      "overflow": "Doesn't fit"
+    },
+    "conflict": {
+      "holiday": "falls on a day off",
+      "offTimetable": "outside the timetable"
+    },
+    "overflowChip": "{count, plural, one {# lesson doesn't fit before year end} other {# lessons don't fit before year end}}",
+    "overflowShow": "Show",
+    "overflowTitle": "Lessons that don't fit",
+    "overflowHint": "Free up a slot and the first lesson that didn't fit rejoins the sequence.",
+    "fixReserve": "Remove buffer: {lesson}",
+    "fixShorten": "Shorten by one lesson: {lesson}",
+    "fixExcludeHint": "To take a lesson out of the sequence, use its menu.",
+    "reserveRemovedToast": "Buffer lesson removed",
+    "removeFromFlow": "Remove from sequence",
+    "removedFromFlowToast": "Lesson removed from the sequence",
+    "viewLabel": "View",
+    "viewList": "List",
+    "viewRoadmap": "Roadmap",
+    "roadmapHint": "Drag a unit to reorder",
+    "roadmapNoCalendar": "School year dates aren't set — Settings → Calendar.",
+    "noUnit": "No unit",
+    "legendConflict": "Conflict",
+    "legendHoliday": "Day off",
+    "legendToday": "Today",
     "joinFlow": "Add to flow",
     "joinedToast": "Lesson added to the flow",
     "libraryNotHydrated": "Lessons are still loading — try again in a moment",

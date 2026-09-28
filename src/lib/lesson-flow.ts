@@ -407,3 +407,167 @@ function placeInUnit(
   rest.splice(where === "before" ? at : at + 1, 0, x.id);
   return rest.every((id, i) => id === group[i]) ? null : rest;
 }
+
+/* ── Prognoz — Zanjir, «sigʻmaydi» chipi, yoʻl xaritasi va planner raqami
+   uchun YAGONA manba ──
+
+   `planReflow` bilan bir xil taqsimot, faqat hisob: store'ga yozilmaydi.
+   Qoralama (`draft`) — tartiblash rejimidagi hali saqlanmagan tartib;
+   berilsa sanalar shu tartib boʻyicha hisoblanadi («tortsam nima boʻladi»).
+
+   «Sigʻmaydi» — ketma-ketlikda birinchi oqim darsidan KEYIN turgan,
+   oʻtilmagan, qadalmagan sanasiz dars (1 slot deb olinadi), agar yil
+   oxirigacha unga boʻsh slot yetmasa. Oqim darsi ham slot topa olmasa —
+   sigʻmaydi. Birinchi oqim darsidan oldingi sanasiz darslar — bank,
+   sanalmaydi. Qayta joylashda sigʻmagan dars sanasiz qoladi, shuning
+   uchun keyin ham sanaladi: signal yoʻqolmaydi. */
+
+export type FlowDraft = { unitOrder?: readonly string[]; lessonOrder?: readonly string[] };
+
+export type ForecastState =
+  /** Oʻtilgan. */
+  | "taught"
+  /** Qadalgan — oqim surmaydi. */
+  | "pinned"
+  /** Oqimda, kelajakda sanasi bor. */
+  | "flow"
+  /** Oʻtmishda qolgan, oʻtilmagan (kelajakda sessiyasi yoʻq). */
+  | "past"
+  /** Sanasiz. `projected` boʻlsa — oqimga kirsa oladigan sana. */
+  | "unscheduled"
+  /** Yil oxirigacha sigʻmaydi. */
+  | "overflow";
+
+export type ForecastRow = {
+  lessonId: string;
+  unitId: string | null;
+  /** «2.3» (boʻlim.dars); boʻlimsiz — uzluksiz raqam. */
+  index: string;
+  state: ForecastState;
+  reserve: boolean;
+  /** Hozirgi sana: kelajakdagi birinchi sessiya, boʻlmasa oxirgisi. */
+  current: LessonSession | null;
+  /** Prognoz sanasi (oqim darslari; qoralamada — yangi tartib boʻyicha); sanasizda `null`. */
+  projected: LessonSession | null;
+  /** Prognoz — oxirgi sessiya (koʻp darsli mavzu). */
+  projectedLast: LessonSession | null;
+  /** Hozirgi kelajakdagi sessiyalardan biri taʼtilga / jadvalda yoʻq vaqtga tushgan. */
+  conflict: "holiday" | "offTimetable" | null;
+};
+
+export type FlowForecast = {
+  rows: ForecastRow[];
+  /** Sigʻmaydigan darslar (ketma-ketlik tartibida). */
+  overflow: string[];
+};
+
+function applyDraft(
+  lessons: readonly Lesson[], units: readonly Unit[], classId: string, draft?: FlowDraft,
+): { lessons: readonly Lesson[]; units: readonly Unit[] } {
+  if (!draft?.unitOrder && !draft?.lessonOrder) return { lessons, units };
+  const uPos = new Map((draft.unitOrder ?? []).map((id, i) => [id, i + 1]));
+  const lPos = new Map((draft.lessonOrder ?? []).map((id, i) => [id, i + 1]));
+  return {
+    units: uPos.size ? units.map((u) => (uPos.has(u.id) ? { ...u, number: uPos.get(u.id)! } : u)) : units,
+    lessons: lPos.size
+      ? lessons.map((l) => (lPos.has(l.id) ? { ...l, orderByClass: { ...l.orderByClass, [classId]: lPos.get(l.id)! } } : l))
+      : lessons,
+  };
+}
+
+export function flowForecast(
+  lessonsIn: readonly Lesson[], unitsIn: readonly Unit[], classId: string, env: FlowEnv, draft?: FlowDraft,
+): FlowForecast {
+  const { lessons, units } = applyDraft(lessonsIn, unitsIn, classId, draft);
+  const seq = flowSequence(lessons, units, classId);
+  const flow = classFlow(lessons, units, classId, env.now);
+  const items = new Map(flow.items.map((it) => [it.lessonId, it]));
+  const firstFlow = seq.findIndex((l) => items.has(l.id));
+
+  // Avval oqim (`planReflow` bilan aynan bir xil), keyin sanasiz dum —
+  // u faqat qolgan boʻsh slotlarni oladi: sigʻish hisobi uchun, sana emas
+  // (`joinFlow` qilinmaguncha u sanasiz).
+  const tail = new Set<string>();
+  const queue: { id: string; n: number }[] = flow.items.map((it) => ({ id: it.lessonId, n: it.sessions.length }));
+  seq.forEach((l, i) => {
+    if (!items.has(l.id) && firstFlow >= 0 && i > firstFlow && !isTaught(l, classId) && !isPinned(l, classId)
+      && classSessions(l, classId).length === 0) {
+      queue.push({ id: l.id, n: 1 });
+      tail.add(l.id);
+    }
+  });
+
+  // Havza — `planReflow` dagi qoida bilan bir xil.
+  const uniq = new Map<string, LessonSession>();
+  for (const s of flow.pool) {
+    const k = keyOf(s);
+    if (!flow.blocked.has(k) && !isFrozen(s, env.now) && !env.isHoliday(s.date) && !uniq.has(k)) uniq.set(k, s);
+  }
+  const slots = [...uniq.values()].sort(cmpSession);
+  const need = queue.reduce((n, q) => n + q.n, 0);
+  if (firstFlow >= 0 && slots.length < need) {
+    const last = [...slots, ...flow.items.flatMap((it) => it.sessions)].sort(cmpSession).at(-1);
+    const extra = freeSlotsFrom(
+      flow, last?.date ?? env.now.today, last?.startMin ?? -1, need - slots.length,
+      [...flow.occupied, ...flow.blocked, ...uniq.keys()], env,
+    );
+    for (const s of extra) if (s) slots.push(s);
+  }
+  const assigned = new Map<string, (LessonSession | null)[]>();
+  let cursor = 0;
+  for (const q of queue) assigned.set(q.id, Array.from({ length: q.n }, () => slots[cursor++] ?? null));
+
+  // Raqam: boʻlim tartibi . boʻlim ichidagi oʻrin; boʻlimsiz — uzluksiz.
+  const rankOf = unitRanker(units, classId);
+  const unitCount = units.filter((u) => u.classId === classId).length;
+  const inUnit = new Map<number, number>();
+  const overflow: string[] = [];
+  const rows = seq.map((l, i): ForecastRow => {
+    const r = rankOf(l);
+    const unitId = unitIdForClass(l, classId);
+    const k = (inUnit.get(r) ?? 0) + 1;
+    inUnit.set(r, k);
+    const all = classSessions(l, classId);
+    const future = all.filter((s) => !isFrozen(s, env.now));
+    const current = future[0] ?? all.at(-1) ?? null;
+    const plan = assigned.get(l.id);
+    const lost = !!plan?.some((s) => s === null);
+    const got = plan?.filter((s): s is LessonSession => !!s) ?? [];
+    const state: ForecastState = isTaught(l, classId) ? "taught"
+      : isPinned(l, classId) && future.length ? "pinned"
+      : lost ? "overflow"
+      : items.has(l.id) ? "flow"
+      : all.length ? "past" : "unscheduled";
+    if (state === "overflow") overflow.push(l.id);
+    const conflict = state !== "flow" && state !== "overflow" ? null
+      : future.some((s) => env.isHoliday(s.date)) ? "holiday"
+      : future.some((s) => !isOnTimetable(s, classId, env)) ? "offTimetable" : null;
+    return {
+      lessonId: l.id,
+      unitId,
+      index: r < unitCount ? `${r + 1}.${k}` : String(i + 1),
+      state,
+      reserve: !!l.reserve,
+      current,
+      projected: tail.has(l.id) ? null : plan ? got[0] ?? null : current,
+      projectedLast: tail.has(l.id) ? null : plan ? got.at(-1) ?? null : future.at(-1) ?? current,
+      conflict,
+    };
+  });
+  return { rows, overflow };
+}
+
+/** Boʻlimning prognoz oraligʻi (birinchi va oxirgi sana) — yoʻl xaritasi polosasi. */
+export function unitSpans(forecast: FlowForecast): Map<string | null, { start: string; end: string; overflow: number }> {
+  const out = new Map<string | null, { start: string; end: string; overflow: number }>();
+  for (const r of forecast.rows) {
+    const cur = out.get(r.unitId) ?? { start: "", end: "", overflow: 0 };
+    const a = r.projected?.date;
+    const b = r.projectedLast?.date ?? a;
+    if (a && (!cur.start || a < cur.start)) cur.start = a;
+    if (b && (!cur.end || b > cur.end)) cur.end = b;
+    if (r.state === "overflow") cur.overflow++;
+    out.set(r.unitId, cur);
+  }
+  return out;
+}

@@ -27,7 +27,11 @@ import { byNumber, lessonNumberOffset, ordinalsOf } from "@/lib/ordinals";
 import { isTaught, lessonPlanState, byLessonOrder } from "@/lib/lessons-data";
 import { todayKey } from "@/lib/date-keys";
 import { needsTaughtConfirm } from "@/lib/lesson-shift";
-import { useFlowMismatch, useLessonFlow } from "@/hooks/useLessonFlow";
+import { useFlowForecast, useFlowMismatch, useLessonFlow } from "@/hooks/useLessonFlow";
+import { unitSpans } from "@/lib/lesson-flow";
+import { FlowDate, FlowNode, OverflowChip, useFlowDateLabel } from "@/components/lessons/FlowRail";
+import { FlowRoadmap } from "@/components/lessons/FlowRoadmap";
+import { SegmentedToggle } from "@/components/ui/segmented-toggle";
 import { flowSequence, isFrozen } from "@/lib/lesson-flow";
 import { useTourRequest } from "@/components/tour/tour-request";
 import {
@@ -42,7 +46,7 @@ import { ClassFormModal } from "@/components/ClassFormModal";
 import CreateUnitModal from "@/components/CreateUnitModal";
 import IshRejaImportModal from "@/components/IshRejaImportModal";
 import UnitImportModal from "@/components/UnitImportModal";
-import { LibraryBig, FileText, Clock, Plus, Search, ArrowDownUp, Pencil, Trash2, FolderInput, ListChecks, FileCheck, CircleCheck, Check, SkipForward, X, CircleDashed, GripVertical, Pin, PinOff, CalendarSync, CalendarPlus, ListPlus, ListMinus } from "lucide-react";
+import { LibraryBig, FileText, Clock, Plus, Search, ArrowDownUp, Pencil, Trash2, FolderInput, ListChecks, FileCheck, CircleCheck, Check, SkipForward, X, CircleDashed, GripVertical, Pin, PinOff, CalendarSync, CalendarPlus, ListPlus, ListMinus, List, Route, CalendarMinus } from "lucide-react";
 import { ReorderList, useEscape, useReorderDraft } from "@/components/ReorderList";
 import { BulkActionBar, BulkActionButton, BulkActionCount, BulkActionDivider } from "@/components/BulkActionBar";
 import {
@@ -357,6 +361,9 @@ export default function LessonsPage() {
   // Sanalar tartibga mos kelmasa (oqimdan oldingi maʼlumot, qoʻlda sana
   // tahriri) — jimgina qayta yozilmaydi, «Moslash» taklif qilinadi.
   const flowMismatch = useFlowMismatch(effectiveClassId && !isDemoMode ? effectiveClassId : null);
+  // Ikkinchi koʻrinish: sinfning yillik yoʻl xaritasi (boʻlimlar va mavzular ustunlari oʻrnida).
+  const [view, setView] = useState<"list" | "roadmap">("list");
+  const showRoadmap = view === "roadmap" && !!effectiveClassId && !isDemoMode;
 
   // Mavzuni boʻlimlar oʻrtasida drag-and-drop bilan koʻchirish (bitta sinf konteksti, @dnd-kit).
   const dndSensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
@@ -491,7 +498,10 @@ export default function LessonsPage() {
       : { classes: 1, units: 2, lessons: 1 };
 
   /* Grid template (`lg+`) — 3 ustun doim DOM'da; nisbat grow'dan. */
-  const columnsTemplate = `minmax(0,${grow.classes}fr) minmax(0,${grow.units}fr) minmax(0,${grow.lessons}fr)`;
+  // Yoʻl xaritasida mavzular ustuni yashiriladi (DOM'da qoladi — dialoglar shu yerda).
+  const columnsTemplate = showRoadmap
+    ? "minmax(0,1fr) minmax(0,3fr)"
+    : `minmax(0,${grow.classes}fr) minmax(0,${grow.units}fr) minmax(0,${grow.lessons}fr)`;
 
   /* ── Unit qator/karta koʻrinishlari ── */
 
@@ -655,6 +665,49 @@ export default function LessonsPage() {
         {t("reorderDone")}
       </BulkActionButton>
     </BulkActionBar>
+  );
+
+  /* Zanjir va «sigʻmaydi» chipi — `flowForecast` dan (demo'da yoʻq). Tartiblash
+     rejimida qoralama (sudrash davomida — «tashlasam» tartibi) bilan jonli
+     qayta hisoblanadi; store'ga faqat «Tayyor» da yoziladi. */
+  const [reorderPreview, setReorderPreview] = useState<string[] | null>(null);
+  const draftOrder = reorderPreview ?? reorderDraft.order;
+  const flowDraft = useMemo(
+    () => (!draftOrder ? undefined : reorderKind === "units" ? { unitOrder: draftOrder } : { lessonOrder: draftOrder }),
+    [draftOrder, reorderKind],
+  );
+  const forecastClassId = effectiveClassId && !isDemoMode ? effectiveClassId : null;
+  const forecast = useFlowForecast(forecastClassId, flowDraft);
+  const baseForecast = useFlowForecast(forecastClassId);
+  const forecastRow = useMemo(() => new Map((forecast?.rows ?? []).map((r) => [r.lessonId, r])), [forecast]);
+  const lessonTitles = useMemo(() => new Map(lessonsSource.map((l) => [l.id, l.title])), [lessonsSource]);
+  const spans = useMemo(() => (forecast ? unitSpans(forecast) : null), [forecast]);
+  const baseSpans = useMemo(() => (baseForecast ? unitSpans(baseForecast) : null), [baseForecast]);
+  const fmtFlowDate = useFlowDateLabel();
+  const spanLabel = (s: { start: string; end: string } | undefined) =>
+    s?.start ? (s.start === s.end ? fmtFlowDate(s.start) : `${fmtFlowDate(s.start)} – ${fmtFlowDate(s.end)}`) : null;
+  const removeReserveForOverflow = (id: string) => {
+    if (!effectiveClassId) return;
+    void flow.remove({
+      lessonIds: [id],
+      classIds: [effectiveClassId],
+      mutate: () => deleteLesson(id),
+      message: tf("reserveRemovedToast"),
+      fillOverflow: true,
+    });
+  };
+  const viewToggle = !isDemoMode && (
+    <SegmentedToggle
+      variant="pill"
+      iconOnly
+      value={view}
+      onValueChange={(v) => { if (reorderKind) endReorder(false); setView(v); }}
+      aria-label={tf("viewLabel")}
+      options={[
+        { value: "list", label: tf("viewList"), icon: <List className="size-4" /> },
+        { value: "roadmap", label: tf("viewRoadmap"), icon: <Route className="size-4" /> },
+      ]}
+    />
   );
 
   const [selectedUnitIds, setSelectedUnitIds] = useState<Set<string>>(new Set());
@@ -900,6 +953,38 @@ export default function LessonsPage() {
                 <EmptyDescription>{t("noClassDescription")}</EmptyDescription>
               </EmptyHeader>
             </Empty>
+          ) : showRoadmap ? (
+            <>
+          <div className="px-5 py-4 flex items-center justify-between shrink-0 gap-2 border-b border-border">
+            <div className="flex items-center gap-2 min-w-0">
+              <SectionIcon><Route /></SectionIcon>
+              <CardTitle className="truncate">{tf("viewRoadmap")}</CardTitle>
+            </div>
+            {viewToggle}
+          </div>
+          <ScrollArea className="flex-1 min-h-0">
+            <div className="p-5 space-y-4">
+              {flowMismatch && (
+                <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/60 px-3 py-2 text-caption">
+                  <CalendarSync className="size-4 shrink-0 text-muted-foreground" />
+                  <span className="min-w-0 flex-1 font-medium text-foreground">{tf("mismatchChip")}</span>
+                  <Button size="sm" variant="outline" className="h-7 bg-card text-foreground" onClick={() => flow.realign([effectiveClassId!])}>
+                    {tf("realign")}
+                  </Button>
+                </div>
+              )}
+              {baseForecast && (
+                <OverflowChip
+                  forecast={baseForecast}
+                  titles={lessonTitles}
+                  onRemoveReserve={removeReserveForOverflow}
+                  onShorten={(id) => flow.shortenForOverflow(id, effectiveClassId!)}
+                />
+              )}
+              <FlowRoadmap classId={effectiveClassId!} units={unitsForClass} titles={lessonTitles} />
+            </div>
+          </ScrollArea>
+            </>
           ) : (
             <>
           {/* Header */}
@@ -910,6 +995,7 @@ export default function LessonsPage() {
               {unitsForClass.length > 0 && <span className="text-caption tabular-nums text-muted-foreground">{unitsForClass.length}</span>}
             </div>
             <div className="flex items-center gap-1 shrink-0">
+              {viewToggle}
               {/* Boʻsh holat oynasi faqat keng rejimda chiqadi — tor rejimda tugma sarlavhada. */}
               {(unitsForClass.length > 0 || detailMode) && (
                 <Button variant="ghost" size="sm" className="shrink-0 gap-1.5 text-muted-foreground hover:text-foreground" onClick={handleCreateUnit}>
@@ -953,11 +1039,22 @@ export default function LessonsPage() {
                     </Button>
                   </div>
                 )}
+                {baseForecast && !reorderKind && (
+                  <OverflowChip
+                    forecast={baseForecast}
+                    titles={lessonTitles}
+                    onRemoveReserve={removeReserveForOverflow}
+                    onShorten={(id) => flow.shortenForOverflow(id, effectiveClassId!)}
+                  />
+                )}
                 {reorderKind === "units" && reorderDraft.order ? (
-                  <ReorderList ids={reorderDraft.order} onMove={reorderDraft.move} labels={reorderLabels}>
+                  <ReorderList ids={reorderDraft.order} onMove={reorderDraft.move} onPreview={setReorderPreview} labels={reorderLabels}>
                     {(id, i, h) => {
                       const unit = unitsSource.find((u) => u.id === id);
                       if (!unit) return null;
+                      // Jonli hisob: qoralama tartibda boʻlim qachon oʻtiladi.
+                      const span = spanLabel(spans?.get(id));
+                      const spanChanged = span !== spanLabel(baseSpans?.get(id));
                       return (
                         <div
                           className="list-row w-full"
@@ -965,6 +1062,11 @@ export default function LessonsPage() {
                         >
                           {h.handle}
                           <span className="text-body text-foreground truncate flex-1">{pad(i + 1)}. {unit.title}</span>
+                          {span && (
+                            <span className={cn("shrink-0 rounded-full px-2 text-tag font-semibold tabular-nums", spanChanged ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground")}>
+                              {span}
+                            </span>
+                          )}
                           {h.arrows}
                         </div>
                       );
@@ -1076,7 +1178,7 @@ export default function LessonsPage() {
         <div
           ref={lessonsColumnRef}
           data-tour="lessons-list"
-          className="min-w-0 min-h-0 bg-card rounded-xl border border-border flex flex-col overflow-hidden lg:h-full max-lg:min-h-[50svh]"
+          className={cn("min-w-0 min-h-0 bg-card rounded-xl border border-border flex flex-col overflow-hidden lg:h-full max-lg:min-h-[50svh]", showRoadmap && "hidden")}
         >
           {!effectiveUnitId ? (
             /* Boʻlim tanlanmagan — headerʼsiz, faqat markaziy placeholder (1-rasm) */
@@ -1183,12 +1285,16 @@ export default function LessonsPage() {
                     )}
                   </Empty>
                 ) : reorderKind === "lessons" && reorderDraft.order ? (
-                  <ReorderList ids={reorderDraft.order} onMove={reorderDraft.move} labels={reorderLabels}>
+                  <ReorderList ids={reorderDraft.order} onMove={reorderDraft.move} onPreview={setReorderPreview} labels={reorderLabels}>
                     {(id, i, h) => {
                       const lesson = lessonsSource.find((l) => l.id === id);
                       if (!lesson) return null;
                       const moved = reorderDraft.movedIds.has(id);
+                      const row = forecastRow.get(id);
+                      const count = reorderDraft.order?.length ?? 0;
                       return (
+                        <div className={cn("relative", row && "pl-8")}>
+                        {row && <FlowNode row={row} hex={selectedClassHex} first={i === 0} last={i === count - 1} />}
                         <div
                           className="list-card flex items-center gap-3 p-4"
                           data-active={moved ? "true" : undefined}
@@ -1201,7 +1307,10 @@ export default function LessonsPage() {
                           <h4 className="min-w-0 flex-1 text-body font-semibold text-foreground leading-tight truncate">
                             {lNo(i)}. {lesson.title}
                           </h4>
+                          {/* Jonli hisob: «Tayyor» bosilsa dars qaysi sanaga tushadi. */}
+                          {row && <FlowDate row={row} draft />}
                           {h.arrows}
+                        </div>
                         </div>
                       );
                     }}
@@ -1222,8 +1331,12 @@ export default function LessonsPage() {
                       ...unitsForClass.filter((u) => u.id !== lessonUnitId),
                       ...(lessonUnitId ? [null] : []),
                     ];
+                    // Zanjir: chap tomondagi chiziq + holat nuqtasi (demo'da yoʻq).
+                    const row = forecastRow.get(lesson.id);
                     return (
-                    <ContextMenu key={lesson.id}>
+                    <div key={lesson.id} className={cn("relative", row && "pl-8")}>
+                    {row && <FlowNode row={row} hex={selectedClassHex} first={i === 0} last={i === lessonsForUnit.length - 1} />}
+                    <ContextMenu>
                     <ContextMenuTrigger asChild>
                       <DraggableLesson
                         id={lesson.id}
@@ -1346,6 +1459,13 @@ export default function LessonsPage() {
                           {tf("joinFlow")}
                         </ContextMenuItem>
                       )}
+                      {/* Oqimdan chiqarish: dars sanasiz qoladi, boʻshliq yopiladi — boʻshagan joy sigʻmagan darsga. */}
+                      {effectiveClassId && !isDemoMode && forecastRow.get(lesson.id)?.state === "flow" && (
+                        <ContextMenuItem className="gap-2 cursor-pointer" onClick={() => flow.removeFromFlow(lesson.id, effectiveClassId, { fillOverflow: true })}>
+                          <CalendarMinus className="size-4" />
+                          {tf("removeFromFlow")}
+                        </ContextMenuItem>
+                      )}
                       {lessonsForUnit.length > 1 && (
                         <ContextMenuItem className="gap-2 cursor-pointer" onClick={() => startReorder("lessons")}>
                           <ArrowDownUp className="size-4" />
@@ -1394,6 +1514,7 @@ export default function LessonsPage() {
                       </ContextMenuItem>
                     </ContextMenuContent>
                     </ContextMenu>
+                    </div>
                     );
                   })}
                   </>

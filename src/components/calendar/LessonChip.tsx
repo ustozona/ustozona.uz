@@ -25,6 +25,8 @@ export function LessonChip({
   title,
   done = false,
   pinned = false,
+  index,
+  linked,
   trailing,
   onClick,
   className,
@@ -35,6 +37,11 @@ export function LessonChip({
   done?: boolean;
   /** Dars sanaga qadalgan — sarlavhadan keyin 📌 (dars oqimi uni surmaydi). */
   pinned?: boolean;
+  /** Oqimdagi tartib raqami («2.3» — boʻlim.dars); sarlavha oldida. */
+  index?: string;
+  /** Oqim bogʻi: tanlangan dars («self») va uning oqimdagi oldingi/keyingi darsi
+      sinf rangidagi ring bilan ajratiladi (planner'da hover / bosib tanlash). */
+  linked?: "self" | "prev" | "next" | null;
   /** Hoverda oʻngda chiqadigan element. Berilmasa — sinf rangidagi "→" boksi.
       Planner oʻzining `⋮` menyusini shu yerga uzatadi. */
   trailing?: ReactNode;
@@ -47,8 +54,11 @@ export function LessonChip({
     <div
       onClick={onClick}
       style={{ ["--chip-color"]: hex } as CSSProperties}
+      data-linked={linked ?? undefined}
       className={cn(
         "group/chip relative flex h-9 w-full shrink-0 cursor-pointer items-center gap-2 rounded-md border border-border bg-card pl-3 pr-3 text-left shadow-xs transition-[padding-right,box-shadow,border-color] duration-200 ease-out hover:border-[var(--chip-color)] hover:pr-10 hover:ring-[3px] hover:ring-[var(--chip-color)]/50",
+        linked && "border-[var(--chip-color)] ring-[3px] ring-[var(--chip-color)]/50",
+        (linked === "prev" || linked === "next") && "border-dashed",
         className,
       )}
     >
@@ -57,6 +67,7 @@ export function LessonChip({
       ) : (
         <ClassSwatch hex={hex} />
       )}
+      {index && <span className="shrink-0 text-tag font-semibold tabular-nums text-muted-foreground">{index}</span>}
       <span className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">{title}</span>
       {pinned && <Pin className="size-3.5 shrink-0 text-muted-foreground" />}
       {/* Hover zonasi — ikkala variant ham AYNAN shu geometriyada VA AYNAN

@@ -2106,6 +2106,10 @@
         "body": "Test janında endi eki anıq túyme bar: «Sabaqta ótkeriw» (tiri sabaq, oyın, óz betinshe test, qaǵaz test, QR-kartalar yamasa pult) hám «Úyge beriw» (múddet penen, siltew hám QR arqalı). Kim qosıldı, kim tamamladı hám kim neshe procent aldı — bir ekranda, al nátiyje jurnalǵa bir túyme menen jazıladı.",
         "cta": "Tapsırmalardı ashıw"
       },
+      "darslar-oqimi-vizual": {
+        "title": "Sabaq aǵımın kóriń: shınjır, jıllıq jol kartası hám «sıymaydı» eskertiwi",
+        "body": "Sabaqlar dizimi shep tárepindegi shınjır hár sabaqtıń jaǵdayın kórsetedi, tártibin ózgertkende jańa sáneler dárhal kórinedi. «Jol kartası» kórinisinde bólimler jıl boyı jolaq bolıp turadı — súyrep tártibin ózgertesiz. Jıl aqırına shekem sabaq sıymasa, qaysıları hám neni qısqartıw múmkinligin kóresiz. Rejelestiriwshide sabaqqa kursordı alıp barsańız, aǵımdaǵı aldıńǵı hám keyingi sabaǵı belgilenedi."
+      },
       "darslar-oqimi-qoldiq": {
         "title": "Jańa sabaq óz ornın aladı, óshirilgen sabaq bos orın qaldırmaydı — keyingi sabaqlar ózi jılısadı"
       },
@@ -5073,6 +5077,37 @@
     "reserveTitle": "Zapas sabaq",
     "reserveAdd": "Zapas sabaq qosıw",
     "reserveAddedToast": "Zapas sabaq qosıldı",
+    "state": {
+      "taught": "Ótilgen",
+      "pinned": "Bekitilgen",
+      "flow": "Aǵımda",
+      "past": "Ótmishte qaldı, ótilmegen",
+      "unscheduled": "Sánesiz",
+      "overflow": "Sıymaydı"
+    },
+    "conflict": {
+      "holiday": "dem alıs kúnine túsken",
+      "offTimetable": "kestede joq waqıtta"
+    },
+    "overflowChip": "{count, plural, one {Jıl aqırına shekem # sabaq sıymaydı} other {Jıl aqırına shekem # sabaq sıymaydı}}",
+    "overflowShow": "Kóriw",
+    "overflowTitle": "Sıymaytuǵın sabaqlar",
+    "overflowHint": "Orın bosatsańız, birinshi sıymaǵan sabaq aǵımǵa qaytadı.",
+    "fixReserve": "Zapastı alıp taslaw: {lesson}",
+    "fixShorten": "Bir sabaqqa qısqartıw: {lesson}",
+    "fixExcludeHint": "Sabaqtı aǵımnan shıǵarıw — sabaq menyusında.",
+    "reserveRemovedToast": "Zapas sabaq alıp taslandı",
+    "removeFromFlow": "Aǵımnan shıǵarıw",
+    "removedFromFlowToast": "Sabaq aǵımnan shıǵarıldı",
+    "viewLabel": "Kóriniw",
+    "viewList": "Dizim",
+    "viewRoadmap": "Jol kartası",
+    "roadmapHint": "Tártibin ózgertiw ushın bólimdi súyreń",
+    "roadmapNoCalendar": "Oqıw jılınıń shegaraları sazlanbaǵan — Sazlawlar → Kalendar.",
+    "noUnit": "Bólimsiz",
+    "legendConflict": "Qarama-qarsılıq",
+    "legendHoliday": "Dem alıs",
+    "legendToday": "Búgin",
     "joinFlow": "Aǵımǵa qosıw",
     "joinedToast": "Sabaq aǵımǵa qosıldı",
     "libraryNotHydrated": "Sabaqlar ele júklenbedi — birazdan soń qayta urınıp kóriń",

@@ -2093,6 +2093,10 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "darslar-oqimi-vizual": {
+        "title": "Darslar oqimini koʻring: zanjir, yillik yoʻl xaritasi va «sigʻmaydi» ogohlantirishi",
+        "body": "Darslar roʻyxati chapida zanjir har darsning holatini koʻrsatadi, tartiblayotganda yangi sanalar darhol koʻrinadi. «Yoʻl xaritasi» koʻrinishida boʻlimlar yil boʻylab polosa boʻlib turadi — sudrab tartibini oʻzgartirasiz. Yil oxirigacha dars sigʻmasa, qaysilari va nimani qisqartirish mumkinligini koʻrasiz. Planner'da darsga kursorni olib borsangiz, oqimdagi oldingi va keyingi darsi ajraladi."
+      },
       "darslar-oqimi-qoldiq": {
         "title": "Yangi dars oʻz oʻrnini oladi, oʻchirilgan dars boʻshliq qoldirmaydi — keyingi darslar oʻzi suriladi"
       },
@@ -4950,6 +4954,37 @@
     "reserveTitle": "Zaxira dars",
     "reserveAdd": "Zaxira dars qoʻshish",
     "reserveAddedToast": "Zaxira dars qoʻshildi",
+    "state": {
+      "taught": "Oʻtilgan",
+      "pinned": "Qadalgan",
+      "flow": "Oqimda",
+      "past": "Oʻtmishda qoldi, oʻtilmagan",
+      "unscheduled": "Sanasiz",
+      "overflow": "Sigʻmaydi"
+    },
+    "conflict": {
+      "holiday": "taʼtil kuniga tushgan",
+      "offTimetable": "jadvalda yoʻq vaqtda"
+    },
+    "overflowChip": "{count, plural, one {Yil oxirigacha # dars sigʻmaydi} other {Yil oxirigacha # dars sigʻmaydi}}",
+    "overflowShow": "Koʻrish",
+    "overflowTitle": "Sigʻmaydigan darslar",
+    "overflowHint": "Joy boʻshatsangiz, birinchi sigʻmagan dars oqimga qaytadi.",
+    "fixReserve": "Zaxirani olib tashlash: {lesson}",
+    "fixShorten": "Bir darsga qisqartirish: {lesson}",
+    "fixExcludeHint": "Darsni oqimdan chiqarish — dars menyusida.",
+    "reserveRemovedToast": "Zaxira dars olib tashlandi",
+    "removeFromFlow": "Oqimdan chiqarish",
+    "removedFromFlowToast": "Dars oqimdan chiqarildi",
+    "viewLabel": "Koʻrinish",
+    "viewList": "Roʻyxat",
+    "viewRoadmap": "Yoʻl xaritasi",
+    "roadmapHint": "Boʻlimni sudrab tartibini oʻzgartiring",
+    "roadmapNoCalendar": "Oʻquv yili chegaralari sozlanmagan — Sozlamalar → Kalendar.",
+    "noUnit": "Boʻlimsiz",
+    "legendConflict": "Ziddiyat",
+    "legendHoliday": "Taʼtil",
+    "legendToday": "Bugun",
     "joinFlow": "Oqimga qoʻshish",
     "joinedToast": "Dars oqimga qoʻshildi",
     "libraryNotHydrated": "Darslar hali yuklanmadi — bir lahzadan soʻng urinib koʻring",
