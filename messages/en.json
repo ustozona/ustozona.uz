@@ -192,7 +192,20 @@
     "toastImageOnly": "Please upload an image file.",
     "toastImageTooLarge": "Image size must not exceed 2MB.",
     "toastAvatarUpdated": "Profile photo updated.",
-    "toastReadError": "Couldn't read the image."
+    "toastReadError": "Couldn't read the image.",
+    "addEmailNote": "No email yet. Add one to sign in with email as well as Telegram.",
+    "addEmailPlaceholder": "you@email.com",
+    "addEmailButton": "Send confirmation",
+    "addEmailSentTo": "We sent a confirmation email to {email}. Click the link in it.",
+    "addEmailSentToast": "Email sent — check your inbox.",
+    "addEmailResend": "Resend",
+    "addEmailChange": "Use another email",
+    "addEmailInvalid": "Invalid email address.",
+    "addEmailTaken": "This email belongs to another account. Sign in to it and connect Telegram there.",
+    "addEmailTooSoon": "Try again in a minute.",
+    "addEmailTooMany": "No attempts left today. Try again tomorrow.",
+    "addEmailHasEmail": "This account already has an email. Refresh the page.",
+    "addEmailSendFailed": "Couldn't send the email. Try again later."
   },
   "PlanSection": {
     "currentPlanTitle": "Current plan",

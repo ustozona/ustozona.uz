@@ -192,7 +192,20 @@
     "toastImageOnly": "Фақат расм файли юкланг.",
     "toastImageTooLarge": "Расм ҳажми 2МБ дан ошмасин.",
     "toastAvatarUpdated": "Профил расми янгиланди.",
-    "toastReadError": "Расмни ўқиб бўлмади."
+    "toastReadError": "Расмни ўқиб бўлмади.",
+    "addEmailNote": "Эмаил киритилмаган. Қўшсангиз, Телеграмдан ташқари эмаил орқали ҳам кира оласиз.",
+    "addEmailPlaceholder": "sizning@email.uz",
+    "addEmailButton": "Тасдиқлаш хати",
+    "addEmailSentTo": "Тасдиқлаш хати {email} га юборилди. Хатдаги ҳаволани босинг.",
+    "addEmailSentToast": "Хат юборилди — почтангизни текширинг.",
+    "addEmailResend": "Қайта юбориш",
+    "addEmailChange": "Бошқа эмаил",
+    "addEmailInvalid": "Эмаил манзили нотўғри.",
+    "addEmailTaken": "Бу эмаил бошқа ҳисобга тегишли. Ўша ҳисобга киринг ва Телеграмни у ерда уланг.",
+    "addEmailTooSoon": "Бир дақиқадан кейин қайта уриниб кўринг.",
+    "addEmailTooMany": "Бугунги уринишлар тугади. Эртага қайта уриниб кўринг.",
+    "addEmailHasEmail": "Ҳисобда эмаил аллақачон бор. Саҳифани янгиланг.",
+    "addEmailSendFailed": "Хат юборилмади. Бироздан кейин қайта уриниб кўринг."
   },
   "PlanSection": {
     "currentPlanTitle": "Жорий тариф",

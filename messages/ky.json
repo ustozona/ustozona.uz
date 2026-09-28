@@ -192,7 +192,20 @@
     "toastImageOnly": "Сүрөт файлын гана жүктөңүз.",
     "toastImageTooLarge": "Сүрөттүн көлөмү 2МБдан ашпашы керек.",
     "toastAvatarUpdated": "Профиль сүрөтү жаңыртылды.",
-    "toastReadError": "Сүрөттү окуу мүмкүн эмес."
+    "toastReadError": "Сүрөттү окуу мүмкүн эмес.",
+    "addEmailNote": "Электрондук почта көрсөтүлгөн эмес. Кошсоңуз, Telegramдан тышкары почта аркылуу да кире аласыз.",
+    "addEmailPlaceholder": "siz@email.uz",
+    "addEmailButton": "Ырастоо каты",
+    "addEmailSentTo": "Ырастоо каты {email} дарегине жөнөтүлдү. Каттагы шилтемени басыңыз.",
+    "addEmailSentToast": "Кат жөнөтүлдү — почтаңызды текшериңиз.",
+    "addEmailResend": "Кайра жөнөтүү",
+    "addEmailChange": "Башка почта",
+    "addEmailInvalid": "Почта дареги туура эмес.",
+    "addEmailTaken": "Бул почта башка аккаунтка таандык. Ошол аккаунтка кирип, Telegramды ошол жерде туташтырыңыз.",
+    "addEmailTooSoon": "Бир мүнөттөн кийин кайра аракет кылыңыз.",
+    "addEmailTooMany": "Бүгүнкү аракеттер бүттү. Эртең кайра аракет кылыңыз.",
+    "addEmailHasEmail": "Аккаунтта почта бар. Баракты жаңылаңыз.",
+    "addEmailSendFailed": "Кат жөнөтүлгөн жок. Бир аздан кийин кайра аракет кылыңыз."
   },
   "PlanSection": {
     "currentPlanTitle": "Учурдагы тариф",

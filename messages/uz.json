@@ -192,7 +192,20 @@
     "toastImageOnly": "Faqat rasm fayli yuklang.",
     "toastImageTooLarge": "Rasm hajmi 2MB dan oshmasin.",
     "toastAvatarUpdated": "Profil rasmi yangilandi.",
-    "toastReadError": "Rasmni oʻqib boʻlmadi."
+    "toastReadError": "Rasmni oʻqib boʻlmadi.",
+    "addEmailNote": "Email kiritilmagan. Qoʻshsangiz, Telegramdan tashqari email orqali ham kira olasiz.",
+    "addEmailPlaceholder": "sizning@email.uz",
+    "addEmailButton": "Tasdiqlash xati",
+    "addEmailSentTo": "Tasdiqlash xati {email} ga yuborildi. Xatdagi havolani bosing.",
+    "addEmailSentToast": "Xat yuborildi — pochtangizni tekshiring.",
+    "addEmailResend": "Qayta yuborish",
+    "addEmailChange": "Boshqa email",
+    "addEmailInvalid": "Email manzili notoʻgʻri.",
+    "addEmailTaken": "Bu email boshqa hisobga tegishli. Oʻsha hisobga kiring va Telegramni u yerda ulang.",
+    "addEmailTooSoon": "Bir daqiqadan keyin qayta urinib koʻring.",
+    "addEmailTooMany": "Bugungi urinishlar tugadi. Ertaga qayta urinib koʻring.",
+    "addEmailHasEmail": "Hisobda email allaqachon bor. Sahifani yangilang.",
+    "addEmailSendFailed": "Xat yuborilmadi. Birozdan keyin qayta urinib koʻring."
   },
   "PlanSection": {
     "currentPlanTitle": "Joriy tarif",

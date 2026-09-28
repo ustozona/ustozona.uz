@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/empty";
 import { StatCard } from "@/components/StatCard";
 import { cn } from "@/lib/utils";
+import { adminEmailLabel } from "@/lib/placeholder-email";
 import {
   getAiUsageOverview,
   listAiUsers,
@@ -201,7 +202,7 @@ async function AiUsersSection() {
                 <TableRow key={r.userId} className="tabular-nums">
                   <TableCell className="pl-5">
                     <div className="text-sm font-medium">{r.name}</div>
-                    <div className="text-caption text-muted-foreground">{r.email}</div>
+                    <div className="text-caption text-muted-foreground">{adminEmailLabel(r.email)}</div>
                   </TableCell>
                   <TableCell>
                     <Badge size="sm" variant={r.plan === "pro" ? "default" : "secondary"}>

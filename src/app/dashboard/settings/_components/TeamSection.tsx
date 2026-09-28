@@ -4,6 +4,7 @@ import * as React from "react";
 import { toast } from "sonner";
 import { unwrap } from "@/lib/action-result";
 import { subjectLabel } from "@/lib/standards-data";
+import { displayEmail } from "@/lib/placeholder-email";
 import { Copy, Crown, LogOut, MoreHorizontal, Plus, Shield, UserMinus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -268,7 +269,7 @@ export default function TeamSection() {
                   <span className="truncate text-sm text-foreground">{m.name}</span>
                   {m.isMe ? <Badge variant="secondary">Siz</Badge> : null}
                 </div>
-                <span className="truncate text-xs text-muted-foreground">{m.email}</span>
+                <span className="truncate text-xs text-muted-foreground">{displayEmail(m.email)}</span>
               </div>
               {m.role === "owner" ? (
                 <Crown className="size-3.5 shrink-0 text-muted-foreground" />

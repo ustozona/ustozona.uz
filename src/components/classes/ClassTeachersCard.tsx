@@ -3,6 +3,7 @@
 import * as React from "react";
 import { toast } from "sonner";
 import { unwrap } from "@/lib/action-result";
+import { displayEmail } from "@/lib/placeholder-email";
 import { Crown, Plus, UserMinus } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
@@ -152,7 +153,7 @@ export function ClassTeachersCard({ classId }: { classId: string }) {
                       </Badge>
                     ) : null}
                   </div>
-                  <span className="truncate text-xs text-muted-foreground">{t.email}</span>
+                  <span className="truncate text-xs text-muted-foreground">{displayEmail(t.email)}</span>
                 </div>
                 {t.role === "owner" ? (
                   <Crown
@@ -192,12 +193,12 @@ export function ClassTeachersCard({ classId }: { classId: string }) {
               {candidates.map((m) => (
                 <CommandItem
                   key={m.teacherId}
-                  value={`${m.name} ${m.email}`}
+                  value={`${m.name} ${displayEmail(m.email)}`}
                   onSelect={() => add(m)}
                 >
                   <span className="truncate">{m.name}</span>
                   <span className="ml-auto truncate text-xs text-muted-foreground">
-                    {m.email}
+                    {displayEmail(m.email)}
                   </span>
                 </CommandItem>
               ))}

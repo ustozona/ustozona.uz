@@ -85,6 +85,7 @@ import {
   MonitorSmartphone,
 } from "lucide-react";
 import { rolesOf } from "@/lib/auth-roles";
+import { adminEmailLabel, isPlaceholderEmail } from "@/lib/placeholder-email";
 import type {
   AdminUsersPage,
   AdminUserListItem,
@@ -138,7 +139,8 @@ function initialsOf(name: string) {
     .trim()
     .split(/\s+/)
     .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase() ?? "")
+    // `Array.from` — kod nuqtasi boʻyicha: `w[0]` emojining yarmini olib `�` chiqarardi.
+    .map((w) => Array.from(w)[0]?.toUpperCase() ?? "")
     .join("");
 }
 
@@ -653,7 +655,12 @@ export default function UsersTable({
                               </Badge>
                             )}
                           </div>
-                          <div className="truncate text-xs text-muted-foreground">{u.email}</div>
+                          <div
+                            className="truncate text-xs text-muted-foreground"
+                            title={isPlaceholderEmail(u.email) ? u.email : undefined}
+                          >
+                            {adminEmailLabel(u.email, u.telegramUsername)}
+                          </div>
                         </div>
                       </div>
                     </TableCell>
@@ -801,6 +808,8 @@ export default function UsersTable({
                             Sifatida kirish
                           </DropdownMenuItem>
                           <DropdownMenuItem
+                            // Emailsiz (Telegram) hisob — xat `.invalid` ga ketib yoʻqolardi.
+                            disabled={isPlaceholderEmail(u.email)}
                             onSelect={() =>
                               run(
                                 () => resetPasswordAction({ email: u.email }),
@@ -913,7 +922,7 @@ export default function UsersTable({
           <AlertDialogHeader>
             <AlertDialogTitle>Hisobni butunlay oʻchirasizmi?</AlertDialogTitle>
             <AlertDialogDescription>
-              <strong>{deleteDialog?.name}</strong> ({deleteDialog?.email}) hisobiga tegishli
+              <strong>{deleteDialog?.name}</strong> ({adminEmailLabel(deleteDialog?.email, deleteDialog?.telegramUsername)}) hisobiga tegishli
               BARCHA maʼlumotlar — sinflar, oʻquvchilar, baholar, davomat — qaytarib
               boʻlmas tarzda oʻchiriladi.
             </AlertDialogDescription>
@@ -970,7 +979,7 @@ function RoleDialog({
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
           <DialogTitle>Rollarni oʻzgartirish</DialogTitle>
-          <DialogDescription>{user?.email}</DialogDescription>
+          <DialogDescription>{adminEmailLabel(user?.email, user?.telegramUsername)}</DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-3 py-1">
           {ALL_ROLES.map((r) => {
@@ -1037,7 +1046,7 @@ function BanDialog({
         <DialogHeader>
           <DialogTitle>Foydalanuvchini bloklash</DialogTitle>
           <DialogDescription>
-            {user?.email} — bloklanganda barcha sessiyalari darhol bekor qilinadi.
+            {adminEmailLabel(user?.email, user?.telegramUsername)} — bloklanganda barcha sessiyalari darhol bekor qilinadi.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-4 py-1">

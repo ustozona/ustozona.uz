@@ -9,6 +9,42 @@ import { Resend } from "resend";
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
+/** Telegram hisobiga email qoʻshishni tasdiqlash. `false` — yuborilmadi
+    (UI buni koʻrsatadi: jim yutilsa ustoz yoʻq xatni kutib oʻtiradi). */
+export async function sendEmailAddConfirmation(to: string, url: string, name: string): Promise<boolean> {
+  if (!resend) {
+    console.log(`[email] RESEND_API_KEY yoʻq — email tasdiqlash havolasi (${to}):\n${url}`);
+    return true;
+  }
+  const { data, error } = await resend.emails.send({
+    from: process.env.RESEND_FROM_EMAIL ?? "Ustozona <onboarding@resend.dev>",
+    to,
+    subject: "Emailni tasdiqlang — Ustozona",
+    html: `
+      <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
+        <h2>Emailni tasdiqlang</h2>
+        <p>Assalomu alaykum, ${escapeHtml(name)}! Ustozona hisobingizga shu manzilni ulash soʻraldi. Tasdiqlash uchun tugmani bosing:</p>
+        <p style="margin: 24px 0;">
+          <a href="${url}" style="background:#111827;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;display:inline-block;">
+            Emailni tasdiqlash
+          </a>
+        </p>
+        <p style="color:#6b7280;font-size:13px;">Havola 24 soat amal qiladi. Agar bu soʻrovni siz yubormagan boʻlsangiz, xatni eʼtiborsiz qoldiring — hech narsa oʻzgarmaydi.</p>
+      </div>
+    `,
+  });
+  if (error) {
+    console.error(`[email] Resend xatosi (${to}):`, error);
+    return false;
+  }
+  console.log(`[email] Yuborildi (${to}), id: ${data?.id}`);
+  return true;
+}
+
+function escapeHtml(s: string): string {
+  return s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+}
+
 export async function sendResetPasswordEmail(to: string, url: string) {
   if (!resend) {
     console.log(`[email] RESEND_API_KEY yoʻq — parolni tiklash havolasi (${to}):\n${url}`);

@@ -192,7 +192,20 @@
     "toastImageOnly": "Загружайте только файлы изображений.",
     "toastImageTooLarge": "Размер изображения не должен превышать 2МБ.",
     "toastAvatarUpdated": "Фото профиля обновлено.",
-    "toastReadError": "Не удалось прочитать изображение."
+    "toastReadError": "Не удалось прочитать изображение.",
+    "addEmailNote": "Email не указан. Добавьте его, чтобы входить не только через Telegram.",
+    "addEmailPlaceholder": "vash@email.uz",
+    "addEmailButton": "Отправить письмо",
+    "addEmailSentTo": "Письмо для подтверждения отправлено на {email}. Перейдите по ссылке в письме.",
+    "addEmailSentToast": "Письмо отправлено — проверьте почту.",
+    "addEmailResend": "Отправить снова",
+    "addEmailChange": "Другой email",
+    "addEmailInvalid": "Неверный адрес email.",
+    "addEmailTaken": "Этот email принадлежит другому аккаунту. Войдите в него и подключите Telegram там.",
+    "addEmailTooSoon": "Попробуйте снова через минуту.",
+    "addEmailTooMany": "Попытки на сегодня закончились. Попробуйте завтра.",
+    "addEmailHasEmail": "В аккаунте уже есть email. Обновите страницу.",
+    "addEmailSendFailed": "Не удалось отправить письмо. Попробуйте позже."
   },
   "PlanSection": {
     "currentPlanTitle": "Текущий тариф",

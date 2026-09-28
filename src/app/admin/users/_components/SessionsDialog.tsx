@@ -12,6 +12,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { listUserSessionsAction } from "@/server/actions/admin/users";
 import { parseUserAgent, deviceLabel, type DeviceKind } from "@/lib/user-agent";
+import { adminEmailLabel } from "@/lib/placeholder-email";
 
 /* Foydalanuvchining oxirgi seanslari — qaysi qurilmadan kirgani.
 
@@ -75,7 +76,7 @@ export default function SessionsDialog({
         <DialogHeader>
           <DialogTitle>Seanslar</DialogTitle>
           <DialogDescription>
-            {user?.name || user?.email} — oxirgi 10 ta kirish. Qurilma turi
+            {user?.name || adminEmailLabel(user?.email)} — oxirgi 10 ta kirish. Qurilma turi
             brauzer yuborgan maʼlumotdan aniqlanadi, shuning uchun taxminiy.
           </DialogDescription>
         </DialogHeader>
