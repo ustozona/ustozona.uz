@@ -41,7 +41,8 @@ import { MaterialKindTile } from "@/components/materials/MaterialKindTile";
 import { timeAgoUz } from "@/lib/localization";
 import { deleteSetAction } from "@/server/actions/assess";
 import { useLessonStore } from "@/store/useLessonStore";
-import { commitLessonsDelete } from "@/lib/sync/lessons-delete";
+import { useLessonFlow } from "@/hooks/useLessonFlow";
+import { lessonClassIds } from "@/lib/lessons-data";
 import type { LibraryItem, LibraryKind } from "@/lib/library-types";
 import { useTourRequest } from "@/components/tour/tour-request";
 import { TourDemoBanner } from "@/components/tour/TourDemoBanner";
@@ -91,6 +92,8 @@ const SORT_LABEL: Record<SortKey, string> = {
 export default function LibraryWorkspace({ items: realItems }: { items: LibraryItem[] }) {
   const router = useRouter();
   const tk = useTranslations("MaterialKinds");
+  const tf = useTranslations("LessonFlow");
+  const flow = useLessonFlow();
   const deleteLesson = useLessonStore((s) => s.deleteLesson);
   const lessonsHydrated = useLessonStore((s) => s._hasHydrated);
 
@@ -193,7 +196,7 @@ export default function LibraryWorkspace({ items: realItems }: { items: LibraryI
 
   /**
    * Ommaviy oʻchirish — ikkala tur ham SERVER buyrugʻi bilan:
-   * test `deleteSetAction`, dars `commitLessonsDelete`. Ikkalasi ham
+   * test `deleteSetAction`, dars `flow.remove` (`commitLessonsDelete` + boʻshliqni yopish). Ikkalasi ham
    * javobini kutadi, shuning uchun `router.refresh()` dan keyin «tirilib»
    * qaytish holati yoʻq.
    *
@@ -206,25 +209,37 @@ export default function LibraryWorkspace({ items: realItems }: { items: LibraryI
     const lessons = targets.filter((i) => i.kind === "lesson");
 
     if (lessons.length > 0 && !lessonsHydrated) {
-      toast.error("Darslar hali yuklanmadi — bir lahzadan soʻng urinib koʻring");
+      toast.error(tf("libraryNotHydrated"));
       return;
     }
 
+    const done = () => {
+      setSelected(new Set());
+      setConfirmOpen(false);
+      setDeleteTarget(null);
+    };
+    const message = tf("libraryDeletedToast", { count: targets.length });
     setBusy(true);
     try {
       await Promise.all(tests.map((i) => deleteSetAction(i.id)));
       if (lessons.length > 0) {
-        // Aniq buyruq: server tasdiqlamasa xato otiladi va storeʻga tegilmaydi.
-        const ok = await commitLessonsDelete({ lessonIds: lessons.map((i) => i.id) });
-        if (!ok) return;
-        lessons.forEach((i) => deleteLesson(i.id));
+        /* Oqim orqali: server tasdiqlamasa storeʻga tegilmaydi; tasdiqlasa
+           darslar biriktirilgan sinflarda boʻshliq yopiladi. */
+        const ids = new Set(lessons.map((i) => i.id));
+        const classIds = useLessonStore.getState().lessons.filter((l) => ids.has(l.id)).flatMap(lessonClassIds);
+        await flow.remove({
+          lessonIds: [...ids],
+          classIds,
+          mutate: () => ids.forEach((id) => deleteLesson(id)),
+          message,
+          onCommitted: done,
+        });
+        return;
       }
-      toast.success(targets.length > 1 ? `${targets.length} ta material oʻchirildi` : "Material oʻchirildi");
-      setSelected(new Set());
-      setConfirmOpen(false);
-      setDeleteTarget(null);
+      toast.success(message);
+      done();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Oʻchirib boʻlmadi");
+      toast.error(e instanceof Error ? e.message : tf("libraryDeleteFailed"));
     } finally {
       setBusy(false);
       /* `finally` da, chunki amal YARIM bajarilgan boʻlishi mumkin:
@@ -554,6 +569,7 @@ export default function LibraryWorkspace({ items: realItems }: { items: LibraryI
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {flow.dialog}
     </div>
   );
 }

@@ -36,6 +36,13 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "darslar-oqimi-qoldiq",
+    date: "2026-09-28",
+    type: "yaxshilandi",
+    title: "Yangi dars oʻz oʻrnini oladi, oʻchirilgan dars boʻshliq qoldirmaydi — keyingi darslar oʻzi suriladi",
+    href: "/dashboard/lessons",
+  },
+  {
     id: "tezkor-yaratish",
     date: "2026-09-28",
     type: "yangi",

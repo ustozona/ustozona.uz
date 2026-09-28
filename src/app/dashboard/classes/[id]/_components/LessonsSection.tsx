@@ -67,7 +67,6 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
   const units = useLessonStore((s) => s.units);
   const lessons = useLessonStore((s) => s.lessons);
   const addUnit = useLessonStore((s) => s.addUnit);
-  const addLesson = useLessonStore((s) => s.addLesson);
   const updateUnit = useLessonStore((s) => s.updateUnit);
   const deleteUnit = useLessonStore((s) => s.deleteUnit);
   const deleteLesson = useLessonStore((s) => s.deleteLesson);
@@ -247,14 +246,14 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
 
   const handleNewLesson = () => {
     if (!selectedUnitId) return;
-    const id = addLesson({
+    toast.success(t("newLessonToast"));
+    // Sinfda oqim boʻlsa dars unga kiradi; muharrirga oldindan koʻrish yopilgach oʻtiladi.
+    flow.newLesson({
       classId,
       unitId: selectedUnitId === NONE ? null : selectedUnitId,
       title: "",
-      status: "Draft",
+      onSettled: (id) => router.push(`/lessons/${id}`),
     });
-    toast.success(t("newLessonToast"));
-    router.push(`/lessons/${id}`);
   };
 
   const openLesson = (id: string) => router.push(`/lessons/${id}`);

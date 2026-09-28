@@ -422,14 +422,16 @@ export default function LessonsPage() {
 
   const handleNewLesson = () => {
     if (!selectedUnitId || !selectedClassId) return;
-    const id = addLesson({
-      classId: selectedClassId,
-      unitId: selectedUnitId === NONE ? null : selectedUnitId,
-      title: "",
-      status: "Draft",
-    });
+    const unitId = selectedUnitId === NONE ? null : selectedUnitId;
     toast.success(t("newLessonToast"));
-    router.push(`/lessons/${id}`);
+    // Demo rejimda oqim yoʻq — dars sanasiz yaratiladi.
+    if (isDemoMode) {
+      const id = addLesson({ classId: selectedClassId, unitId, title: "", status: "Draft" });
+      router.push(`/lessons/${id}`);
+      return;
+    }
+    // Sinfda oqim boʻlsa dars unga kiradi; muharrirga oldindan koʻrish yopilgach oʻtiladi.
+    flow.newLesson({ classId: selectedClassId, unitId, title: "", onSettled: (id) => router.push(`/lessons/${id}`) });
   };
 
   const openLesson = (id: string) => router.push(`/lessons/${id}`);
@@ -1336,6 +1338,13 @@ export default function LessonsPage() {
                             </>
                           )}
                         </>
+                      )}
+                      {/* Sanasiz dars (yangi yoki tartiblashda oqim oʻrtasiga tushgan) — oqimga kiritish. */}
+                      {effectiveClassId && !isDemoMode && !isTaught(lesson, effectiveClassId) && !lessonSessions(lesson).some((x) => x.classId === effectiveClassId) && (
+                        <ContextMenuItem className="gap-2 cursor-pointer" onClick={() => flow.joinFlow(lesson.id, effectiveClassId, { message: tf("joinedToast") })}>
+                          <CalendarPlus className="size-4" />
+                          {tf("joinFlow")}
+                        </ContextMenuItem>
                       )}
                       {lessonsForUnit.length > 1 && (
                         <ContextMenuItem className="gap-2 cursor-pointer" onClick={() => startReorder("lessons")}>

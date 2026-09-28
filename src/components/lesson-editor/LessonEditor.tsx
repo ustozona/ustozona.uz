@@ -31,7 +31,6 @@ import { workPlanFor, workPlanPrompt } from "@/lib/work-plan";
 import { useLessonFlow } from "@/hooks/useLessonFlow";
 import { isTaught, lessonPlanState, type LessonPlanState } from "@/lib/lessons-data";
 import { todayKey } from "@/lib/date-keys";
-import { commitLessonsDelete } from "@/lib/sync/lessons-delete";
 import { flushLessonsNow } from "@/components/sync/LessonsServerSync";
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator,
@@ -418,10 +417,15 @@ export default function LessonEditor({
     router.replace(`/lessons/${newId}`);
   };
   const performDelete = async () => {
-    if (!(await commitLessonsDelete({ lessonIds: [lessonId] }))) return;
-    deleteLesson(lessonId);
-    toast.success(t("toast.deleted"));
-    closeEditor();
+    // Oqim orqali: boʻshagan slot havzada qoladi, keyingilar orqaga tortiladi.
+    // Oldindan koʻrish oynasi muharrirning oʻzida — yopish oqim tugagach.
+    await flow.remove({
+      lessonIds: [lessonId],
+      classIds: lesson ? lessonClassIds(lesson) : [],
+      mutate: () => deleteLesson(lessonId),
+      message: t("toast.deleted"),
+      onSettled: closeEditor,
+    });
   };
   const updatedLabel = lesson?.updatedAt ? formatFeedbackAgo(lesson.updatedAt, relativeT) : null;
 

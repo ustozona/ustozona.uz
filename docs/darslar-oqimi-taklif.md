@@ -301,7 +301,17 @@ Dars muharririda sana qoʻshish/olib tashlash, bosh sahifadagi «Bugun» va
 darsi bor mavzuga muharrirdan QOʻSHIMCHA sana qoʻyilsa — mavzu qadaladi
 (qoʻlda tanlangan sana).
 
-Hali qilinmagan: Materiallar va import oynasidagi oʻchirish oqimga
-ulanmagan — ular boʻshliq qoldiradi, oqim uni saqlaydi. Yangi dars sanasiz
-yaratiladi, shuning uchun «boʻlim oʻrtasiga yangi dars» oqimni surmaydi
-(zaxira dars bundan mustasno).
+Oqim boʻshliqlari yopildi (2026-09-28):
+
+- **Yangi dars oqimga kiradi.** Darslar sahifasi va sinf sahifasida yaratilgan
+  dars boʻlim oxiriga qoʻyiladi va tartibdagi oldingi oqim darsidan keyingi
+  slotni oladi, keyingilar bir slot suriladi (`joinFlow`; zaxira dars ham shu
+  yoʻl). Oqim boʻsh boʻlsa yoki rad etilsa — dars sanasiz qoladi. Mavjud
+  sanasiz dars uchun menyuda «Oqimga qoʻshish». Muharrirdagi «Nusxa koʻchirish»
+  va tezkor mavzu yaratish ataylab sanasiz qoladi.
+- **Oʻchirish.** Dars muharriri va Materiallardagi oʻchirish ham `flow.remove`
+  orqali — boʻshliq yopiladi.
+- **Import bekor qilinishi ataylab oqimdan tashqarida.** Import mavjud
+  darslarni surmaydi (faqat boʻsh slotlarni oladi), shuning uchun bekor
+  qilishda boʻshliqni yopish boshqa darslarni import oldidagi joyidan
+  koʻchirib yuborardi. Yaratilgan darslar shunchaki oʻchiriladi.
