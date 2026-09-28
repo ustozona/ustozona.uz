@@ -1038,7 +1038,11 @@
 .list-row--glyph[data-active="true"]::before {
   content: none;
 }
-.list-row--glyph [data-slot="class-glyph"] {
+/* Doiraning oʻzi qatorga bogʻlanmagan: `ClassSelect` (oʻquvchi profilidagi
+   sinf tanlagichi) ham aynan shu glifni ishlatadi — ikkinchi oʻlcham paydo
+   boʻlmasin. Qatorga oid holatlar (hover, tanlangan) quyida `.list-row--glyph`
+   ichida qoladi. `--card-accent` ota elementda beriladi. */
+[data-slot="class-glyph"] {
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -1063,7 +1067,7 @@
     transform: none;
   }
 }
-.list-row--glyph [data-slot="class-glyph"] svg {
+[data-slot="class-glyph"] svg {
   width: 1.125rem; /* 18px — `SectionIcon` default bilan bir xil */
   height: 1.125rem;
 }

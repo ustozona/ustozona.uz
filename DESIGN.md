@@ -46,7 +46,7 @@ manbalardan foydalaniladi:
 - Sinf rangi → [`src/lib/class-colors.ts`](src/lib/class-colors.ts) (`CLASS_COLOR_BASE`, OKLCH `-400`, v3.shadcn.com/colors darajasi) → `CLASS_COLOR_HEX`, `classTints()`
   - **Deviatsiya (2026-09-10) — sinflar paneli (`ClassListPanel`):** nuqta oʻrnida sinf ikonkasi 36px tint doirada (`size-9`, `rounded-full`, 18px glif; `.list-row--glyph`). Tinch holatda 18% tint fon + rangli glif, hoverda qator foni sinf rangining 5% tinti, tanlanganda doira toʻyinadi — `gradientTile` + oq glif, qator foni tint + 1px chegara toʻliq sinf rangida; rail yoʻq (§7 dagi «tanlangan = 3px rail» qoidasidan chetlanish), qator 52px. Hover-harakat — faqat doira `scale(1.08)`. Sabab: panel sinfning asosiy navigatsiyasi, foydalanuvchi tanlagan ikonka sinfni nuqtadan tezroq tanitadi; tanlov doira + chegarada yetarli aniq, rail ortiqcha. Boshqa zich roʻyxatlar nuqtada qoladi
   - **Deviatsiya (2026-09-22) — Darslar sahifasi ustunlari (`LessonsClassPanel`, boʻlimlar):** tanlanmagan sinf/boʻlim kartasida iconbox gradient emas — 18% tint fon + rangli glif; tanlanganda `gradientTile` + oq glif (§7 dagi «iconbox = gradient» qoidasidan chetlanish). Sabab va naqsh — yuqoridagi `ClassListPanel` deviatsiyasi bilan bir xil: ustunda bir vaqtda koʻp karta turadi, hammasi toʻyingan boʻlsa tanlangani ajralmaydi
-  - Sinfni chizish: nuqta = `<ClassSwatch>` (**8px, yagona — oʻlcham sozlanmaydi**), oʻqiladigan yorliq = `<ClassBadge>`, bosiladigan chip = `<ClassChip>`, bir nechta sinfdan bittasini tanlash = `<ClassChipGroup>`, «nechta sinf» = `<ClassSwatchStack>` — qoʻlda span yoki mahalliy nusxa yoʻq (`docs/design-system.md` §1)
+  - Sinfni chizish: nuqta = `<ClassSwatch>` (**8px, yagona — oʻlcham sozlanmaydi**), oʻqiladigan yorliq = `<ClassBadge>`, bosiladigan chip = `<ClassChip>`, bir nechta sinfdan bittasini tanlash = `<ClassSelect>`, «nechta sinf» = `<ClassSwatchStack>` — qoʻlda span yoki mahalliy nusxa yoʻq (`docs/design-system.md` §1)
 - Toifa (topic) rangi → `TOPIC_COLOR_BASE` (`src/lib/grades-data`), xuddi shu engine ustida
 
 Batafsil jadval: `docs/design-system.md` §1.
@@ -225,6 +225,8 @@ Yangi sahifa/komponent yozgach:
 - [ ] Dark mode alohida kod bilan emas, token orqali ishlaydi
 
 **Deviatsiya (2026-09-22) — karta ichidagi tasdiqlash lentasi** (Darslar, «Oʻtildimi?»): lentadagi tugmalar 28px (`h-7`), §8 dagi 36px boshqaruv standartidan past. Sabab: lenta 72px kartaning ichida turadi — 36px tugmalar kartani qoʻpol balandlashtiradi; bu toolbar emas, kartaning ichki harakati. Boshqa joyda 36px qoladi.
+
+**Deviatsiya (2026-09-28) — oʻquvchi profilidagi sinf tanlagichi** (`ClassSelect` trigger): ~52px, §8 dagi 36px boshqaruv standartidan baland. Sabab: bu toolbar boshqaruvi emas, profil kontekstining asosiy tanlovi va Sinflar paneli qatorini (`.list-row--glyph`, 36px glif + 8px vertikal padding) aynan takrorlaydi — tanlangan sinf panelda qanday koʻrinsa, bu yerda ham shunday. 36px ga siqilsa glif 36px standartidan kichrayib, uchinchi oʻlcham paydo boʻlardi. Boshqa joyda 36px qoladi.
 
 ---
 
