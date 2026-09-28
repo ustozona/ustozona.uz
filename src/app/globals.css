@@ -1074,6 +1074,14 @@
 .list-row--glyph[data-active="true"] [data-slot="class-glyph"] {
   color: white;
 }
+/* Sinf tanlagichi (`ClassSelect`) triggeri ham `.list-row`, lekin bosilganda
+   kichraymaydi: Radix roʻyxatni `pointerdown`da ochadi va popper oʻlchamini
+   shu paytdagi (transform qilingan) trigger rect'idan oladi — roʻyxat bir
+   necha px torroq/siljigan ochilardi. `.list-row:active` bilan bir xil
+   specificity, keyinroq eʼlon qilingani uchun ustun. */
+[data-slot="class-select"]:active {
+  transform: none;
+}
 
 /* ─────────────────────────────────────────────
    QATOR TILI — IXCHAM (list-row-compact) — AppSidebar

@@ -69,8 +69,12 @@ rangining 5% tinti (chegarasiz — tanlangan holatdan ajralib turadi) va
 yagona hover-harakat — doira `scale(1.08)`, `--transition-duration-base`
 (reduced-motion'da oʻchadi). Rail yoʻq — tanlov doiraning oʻzida.
 Qator balandligi 52px (vertikal padding 8px). Mobil
-trigger ham shu ikonkani sinf rangida chizadi. Boshqa zich roʻyxatlar nuqtada
-qoladi.
+trigger ham shu ikonkani sinf rangida chizadi. Retsept yagona manbada —
+`src/components/ClassRow.tsx` (`CLASS_ROW_CLASS`, `classRowStyle`,
+`ClassRowGlyph`, `classRowNameClass`). **Istisno doirasi:** oʻquvchi
+profilidagi sinf tanlagichi (`ClassSelect`) ham aynan shu qator — u oʻsha
+sinf navigatsiyasining profil ichidagi davomi. Boshqa zich roʻyxatlar
+nuqtada qoladi.
 
 **Doira oʻlchami — 8px, yagona.** `ClassSwatch` ichida `size-2` `className`dan
 keyin `cn()` ga beriladi, `cn` esa `tailwind-merge` — shuning uchun chaqiruv
@@ -94,17 +98,17 @@ oʻlcham prop'i bilan emas, **alohida nom** bilan ajratilgan — chaqiruv joyida
 «kattasinimi, kichiginimi?» degan savol tugʻilmasin. Ikkalasi ham rang
 retseptini `classTints()`dan oladi, qoʻlda `color-mix` yozilmaydi.
 
-`ClassSelect` — ochiladigan roʻyxat (Radix Select), til Sinflar panelidan.
-Glif — **oʻsha** `[data-slot="class-glyph"]` (36px tint doira, 18px ikonka,
-rang `--card-accent` dan); uning asosiy uslubi qatorga bogʻlanmagan, shuning
-uchun ikkinchi oʻlcham yoʻq. Trigger — `.list-row--glyph` qatori: tanlangan
-sinf 7% tint fon + 1px chegara toʻliq sinf rangida; glif ataylab toʻyinmagan
-(profilda tepada toʻyingan avatar doirasi turadi). Yagona hover-harakat —
-glif `scale(1.08)`. Roʻyxat qatori 44px; tanlangan qator doimiy `bg-muted/60`
-fonda va oʻngda sinf rangidagi doira bilan, belgi siyohi `textOnSolid`
-(palitra ranglari yorugʻ — oq belgi ularda oʻqilmaydi). Sinf **bitta**
-boʻlsa ham tanlagich chiqadi: kontekst har doim bir joyda va bir shaklda
-turadi. Trigger balandligi — `DESIGN.md` §8 deviatsiyasi.
+`ClassSelect` — ochiladigan roʻyxat (Radix Select), Sinflar panelining qatori
+**aynan**: trigger ham, roʻyxat qatorlari ham `.list-row .list-row--glyph`
+klasslari va `ClassListPanel` dagi inline retsept, alohida uslub yoʻq.
+Tanlangan sinf (trigger va roʻyxatdagi joriy qator) — 7% tint fon + 1px
+chegara toʻliq sinf rangida + toʻyingan glif (`gradientTile`, oq ikonka) +
+qalin matn; ✓ belgisi yoʻq, tanlov glifning oʻzida. Tinch qator — 18% tint
+doira + rangli ikonka; hover — sinf rangining 5% tinti + glif `scale(1.08)`;
+klaviatura — `.list-row:focus-visible` halqasi. Glif `[data-slot="class-glyph"]`
+ning asosiy uslubi qatorga bogʻlanmagan, shuning uchun ikkinchi oʻlcham
+yoʻq. Sinf **bitta** boʻlsa ham tanlagich chiqadi: kontekst har doim bir
+joyda va bir shaklda turadi. Trigger balandligi — `DESIGN.md` §8 deviatsiyasi.
 
 Anatomiya 4pt gridда (§6.5) va §3 boshqaruv shkalasidan chiqariladi, tanlanmaydi:
 
