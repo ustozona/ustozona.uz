@@ -24,6 +24,7 @@ import { classTints } from "@/lib/class-colors";
 import { useGradesStore } from "@/store/useGradesStore";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ClassFormModal } from "@/components/ClassFormModal";
+import { CLASS_ROW_CLASS, ClassRowGlyph, classRowNameClass, classRowStyle } from "@/components/ClassRow";
 import { classIcon, type ClassIconKey } from "@/lib/class-icons";
 import {
   Empty,
@@ -181,40 +182,24 @@ export default function ClassListPanel({
                 const isSelected = cls.id === selectedClassId;
                 const color = classColor(cls);
                 const rowTints = classTints(color);
-                const RowIcon = classIcon(cls.icon);
 
                 // Karta pasporti v2: BITTA andoza — tanlov faqat tint fon +
                 // 1px sinf rangi chegarasi + toʻla gradient doira + qalinroq
                 // matn orqali (rail yoʻq); geometriya (balandlik, doira)
-                // oʻzgarmaydi (morf yoʻq). Glif doirasi tinch holatda tint
-                // fon + rangli glif (`.list-row--glyph`).
+                // oʻzgarmaydi (morf yoʻq). Retsept `ClassRow` da — oʻquvchi
+                // profilidagi `ClassSelect` ham aynan shuni chizadi.
                 return (
                   <ContextMenu key={cls.id}>
                     <ContextMenuTrigger asChild>
                       <button
                         onClick={() => handleSelect(cls.id)}
-                        style={{
-                          ["--card-accent" as string]: rowTints.solid,
-                          // Chegara inline — sinf rangining oʻzi (100%), 1px.
-                          ...(isSelected ? { ...rowTints.tint, border: `1px solid ${rowTints.solid}` } : {}),
-                        }}
-                        className="list-row list-row--glyph group w-full"
+                        style={classRowStyle(rowTints, isSelected)}
+                        className={CLASS_ROW_CLASS}
                         data-active={isSelected || undefined}
                         aria-current={isSelected || undefined}
                       >
-                        <span
-                          data-slot="class-glyph"
-                          style={isSelected ? rowTints.gradientTile : undefined}
-                          aria-hidden="true"
-                        >
-                          <RowIcon />
-                        </span>
-                        <span className={cn(
-                          "text-sm truncate flex-1 transition-colors",
-                          isSelected ? "font-semibold text-foreground" : "text-foreground/70 group-hover:text-foreground"
-                        )}>
-                          {cls.name}
-                        </span>
+                        <ClassRowGlyph icon={cls.icon} tints={rowTints} active={isSelected} />
+                        <span className={classRowNameClass(isSelected)}>{cls.name}</span>
                       </button>
                     </ContextMenuTrigger>
                     <ContextMenuContent>

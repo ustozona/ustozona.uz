@@ -55,6 +55,21 @@ const nextConfig: NextConfig = {
          yoʻli uchun butun ilovaning qabul qiladigan tanasi kengayadi. */
       bodySizeLimit: SERVER_ACTION_BODY_LIMIT,
     },
+    /* ⛔ Turbopack build keshi (`.next/cache/turbopack`) — Next 16.3 dan
+       beri standart yoqilgan — O'CHIRILGAN (2026-09-28).
+
+       Kesh `globals.css` o'zgarishini ilg'amadi va ESKI CSS'ni chiqardi:
+       prodga yangi selektor yetib bormadi (sinf tanlagichidagi glif
+       rangsiz chiqdi), build esa xatosiz o'tdi. Lokal build ham xuddi shu
+       eski CSS'ni berdi va faqat `.next/cache/turbopack` o'chirilgach
+       to'g'ri chiqdi. Deploy platformasi `.next/cache` ni oldingi
+       build'dan tiklagani uchun bu prodda ham takrorlanadi.
+
+       Narxi — build biroz sekinroq. Evaziga CSS jimgina eskirib qolmaydi.
+       Qayta yoqishdan oldin `globals.css` o'zgarishi kesh bilan build'da
+       aks etishini tekshiring. Dev keshi (`turbopackFileSystemCacheForDev`)
+       tegilmagan — dev'da muammo bo'lsa: `rm -rf .next/dev`. */
+    turbopackFileSystemCacheForBuild: false,
   },
 };
 
