@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { DndContext, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent, type Modifier } from "@dnd-kit/core";
+import { DndContext, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent, type DragOverEvent, type Modifier } from "@dnd-kit/core";
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { ArrowDown, ArrowUp, GripVertical } from "lucide-react";
@@ -53,10 +53,14 @@ export function ReorderList({
   ids,
   onMove,
   labels,
+  onPreview,
   children,
 }: {
   ids: string[];
   onMove: (from: number, to: number) => void;
+  /** Sudrash davomida «tashlasam shunday boʻladi» tartibi (`null` — sudrash tugadi).
+      Tartibga bogʻliq jonli hisob uchun (masalan dars sanalari). */
+  onPreview?: (order: string[] | null) => void;
   labels: { drag: string; up: string; down: string };
   children: (id: string, index: number, h: ReorderHandle) => ReactNode;
 }) {
@@ -64,12 +68,17 @@ export function ReorderList({
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
+  const onDragOver = (e: DragOverEvent) => {
+    if (!onPreview || !e.over) return;
+    onPreview(arrayMove(ids, ids.indexOf(e.active.id as string), ids.indexOf(e.over.id as string)));
+  };
   const onDragEnd = (e: DragEndEvent) => {
+    onPreview?.(null);
     if (!e.over || e.active.id === e.over.id) return;
     onMove(ids.indexOf(e.active.id as string), ids.indexOf(e.over.id as string));
   };
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} modifiers={[restrictToVerticalAxis]} onDragEnd={onDragEnd}>
+    <DndContext sensors={sensors} collisionDetection={closestCenter} modifiers={[restrictToVerticalAxis]} onDragOver={onDragOver} onDragEnd={onDragEnd} onDragCancel={() => onPreview?.(null)}>
       <SortableContext items={ids} strategy={verticalListSortingStrategy}>
         {ids.map((id, i) => (
           <SortableRow key={id} id={id} index={i} count={ids.length} onMove={onMove} labels={labels} render={children} />

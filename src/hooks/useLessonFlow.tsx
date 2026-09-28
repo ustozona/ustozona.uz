@@ -14,8 +14,8 @@ import { addDaysKey, todayKey } from "@/lib/date-keys";
 import { isPinned, lessonClassIds, unitIdForClass, type Lesson, type LessonSession, type Unit } from "@/lib/lessons-data";
 import {
   classFlow, classSessions, flowSequence, isFlowConsistent, isFrozen, isOnTimetable, nextSlotAfter,
-  offTimetable, planDrop, planRealign, planReflow, reserveAfter,
-  type ClassFlow, type FlowEnv, type ReflowPlan,
+  flowForecast, offTimetable, planDrop, planRealign, planReflow, reserveAfter,
+  type ClassFlow, type FlowDraft, type FlowEnv, type FlowForecast, type ReflowPlan,
 } from "@/lib/lesson-flow";
 import { slotKey } from "@/lib/ish-reja/distribute";
 import { commitLessonsDelete } from "@/lib/sync/lessons-delete";
@@ -72,6 +72,9 @@ export type FlowRunOptions = {
   mode?: "reflow" | "realign";
   /** «Bekor qilish» da darslardan tashqari qaytariladigan narsa (masalan kalendar). */
   undoExtra?: () => void;
+  /** Amal boʻshatgan slotlar (`closeGaps`) avval sigʻmagan darslarga beriladi —
+      «sigʻmaydi» chipidagi yechimlar: joy boʻshasa, sigʻmagan dars oqimga qaytadi. */
+  fillOverflow?: boolean;
 };
 
 export type FlowPlaceArgs = {
@@ -98,6 +101,7 @@ export type FlowRemoveArgs = {
   onCommitted?: () => void;
   /** Oqim yakunlangach (darhol yoki oldindan koʻrishdan keyin). */
   onSettled?: () => void;
+  fillOverflow?: boolean;
 };
 
 export type FlowJoinOptions = {
@@ -174,6 +178,39 @@ export function useFlowMismatch(classId: string | null): boolean {
   }, [classId, lessons, units, versions, calendar]);
 }
 
+/** Sinf oqimining prognozi (Zanjir, «sigʻmaydi» chipi, yoʻl xaritasi, planner
+    raqami). `draft` — tartiblash qoralamasi: sanalar jonli qayta hisoblanadi.
+    `classId` yoʻq (yoki demo) — `null`. Muhit (jadval, kalendar) va prognoz
+    faqat oʻz manbalari oʻzgarganda qayta tuziladi; qoralama qadamida faqat
+    shu sinf hisoblanadi. */
+export function useFlowForecast(classId: string | null, draft?: FlowDraft): FlowForecast | null {
+  const versions = useTimetableStore((s) => s.versions);
+  const calendar = useCalendarStore((s) => s.calendar);
+  const lessons = useLessonStore((s) => s.lessons);
+  const units = useLessonStore((s) => s.units);
+  const env = useMemo(() => makeEnv(versions, calendar), [versions, calendar]);
+  const unitOrder = draft?.unitOrder;
+  const lessonOrder = draft?.lessonOrder;
+  return useMemo(
+    () => (classId ? flowForecast(lessons, units, classId, env, { unitOrder, lessonOrder }) : null),
+    [classId, lessons, units, env, unitOrder, lessonOrder],
+  );
+}
+
+/** Bir nechta sinf prognozi (planner: tartib raqami va oqimdagi qoʻshnilar).
+    Muhit bir marta tuziladi; faqat darslar/boʻlimlar/jadval/kalendar oʻzgarganda. */
+export function useFlowForecasts(classIds: readonly string[]): Map<string, FlowForecast> {
+  const versions = useTimetableStore((s) => s.versions);
+  const calendar = useCalendarStore((s) => s.calendar);
+  const lessons = useLessonStore((s) => s.lessons);
+  const units = useLessonStore((s) => s.units);
+  const key = classIds.join("|");
+  return useMemo(() => {
+    const e = makeEnv(versions, calendar);
+    return new Map(key ? key.split("|").map((c) => [c, flowForecast(lessons, units, c, e)] as const) : []);
+  }, [key, lessons, units, versions, calendar]);
+}
+
 export function useLessonFlow(): {
   run: (opts: FlowRunOptions) => void;
   /** Darsni sanaga qoʻyish: planner'da tashlash, sana tahriri, bankdan bogʻlash. */
@@ -195,6 +232,11 @@ export function useLessonFlow(): {
   joinFlow: (lessonId: string, classId: string, opts?: FlowJoinOptions) => void;
   /** Boʻlim oxiriga yangi dars + oqimga kiritish. Id qaytaradi. */
   newLesson: (a: FlowNewLessonArgs) => string;
+  /** Darsni oqimdan chiqarish: kelajakdagi sessiyalari olinadi (dars sanasiz
+      qoladi), boʻshliq yopiladi; `fillOverflow` — boʻshagan joy sigʻmagan darsga. */
+  removeFromFlow: (lessonId: string, classId: string, opts?: { fillOverflow?: boolean }) => void;
+  /** `stretch(−1)` bilan bir xil, lekin boʻshagan slot sigʻmagan darsga beriladi. */
+  shortenForOverflow: (lessonId: string, classId: string) => void;
   /** Sanalarni tartibga (va jadval/taʼtilga) moslash — oldindan koʻrish bilan. */
   realign: (classIds: string[]) => void;
   dialog: ReactNode;
@@ -252,6 +294,19 @@ export function useLessonFlow(): {
     };
 
     opts.mutate();
+    if (opts.fillOverflow) {
+      const st2 = useLessonStore.getState();
+      const eNow = env();
+      for (const c of classIds) {
+        const flowNow = classFlow(st2.lessons, st2.units, c, eNow.now);
+        const freed = flowBefore(c).pool.filter((x) =>
+          !flowNow.occupied.has(slotKey(x.date, x.startMin)) && !eNow.isHoliday(x.date) && !isFrozen(x, eNow.now));
+        const waiting = flowForecast(before.lessons, before.units, c, eBefore).overflow
+          .filter((id) => !classSessions(st2.lessons.find((l) => l.id === id) ?? ({} as Lesson), c).length);
+        waiting.slice(0, freed.length).forEach((id, i) =>
+          st2.addScheduleForClass(id, c, freed[i].date, freed[i].startMin, freed[i].endMin));
+      }
+    }
 
     // Amaldan keyingi jadval va kalendar (masalan yangi taʼtil) bilan.
     const e = env();
@@ -361,10 +416,10 @@ export function useLessonFlow(): {
     });
   };
 
-  const remove = async ({ lessonIds, unitIds, classIds, mutate, message, description, onCommitted, onSettled }: FlowRemoveArgs) => {
+  const remove = async ({ lessonIds, unitIds, classIds, mutate, message, description, onCommitted, onSettled, fillOverflow }: FlowRemoveArgs) => {
     if (!(await commitLessonsDelete({ lessonIds, unitIds }))) return false;
     onCommitted?.();
-    run({ classIds, mutate, decline: "keep", closeGaps: true, message, description, onSettled });
+    run({ classIds, mutate, decline: "keep", closeGaps: true, message, description, onSettled, fillOverflow });
     return true;
   };
 
@@ -432,7 +487,7 @@ export function useLessonFlow(): {
     });
   };
 
-  const stretch = (lessonId: string, classId: string, delta: 1 | -1) => {
+  const stretch = (lessonId: string, classId: string, delta: 1 | -1, fillOverflow = false) => {
     const st = useLessonStore.getState();
     const x = st.lessons.find((l) => l.id === lessonId);
     const e = env();
@@ -448,6 +503,7 @@ export function useLessonFlow(): {
         classIds: [classId],
         decline: "keep",
         closeGaps: true,
+        fillOverflow,
         message: t("shortenedToast"),
         description: x.title,
         mutate: () => useLessonStore.getState().unscheduleSession(lessonId, classId, last.date, last.startMin),
@@ -518,6 +574,27 @@ export function useLessonFlow(): {
     newLesson({ classId, unitId, title: t("reserveTitle"), reserve: true });
   };
 
+  const removeFromFlow = (lessonId: string, classId: string, o: { fillOverflow?: boolean } = {}) => {
+    const x = useLessonStore.getState().lessons.find((l) => l.id === lessonId);
+    const e = env();
+    const future = x ? classSessions(x, classId).filter((s) => !isFrozen(s, e.now)) : [];
+    if (!x || !future.length) return;
+    run({
+      classIds: [classId],
+      decline: "keep",
+      closeGaps: true,
+      fillOverflow: o.fillOverflow,
+      message: t("removedFromFlowToast"),
+      description: x.title,
+      mutate: () => {
+        const s = useLessonStore.getState();
+        for (const f of future) s.unscheduleSession(lessonId, classId, f.date, f.startMin);
+      },
+    });
+  };
+
+  const shortenForOverflow = (lessonId: string, classId: string) => stretch(lessonId, classId, -1, true);
+
   const realign = (classIds: string[]) =>
     run({ classIds, mutate: () => {}, decline: "keep", forcePreview: true, mode: "realign" });
 
@@ -534,7 +611,7 @@ export function useLessonFlow(): {
     />
   );
 
-  return { run, place, remove, togglePin, bump, stretch, addReserve, joinFlow, newLesson, realign, dialog };
+  return { run, place, remove, togglePin, bump, stretch, addReserve, joinFlow, newLesson, removeFromFlow, shortenForOverflow, realign, dialog };
 }
 
 /* ── Kalendar va jadval oʻzgarishini kuzatish ──

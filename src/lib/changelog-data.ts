@@ -36,6 +36,14 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "darslar-oqimi-vizual",
+    date: "2026-09-28",
+    type: "yangi",
+    title: "Darslar oqimini koʻring: zanjir, yillik yoʻl xaritasi va «sigʻmaydi» ogohlantirishi",
+    body: "Darslar roʻyxati chapida zanjir har darsning holatini koʻrsatadi, tartiblayotganda yangi sanalar darhol koʻrinadi. «Yoʻl xaritasi» koʻrinishida boʻlimlar yil boʻylab polosa boʻlib turadi — sudrab tartibini oʻzgartirasiz. Yil oxirigacha dars sigʻmasa, qaysilari va nimani qisqartirish mumkinligini koʻrasiz. Planner'da darsga kursorni olib borsangiz, oqimdagi oldingi va keyingi darsi ajraladi.",
+    href: "/dashboard/lessons",
+  },
+  {
     id: "darslar-oqimi-qoldiq",
     date: "2026-09-28",
     type: "yaxshilandi",

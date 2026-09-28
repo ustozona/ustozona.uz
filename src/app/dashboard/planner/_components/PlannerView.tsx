@@ -31,7 +31,7 @@ import { MonthGrid } from "@/components/calendar/MonthGrid";
 import { useCalendarFormat } from "@/components/calendar/format";
 import { applyBlockedDays, getHolidayForDate, inRange, type Holiday } from "@/lib/academic-calendar";
 import { lessonSessions, lessonClassIds, unitIdForClass, isTaught, isPinned, type Lesson } from "@/lib/lessons-data";
-import { useLessonFlow } from "@/hooks/useLessonFlow";
+import { useFlowForecasts, useLessonFlow } from "@/hooks/useLessonFlow";
 import { isFrozen } from "@/lib/lesson-flow";
 import { addDaysKey, todayKey } from "@/lib/date-keys";
 import { cn } from "@/lib/utils";
@@ -203,20 +203,27 @@ function SlotDropZone({ id, style, children }: {
 
 /** Sudraladigan joylangan dars (panel vaqt-toʻrida). Klaviatura bilan ham
     ishlaydi — @dnd-kit KeyboardSensor `attributes` orqali fokus/ARIA beradi. */
-function DraggablePlacement({ id, style, className, onClick, children }: {
+function DraggablePlacement({ id, style, className, onClick, onHover, children }: {
   id: string;
   style?: React.CSSProperties;
   className?: string;
-  onClick?: () => void;
+  /** `touch` — sensorli ekrandan bosildi (hover yoʻq). */
+  onClick?: (touch: boolean) => void;
+  /** Sichqoncha kirdi/chiqdi — oqim bogʻini koʻrsatish. */
+  onHover?: (on: boolean) => void;
   children: ReactNode;
 }) {
   const { setNodeRef, listeners, attributes, isDragging } = useDraggable({ id });
+  const touch = useRef(false);
   return (
     <div
       ref={setNodeRef}
       {...listeners}
       {...attributes}
-      onClick={onClick}
+      onPointerDownCapture={(e) => { touch.current = e.pointerType === "touch"; }}
+      onPointerEnter={(e) => e.pointerType === "mouse" && onHover?.(true)}
+      onPointerLeave={(e) => e.pointerType === "mouse" && onHover?.(false)}
+      onClick={() => onClick?.(touch.current)}
       style={style}
       className={cn(className, isDragging && "opacity-40")}
     >
@@ -478,6 +485,42 @@ export default function PlannerView({ classId }: { classId?: string }) {
     () => (classId ? lessons.filter((l) => lessonClassIds(l).includes(classId)) : lessons),
     [lessons, classId],
   );
+
+  /* Oqim bogʻi: chipda tartib raqami («2.3»), hover (sensorli ekranda — birinchi
+     bosish) qilingan dars va uning oqimdagi oldingi/keyingi darsi ajratiladi.
+     Demo'da yoʻq. Hisob — `flowForecast` (Darslar sahifasidagi Zanjir bilan bir manba). */
+  const flowClassIds = useMemo(
+    () => (isDemoMode ? [] : [...new Set(visLessons.flatMap(lessonClassIds))].sort()),
+    [isDemoMode, visLessons],
+  );
+  const forecasts = useFlowForecasts(flowClassIds);
+  const flowLinks = useMemo(() => {
+    const out = new Map<string, { index: string; prev: string | null; next: string | null }>();
+    for (const [c, f] of forecasts) {
+      const dated = f.rows.filter((r) => r.current);
+      dated.forEach((r, i) => out.set(`${c}|${r.lessonId}`, {
+        index: r.index,
+        prev: dated[i - 1]?.lessonId ?? null,
+        next: dated[i + 1]?.lessonId ?? null,
+      }));
+    }
+    return out;
+  }, [forecasts]);
+  const [linkFocus, setLinkFocus] = useState<{ lessonId: string; classId: string } | null>(null);
+  const linkRole = (lessonId: string, cls: string): "self" | "prev" | "next" | null => {
+    if (!linkFocus || linkFocus.classId !== cls) return null;
+    if (linkFocus.lessonId === lessonId) return "self";
+    const l = flowLinks.get(`${cls}|${linkFocus.lessonId}`);
+    return l?.prev === lessonId ? "prev" : l?.next === lessonId ? "next" : null;
+  };
+  /** Sensorli ekranda birinchi bosish — faqat bogʻni koʻrsatadi, ikkinchisi ochadi. */
+  const placementClick = (lessonId: string, cls: string, touch: boolean, open: () => void) => {
+    if (touch && !isDemoMode && (linkFocus?.lessonId !== lessonId || linkFocus.classId !== cls)) {
+      setLinkFocus({ lessonId, classId: cls });
+      return;
+    }
+    open();
+  };
 
   const today = new Date();
   const allWeekDates = useMemo(() => getWeekDates(anchor), [anchor]);
@@ -1105,7 +1148,8 @@ export default function PlannerView({ classId }: { classId?: string }) {
                                     <DraggablePlacement
                                       key={`${p.lesson.id}-${p.classId}-${p.startMin}`}
                                       id={dndLessonId(p, key)}
-                                      onClick={() => openEdit(p, key)}
+                                      onClick={(touch) => placementClick(p.lesson.id, p.classId, touch, () => openEdit(p, key))}
+                                      onHover={(on) => setLinkFocus(on && !isDemoMode ? { lessonId: p.lesson.id, classId: p.classId } : null)}
                                       className="group/chip relative cursor-grab active:cursor-grabbing"
                                     >
                                       <LessonChip
@@ -1113,6 +1157,8 @@ export default function PlannerView({ classId }: { classId?: string }) {
                                         title={p.lesson.title}
                                         done={p.lesson.status === "Completed"}
                                         pinned={isPinned(p.lesson, p.classId)}
+                                        index={flowLinks.get(`${p.classId}|${p.lesson.id}`)?.index}
+                                        linked={linkRole(p.lesson.id, p.classId)}
                                         trailing={
                                           <DropdownMenu>
                                             <DropdownMenuTrigger
@@ -1727,7 +1773,8 @@ export default function PlannerView({ classId }: { classId?: string }) {
                                     <DraggablePlacement
                                       key={`${p.lesson.id}-${p.classId}-${p.startMin}`}
                                       id={dndLessonId(p, dateKey)}
-                                      onClick={() => openEdit(p, dateKey)}
+                                      onClick={(touch) => placementClick(p.lesson.id, p.classId, touch, () => openEdit(p, dateKey))}
+                                      onHover={(on) => setLinkFocus(on && !isDemoMode ? { lessonId: p.lesson.id, classId: p.classId } : null)}
                                       className="group/chip relative cursor-grab active:cursor-grabbing"
                                     >
                                       <LessonChip
@@ -1735,6 +1782,8 @@ export default function PlannerView({ classId }: { classId?: string }) {
                                         title={p.lesson.title}
                                         done={p.lesson.status === "Completed"}
                                         pinned={isPinned(p.lesson, p.classId)}
+                                        index={flowLinks.get(`${p.classId}|${p.lesson.id}`)?.index}
+                                        linked={linkRole(p.lesson.id, p.classId)}
                                         trailing={
                                           <DropdownMenu>
                                             <DropdownMenuTrigger

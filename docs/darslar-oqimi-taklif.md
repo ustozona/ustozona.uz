@@ -1,7 +1,8 @@
 # Bogʻlangan darslar (dars oqimi) — taklif
 
-Holat: **1-bosqich** — PR #221 (2026-09-27, prodda). **2-bosqich** qurildi
-(branch `maxdum/darslar-oqimi-2`) — 3.11 boʻlim. 3-bosqich (vizual) hali yoʻq.
+Holat: **1-bosqich** — PR #221, **2-bosqich** — PR #222 (2026-09-27, prodda),
+oqim boʻshliqlari — PR #235. **3-bosqich** (vizual) qurildi (branch
+`maxdum/darslar-oqimi-3`) — 4.1 boʻlim.
 Ochiq savollar (6-boʻlim) taklif qilingan variantlar bilan yopildi.
 Amalga oshirilgan model — **3.3 «Slot havzasi»**.
 
@@ -276,6 +277,80 @@ Uch koʻrinish, oddiydan murakkabga:
 3. **Planner'da bogʻ** — darsga hover qilinganda oqimdagi oldingi/keyingi
    dars ajratiladi, pill'da tartib raqami («2.3»).
 
+### 4.1 3-bosqich — qanday qurildi
+
+**Yagona manba — `flowForecast`** (`src/lib/lesson-flow.ts`, sof funksiya).
+Zanjir, «sigʻmaydi» chipi, yoʻl xaritasi va planner raqami shundan oʻqiydi.
+Oqim darslari `planReflow` bilan aynan bir xil joylanadi, keyin sanasiz dum
+qolgan boʻsh slotlarni oladi. Har dars uchun natija: holat, tartib raqami
+(«2.3»), hozirgi va prognoz sanasi, ziddiyat. Ixtiyoriy `draft` —
+tartiblash qoralamasi (boʻlimlar yoki darslar tartibi): store'ga yozmasdan
+«tortsam nima boʻladi» hisobi. `unitSpans` — boʻlim polosasi (birinchi va
+oxirgi prognoz sanasi).
+
+**«Sigʻmaydi» taʼrifi.** Qayta joylashda slot topilmagan dars (`to: null`)
+sanasiz qoladi — oqimdan chiqadi va avval hech qayerda sanalmas edi.
+Endi «sigʻmaydi» = ketma-ketlikda birinchi oqim darsidan KEYIN turgan,
+oʻtilmagan, qadalmagan sanasiz dars (1 slot), agar yil oxirigacha unga
+boʻsh slot yetmasa; oqim darsi slot topa olmasa ham. Birinchi oqim
+darsidan oldingi sanasiz darslar — bank, sanalmaydi. Qarorning asosi:
+oʻquv rejasi yuritiladigan tizimlarda sigʻmagan mavzu ketma-ketlikdan
+oʻchmaydi, chegaradan keyin belgilanib turadi — nimani qisqartirishni
+oʻqituvchi tanlaydi.
+
+**Chip va yechimlar** (Darslar sahifasi, «Moslash» yonida; yoʻl
+xaritasida ham): «Yil oxirigacha N dars sigʻmaydi» → popover: qaysi
+darslar va yechimlar — zaxira darsni olib tashlash (`flow.remove`),
+koʻp darsli mavzuni qisqartirish (`shortenForOverflow` = `stretch(−1)`),
+darsni oqimdan chiqarish (dars menyusida, `removeFromFlow`). Uchalasi ham
+`fillOverflow` bilan: boʻshagan slot avval birinchi sigʻmagan darsga
+qoʻyiladi, keyin qayta joylash tartibni toʻgʻrilaydi — aks holda joy
+boʻshardi-yu, sigʻmagan dars sanasizligicha qolardi.
+
+**Birlashtirish — rad etildi.** Ikki mavzuning Tiptap hujjati va
+materiallarini bitta darsga qoʻshish qaytarib boʻlmaydigan va xavfli;
+jahon amaliyotida ham asosiy vositalar qisqartirish, oʻtkazib yuborish va
+zaxira. Qisqartirish va oqimdan chiqarish yetarli.
+
+**Zanjir** (`src/components/lessons/FlowRail.tsx`): mavzular roʻyxati
+chapida vertikal chiziq, har dars — nuqta. Holatlar: oʻtilgan (yashil),
+qadalgan (📌), oqimda (sinf rangidagi halqa), zaxira (uzuq halqa),
+ziddiyat / oʻtmishda qolgan (ogohlantirish), sanasiz (xira uzuq),
+sigʻmaydi (qizil uzuq, chiziq ham uzuq). Tartiblash rejimida har dars
+yonida sana chipi: qoralama boʻyicha jonli hisob, oʻzgarsa «eski → yangi»;
+sudrash davomida ham (`ReorderList` ning `onPreview` — «tashlasam»
+tartibi). Boʻlimlarni tartiblashda har boʻlim yonida oraligʻi
+(«12 okt – 3 noy»).
+
+**Yoʻl xaritasi** (`src/components/lessons/FlowRoadmap.tsx`): Darslar
+sahifasida «Roʻyxat | Yoʻl xaritasi» almashtirgichi — alohida oyna emas,
+xuddi shu maʼlumotning ikkinchi koʻrinishi (boʻlimlar va mavzular
+ustunlari oʻrnida). Har boʻlim — qator: polosa, ichida darslar nuqta
+(boʻshliqlar koʻrinadi), sigʻmaydigan qism yil oxirigacha qizil uzuq.
+Taʼtillar soya, baholash davrlari chegarasi uzuq chiziq (kalendarda davr
+boʻlmasa — chizilmaydi), bugun — qizil chiziq. `YearTimeline` kengaytirildi
+(yangisi yozilmadi): `TimelineAxis` + `TimelineTrack`, nuqtalar, sigʻmaydigan
+qism, davrlar; oy nomlari `useCalendarFormat().monthShort` dan — import
+oynasi ham tarjima qilingan oylar va davrlarni oladi. Qatorni sudrash —
+boʻlim tartibi: sudrash davomida polosalar qoralama bilan jonli koʻchadi,
+tashlanganda `flow.run` + `reorderUnits` (roʻyxatdagi tartiblash bilan bir
+yoʻl).
+
+**Planner'da bogʻ**: chipda tartib raqami («2.3»). Boʻlimsiz darslar —
+Darslar kartasidagi uzluksiz raqam (boʻlimsizlar hamma boʻlimlardan keyin
+sanaladi), shunda ikki sahifada raqam bir xil. Hover qilingan dars va
+uning oqimdagi oldingi/keyingi darsi sinf rangidagi ring bilan
+(qoʻshnilar — uzuq chegara). Sensorli ekranda hover yoʻq: birinchi bosish
+bogʻni koʻrsatadi, ikkinchisi darsni ochadi. `LessonChip` ning yangi
+`index` va `linked` proplari ixtiyoriy — bosh sahifadagi «Bugun» oʻzgarmaydi.
+
+**Unumdorlik:** muhit (`makeEnv`, sana boʻyicha kesh) jadval/kalendar
+oʻzgargandagina tuziladi; prognoz memo'da — sudrash qadamida faqat shu
+sinf qayta hisoblanadi. Planner barcha koʻrinadigan sinflarni bitta
+memo'da hisoblaydi.
+
+Demo rejimda Zanjir, chip, yoʻl xaritasi va planner bogʻi koʻrsatilmaydi.
+
 ---
 
 ## 5. Bosqichlar
@@ -285,7 +360,8 @@ Uch koʻrinish, oddiydan murakkabga:
    undo; oldindan koʻrish; sigʻmay qolish chipi; mavjud maʼlumotni moslash.
 2. **Kalendar hodisalari:** bloklangan kun va jadval versiyasi triggerlari;
    davomiylik (choʻzish); zaxira darslar. ✅ (3.11)
-3. **Vizual:** Zanjir → Yoʻl xaritasi → planner hover.
+3. **Vizual:** Zanjir → Yoʻl xaritasi → planner hover; «sigʻmaydi» chipi
+   va yechimlari. ✅ (4.1)
 
 ## 6. Savollar — qaror (2026-09-27)
 

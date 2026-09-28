@@ -14,7 +14,7 @@ import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { useLessonStore } from "@/store/useLessonStore";
 import { commitLessonsDelete } from "@/lib/sync/lessons-delete";
 import { lessonSessions, unitIdForClass, type Lesson } from "@/lib/lessons-data";
-import { YearTimeline, mergeRanges, type TimelineBar, type TimelineLane } from "@/components/ish-reja/YearTimeline";
+import { YearTimeline, mergeRanges, timelinePeriods, type TimelineBar, type TimelineLane } from "@/components/ish-reja/YearTimeline";
 import { useTimetableStore } from "@/store/useTimetableStore";
 import { useCalendarStore } from "@/store/useCalendarStore";
 import { resolveVersionForDate } from "@/lib/timetable-versions";
@@ -361,6 +361,7 @@ export default function IshRejaImportModal({ classId, unitId, onSingle, onClose 
               today={today}
               holidays={holidayRanges}
               lanes={lanes}
+              periods={timelinePeriods(calendar.quarters)}
             />
 
             {/* Navbat boshlanishi */}
