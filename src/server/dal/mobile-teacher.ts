@@ -1,13 +1,14 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
-import { and, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
-import { assignments, attendanceRecords, attendanceStatuses, classes, grades } from "@/server/db/schema";
+import { assignments, attendanceRecords, attendanceStatuses, behaviorEvents, behaviorSkills, classes, grades } from "@/server/db/schema";
 import { ForbiddenError, requireTeacher } from "@/server/session";
 import { assertTeachesClass, visibleClassIds } from "@/server/workspace";
 import { activeClassRoster } from "@/server/dal/class-roster";
 import { applyAttendanceBatch } from "@/server/dal/attendance";
 import { applyGradesBatch } from "@/server/dal/grades";
+import { applyBehaviorBatch, getBehaviorPayload } from "@/server/dal/behavior";
 import { BUILTIN_STATUSES } from "@/lib/attendance-data";
 import { getTimetablePayload } from "@/server/dal/timetable";
 import { normalizeLegacyVersions, resolveVersionForDate } from "@/lib/timetable-versions";
@@ -245,5 +246,84 @@ export async function setMobileGrades(
     topicsUpsert: [], topicsDelete: [], assignmentsUpsert: [], assignmentsDelete: [],
     gradesUpsert: upserts.map((s) => ({ studentId: s.studentId, assignmentId: columnId, score: s.score, isDraft: false, missing: null })),
     gradesDelete: deletes.map((s) => ({ studentId: s.studentId, assignmentId: columnId })),
+  });
+}
+
+/* ── Xulq ballari ────────────────────────────────────────────────────
+   Koʻnikmalar (emoji + ball) oʻqituvchining oʻziniki; birinchi marta
+   boʻsh boʻlsa saytdagi seed (`getBehaviorPayload`) standartlarini
+   yaratadi. Berish — koʻnikma nusxasi voqea sifatida, `applyBehaviorBatch`
+   orqali (sinf/oʻquvchi egaligi oʻsha yerda ham tekshiriladi). */
+
+export type MobileBehavior = {
+  classId: string;
+  skills: { id: string; name: string; emoji: string; points: number }[];
+  students: { id: string; name: string; total: number }[];
+};
+
+async function ownSkills(teacherId: string) {
+  const rows = await db
+    .select({ id: behaviorSkills.id, name: behaviorSkills.name, emoji: behaviorSkills.emoji, points: behaviorSkills.points, description: behaviorSkills.description })
+    .from(behaviorSkills)
+    .where(eq(behaviorSkills.teacherId, teacherId))
+    .orderBy(asc(behaviorSkills.sortOrder));
+  return rows;
+}
+
+export async function getMobileBehavior(classId: string): Promise<MobileBehavior> {
+  const ctx = await assertTeachesClass(classId);
+  let skills = await ownSkills(ctx.teacherId);
+  if (skills.length === 0) {
+    await getBehaviorPayload(); // standart koʻnikmalar seed
+    skills = await ownSkills(ctx.teacherId);
+  }
+  const [roster, totals] = await Promise.all([
+    activeClassRoster(classId),
+    db
+      .select({ studentId: behaviorEvents.studentId, total: sql<number>`coalesce(sum(${behaviorEvents.points}),0)::int` })
+      .from(behaviorEvents)
+      .where(and(eq(behaviorEvents.teacherId, ctx.teacherId), eq(behaviorEvents.classId, classId)))
+      .groupBy(behaviorEvents.studentId),
+  ]);
+  const byStudent = new Map(totals.map((t) => [t.studentId, t.total]));
+  return {
+    classId,
+    skills: skills.map(({ id, name, emoji, points }) => ({ id, name, emoji, points })),
+    students: roster.map((s) => ({ id: s.id, name: s.name, total: byStudent.get(s.id) ?? 0 })),
+  };
+}
+
+export async function giveMobileBehavior(
+  classId: string,
+  skillId: string,
+  studentIds: string[],
+  date: string
+): Promise<void> {
+  const ctx = await assertTeachesClass(classId);
+  const skill = (await ownSkills(ctx.teacherId)).find((s) => s.id === skillId);
+  if (!skill) throw new ForbiddenError("Bu koʻnikmaga ruxsat yoʻq");
+  const roster = new Set((await activeClassRoster(classId)).map((s) => s.id));
+  const targets = [...new Set(studentIds)].filter((id) => roster.has(id));
+  if (targets.length === 0) return;
+  const groupId = targets.length > 1 ? randomUUID() : null;
+  const createdAt = new Date().toISOString();
+  await applyBehaviorBatch({
+    skillsUpsert: [], skillsDelete: [], eventsDelete: [], rewardsUpsert: [], rewardsDelete: [],
+    redemptionsUpsert: [], redemptionsDelete: [], deletionsInsert: [], autoSettingsUpsert: [],
+    eventsUpsert: targets.map((studentId) => ({
+      id: randomUUID(),
+      classId,
+      studentId,
+      skillId: skill.id,
+      name: skill.name,
+      emoji: skill.emoji,
+      points: skill.points,
+      description: skill.description ?? null,
+      note: null,
+      date,
+      createdAt,
+      groupId,
+      source: null,
+    })),
   });
 }
