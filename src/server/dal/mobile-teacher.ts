@@ -2,7 +2,7 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import { and, asc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
-import { assignments, attendanceRecords, attendanceStatuses, behaviorEvents, behaviorSkills, classes, grades } from "@/server/db/schema";
+import { assignments, attendanceRecords, attendanceStatuses, behaviorEvents, behaviorSkills, classes, enrollments, grades, students } from "@/server/db/schema";
 import { ForbiddenError, requireTeacher } from "@/server/session";
 import { assertTeachesClass, visibleClassIds } from "@/server/workspace";
 import { activeClassRoster } from "@/server/dal/class-roster";
@@ -326,4 +326,135 @@ export async function giveMobileBehavior(
       source: null,
     })),
   });
+}
+
+/* ── Offline sinxron: bitta soʻrovda hammasi ─────────────────────────
+   Ilova bu surʼatni telefonda saqlaydi va barcha ekranlar undan
+   oʻqiydi (internetsiz ham). Hajmni cheklash: davomat — oxirgi 7 kun,
+   jurnal — har sinfdan oxirgi 10 ustun. Qamrov saytdagi bilan bir xil
+   (visibleClassIds + oʻqituvchining oʻz yozuvlari). */
+
+export type MobileSync = {
+  date: string;
+  classes: { id: string; name: string; subject: string | null }[];
+  rosters: Record<string, { id: string; name: string }[]>;
+  timetable: { day: number; classId: string; startMin: number; endMin: number; id: string }[];
+  statuses: { key: string; label: string; tone: string }[];
+  attendance: Record<string, Record<string, Record<string, string>>>; // date → class → student → status
+  skills: { id: string; name: string; emoji: string; points: number }[];
+  behaviorTotals: Record<string, Record<string, number>>; // class → student → total
+  gradeColumns: Record<string, MobileGradeColumn[]>;
+  gradeScores: Record<string, Record<string, number | null>>; // column → student → score
+};
+
+export async function getMobileSync(date: string): Promise<MobileSync> {
+  const teacher = await requireTeacher();
+  const tid = teacher.id;
+  const [ids, timetable] = await Promise.all([visibleClassIds("data"), getTimetablePayload()]);
+
+  const classRows = ids.length
+    ? await db
+        .select({ id: classes.id, name: classes.name, subject: classes.subject, sortOrder: classes.sortOrder })
+        .from(classes)
+        .where(and(inArray(classes.id, ids), isNull(classes.archivedAt)))
+    : [];
+  classRows.sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name));
+  const classIds = classRows.map((c) => c.id);
+
+  const version = resolveVersionForDate(normalizeLegacyVersions(timetable.versions), date);
+  const own = new Set(classIds);
+  const events = (version?.events ?? [])
+    .filter((e) => own.has(e.classId))
+    .map((e) => ({ id: e.id, classId: e.classId, day: e.day, startMin: e.startMin, endMin: e.endMin }));
+
+  const from = (() => {
+    const d = dateKeyToDate(date);
+    d.setDate(d.getDate() - 6);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  })();
+
+  let skills = await ownSkills(tid);
+  if (skills.length === 0) {
+    await getBehaviorPayload();
+    skills = await ownSkills(tid);
+  }
+
+  const [rosterRows, statuses, records, totals, columnRows] = await Promise.all([
+    classIds.length
+      ? db
+          .select({ classId: enrollments.classId, id: students.id, name: students.name, status: students.status })
+          .from(enrollments)
+          .innerJoin(students, eq(students.id, enrollments.studentId))
+          .where(and(inArray(enrollments.classId, classIds), isNull(enrollments.endedAt)))
+      : Promise.resolve([]),
+    activeStatuses(tid),
+    classIds.length
+      ? db
+          .select({ classId: attendanceRecords.classId, studentId: attendanceRecords.studentId, date: attendanceRecords.date, status: attendanceRecords.status })
+          .from(attendanceRecords)
+          .where(
+            and(
+              eq(attendanceRecords.teacherId, tid),
+              inArray(attendanceRecords.classId, classIds),
+              sql`${attendanceRecords.date} >= ${from}`,
+              sql`${attendanceRecords.date} <= ${date}`
+            )
+          )
+      : Promise.resolve([]),
+    classIds.length
+      ? db
+          .select({ classId: behaviorEvents.classId, studentId: behaviorEvents.studentId, total: sql<number>`coalesce(sum(${behaviorEvents.points}),0)::int` })
+          .from(behaviorEvents)
+          .where(and(eq(behaviorEvents.teacherId, tid), inArray(behaviorEvents.classId, classIds)))
+          .groupBy(behaviorEvents.classId, behaviorEvents.studentId)
+      : Promise.resolve([]),
+    classIds.length
+      ? db
+          .select({ id: assignments.id, classId: assignments.classId, title: assignments.title, maxScore: assignments.maxScore, date: assignments.date, createdAt: assignments.createdAt })
+          .from(assignments)
+          .where(and(eq(assignments.teacherId, tid), inArray(assignments.classId, classIds)))
+      : Promise.resolve([]),
+  ]);
+
+  const rosters: MobileSync["rosters"] = {};
+  for (const r of rosterRows) {
+    if (r.status === "archived") continue;
+    (rosters[r.classId] ??= []).push({ id: r.id, name: r.name });
+  }
+  for (const list of Object.values(rosters)) list.sort((a, b) => a.name.localeCompare(b.name, "uz"));
+
+  const attendance: MobileSync["attendance"] = {};
+  for (const r of records) ((attendance[r.date] ??= {})[r.classId] ??= {})[r.studentId] = r.status;
+
+  const behaviorTotals: MobileSync["behaviorTotals"] = {};
+  for (const t of totals) (behaviorTotals[t.classId] ??= {})[t.studentId] = t.total;
+
+  const gradeColumns: MobileSync["gradeColumns"] = {};
+  columnRows.sort((a, b) => (b.date ?? "").localeCompare(a.date ?? "") || b.createdAt.getTime() - a.createdAt.getTime());
+  for (const c of columnRows) {
+    const list = (gradeColumns[c.classId] ??= []);
+    if (list.length < 10) list.push({ id: c.id, title: c.title, maxScore: c.maxScore, date: c.date });
+  }
+  const columnIds = Object.values(gradeColumns).flat().map((c) => c.id);
+  const scoreRows = columnIds.length
+    ? await db
+        .select({ assignmentId: grades.assignmentId, studentId: grades.studentId, score: grades.score })
+        .from(grades)
+        .where(and(eq(grades.teacherId, tid), inArray(grades.assignmentId, columnIds)))
+    : [];
+  const gradeScores: MobileSync["gradeScores"] = {};
+  for (const g of scoreRows) (gradeScores[g.assignmentId] ??= {})[g.studentId] = g.score;
+
+  return {
+    date,
+    classes: classRows.map(({ id, name, subject }) => ({ id, name, subject })),
+    rosters,
+    timetable: events,
+    statuses: statuses.map(({ key, label, tone }) => ({ key, label, tone })),
+    attendance,
+    skills: skills.map(({ id, name, emoji, points }) => ({ id, name, emoji, points })),
+    behaviorTotals,
+    gradeColumns,
+    gradeScores,
+  };
 }
