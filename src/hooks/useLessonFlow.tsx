@@ -96,6 +96,22 @@ export type FlowRemoveArgs = {
   description?: string;
   /** Server tasdiqlagach, oqimdan oldin (masalan tasdiq oynasini yopish). */
   onCommitted?: () => void;
+  /** Oqim yakunlangach (darhol yoki oldindan koʻrishdan keyin). */
+  onSettled?: () => void;
+};
+
+export type FlowJoinOptions = {
+  message?: string;
+  /** Oqim boʻsh / slot yoʻq / rad etilgan / qoʻllangan — har holatda bir marta. */
+  onSettled?: () => void;
+};
+
+export type FlowNewLessonArgs = {
+  classId: string;
+  unitId: string | null;
+  title: string;
+  reserve?: boolean;
+  onSettled?: (id: string) => void;
 };
 
 type Pending = {
@@ -174,6 +190,11 @@ export function useLessonFlow(): {
   stretch: (lessonId: string, classId: string, delta: 1 | -1) => void;
   /** Boʻlim oxiriga zaxira dars qoʻshish va uni oqimga kiritish. */
   addReserve: (classId: string, unitId: string | null) => void;
+  /** Sanasiz darsni oqimga kiritish: tartibdagi oldingi oqim darsidan keyingi
+      slotni oladi, keyingilar bittadan suriladi. Oqim boʻsh boʻlsa — sanasiz qoladi. */
+  joinFlow: (lessonId: string, classId: string, opts?: FlowJoinOptions) => void;
+  /** Boʻlim oxiriga yangi dars + oqimga kiritish. Id qaytaradi. */
+  newLesson: (a: FlowNewLessonArgs) => string;
   /** Sanalarni tartibga (va jadval/taʼtilga) moslash — oldindan koʻrish bilan. */
   realign: (classIds: string[]) => void;
   dialog: ReactNode;
@@ -340,10 +361,10 @@ export function useLessonFlow(): {
     });
   };
 
-  const remove = async ({ lessonIds, unitIds, classIds, mutate, message, description, onCommitted }: FlowRemoveArgs) => {
+  const remove = async ({ lessonIds, unitIds, classIds, mutate, message, description, onCommitted, onSettled }: FlowRemoveArgs) => {
     if (!(await commitLessonsDelete({ lessonIds, unitIds }))) return false;
     onCommitted?.();
-    run({ classIds, mutate, decline: "keep", closeGaps: true, message, description });
+    run({ classIds, mutate, decline: "keep", closeGaps: true, message, description, onSettled });
     return true;
   };
 
@@ -449,43 +470,52 @@ export function useLessonFlow(): {
     });
   };
 
-  /* Zaxira dars boʻlim oxiriga qoʻshiladi (sanasiz), keyin oqimga kiritiladi:
-     undan oldingi oqim darsidan keyingi slotni oladi, keyingilar bittadan
-     suriladi. Oqim boʻsh boʻlsa (sinf jadvalga qoʻyilmagan) — sanasiz qoladi.
-     Rad etilsa ham zaxira dars saqlanadi, faqat sanasiz. */
-  const addReserve = (classId: string, unitId: string | null) => {
-    const s = useLessonStore.getState();
-    const id = s.addLesson({ classId, unitId, title: t("reserveTitle"), status: "Draft" });
-    s.updateLesson(id, { reserve: true });
-    // `addLesson` raqami sinf tartibini (`orderByClass`, koʻp sinfli darslar)
-    // hisobga olmaydi — zaxira boʻlimning aynan oxiriga qoʻyiladi.
-    const inUnit = flowSequence(useLessonStore.getState().lessons, useLessonStore.getState().units, classId)
-      .filter((l) => l.id !== id && unitIdForClass(l, classId) === unitId)
-      .map((l) => l.id);
-    s.reorderLessons([...inUnit, id], classId);
+  /* Oqimga kiritish: dars tartibdagi oldingi oqim darsidan keyingi slotni
+     oladi, keyingilar bittadan suriladi. Oqim boʻsh boʻlsa (sinf jadvalga
+     qoʻyilmagan) yoki boʻsh slot qolmagan boʻlsa — dars sanasiz qoladi.
+     Rad etilsa ham dars saqlanadi, faqat sanasiz. */
+  const joinFlow = (lessonId: string, classId: string, opts: FlowJoinOptions = {}) => {
     const st = useLessonStore.getState();
     const e = env();
     const flow = classFlow(st.lessons, st.units, classId, e.now);
-    if (!flow.items.length) {
-      toast.success(t("reserveAddedToast"));
-      return;
-    }
+    const done = (description?: string) => {
+      if (opts.message) toast.success(opts.message, { description });
+      opts.onSettled?.();
+    };
+    if (!flow.items.length) return done();
     const seq = flowSequence(st.lessons, st.units, classId).map((l) => l.id);
-    const at = seq.indexOf(id);
+    const at = seq.indexOf(lessonId);
     const prev = flow.items.filter((it) => seq.indexOf(it.lessonId) < at).at(-1);
     const slot = nextSlotAfter(flow, prev?.sessions.at(-1) ?? null, new Set(), e);
-    if (!slot) {
-      toast.success(t("reserveAddedToast"), { description: t("noFreeSlot") });
-      return;
-    }
+    if (!slot) return done(t("noFreeSlot"));
     run({
       classIds: [classId],
       decline: "revert",
       previewOver: Infinity,
-      exclude: [id],
-      message: t("reserveAddedToast"),
-      mutate: () => useLessonStore.getState().addScheduleForClass(id, classId, slot.date, slot.startMin, slot.endMin),
+      exclude: [lessonId],
+      message: opts.message,
+      onSettled: opts.onSettled,
+      mutate: () => useLessonStore.getState().addScheduleForClass(lessonId, classId, slot.date, slot.startMin, slot.endMin),
     });
+  };
+
+  const newLesson = ({ classId, unitId, title, reserve, onSettled }: FlowNewLessonArgs) => {
+    const s = useLessonStore.getState();
+    const id = s.addLesson({ classId, unitId, title, status: "Draft" });
+    if (reserve) s.updateLesson(id, { reserve: true });
+    // `addLesson` raqami sinf tartibini (`orderByClass`, koʻp sinfli darslar)
+    // hisobga olmaydi — dars boʻlimning aynan oxiriga qoʻyiladi.
+    const cur = useLessonStore.getState();
+    const inUnit = flowSequence(cur.lessons, cur.units, classId)
+      .filter((l) => l.id !== id && unitIdForClass(l, classId) === unitId)
+      .map((l) => l.id);
+    s.reorderLessons([...inUnit, id], classId);
+    joinFlow(id, classId, { message: reserve ? t("reserveAddedToast") : undefined, onSettled: () => onSettled?.(id) });
+    return id;
+  };
+
+  const addReserve = (classId: string, unitId: string | null) => {
+    newLesson({ classId, unitId, title: t("reserveTitle"), reserve: true });
   };
 
   const realign = (classIds: string[]) =>
@@ -504,7 +534,7 @@ export function useLessonFlow(): {
     />
   );
 
-  return { run, place, remove, togglePin, bump, stretch, addReserve, realign, dialog };
+  return { run, place, remove, togglePin, bump, stretch, addReserve, joinFlow, newLesson, realign, dialog };
 }
 
 /* ── Kalendar va jadval oʻzgarishini kuzatish ──

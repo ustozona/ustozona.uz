@@ -2093,6 +2093,9 @@
         "body": "Each test now has two clear buttons: «Run in class» (live lesson, game, self-paced test, paper test, QR cards or clickers) and «Assign as homework» (with a due date, via link and QR). Who joined, who finished and what everyone scored — on one screen, and results go to the gradebook with a single button.",
         "cta": "Open Assignments"
       },
+      "darslar-oqimi-qoldiq": {
+        "title": "A new lesson takes its place in the sequence, and a deleted one leaves no gap — later lessons shift on their own"
+      },
       "darslar-oqimi-kalendar": {
         "title": "Linked lessons now respect days off, the timetable and buffer lessons",
         "body": "Block a day or add a holiday and that day’s lessons shift to the following lessons. When the timetable changes, re-lay the lessons that no longer fit in one click. You can give a topic one more lesson and add a buffer lesson at the end of a unit — if you fall behind, the buffer is used and later units stay in place."
@@ -5056,6 +5059,11 @@
     "reserveTitle": "Buffer lesson",
     "reserveAdd": "Add buffer lesson",
     "reserveAddedToast": "Buffer lesson added",
+    "joinFlow": "Add to flow",
+    "joinedToast": "Lesson added to the flow",
+    "libraryNotHydrated": "Lessons are still loading — try again in a moment",
+    "libraryDeletedToast": "{count, plural, one {Material deleted} other {# materials deleted}}",
+    "libraryDeleteFailed": "Couldn't delete",
     "reserveBadge": "Buffer",
     "reserveUsedToast": "Buffer lesson used — later units stayed in place",
     "stretch": "One more lesson (+1)",

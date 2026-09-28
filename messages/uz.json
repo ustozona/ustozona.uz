@@ -2080,6 +2080,9 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "darslar-oqimi-qoldiq": {
+        "title": "Yangi dars oʻz oʻrnini oladi, oʻchirilgan dars boʻshliq qoldirmaydi — keyingi darslar oʻzi suriladi"
+      },
       "darslar-oqimi-kalendar": {
         "title": "Dars oqimi taʼtil, jadval va zaxira darslarni hisobga oladi",
         "body": "Kunni bloklasangiz yoki taʼtil qoʻshsangiz, oʻsha kundagi darslar keyingi darslarga suriladi. Jadval oʻzgarsa, mos kelmay qolgan darslarni bir bosishda qayta joylaysiz. Mavzuga yana bir dars qoʻshish va boʻlim oxiriga zaxira dars qoʻyish mumkin — dars kechiksa zaxira ishlatiladi, keyingi boʻlimlar joyida qoladi."
@@ -4934,6 +4937,11 @@
     "reserveTitle": "Zaxira dars",
     "reserveAdd": "Zaxira dars qoʻshish",
     "reserveAddedToast": "Zaxira dars qoʻshildi",
+    "joinFlow": "Oqimga qoʻshish",
+    "joinedToast": "Dars oqimga qoʻshildi",
+    "libraryNotHydrated": "Darslar hali yuklanmadi — bir lahzadan soʻng urinib koʻring",
+    "libraryDeletedToast": "{count, plural, one {Material oʻchirildi} other {# ta material oʻchirildi}}",
+    "libraryDeleteFailed": "Oʻchirib boʻlmadi",
     "reserveBadge": "Zaxira",
     "reserveUsedToast": "Zaxira dars ishlatildi — keyingi boʻlimlar joyida qoldi",
     "stretch": "Yana bir dars (+1)",

@@ -2093,6 +2093,9 @@
         "body": "Test janında endi eki anıq túyme bar: «Sabaqta ótkeriw» (tiri sabaq, oyın, óz betinshe test, qaǵaz test, QR-kartalar yamasa pult) hám «Úyge beriw» (múddet penen, siltew hám QR arqalı). Kim qosıldı, kim tamamladı hám kim neshe procent aldı — bir ekranda, al nátiyje jurnalǵa bir túyme menen jazıladı.",
         "cta": "Tapsırmalardı ashıw"
       },
+      "darslar-oqimi-qoldiq": {
+        "title": "Jańa sabaq óz ornın aladı, óshirilgen sabaq bos orın qaldırmaydı — keyingi sabaqlar ózi jılısadı"
+      },
       "darslar-oqimi-kalendar": {
         "title": "Sabaq aǵımı dem alıs, keste hám zapas sabaqlardı esapqa aladı",
         "body": "Kúndi bloklasańız yamasa dem alıs qossańız, sol kúngi sabaqlar keyingi sabaqlarǵa súriledi. Keste ózgerse, sáykes kelmey qalǵan sabaqlardı bir basıwda qayta jaylastırasız. Temaǵa jáne bir sabaq qosıw hám bólim aqırına zapas sabaq qoyıw múmkin — keshikseńiz zapas paydalanıladı, keyingi bólimler ornında qaladı."
@@ -5057,6 +5060,11 @@
     "reserveTitle": "Zapas sabaq",
     "reserveAdd": "Zapas sabaq qosıw",
     "reserveAddedToast": "Zapas sabaq qosıldı",
+    "joinFlow": "Aǵımǵa qosıw",
+    "joinedToast": "Sabaq aǵımǵa qosıldı",
+    "libraryNotHydrated": "Sabaqlar ele júklenbedi — birazdan soń qayta urınıp kóriń",
+    "libraryDeletedToast": "{count, plural, one {Material óshirildi} other {# material óshirildi}}",
+    "libraryDeleteFailed": "Óshirip bolmadı",
     "reserveBadge": "Zapas",
     "reserveUsedToast": "Zapas sabaq paydalanıldı — keyingi bólimler ornında qaldı",
     "stretch": "Jáne bir sabaq (+1)",
