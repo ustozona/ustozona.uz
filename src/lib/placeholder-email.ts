@@ -43,3 +43,30 @@ export function isPlaceholderEmail(email: string | null | undefined): boolean {
 export function displayEmail(email: string | null | undefined): string {
   return isPlaceholderEmail(email) ? "" : (email ?? "");
 }
+
+/** Admin koʻrinishi uchun: oʻrinbosar oʻrniga hisob qaysi Telegram'ga
+    tegishli ekani — `@username` maʼlum boʻlsa u, aks holda ID.
+
+    Admin uchun «boʻsh» yetarli emas: qatorni boshqasidan ajratib, kerak
+    boʻlsa botda topish kerak. Lekin xom `tg123@telegram.invalid` ham
+    notoʻgʻri — u haqiqiy manzildek oʻqiladi va nusxalanib xat
+    yuborishga urinish boʻladi. */
+export function adminEmailLabel(
+  email: string | null | undefined,
+  telegramUsername?: string | null
+): string {
+  if (!isPlaceholderEmail(email)) return email ?? "";
+  if (telegramUsername) return `Telegram · @${telegramUsername}`;
+  const id = /^tg(\d+)@/i.exec(email ?? "")?.[1];
+  return id ? `Telegram · ID ${id}` : "Telegram";
+}
+
+/** Xat yetib bormaydigan domenlar — foydalanuvchi oʻzi kiritgan manzilni
+    tekshirish uchun. RFC 2606 zaxira TLD'lari + `example.*`. */
+export function isUndeliverableEmail(email: string): boolean {
+  const domain = email.toLowerCase().split("@")[1] ?? "";
+  return (
+    /\.(invalid|test|example|localhost)$/.test(domain) ||
+    /^example\.(com|net|org)$/.test(domain)
+  );
+}

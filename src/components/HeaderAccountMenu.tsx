@@ -33,7 +33,8 @@ function initialsOf(name: string) {
     .trim()
     .split(/\s+/)
     .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase() ?? "")
+    // `Array.from` — kod nuqtasi boʻyicha: `w[0]` emojining yarmini olib `�` chiqarardi.
+    .map((w) => Array.from(w)[0]?.toUpperCase() ?? "")
     .join("");
 }
 

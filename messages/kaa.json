@@ -192,7 +192,20 @@
     "toastImageOnly": "Tek súwret faylın jukleń.",
     "toastImageTooLarge": "Súwret kólemi 2MB tan aspawı kerek.",
     "toastAvatarUpdated": "Profil súwreti jańalandı.",
-    "toastReadError": "Súwretti oqıp bolmadı."
+    "toastReadError": "Súwretti oqıp bolmadı.",
+    "addEmailNote": "Email kiritilmegen. Qossańız, Telegramnan basqa email arqalı da kire alasız.",
+    "addEmailPlaceholder": "siziń@email.uz",
+    "addEmailButton": "Tastıyıqlaw xatı",
+    "addEmailSentTo": "Tastıyıqlaw xatı {email} ge jiberildi. Xattaǵı siltemeni basıń.",
+    "addEmailSentToast": "Xat jiberildi — pochtańızdı tekseriń.",
+    "addEmailResend": "Qayta jiberiw",
+    "addEmailChange": "Basqa email",
+    "addEmailInvalid": "Email mánzili nadurıs.",
+    "addEmailTaken": "Bul email basqa esapqa tiyisli. Sol esapqa kirip, Telegramdı sol jerde baylanıstırıń.",
+    "addEmailTooSoon": "Bir minuttan keyin qayta urınıp kóriń.",
+    "addEmailTooMany": "Búgingi urınıslar tawsıldı. Erteń qayta urınıp kóriń.",
+    "addEmailHasEmail": "Esapta email bar. Betti jańalań.",
+    "addEmailSendFailed": "Xat jiberilmedi. Azdan keyin qayta urınıp kóriń."
   },
   "PlanSection": {
     "currentPlanTitle": "Aǵımdaǵı tarif",

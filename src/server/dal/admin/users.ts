@@ -94,6 +94,9 @@ export type AdminUserListItem = {
   activationStatus: ActivationStatus;
   /** true = admin/test hisob — voronka statistikasidan chiqarilgan. */
   excludeFromMetrics: boolean;
+  /** Ulangan Telegram `@username` — emailsiz (oʻrinbosarli) hisobni
+      tanish uchun (`adminEmailLabel`). */
+  telegramUsername: string | null;
 };
 
 export type AdminUsersPage = {
@@ -216,7 +219,15 @@ export async function listUsersForAdmin(
   const conditions: SQL[] = [];
   if (params.search?.trim()) {
     const q = `%${params.search.trim()}%`;
-    conditions.push(or(ilike(user.name, q), ilike(user.email, q))!);
+    conditions.push(
+      or(
+        ilike(user.name, q),
+        ilike(user.email, q),
+        // Emailsiz hisob jadvalda `@username` bilan koʻrinadi — qidiruv ham topsin.
+        sql`EXISTS (SELECT 1 FROM user_telegram ut WHERE ut.user_id = ${user.id}
+                      AND ('@' || ut.username) ILIKE ${q})`,
+      )!,
+    );
   }
   if (params.role) {
     // Rollar vergul bilan saqlanadi — element sifatida solishtiramiz.
@@ -317,6 +328,10 @@ export async function listUsersForAdmin(
       plan: teachers.plan,
       school: teachers.school,
       excludeFromMetrics: teachers.excludeFromMetrics,
+      // Skalyar subquery, JOIN emas: bitta hisobga bir necha telegram
+      // yozilgan boʻlsa ham qator koʻpaymasin.
+      telegramUsername: sql<string | null>`(SELECT ut.username FROM user_telegram ut
+        WHERE ut.user_id = ${user.id} AND ut.username IS NOT NULL LIMIT 1)`,
     })
     .from(user)
     .leftJoin(teachers, eq(teachers.id, user.id))
@@ -531,6 +546,8 @@ export async function getUserDetailForAdmin(
       subject: teachers.subject,
       academicYear: teachers.academicYear,
       excludeFromMetrics: teachers.excludeFromMetrics,
+      telegramUsername: sql<string | null>`(SELECT ut.username FROM user_telegram ut
+        WHERE ut.user_id = ${user.id} AND ut.username IS NOT NULL LIMIT 1)`,
     })
     .from(user)
     .leftJoin(teachers, eq(teachers.id, user.id))

@@ -10,6 +10,7 @@ import { SegmentedToggle } from "@/components/ui/segmented-toggle";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import type { AtRiskTeacher } from "@/server/dal/admin/stats";
 import { activityLabel } from "@/lib/faollik";
+import { adminEmailLabel } from "@/lib/placeholder-email";
 import { AdminPanelHeader } from "./AdminPanelHeader";
 
 /* «Eʼtibor talab qiladi» — sabab boʻyicha tablar va qisqa roʻyxat.
@@ -129,9 +130,9 @@ export function AtRiskPanel({ rows }: { rows: AtRiskTeacher[] }) {
                     href={`/admin/users?q=${encodeURIComponent(r.email)}`}
                     className="block truncate text-sm font-medium hover:underline"
                   >
-                    {r.name || r.email}
+                    {r.name || adminEmailLabel(r.email)}
                   </Link>
-                  <p className="truncate text-caption text-muted-foreground">{r.email}</p>
+                  <p className="truncate text-caption text-muted-foreground">{adminEmailLabel(r.email)}</p>
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-1 text-right">
                   {tab === "all" && (

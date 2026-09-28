@@ -192,7 +192,20 @@
     "toastImageOnly": "Тек сурет файлын жүктеңіз.",
     "toastImageTooLarge": "Сурет көлемі 2МБ-тан аспауы тиіс.",
     "toastAvatarUpdated": "Профиль суреті жаңартылды.",
-    "toastReadError": "Суретті оқу мүмкін болмады."
+    "toastReadError": "Суретті оқу мүмкін болмады.",
+    "addEmailNote": "Электрондық пошта енгізілмеген. Қоссаңыз, Telegramнан бөлек пошта арқылы да кіре аласыз.",
+    "addEmailPlaceholder": "siz@email.uz",
+    "addEmailButton": "Растау хаты",
+    "addEmailSentTo": "Растау хаты {email} мекенжайына жіберілді. Хаттағы сілтемені басыңыз.",
+    "addEmailSentToast": "Хат жіберілді — поштаңызды тексеріңіз.",
+    "addEmailResend": "Қайта жіберу",
+    "addEmailChange": "Басқа пошта",
+    "addEmailInvalid": "Пошта мекенжайы қате.",
+    "addEmailTaken": "Бұл пошта басқа тіркелгіге тиесілі. Сол тіркелгіге кіріп, Telegramды сонда қосыңыз.",
+    "addEmailTooSoon": "Бір минуттан кейін қайталап көріңіз.",
+    "addEmailTooMany": "Бүгінгі әрекеттер таусылды. Ертең қайталап көріңіз.",
+    "addEmailHasEmail": "Тіркелгіде пошта бар. Бетті жаңартыңыз.",
+    "addEmailSendFailed": "Хат жіберілмеді. Сәлден кейін қайталап көріңіз."
   },
   "PlanSection": {
     "currentPlanTitle": "Ағымдағы тариф",

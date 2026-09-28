@@ -14,6 +14,7 @@ import { useSettingsStore } from "@/store/useSettingsStore";
 import { CLASS_COLOR_HEX, type ClassColor } from "@/lib/class-colors";
 import { MONTHS_UZ } from "@/lib/localization";
 import { SettingsCard, useDraft, useRegisterDraft } from "./SettingsShared";
+import { AddEmailField } from "./AddEmailField";
 import { LessonLabLinkPanel, WhyLinkInfo } from "@/components/lessonlab/LessonLabLinkPanel";
 
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024; // 2MB
@@ -24,7 +25,8 @@ function initialsOf(name: string) {
       .trim()
       .split(/\s+/)
       .slice(0, 2)
-      .map((w) => w[0]?.toUpperCase() ?? "")
+      // `Array.from` — kod nuqtasi boʻyicha: `w[0]` emojining yarmini olib `�` chiqarardi.
+      .map((w) => Array.from(w)[0]?.toUpperCase() ?? "")
       .join("") || "?"
   );
 }
@@ -161,13 +163,17 @@ export default function ProfileSection() {
             />
             {nameError && <p className="text-xs text-destructive">{t("nameError")}</p>}
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="profile-email">{t("emailLabel")}</Label>
-            <Input id="profile-email" type="email" value={profile.email} readOnly disabled />
-            <p className="text-xs text-muted-foreground">
-              {isGoogle ? t("emailGoogleNote") : t("emailManualNote")}
-            </p>
-          </div>
+          <AddEmailField
+            fallback={
+              <div className="space-y-1.5">
+                <Label htmlFor="profile-email">{t("emailLabel")}</Label>
+                <Input id="profile-email" type="email" value={profile.email} readOnly disabled />
+                <p className="text-xs text-muted-foreground">
+                  {isGoogle ? t("emailGoogleNote") : t("emailManualNote")}
+                </p>
+              </div>
+            }
+          />
           <div className="space-y-1.5">
             <Label htmlFor="profile-school">{t("schoolLabel")}</Label>
             <Input

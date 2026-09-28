@@ -56,6 +56,7 @@ import {
 import { AdminPanelHeader } from "../../_components/AdminPanelHeader";
 import { School, Plus, MoreHorizontal, Pencil, Trash2, UserPlus, Building2 } from "lucide-react";
 import { useCollator } from "@/lib/use-collator";
+import { adminEmailLabel } from "@/lib/placeholder-email";
 import type { AdminSchoolItem, TeacherListItem } from "@/server/dal/admin/schools";
 import {
   createSchoolAction,
@@ -406,7 +407,7 @@ function AssignDialog({
             <SelectContent>
               {sortedTeachers.map((t) => (
                 <SelectItem key={t.id} value={t.id}>
-                  {t.name} ({t.email}){t.schoolId === school?.id ? " — biriktirilgan" : ""}
+                  {t.name} ({adminEmailLabel(t.email)}){t.schoolId === school?.id ? " — biriktirilgan" : ""}
                 </SelectItem>
               ))}
             </SelectContent>
