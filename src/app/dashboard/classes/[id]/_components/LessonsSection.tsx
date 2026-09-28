@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useRevealOnSelect } from "@/hooks/use-reveal-on-select";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -75,6 +76,8 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
   // Dars oqimi: tartib va oʻchirishdan keyin kelajakdagi sanalar qayta joylanadi.
   const flow = useLessonFlow();
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
+  // Telefonda boʻlim tanlanganda mavzular ustuniga oʻtish (u pastda turadi).
+  const lessonsColumnRef = useRevealOnSelect<HTMLDivElement>(selectedUnitId);
   const [editUnitTarget, setEditUnitTarget] = useState<Unit | null>(null);
   const [deleteUnitTarget, setDeleteUnitTarget] = useState<Unit | null>(null);
   // Standart: boʻlim bilan darslar ham oʻchadi (kutilgan «papka» semantikasi).
@@ -432,10 +435,13 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
   };
 
   return (
-    <div className="flex h-full min-h-0 gap-6 overflow-hidden">
+    /* Telefonda ustunlar ustma-ust (har biri oʻz balandligida); inline
+       `flexBasis: 0` faqat yonma-yon (lg+) uchun — `max-lg:basis-auto!`
+       uni bekor qiladi, aks holda ustun balandligi 0 ga tushardi. */
+    <div className="flex h-full min-h-0 gap-6 overflow-hidden max-lg:flex-col max-lg:overflow-visible">
       {/* ── Boʻlimlar (Units) ── */}
       <div
-        className="min-w-0 min-h-0 h-full bg-card rounded-xl border border-border flex flex-col overflow-hidden"
+        className="min-w-0 min-h-0 h-full bg-card rounded-xl border border-border flex flex-col overflow-hidden max-lg:basis-auto! max-lg:h-[60svh]"
         style={{ flexGrow: grow.units, flexBasis: 0 }}
       >
         <div className="px-5 py-4 flex items-center justify-between shrink-0 gap-2 border-b border-border">
@@ -610,7 +616,8 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
 
       {/* ── Mavzular (Lessons) ── */}
       <div
-        className="min-w-0 min-h-0 h-full bg-card rounded-xl border border-border flex flex-col overflow-hidden"
+        ref={lessonsColumnRef}
+        className="min-w-0 min-h-0 h-full bg-card rounded-xl border border-border flex flex-col overflow-hidden max-lg:basis-auto! max-lg:h-[70svh]"
         style={{ flexGrow: grow.lessons, flexBasis: 0 }}
       >
         {!selectedUnitId ? (
