@@ -105,7 +105,11 @@ Tanlangan sinf (trigger va roʻyxatdagi joriy qator) — 7% tint fon + 1px
 chegara toʻliq sinf rangida + toʻyingan glif (`gradientTile`, oq ikonka) +
 qalin matn; ✓ belgisi yoʻq, tanlov glifning oʻzida. Tinch qator — 18% tint
 doira + rangli ikonka; hover — sinf rangining 5% tinti + glif `scale(1.08)`;
-klaviatura — `.list-row:focus-visible` halqasi. Glif `[data-slot="class-glyph"]`
+roʻyxatdagi joriy qator (pointer ham, strelka ham) — xuddi shunday, Radix
+`data-highlighted` orqali, halqasiz. Trigger halqasi faqat klaviatura bilan
+kelinganda va sinf rangida: kulrang `.list-row:focus-visible` bu yerda
+ishlatilmaydi, chunki Radix fokusni dasturiy beradi va Chrome uni
+sichqonchada ham yoqadi (har bosishdan keyin kulrang halqa qolardi). Glif `[data-slot="class-glyph"]`
 ning asosiy uslubi qatorga bogʻlanmagan, shuning uchun ikkinchi oʻlcham
 yoʻq. Sinf **bitta** boʻlsa ham tanlagich chiqadi: kontekst har doim bir
 joyda va bir shaklda turadi. Trigger balandligi — `DESIGN.md` §8 deviatsiyasi.

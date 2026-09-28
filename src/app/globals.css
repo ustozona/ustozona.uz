@@ -1082,6 +1082,34 @@
 [data-slot="class-select"]:active {
   transform: none;
 }
+/* Fokus halqasi — `.list-row:focus-visible` (kulrang) bu yerda ISHLAMAYDI.
+   Radix Select fokusni dasturiy beradi (ochilganda qatorga, yopilganda
+   triggerga), Chrome esa dasturiy fokusda `:focus-visible` ni sichqoncha
+   bilan ishlaganda ham yoqadi — natijada har bosishdan keyin kulrang halqa
+   qolardi. Shuning uchun:
+     · roʻyxat qatori — halqasiz; joriy qator Radix'ning `data-highlighted`
+       belgisi bilan hover'dagidek chiziladi (pointer ham, strelka ham);
+     · trigger — halqa faqat klaviatura bilan kelinganda (`data-keyboard`,
+       `ClassSelect` oʻzi qoʻyadi) va sinf rangida. */
+[data-slot="class-select"]:focus-visible,
+[data-slot="class-select-item"]:focus-visible {
+  box-shadow: none;
+}
+[data-slot="class-select"][data-keyboard]:focus-visible {
+  box-shadow: 0 0 0 2px var(--background),
+              0 0 0 4px color-mix(in oklch, var(--card-accent, var(--primary)) 55%, transparent);
+}
+.list-row--glyph[data-highlighted]:not([data-active="true"]) {
+  background-color: color-mix(in oklch, var(--card-accent, var(--primary)) 5%, var(--background));
+}
+.list-row--glyph[data-highlighted] [data-slot="class-glyph"] {
+  transform: scale(1.08);
+}
+@media (prefers-reduced-motion: reduce) {
+  .list-row--glyph[data-highlighted] [data-slot="class-glyph"] {
+    transform: none;
+  }
+}
 
 /* ─────────────────────────────────────────────
    QATOR TILI — IXCHAM (list-row-compact) — AppSidebar
