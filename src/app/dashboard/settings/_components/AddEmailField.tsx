@@ -63,7 +63,7 @@ export function AddEmailField({ fallback }: { fallback: React.ReactNode }) {
     <div className="space-y-1.5">
       <Label htmlFor="profile-email">{t("emailLabel")}</Label>
       {pending ? (
-        <div className="flex flex-col gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2.5">
+        <div className="flex flex-col gap-2 rounded-lg border border-border bg-muted/30 px-3 py-3">
           <p className="flex items-start gap-2 text-sm text-foreground">
             <MailCheck className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
             <span className="min-w-0 break-words">{t("addEmailSentTo", { email: pending.email })}</span>
