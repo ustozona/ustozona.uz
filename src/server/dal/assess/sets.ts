@@ -265,7 +265,22 @@ export async function createSet(input: CreateSetInput): Promise<ActivitySetRow> 
 
 export type UpdateSetInput = Partial<Omit<CreateSetInput, "classId">>;
 
+/** Sessiya boshlangan toʻplamning savollarini almashtirish javoblar
+    tarixini va keyingi baho maxrajini oʻzgartiradi. */
+export async function assertSetEditable(id: string): Promise<void> {
+  const teacher = await requireTeacher();
+  const [used] = await db
+    .select({ id: quizSessions.id })
+    .from(quizSessions)
+    .where(and(eq(quizSessions.setId, id), eq(quizSessions.teacherId, teacher.id)))
+    .limit(1);
+  if (used) {
+    throw new Error("Bu test allaqachon oʻtkazilgan. Natijalarni saqlash uchun yangi test yarating.");
+  }
+}
+
 export async function updateSet(id: string, patch: UpdateSetInput): Promise<ActivitySetRow> {
+  await assertSetEditable(id);
   const teacher = await requireTeacher();
   const [row] = await db
     .update(activitySets)
@@ -277,6 +292,7 @@ export async function updateSet(id: string, patch: UpdateSetInput): Promise<Acti
 }
 
 export async function deleteSet(id: string): Promise<void> {
+  await assertSetEditable(id);
   const teacher = await requireTeacher();
   await db
     .delete(activitySets)

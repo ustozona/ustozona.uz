@@ -1,10 +1,13 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import {
   activities,
   activityItems,
+  activitySets,
+  quizSessions,
+  responses,
   type ActivityItemRow,
   type ActivityRow,
   type ActivityShape,
@@ -110,9 +113,45 @@ export type UpdateActivityInput = {
   grading?: GradingKind;
   approved?: boolean;
   config?: Record<string, unknown>;
-  /** Berilsa — barcha elementlar ALMASHTIRILADI va `version` oshadi. */
+  /** Tarkib oʻzgarsa elementlar almashtiriladi va `version` oshadi. */
   items?: { content: Record<string, unknown> }[];
 };
+
+async function assertNoActivityHistory(id: string, teacherId: string): Promise<void> {
+  const [answered] = await db
+    .select({ id: responses.id })
+    .from(responses)
+    .where(and(eq(responses.activityId, id), eq(responses.teacherId, teacherId)))
+    .limit(1);
+  const [launched] = await db
+    .select({ id: quizSessions.id })
+    .from(quizSessions)
+    .innerJoin(activitySets, eq(activitySets.id, quizSessions.setId))
+    .where(
+      and(
+        eq(quizSessions.teacherId, teacherId),
+        sql`${activitySets.items} @> ${JSON.stringify([{ activityId: id }])}::jsonb`
+      )
+    )
+    .limit(1);
+  if (answered || launched) {
+    throw new Error("Bu savol allaqachon oʻtkazilgan. Natijalarni saqlash uchun yangi savol yarating.");
+  }
+}
+
+function sameJson(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (a === null || b === null || typeof a !== "object" || typeof b !== "object") return false;
+  if (Array.isArray(a) || Array.isArray(b)) {
+    return Array.isArray(a) && Array.isArray(b) &&
+      a.length === b.length && a.every((value, index) => sameJson(value, b[index]));
+  }
+  const left = a as Record<string, unknown>;
+  const right = b as Record<string, unknown>;
+  const keys = Object.keys(left);
+  return keys.length === Object.keys(right).length &&
+    keys.every((key) => Object.hasOwn(right, key) && sameJson(left[key], right[key]));
+}
 
 export async function updateActivity(id: string, input: UpdateActivityInput): Promise<ActivityWithItems> {
   const teacher = await requireTeacher();
@@ -122,7 +161,27 @@ export async function updateActivity(id: string, input: UpdateActivityInput): Pr
     .where(and(eq(activities.id, id), eq(activities.teacherId, teacher.id)));
   if (!existing) throw new Error("Faoliyat topilmadi yoki sizga tegishli emas");
 
-  const bumpsVersion = input.items !== undefined;
+  // Eski itemId'lar javoblar jadvalida CASCADE FK bilan bogʻlangan.
+  // Faqat haqiqatan oʻzgargan elementlarni almashtiramiz.
+  const currentItems = await db
+    .select()
+    .from(activityItems)
+    .where(eq(activityItems.activityId, id))
+    .orderBy(asc(activityItems.ordinal));
+  const sameItems =
+    input.items === undefined ||
+    (input.items.length === currentItems.length &&
+      input.items.every((item, index) =>
+        sameJson(item.content, currentItems[index].content)
+      ));
+  const changesContent =
+    !sameItems ||
+    (input.shape !== undefined && input.shape !== existing.shape) ||
+    (input.grading !== undefined && input.grading !== existing.grading) ||
+    (input.config !== undefined && !sameJson(input.config, existing.config));
+  if (changesContent) await assertNoActivityHistory(id, teacher.id);
+
+  const bumpsVersion = input.items !== undefined && !sameItems;
   const [activity] = await db
     .update(activities)
     .set({
@@ -138,7 +197,7 @@ export async function updateActivity(id: string, input: UpdateActivityInput): Pr
     .where(eq(activities.id, id))
     .returning();
 
-  if (input.items !== undefined) {
+  if (bumpsVersion && input.items) {
     await db.delete(activityItems).where(eq(activityItems.activityId, id));
     if (input.items.length > 0) {
       await db.insert(activityItems).values(
@@ -163,5 +222,6 @@ export async function updateActivity(id: string, input: UpdateActivityInput): Pr
 
 export async function deleteActivity(id: string): Promise<void> {
   const teacher = await requireTeacher();
+  await assertNoActivityHistory(id, teacher.id);
   await db.delete(activities).where(and(eq(activities.id, id), eq(activities.teacherId, teacher.id)));
 }
