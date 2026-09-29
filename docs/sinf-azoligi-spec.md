@@ -1,6 +1,7 @@
 # Sinf aʼzoligi — davrlar modeli
 
-Holat: **taklif** (2026-09-29). Jamoa tasdigʻi kerak — markaziy model.
+Holat: **taklif** (2026-09-29). Q1–Q3 va §6.1–6.2 foydalanuvchi tomonidan
+tasdiqlangan; jamoa tasdigʻi kerak — markaziy model.
 Oldingi qadam: [oquvchini-kochirish-spec.md](oquvchini-kochirish-spec.md) (§4.1).
 
 ## 1. Muammo
@@ -29,12 +30,15 @@ model bunga toʻliq javob bera olmaydi:
 |---|---|
 | Aʼzolik — **davr**; bir juftlikda bir nechta davr boʻladi | Boshlanish sanasi kalitning qismi. Qaytish — yangi davr, eskilari birlashtirilmaydi |
 | Davrlar **ustma-ust tushmaydi** | Oldingisining tugashi ≤ keyingisining boshlanishi |
-| Tugash sanasi — **sinfda boʻlmagan birinchi kun** | Yarim-ochiq oraliq `[boshlanish, tugash)`. 15-sentabrda koʻchdi → 15 yangi sinfniki |
+| Tugash sanasi — **sinfda boʻlmagan birinchi kun** | Yarim-ochiq oraliq `[boshlanish, tugash)`. 15-sentabrda koʻchdi → 15 yangi sinfniki. (Baʼzi tizimlar oxirgi *boʻlgan* kunni yozadi — muhimi bitta konvensiya; bizda yarim-ochiq) |
 | Davomat **faqat davr ichida** | Davomat foizining maxraji — aʼzolik kunlari |
 | **Chiqish turi** saqlanadi | koʻchdi / maktabdan ketdi / kelmadi / yil tugadi |
 | «Kelmadi» (bironta kun kelmagan) — oʻchirilmaydi | Tugash sanasi + «kelmadi» turi; birinchi kungacha ketgan bola jurnalda umuman koʻrinmaydi |
 | Xato sana — **keng tarqalgan** | Bir tuman tahlilida 6 830 chiqishdan 135 tasida chiqishdan keyin davomat bor edi. Yozuv toʻsilmaydi, **ogohlantiriladi** — odam tuzatadi |
 | Baholar **sinfda qoladi** | Yangi sinfga avtomatik koʻchmaydi |
+| Guruh almashishi — **bitta hodisa** | Kuchga kirish sanasi, sabab va kim qilgani tarixda saqlanadi |
+| Bir kursning bir nechta guruhi boʻlsa | Yangi guruhni **odam tanlaydi** (qidiruv / oʻrin soni bilan) |
+| **Yil oxiri** | Barcha aʼzoliklar oxirgi dars kuni bilan yopiladi; keyingi yil uchun **yangi** yozuv ochiladi. Sinfda qoldirilgan, ketgan, boshqa maktabga oʻtgan — rollover paytida belgilanadi |
 
 ### 2.2. Oʻzbekiston — 2684-son nizom (2015, 2023 tahriri)
 
@@ -77,7 +81,7 @@ yoziladi; yangi kelgan roʻyxat oxiriga qoʻshiladi.
 | Q2 | Ketgan bolaning qatori | **Roʻyxat oxiriga tushadi** (belgi bilan) |
 | Q3 | Bir vaqtda nechta sinf | **Bitta darajali sinf** |
 
-⚠️ **Q3 aniqlashtirish kerak.** `classes` qatori aslida *fan guruhi*
+✅ **Q3 taʼrifi tasdiqlandi (2026-09-29).** `classes` qatori aslida *fan guruhi*
 («7-A Matematika», «7-A Ingliz 1-guruh» — ish-maydoni-arxitektura.md
 §4.3): maktab rejimida bitta bola bir vaqtda bir nechta darajali
 `classes` qatorida boʻladi va bu toʻgʻri. Shuning uchun Q3 **parallel**
@@ -163,8 +167,9 @@ boʻlmaydi.
 
 ## 5. Yagona oʻqish
 
-`server/dal/roster.ts` — boshqa hech bir DAL «kim sinfda» ni oʻzi
-hisoblamaydi.
+`server/dal/class-roster.ts` — boshqa hech bir DAL «kim sinfda» ni oʻzi
+hisoblamaydi. (Fayl allaqachon «joriy roʻyxat — bitta qoida bir joyda»
+vazifasida; yangi modul ochilmaydi.)
 
 ```ts
 rosterOn(classId, date)          // shu kuni aʼzo boʻlganlar
@@ -204,6 +209,51 @@ funksiyalarga koʻchadi.
 | Bolalarni birlashtirish | `student-merge.ts`: davrlar birlashtiriladi (ustma-ust tushsa — birlashma oraligʻi) |
 
 Q3 tekshiruvi (§3) — qoʻshish, koʻchirish va importda serverda.
+
+### 6.1. Parallel almashishi — maktab rejimi
+
+Koʻchirish **parallel darajasidagi bitta hodisa** (`student_moves`), bitta
+tranzaksiya:
+
+1. Eski paralleldagi bolaning **barcha darajali guruhlari** yopiladi
+   (`ended_on = effective_on`, `exit_reason = moved`). Q3 buni talab qiladi:
+   bitta guruh yopilmay qolsa bola ikki parallelda boʻlib qoladi.
+2. Har yopilgan guruh uchun yangi paralleldan **shu fandagi** guruh
+   qidiriladi:
+   - bitta topildi — avtomatik ochiladi;
+   - bir nechta (boʻlingan fan: Ingliz 1/2-guruh) — dialogda **tanlanadi**,
+     yonida oʻquvchilar soni;
+   - topilmadi — ochilmaydi, natijada roʻyxat bilan koʻrsatiladi
+     («7-A da Informatika guruhi yoʻq»).
+3. Darajasiz guruhlar (toʻgarak) **tegilmaydi**.
+4. Baho va davomat koʻchmaydi (Q1).
+5. Ruxsat: maʼmuriy sinfni boshqara oladigan (`assertCanManageClass` —
+   admin yoki ega). Fan oʻqituvchisi faqat oʻz guruhini koʻchira olmaydi —
+   aks holda Q3 buziladi.
+6. Taʼsirlangan guruhlarning oʻqituvchilari xabar oladi.
+
+Yakka oʻqituvchi rejimida (`parentClassId` yoʻq) parallel = oʻz guruhi:
+amal hozirgidek bitta guruhdan bitta guruhga.
+
+### 6.2. Yil oxiri — rollover
+
+1. Rollover barcha ochiq darajali davrlarni eski yilning **oxirgi kuni**
+   bilan yopadi (`exit_reason = year_end`).
+2. Davom etayotgan bolalarga yangi yilning **birinchi kunidan** yangi davr
+   ochiladi — oʻsha guruhda (rollover sinfni joyida koʻtaradi, id
+   oʻzgarmaydi; jurnal raqami `enrollments` da saqlanadi).
+3. Rollover sehrgarida bitta qadam: bolalar roʻyxati, sukut boʻyicha
+   «davom etadi». Istisnolar:
+   - **ketdi** — yangi davr ochilmaydi;
+   - **sinfda qoldi** — yangi davr tanlangan quyi darajadagi sinfda
+     (koʻchirish amali emas: u faqat bir xil daraja orasida).
+4. Bitiruvchi (arxivlanadigan) sinf — yangi davr ochilmaydi.
+5. Sanalar faol oʻquv yili taqvimidan (`academic_years`); maktab rejimida
+   rollover qiluvchining (admin) taqvimi.
+
+Natija: yil chegarasi maʼlumotda aniq, «oʻtgan yil kim bor edi» — oddiy
+oraliq soʻrovi; yozgi oraliqda hech kim aʼzo emas (darslar yoʻq —
+toʻgʻri).
 
 ## 7. Ekranlar
 
@@ -256,20 +306,15 @@ tegilmagan.
 |---|---|---|
 | 1 | `roster.ts` hozirgi ustunlar ustida; §2.3 dagi toʻrt xato; barcha chaqiruvchilar koʻchadi; eski sinf davomati ketish sanasigacha | yoʻq |
 | 2 | §8 migratsiya; `roster.ts` davr jadvalini oʻqiydi; DAL ikkala joyga yozadi | bor |
-| 3 | Koʻchirish hodisasi, sanani tuzatish, dialog, profil tarixi | — |
+| 3 | Koʻchirish hodisasi, sanani tuzatish, dialog, profil tarixi; parallel almashishi (§6.1) | — |
 | 4 | Jurnal: Q1, davrdan tashqari kataklar | — |
 | 5 | Q3 tekshiruvi + yaxlitlik soʻrovi (ogohlantirish) | — |
+| 6 | Rollover: yil oxirida yopish, yangi davr, istisnolar (§6.2) | — |
 
 PR-1 dan keyin 2–5 ekranlarga tegmaydi — faqat `roster.ts` ichi almashadi.
 
 ## 10. Ochiq savollar
 
-1. **Q3 taʼrifi** (§3) — parallel darajasida deb tasdiqlansinmi?
-2. **Maktab rejimida koʻchirish.** Bola 7-D dan 7-A ga oʻtsa, 7-D ning
-   barcha fan guruhlari yopilishi kerak (Q3). 7-A da qaysi guruhlar
-   ochiladi? Fan boʻyicha bitta guruh — avtomatik; boʻlingan fan (Ingliz
-   1/2-guruh) — soʻraladi. Yakka oʻqituvchi rejimida savol yoʻq: parallel =
-   oʻz sinfi.
-3. Oʻquv yili oxirida ochiq davrlar yopiladimi (`year_end`) yoki rollover
-   ularni davom ettiradimi? Hozir rollover sinfni joyida koʻtaradi — davr
-   davom etadi; bu toʻgʻri koʻrinadi, lekin tasdiqlash kerak.
+1. Sinf paneli statistikasi (Keldi / Kelmadi / Davomat) ketgan bolaning
+   aʼzolik kunlaridagi yozuvlarini hisoblasinmi? Standart — ha (maxraj
+   aʼzolik kunlari). Hozir faqat joriy roʻyxat hisoblanadi.
