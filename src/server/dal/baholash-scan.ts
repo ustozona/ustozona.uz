@@ -1,10 +1,11 @@
 import "server-only";
 import { randomUUID, randomBytes } from "node:crypto";
-import { and, asc, desc, eq, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, notExists } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import {
   activities,
   activityItems,
+  assignments,
   quizSessions,
   responses,
   sessionParticipants,
@@ -226,12 +227,11 @@ async function enteredStudentIds(sessionId: string): Promise<Set<string>> {
   return new Set(rows.map((r) => r.studentId).filter((id): id is string => Boolean(id)));
 }
 
-/** Shu test+sinf uchun qogʻoz sessiyasi — bor boʻlsa oʻshaniki.
+/** Shu test+sinf uchun OCHIQ qogʻoz sessiyasi — bor boʻlsa oʻshaniki.
 
-    Bitta test bitta sinfga bir marta qogʻozda beriladi, varaqlar esa
-    bir necha surat bilan bosqichma-bosqich kiritiladi. Har surat yangi
-    sessiya ochsa, jurnalga bitta test uchun beshta topshiriq
-    tushardi. */
+    Bir oʻtkazishdagi varaqlar bosqichma-bosqich kiritiladi. Jurnalga
+    chiqarilgan/yopilgan oʻtkazish qayta ochilmaydi: shu test keyingi
+    safar berilsa yangi sessiya va yangi baho ustuni kerak. */
 async function findPaperSession(
   teacherId: string,
   setId: string,
@@ -245,7 +245,18 @@ async function findPaperSession(
         eq(quizSessions.teacherId, teacherId),
         eq(quizSessions.setId, setId),
         eq(quizSessions.classId, classId),
-        eq(quizSessions.mode, "paper")
+        eq(quizSessions.mode, "paper"),
+        eq(quizSessions.state, "running"),
+        // Eski versiya nashrdan keyin sessiyani ochiq qoldirgan. Ular
+        // ham yangi oʻtkazish uchun qayta ishlatilmasin.
+        notExists(
+          db.select({ id: assignments.id }).from(assignments).where(
+            and(
+              eq(assignments.sourceSessionId, quizSessions.id),
+              eq(assignments.teacherId, teacherId)
+            )
+          )
+        )
       )
     )
     .orderBy(desc(quizSessions.createdAt))
@@ -517,31 +528,17 @@ export async function applyOmrScan(input: {
   return { sessionId: session.id, studentsAdded, answersSaved, skipped };
 }
 
-/** Qogʻoz sessiyasi — bor boʻlsa oʻshaniki, yoʻq boʻlsa yangisi.
+/** Ochiq qogʻoz sessiyasi — bor boʻlsa oʻshaniki, yoʻq boʻlsa yangisi.
 
     Sessiya `running` holatda turadi: qolgan varaqlar ertaga
-    kiritilishi mumkin. Yopishni oʻqituvchi jurnalga koʻchirish
-    paytida oʻzi hal qiladi. */
+    kiritilishi mumkin. Jurnalga koʻchirganda yopiladi. */
 async function ensurePaperSession(
   teacherId: string,
   input: { setId: string; classId: string; actorId?: string }
 ): Promise<QuizSessionRow> {
   const actorId = input.actorId;
   const existing = await findPaperSession(teacherId, input.setId, input.classId);
-  if (existing) {
-    if (existing.state === "running") return existing;
-    const [row] = await db
-      .update(quizSessions)
-      .set({
-        state: "running",
-        openedAt: existing.openedAt ?? new Date(),
-        closedAt: null,
-        updatedAt: new Date(),
-      })
-      .where(eq(quizSessions.id, existing.id))
-      .returning();
-    return row;
-  }
+  if (existing) return existing;
 
   const set = await loadSetItems(input.setId, actorId);
   const [row] = await db
