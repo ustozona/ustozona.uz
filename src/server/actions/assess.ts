@@ -18,6 +18,7 @@ import {
   deleteSet,
   getSet,
   getSetMeta,
+  hasSetSessions,
   listSets,
   listSetsWithPublishState,
   setSetArchived,
@@ -266,6 +267,8 @@ export type SaveSetDraftValues = z.infer<typeof saveSetDraftSchema>;
 export type SetDraft = {
   set: ActivitySetRow;
   questions: DraftQuestionValues[];
+  /** Natijalari bor toʻplamni tahrirlash mumkin emas; nusxa kerak. */
+  hasSessions?: boolean;
 };
 
 function validateDraftQuestion(q: DraftQuestionValues, index: number) {
@@ -437,7 +440,26 @@ export async function getSetDraftAction(setId: string): Promise<SetDraft | null>
     });
   }
 
-  return { set, questions };
+  return { set, questions, hasSessions: await hasSetSessions(set.id) };
+}
+
+/** Production Server Action xatolari yashiriladi. Oʻqituvchiga faqat
+    xavfsiz, oldindan maʼlum rad sabablarini qaytaramiz. */
+export async function saveSetDraftResultAction(input: SaveSetDraftValues): Promise<
+  | { ok: true; draft: SetDraft }
+  | { ok: false; reason: "already_used" | "invalid" | "failed"; message?: string }
+> {
+  try {
+    return { ok: true, draft: await saveSetDraftAction(input) };
+  } catch (error) {
+    if (error instanceof Error && error.message.startsWith("Bu test allaqachon oʻtkazilgan")) {
+      return { ok: false, reason: "already_used" };
+    }
+    if (error instanceof Error && /^\d+-savol:/.test(error.message)) {
+      return { ok: false, reason: "invalid", message: error.message };
+    }
+    return { ok: false, reason: "failed" };
+  }
 }
 
 /**

@@ -3870,6 +3870,10 @@
     "highlight": "Rangli belgilash"
   },
   "SetBuilder": {
+    "errLoadFailed": "Testni yuklab boʻlmadi. Qayta ochib koʻring.",
+    "usedSetHint": "Bu test allaqachon oʻtkazilgan. Natijalarni saqlash uchun asl testni oʻzgartirib boʻlmaydi. Nusxa oling; nusxa Testlar roʻyxatida turadi va uni yangi topshiriqqa biriktirasiz.",
+    "copyToEdit": "Nusxa olib tahrirlash",
+    "copySaved": "Nusxa saqlandi. Uni yangi topshiriqqa biriktiring.",
     "importFromBank": "Test bankidan savol olish",
     "bankAdded": "{count} ta savol qoʻshildi",
     "titlePlaceholder": "Test nomini kiriting…",

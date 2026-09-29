@@ -1457,7 +1457,11 @@ export default function AssignmentEditorOverlay({
                 ? undefined
                 : current.title.trim() || builder.initialTitle || undefined
             }
-            onSaved={(set) => handleSetSaved(set)}
+            onSaved={(set, copiedFromUsedSet) => {
+              // Oʻtkazilgan testning baholari va manba sessiyasi avvalgi
+              // toʻplamga bogʻlangan: nusxani shu ustunga avtomatik ulamaymiz.
+              if (!copiedFromUsedSet) handleSetSaved(set);
+            }}
             onClose={() => setBuilder(null)}
           />
         )}

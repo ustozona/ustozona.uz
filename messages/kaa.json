@@ -3993,6 +3993,10 @@
     "highlight": "Reńli belgilew"
   },
   "SetBuilder": {
+    "errLoadFailed": "Test júklenbedi. Qaytadan ashıp kóriń.",
+    "usedSetHint": "Bul test ótkizilgen. Nátiyjelerdi saqlaw ushın nusqasın alıń. Nusqanı jańa tapsırmaǵa biriktiriń.",
+    "copyToEdit": "Nusqa alıp ózgertiw",
+    "copySaved": "Nusqa saqlandı. Jańa tapsırmaǵa biriktiriń.",
     "importFromBank": "Banktan soraw alıw",
     "bankAdded": "{count} soraw qosıldı",
     "titlePlaceholder": "Test atın kiritiń…",
