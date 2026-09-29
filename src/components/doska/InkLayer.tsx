@@ -3,7 +3,7 @@
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
-import { getActiveScreen, useDoskaStore } from "@/lib/doska/store";
+import { getActiveScreen, holdDoskaPersist, useDoskaStore } from "@/lib/doska/store";
 import { useDoskaPrefs } from "@/lib/doska/prefs";
 import { selectedInk, useInkTool, type InkMode } from "@/lib/doska/ink-tool";
 import {
@@ -20,12 +20,14 @@ import {
   MARKER_ALPHA,
   START_PRESSURE,
   anchorsKey,
+  boundsIntersect,
   canvasColor,
   compactPoints,
   eraseAlong,
   eraserRadiusPx,
   inkAnchorAt,
   inkAnchorFor,
+  inkChangeBounds,
   inkColorVar,
   inkWidthAt,
   isRealPressureSample,
@@ -39,10 +41,12 @@ import {
   simulatedPressure,
   snapLineEnd,
   strokeAt,
+  strokeDamage,
   strokeHit,
   strokePath,
   strokeWidthPx,
   visibleInk,
+  type InkBounds,
   type InkPlacement,
   type PlacedStroke,
 } from "@/lib/doska/ink";
@@ -57,7 +61,11 @@ import type { DoskaScreen, InkShape, InkStroke, InkTool } from "@/lib/doska/type
        qoʻshildi, oʻchirildi, qaytarildi), fon yoki uslub almashganda,
        yoki yozuv bogʻlangan vidjet surilganda / slayd almashganda
        qayta chiziladi. Har chiziqning konturi keshda (`strokePath`) —
-       500 chiziqli ekran ham bir zumda (R341).
+       500 chiziqli ekran ham bir zumda (R341). Oddiy qoʻshish va
+       oʻchirishda butun kanvas emas, faqat oʻzgargan joy qayta chiziladi
+       (`inkChangeBounds` → `drawDry(region)`): kuchsiz protsessorli
+       doskada toʻla ekranni har chiziq tugashida qayta chizish keyingi
+       harfning boshini kechiktirardi.
      • HOʻL — hozir yozilayotgan chiziqlar, lazer izi va oʻchirgʻich
        doirasi. Har kadrda (`requestAnimationFrame`) qayta chiziladi,
        lekin faqat oʻzi — quruq qatlamga tegmaydi.
@@ -415,19 +423,44 @@ function useInkEngine(
     };
 
     /* ── Quruq qatlam ──
-       Marker AVVAL, qalam KEYIN: marker yozuvni yopmasin, ostida qolsin. */
-    const drawDry = () => {
-      colors.clear();
-      reset(dctx, dry);
+       Marker AVVAL, qalam KEYIN: marker yozuvni yopmasin, ostida qolsin.
+
+       `region` berilsa faqat shu toʻrtburchak tozalanib, unga tegadigan
+       chiziqlar qayta chiziladi (qirqib olingan holda) — natija toʻliq
+       chizish bilan bir xil, chunki tartib va oʻtishlar oʻsha-oʻsha.
+       Toʻla ekranda har qoʻyib yuborishda va oʻchirgʻichning har
+       harakatida yuzlab chiziqni qayta chizish kuchsiz doskada qalamni
+       kechiktirardi. */
+    const drawDry = (region?: InkBounds) => {
       const placed = visible();
+      if (region) {
+        // Qurilma pikseliga yaxlitlanadi — chegaradagi piksel yarim
+        // tozalanib, eski rang qoldigʻi chiqmasin.
+        const x0 = Math.max(0, Math.floor(region.minX * dpr));
+        const y0 = Math.max(0, Math.floor(region.minY * dpr));
+        const x1 = Math.min(dry.width, Math.ceil(region.maxX * dpr));
+        const y1 = Math.min(dry.height, Math.ceil(region.maxY * dpr));
+        if (x1 <= x0 || y1 <= y0) return;
+        dctx.save();
+        dctx.setTransform(1, 0, 0, 1, 0, 0);
+        dctx.beginPath();
+        dctx.rect(x0, y0, x1 - x0, y1 - y0);
+        dctx.clip();
+        dctx.clearRect(x0, y0, x1 - x0, y1 - y0);
+      } else {
+        colors.clear();
+        reset(dctx, dry);
+      }
       for (const pass of ["marker", "pen"] as const) {
         dctx.globalAlpha = pass === "marker" ? MARKER_ALPHA : 1;
-        for (const { stroke, place: p } of placed) {
-          if (stroke.tool !== pass || dragging?.ids.has(stroke.id)) continue;
-          place(dctx, p);
-          paint(dctx, stroke);
+        for (const p of placed) {
+          if (p.stroke.tool !== pass || dragging?.ids.has(p.stroke.id)) continue;
+          if (region && !boundsIntersect(strokeDamage(p), region)) continue;
+          place(dctx, p.place);
+          paint(dctx, p.stroke);
         }
       }
+      if (region) dctx.restore();
       dctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       dctx.globalAlpha = 1;
     };
@@ -759,6 +792,17 @@ function useInkEngine(
       setTimeout(() => root.removeEventListener("click", swallow, { capture: true }), 0);
     };
 
+    /**
+     * Qalam doskada ekan, ekran diskka yozilmaydi (`holdDoskaPersist`):
+     * butun deckni JSON'ga oʻgirish asosiy oqimni toʻxtatadi va aynan
+     * yozish oʻrtasiga tushsa siyoh kechikadi. Oxirgi barmoq/qalam
+     * koʻtarilganda qoʻyib yuboriladi.
+     */
+    const releaseIfIdle = () => {
+      if (live.size || erasers.size || lasers.size || lassos.size || dragging) return;
+      holdDoskaPersist(false);
+    };
+
     /* ── Hodisalar ── */
     const onPointerDown = (e: PointerEvent) => {
       // Chizgʻich yoki transportir ustida barmoq va sichqoncha asbobni
@@ -774,6 +818,7 @@ function useInkEngine(
       if (!mode) return;
 
       claimForInk(e);
+      holdDoskaPersist(true);
       // Sichqonchada matn belgilanmasin va fokus siljimasin.
       e.preventDefault();
       try {
@@ -936,7 +981,11 @@ function useInkEngine(
       const trail = lasers.get(e.pointerId);
       const loop = lassos.get(e.pointerId);
       const drag = dragging?.pointerId === e.pointerId ? dragging : null;
-      if (!l && !eraser && !trail && !loop && !drag) return;
+      if (!l && !eraser && !trail && !loop && !drag) {
+        // Masalan, surish paytidagi ikkinchi barmoq — holat yaratmagan.
+        releaseIfIdle();
+        return;
+      }
 
       if (root.hasPointerCapture(e.pointerId)) root.releasePointerCapture(e.pointerId);
       live.delete(e.pointerId);
@@ -950,6 +999,8 @@ function useInkEngine(
       // `pointercancel` da ham saqlanadi: brauzer harakatni tortib olsa
       // ham oʻqituvchi yozgani yoʻqolmasin.
       if (l) commit(l);
+      // Saqlash yozuv store'ga tushgandan KEYIN qoʻyib yuboriladi.
+      releaseIfIdle();
       // Lazer izi darhol yoʻqolmaydi — oʻzi soʻnadi.
       if (trail) fading.push(trail);
       swallowClick();
@@ -1011,6 +1062,7 @@ function useInkEngine(
        Oʻchirgʻich va lazer ham toʻxtaydi — yangi ekranda davom ettirmasin. */
     let lastScreen = getActiveScreen();
     let lastInk = lastScreen?.ink;
+    let lastWidgets = lastScreen?.widgets;
     let lastAnchors = anchorsKey(lastScreen);
     let lastBackground = lastScreen?.background;
     let lastScreenId = useDoskaStore.getState().activeScreenId;
@@ -1032,19 +1084,34 @@ function useInkEngine(
         dragging = null;
         fading = [];
         for (const l of pending) commit(l);
+        releaseIfIdle();
         // Belgilash ekranga tegishli — yangi ekranda eski `id` lar yoʻq.
         useInkTool.getState().setSelection([]);
         schedule();
       }
       const screen = getActiveScreen();
       if (screen === lastScreen) return;
+      const sameScreen = screen?.id === lastScreen?.id;
       lastScreen = screen;
 
-      const anchors = anchorsKey(screen);
+      // Yozuv ham, vidjetlar ham oʻsha-oʻsha (tanlov, fon, sarlavha
+      // oʻzgargan) — kalit qayta hisoblanmaydi.
+      const anchors =
+        sameScreen && screen?.ink === lastInk && screen?.widgets === lastWidgets
+          ? lastAnchors
+          : anchorsKey(screen);
+      lastWidgets = screen?.widgets;
       if (screen?.ink !== lastInk || anchors !== lastAnchors) {
+        // Oʻsha ekranda faqat yozuv oʻzgardi (chiziq qoʻshildi,
+        // oʻchirildi, surildi) — qatlamning faqat oʻsha joyi. Boshqa
+        // ekran yoki vidjet surilgani — butun qatlam.
+        const region =
+          screen && sameScreen && anchors === lastAnchors
+            ? inkChangeBounds(lastInk, screen.ink, screen.widgets)
+            : null;
         lastInk = screen?.ink;
         lastAnchors = anchors;
-        drawDry();
+        drawDry(region ?? undefined);
         // Belgilash chegarasi yozuv bilan birga oʻzgaradi (rang, qalinlik, surish).
         schedule();
       }
@@ -1065,6 +1132,7 @@ function useInkEngine(
           dragging = null;
           drawDry();
         }
+        releaseIfIdle();
         if (s.mode !== "eraser" && s.mode !== "laser") hover = null;
         schedule();
       } else if (s.selection !== prev.selection) {
@@ -1088,6 +1156,7 @@ function useInkEngine(
       cancelAnimationFrame(frame);
       cancelAnimationFrame(bgFrame);
       for (const l of live.values()) window.clearTimeout(l.holdTimer);
+      holdDoskaPersist(false);
       unsubDoska();
       unsubPrefs();
       unsubTool();

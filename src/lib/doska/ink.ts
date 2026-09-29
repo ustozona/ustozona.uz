@@ -651,14 +651,113 @@ export function visibleInk(screen: DoskaScreen | undefined): PlacedStroke[] {
 }
 
 /**
+ * Ekranda koʻrinadigan yozuv bormi — `visibleInk(screen).length > 0` bilan
+ * bir xil, lekin roʻyxat qurmaydi va birinchi topilganda toʻxtaydi. U
+ * store selektorida har oʻzgarishda chaqiriladi (`InkBar`).
+ */
+export function hasVisibleInk(screen: DoskaScreen | undefined): boolean {
+  if (!screen?.ink?.length) return false;
+  let widgets: Map<string, DoskaWidget> | null = null;
+  for (const stroke of screen.ink) {
+    if (!stroke.anchor) return true;
+    widgets ??= new Map(screen.widgets.map((w) => [w.id, w]));
+    if (strokePlacement(stroke, widgets)) return true;
+  }
+  return false;
+}
+
+/**
+ * Chiziq ekranda egallaydigan toʻrtburchak — qatlamning shu qismini
+ * qayta chizish uchun. Zaxira keng: bosimda kontur `strokeWidthPx` dan
+ * qalinlashadi (`inkWidthAt`), silliqlash va antialiasing ham bir-ikki
+ * piksel chiqaradi. Tor boʻlsa chiziq chetida iz qolardi.
+ */
+export function strokeDamage({ stroke, place }: PlacedStroke): InkBounds {
+  const b = strokeBounds(stroke);
+  const pad = strokeWidthPx(stroke.tool, stroke.size) * place.scale + 2;
+  return {
+    minX: place.x + b.minX * place.scale - pad,
+    minY: place.y + b.minY * place.scale - pad,
+    maxX: place.x + b.maxX * place.scale + pad,
+    maxY: place.y + b.maxY * place.scale + pad,
+  };
+}
+
+/** Hech narsani qamramaydigan toʻrtburchak — `unionBounds` ning boshi. */
+export const EMPTY_BOUNDS: InkBounds = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity };
+
+function unionBounds(a: InkBounds, b: InkBounds): InkBounds {
+  return {
+    minX: Math.min(a.minX, b.minX),
+    minY: Math.min(a.minY, b.minY),
+    maxX: Math.max(a.maxX, b.maxX),
+    maxY: Math.max(a.maxY, b.maxY),
+  };
+}
+
+export function boundsIntersect(a: InkBounds, b: InkBounds): boolean {
+  return a.minX < b.maxX && b.minX < a.maxX && a.minY < b.maxY && b.minY < a.maxY;
+}
+
+/**
+ * Yozuvning oʻzgargan joyi: olib tashlangan va qoʻshilgan KOʻRINADIGAN
+ * chiziqlar egallagan toʻrtburchak. Qatlam faqat shu joyda qayta
+ * chiziladi — oʻchirgʻich har harakatda, qalam har qoʻyib yuborishda
+ * butun ekranni chizmaydi.
+ *
+ * `widgets` — YANGI ekranniki. Olib tashlangan chiziq ham shular bilan
+ * joylanadi: chaqiruvchi bogʻlangan vidjetlar joyidan qimirlamaganini
+ * (`anchorsKey`) tekshirgan boʻlishi shart.
+ *
+ * `null` — joyini aniqlab boʻlmaydi (chiziqlar tartibi almashgan),
+ * butun qatlam qayta chizilsin. `EMPTY_BOUNDS` — koʻrinadigan hech
+ * narsa oʻzgarmagan.
+ */
+export function inkChangeBounds(
+  prev: readonly InkStroke[] | undefined,
+  next: readonly InkStroke[] | undefined,
+  widgets: readonly DoskaWidget[],
+): InkBounds | null {
+  const before = new Set(prev ?? []);
+  const after = new Set(next ?? []);
+  const byId = new Map(widgets.map((w) => [w.id, w]));
+  let out = EMPTY_BOUNDS;
+  let changed = false;
+  const mark = (stroke: InkStroke) => {
+    changed = true;
+    const place = strokePlacement(stroke, byId);
+    if (place) out = unionBounds(out, strokeDamage({ stroke, place }));
+  };
+  for (const stroke of before) if (!after.has(stroke)) mark(stroke);
+  for (const stroke of after) if (!before.has(stroke)) mark(stroke);
+  // Toʻplam oʻsha-oʻsha, massiv esa boshqa — tartib almashgan.
+  return changed || prev === next ? out : null;
+}
+
+/** Bogʻlangan chiziqlarning vidjetlari — yozuv massivi oʻzgarmaguncha keshda. */
+const anchoredIdsCache = new WeakMap<readonly InkStroke[], Set<string>>();
+
+function anchoredIds(ink: readonly InkStroke[]): Set<string> {
+  let ids = anchoredIdsCache.get(ink);
+  if (!ids) {
+    ids = new Set();
+    for (const s of ink) if (s.anchor) ids.add(s.anchor.widgetId);
+    anchoredIdsCache.set(ink, ids);
+  }
+  return ids;
+}
+
+/**
  * Bogʻlangan chiziqlar joyini belgilovchi kalit — vidjet surilsa,
  * kattalashsa yoki slayd almashsa oʻzgaradi, qatlam shunda qayta chiziladi.
- * Bogʻlangan chiziq yoʻq boʻlsa boʻsh satr.
+ * Bogʻlangan chiziq yoʻq boʻlsa boʻsh satr. Yozuv oʻzgarmasa uni aylanib
+ * chiqilmaydi (`anchoredIds` keshi) — vidjet sudralganda har harakatda
+ * soʻraladi.
  */
 export function anchorsKey(screen: DoskaScreen | undefined): string {
-  const ids = new Set<string>();
-  for (const s of screen?.ink ?? []) if (s.anchor) ids.add(s.anchor.widgetId);
-  if (!ids.size || !screen) return "";
+  if (!screen?.ink?.length) return "";
+  const ids = anchoredIds(screen.ink);
+  if (!ids.size) return "";
   let key = "";
   for (const w of screen.widgets) {
     if (ids.has(w.id)) key += `${w.id}:${w.x},${w.y},${w.w}:${widgetInkPage(w)};`;

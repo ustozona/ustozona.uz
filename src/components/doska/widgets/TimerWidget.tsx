@@ -37,10 +37,24 @@ import { WidgetButton } from "./WidgetButton";
    • Tugaganda — rang + soʻz («Vaqt tugadi») + ixtiyoriy ovoz; rang
      yolgʻiz maʼno tashimaydi (R326).
 
-   Holat storeʼda (`durationSec`, `remainingSec`, `running`, `view`,
-   `sound`), shuning uchun sahifa yangilansa ham taymer joyida qoladi.
-   `view` va `sound` 2-bosqichda qoʻshildi — eski taymerlarda yoʻq,
-   shuning uchun ular standart qiymat bilan oʻqiladi.
+   Holat storeʼda (`durationSec`, `remainingSec`, `running`, `endsAt`,
+   `view`, `sound`), shuning uchun sahifa yangilansa ham taymer joyida
+   qoladi. `view` va `sound` 2-bosqichda qoʻshildi — eski taymerlarda
+   yoʻq, shuning uchun ular standart qiymat bilan oʻqiladi.
+
+   ⚠️ ISHLAB TURGAN taymer storeʼga har soniya YOZMAYDI. U tugash
+   vaqtini (`endsAt`, epoch ms) bir marta yozadi, qolgan soniyalar esa
+   shu vidjetning oʻz holatida sanaladi. Avval har soniya
+   `remainingSec` yozilardi — va har yozuv butun ekranni yangilab,
+   butun deckni diskka yozishga navbat qoʻyardi: sensorli doskaning
+   kuchsiz protsessorida taymer yonida yozilgan siyoh har soniya
+   tutilib qolardi. `remainingSec` endi faqat TOʻXTAGAN taymerning
+   qolgan vaqti.
+
+   Tugash vaqtiga tayanilgani uchun taymer sahifa yangilanganda ham,
+   boshqa ekran ochiq turganda ham real vaqtda sanaydi. Tugash ovozi
+   esa faqat taymer koʻz oldida tugasa chalinadi: qaytib kelganda
+   allaqachon tugagan taymer jim «Vaqt tugadi» holatida turadi.
    ════════════════════════════════════════════════════════════════════ */
 
 export type TimerView = "digits" | "disk" | "both";
@@ -60,9 +74,16 @@ function readTimer(state: DoskaWidget["state"]) {
     durationSec,
     remainingSec: Number(state.remainingSec ?? durationSec),
     running: state.running === true,
+    /** Ishlab turgan taymerning tugash vaqti (epoch ms); eski yozuvlarda yoʻq. */
+    endsAt: typeof state.endsAt === "number" ? state.endsAt : null,
     view,
     sound: state.sound !== false,
   };
+}
+
+/** Tugash vaqtigacha qolgan butun soniyalar — «00:01» oxirgi soniya davomida turadi. */
+function secondsUntil(endsAt: number, now: number): number {
+  return Math.max(0, Math.ceil((endsAt - now) / 1000));
 }
 
 function format(sec: number): string {
@@ -74,42 +95,57 @@ export function TimerWidget({ widget }: { widget: DoskaWidget }) {
   const patch = useDoskaStore((s) => s.patchWidgetState);
   const selected = useIsSelected(widget.id);
   const t = useTranslations("Doska.timer");
-  const { durationSec, remainingSec, running, view, sound } = readTimer(widget.state);
+  const { durationSec, remainingSec: storedSec, running, endsAt, view, sound } = readTimer(widget.state);
+  const [now, setNow] = React.useState(() => Date.now());
+  const remainingSec = running && endsAt !== null ? secondsUntil(endsAt, now) : storedSec;
   const finished = remainingSec <= 0;
   const fresh = !running && remainingSec === durationSec;
 
-  React.useEffect(() => {
-    if (!running || finished) return;
-    const id = setInterval(() => {
-      // Storeʼdan oʻqiymiz, propʼdan emas: interval yopilmasidan oldin
-      // prop eskirgan boʻlishi mumkin.
-      const current = useDoskaStore
-        .getState()
-        .deck.screens.flatMap((s) => s.widgets)
-        .find((w) => w.id === widget.id);
-      if (!current) return;
+  // `useLayoutEffect` — boshlanish yoki «+1» dan keyingi birinchi kadr
+  // eski `now` bilan chizilmasin: soat boʻyalishdan OLDIN yangilanadi.
+  React.useLayoutEffect(() => {
+    if (!running) return;
+    if (endsAt === null) {
+      // Eski yozuv: har soniya `remainingSec` yozadigan taymerdan qolgan.
+      patch(widget.id, { endsAt: Date.now() + storedSec * 1000 });
+      return;
+    }
 
-      const left = Number(current.state.remainingSec ?? 0) - 1;
-      if (left <= 0) {
-        patch(widget.id, { remainingSec: 0, running: false });
-        if (current.state.sound !== false) playTimerEnd();
-      } else {
-        patch(widget.id, { remainingSec: left });
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const tick = (watching: boolean) => {
+      const at = Date.now();
+      if (at >= endsAt) {
+        patch(widget.id, { running: false, remainingSec: 0, endsAt: null });
+        // Birinchi tekshiruvda tugagan boʻlsa — taymer koʻz oldida emas,
+        // qayta yuklash yoki boshqa ekranda tugagan: jim.
+        if (sound && watching) playTimerEnd();
+        return;
       }
-    }, 1000);
-    return () => clearInterval(id);
-  }, [running, finished, widget.id, patch]);
+      setNow(at);
+      // Keyingi soniya chegarasidan sal keyin — raqam aynan shunda almashadi.
+      timer = setTimeout(() => tick(true), ((endsAt - at) % 1000 || 1000) + 5);
+    };
+    tick(false);
+    return () => clearTimeout(timer);
+  }, [running, endsAt, sound, storedSec, widget.id, patch]);
 
   /** Asosiy tugma: tugagan — qaytadan tayyor; aks holda boshlash/toʻxtatish. */
   const onPrimary = () => {
     if (finished) {
-      patch(widget.id, { remainingSec: durationSec, running: false });
+      patch(widget.id, { remainingSec: durationSec, running: false, endsAt: null });
+      return;
+    }
+    if (running) {
+      // Toʻxtatilgan paytdagi qolgan vaqt saqlanadi; ekrandagi `now`
+      // soniyaning boshida qolgan boʻlishi mumkin — shu sabab hozirgi vaqt.
+      const left = endsAt !== null ? secondsUntil(endsAt, Date.now()) : storedSec;
+      patch(widget.id, { running: false, remainingSec: left, endsAt: null });
       return;
     }
     // Tovush konteksti foydalanuvchi harakatida ochiladi — tugash ovozi
     // keyin harakatsiz chalinadi (sounds.ts).
-    if (!running && sound) unlockDoskaSound();
-    patch(widget.id, { running: !running });
+    if (sound) unlockDoskaSound();
+    patch(widget.id, { running: true, endsAt: Date.now() + remainingSec * 1000 });
   };
 
   const fraction = durationSec > 0 ? Math.min(1, Math.max(0, remainingSec) / durationSec) : 0;
@@ -163,7 +199,7 @@ export function TimerWidget({ widget }: { widget: DoskaWidget }) {
             <WidgetButton
               shape="round"
               label={t("reset")}
-              onClick={() => patch(widget.id, { remainingSec: durationSec, running: false })}
+              onClick={() => patch(widget.id, { remainingSec: durationSec, running: false, endsAt: null })}
             >
               <IconRestart />
             </WidgetButton>
@@ -174,10 +210,13 @@ export function TimerWidget({ widget }: { widget: DoskaWidget }) {
             style={{ fontSize: "clamp(0.75rem, 4cqw, 1.5rem)" }}
             onClick={() => {
               const add = Math.min(60, MAX_SEC - durationSec);
-              patch(widget.id, {
-                durationSec: durationSec + add,
-                remainingSec: Math.max(0, remainingSec) + add,
-              });
+              // Ishlab turgan taymerda tugash vaqti suriladi — sanash uzilmaydi.
+              patch(
+                widget.id,
+                running && endsAt !== null
+                  ? { durationSec: durationSec + add, endsAt: endsAt + add * 1000 }
+                  : { durationSec: durationSec + add, remainingSec: Math.max(0, remainingSec) + add },
+              );
             }}
           >
             +1
@@ -225,7 +264,7 @@ export function TimerSettings({ widget }: { widget: DoskaWidget }) {
 
   /** Vaqt tanlansa taymer toʻxtaydi va toʻliq vaqtga qaytadi. */
   const setDuration = (sec: number) =>
-    patch(widget.id, { durationSec: sec, remainingSec: sec, running: false });
+    patch(widget.id, { durationSec: sec, remainingSec: sec, running: false, endsAt: null });
 
   // 2 daqiqagacha qadam 30 soniya — «30 soniya oʻylab koʻring» uchun.
   const stepDown = durationSec <= 120 ? 30 : 60;

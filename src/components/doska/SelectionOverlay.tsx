@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useDoskaStore, useActiveScreen } from "@/lib/doska/store";
+import { useDoskaStore, useActiveWidgets } from "@/lib/doska/store";
 import type { ResizeHandle } from "@/lib/doska/interaction";
 import { IconLock } from "./icons";
 import { WidgetSettingsCard } from "./WidgetSettingsCard";
@@ -49,12 +49,12 @@ const HANDLES: { id: ResizeHandle; className: string; cursor: string }[] = [
 ];
 
 export function SelectionOverlay() {
-  const screen = useActiveScreen();
+  const widgets = useActiveWidgets();
   const selectedId = useDoskaStore((s) => s.selectedId);
   const settingsOpen = useDoskaStore((s) => s.settingsId !== null && s.settingsId === s.selectedId);
   const spotlight = useDoskaStore((s) => s.spotlightId !== null);
 
-  const widget = screen?.widgets.find((w) => w.id === selectedId);
+  const widget = widgets?.find((w) => w.id === selectedId);
   if (!widget || spotlight) return null;
   const locked = widget.locked === true;
 

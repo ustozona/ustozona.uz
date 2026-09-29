@@ -57,7 +57,9 @@ import {
    (docs/design-system.md modal qoidasi).
    ════════════════════════════════════════════════════════════════════ */
 export function DoskaMenu() {
-  const deck = useDoskaStore((s) => s.deck);
+  // Butun `deck` ga emas: u har chiziqda va taymerning har soniyasida yangilanadi.
+  const title = useDoskaStore((s) => s.deck.title);
+  const screenCount = useDoskaStore((s) => s.deck.screens.length);
   const activeScreenId = useDoskaStore((s) => s.activeScreenId);
   const renameDeck = useDoskaStore((s) => s.renameDeck);
   const clearScreen = useDoskaStore((s) => s.clearScreen);
@@ -74,11 +76,11 @@ export function DoskaMenu() {
   const [view, setView] = React.useState<"main" | "appearance">("main");
   const [exporting, setExporting] = React.useState<"idle" | "busy" | "failed">("idle");
 
-  const screenCount = deck.screens.length;
   const saveImage = async () => {
     if (exporting === "busy") return;
     setExporting("busy");
     try {
+      const { deck } = useDoskaStore.getState();
       const number = deck.screens.findIndex((x) => x.id === activeScreenId) + 1;
       await downloadScreenPng(exportFileName(deck.title, number));
       setExporting("idle");
@@ -129,7 +131,7 @@ export function DoskaMenu() {
           <div className="flex flex-col gap-1.5 border-b px-4 py-3">
             <div className="flex items-start justify-between gap-3">
               <input
-                value={deck.title}
+                value={title}
                 onChange={(e) => renameDeck(e.target.value)}
                 aria-label={tm("deckName")}
                 className="focus-visible:ring-ring/50 -mx-1.5 min-w-0 flex-1 rounded-md px-1.5 py-0.5 text-sm font-medium focus-visible:ring-2 focus-visible:outline-none"

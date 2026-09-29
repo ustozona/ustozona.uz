@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import { persist, createJSONStorage, type StateStorage } from "zustand/middleware";
+import { persist, type PersistStorage, type StorageValue } from "zustand/middleware";
 
 import type { DoskaDeck, DoskaScreen, DoskaWidget, InkStroke, WidgetKind } from "./types";
 import { widgetMeta } from "./registry";
@@ -58,6 +58,26 @@ const HISTORY_LIMIT = 50;
    sudralayotgan paytdagi 100 ta oraliq koordinata hech kimga kerak
    emas, faqat qoʻyilgan joyi kerak.
 
+   ⚠️ `JSON.stringify` ham SHU YERDA, yozish paytida — `createJSONStorage`
+   da emas. U matnni har `set()` da tayyorlab berardi: kechiktirish faqat
+   `setItem` ni surardi, butun deck esa har chiziq tugashida, oʻchirgʻichning
+   har harakatida va ishlayotgan taymerning har soniyasida baribir JSON'ga
+   oʻgirilardi. Kompyuterda bu sezilmaydi, sensorli doskaning kuchsiz
+   protsessorida esa qalam ostidagi siyohni kechiktiradi. Endi holat
+   obyekti ushlab turiladi va tinchlangach BIR marta oʻgiriladi — store
+   holati oʻzgarmas (immutable), ushlangan obyekt keyin oʻzgarib qolmaydi.
+
+   ⚠️ YOZAYOTGAN QALAM OSTIDA DISKKA YOZILMAYDI. Oʻgirish bir marta
+   boʻlsa ham butun deck hajmida — toʻla ekranda kuchsiz protsessorni
+   oʻnlab millisekundga band qiladi. Oʻqituvchi soʻzni harfma-harf
+   yozadi: chiziqlar orasidagi tanaffus 350 ms dan uzun boʻlsa, yozuv
+   aynan KEYINGI harf boshlanayotganda tushib, uning boshini
+   kechiktirardi. Shuning uchun siyoh qatlami qalam tekkan paytda
+   yozuvni ushlab turadi (`holdDoskaPersist`), qalam koʻtarilgach esa
+   yana `INK_QUIET_MS` tinchlik kutiladi. Ushlab turish `HOLD_LIMIT_MS`
+   dan oshmaydi: toʻxtovsiz yozilsa ham saqlash kechikib boʻlsa-da
+   bajariladi.
+
    ⚠️ Kutish paytida sahifa yopilishi mumkin. Kutilayotgan yozuvni
    darhol tushirish uchun `flushDoskaPersist()` eksport qilinadi;
    uni `pagehide` / `visibilitychange` ga ULAYDIGAN joy — komponent
@@ -67,25 +87,67 @@ const HISTORY_LIMIT = 50;
    ──────────────────────────────────────────────────────────────────── */
 
 /**
- * Joriy storage instansiyasining «darhol yoz» funksiyasi. HMR yangi
- * instansiya yaratsa shu koʻrsatkich yangisiga oʻtadi — eskisiga emas.
+ * Qalam koʻtarilgach diskka yozishdan oldin kutiladigan tinchlik (ms).
+ * Harflar orasidagi odatiy tanaffusdan uzunroq: soʻz yozilayotganda
+ * yozuv chiziqlar orasiga tushmasin.
  */
-let flushPending: (() => void) | null = null;
+const INK_QUIET_MS = 1500;
+
+/**
+ * Qalam bosilgan paytda ham yozuv shuncha kutgandan keyin baribir
+ * bajariladi (ms) — toʻxtovsiz yozishda saqlash cheksiz surilmasin.
+ */
+const HOLD_LIMIT_MS = 10_000;
+
+/**
+ * Joriy storage instansiyasi: «darhol yoz» va «taymerni qayta qoʻy».
+ * HMR yangi instansiya yaratsa shu koʻrsatkich yangisiga oʻtadi —
+ * eskisiga emas.
+ */
+let activeStorage: { flush: () => void; arm: () => void } | null = null;
+
+/** Qalam doskaga tegib turibdi — yozuv ushlab turiladi. */
+let persistHeld = false;
+
+/** Shu paytgacha (`performance.now()`) yozuv boshlanmaydi. */
+let quietUntil = 0;
 
 /** Kutilayotgan localStorage yozuvini darhol diskka tushiradi. */
 export function flushDoskaPersist(): void {
-  flushPending?.();
+  activeStorage?.flush();
 }
 
-function deferredLocalStorage(delayMs: number): StateStorage {
-  // ⚠️ Birinchi qator ATAYLAB shunday: serverda `localStorage` yoʻq va
-  // bu chaqiruv xato beradi. `createJSONStorage` uni ushlaydi va
-  // saqlashsiz davom etadi — aynan avvalgi `() => localStorage`
-  // xatti-harakati.
-  const store = localStorage;
+/**
+ * Siyoh qatlami chaqiradi: `true` — qalam tegdi, diskka yozish
+ * surilsin; `false` — qalam koʻtarildi, `INK_QUIET_MS` tinchlikdan
+ * keyin yozilsin.
+ */
+export function holdDoskaPersist(hold: boolean): void {
+  if (persistHeld === hold) return;
+  persistHeld = hold;
+  if (!hold) quietUntil = performance.now() + INK_QUIET_MS;
+  activeStorage?.arm();
+}
+
+/** Diskka yoziladigan qism (`partialize`). */
+type PersistedDoska = Pick<DoskaState, "deck" | "activeScreenId">;
+
+function deferredLocalStorage(delayMs: number): PersistStorage<PersistedDoska> | undefined {
+  // Serverda `localStorage` yoʻq, taqiqlangan saytda esa murojaat xato
+  // beradi — ikkalasida saqlashsiz davom etiladi (persist `undefined`
+  // storage bilan shunday ishlaydi; avvalgi `createJSONStorage` ham
+  // aynan shuni qaytarardi).
+  let store: Storage;
+  try {
+    store = localStorage;
+  } catch {
+    return undefined;
+  }
 
   let timer: ReturnType<typeof setTimeout> | null = null;
-  let pending: { name: string; value: string } | null = null;
+  /** Ishlab turgan taymer ushlab turish paytida (`HOLD_LIMIT_MS`) qoʻyilgan. */
+  let timerHeld = false;
+  let pending: { name: string; value: StorageValue<PersistedDoska> } | null = null;
 
   const flush = () => {
     if (timer !== null) {
@@ -95,7 +157,7 @@ function deferredLocalStorage(delayMs: number): StateStorage {
     if (!pending) return;
     let ok = true;
     try {
-      store.setItem(pending.name, pending.value);
+      store.setItem(pending.name, JSON.stringify(pending.value));
     } catch {
       // Xotira toʻlgan yoki maxfiylik rejimi — ekran baribir
       // ishlayveradi, faqat saqlanmaydi. Endi buni oʻqituvchi KOʻRADI
@@ -108,14 +170,43 @@ function deferredLocalStorage(delayMs: number): StateStorage {
     reportSave(ok);
   };
 
-  flushPending = flush;
+  /**
+   * Yozuv taymerini holatga koʻra qoʻyadi.
+   *
+   * Qalam bosilganda taymer `HOLD_LIMIT_MS` ga qoʻyiladi va keyingi
+   * oʻzgarishlar uni QAYTA QOʻYMAYDI — aks holda har yangi chiziq
+   * chegarani surib, yozuv hech qachon bajarilmasdi. Qalam koʻtarilgach
+   * odatdagi kechiktirish, lekin tinchlik tugashidan oldin emas.
+   */
+  const arm = () => {
+    if (!pending) return;
+    if (persistHeld && timerHeld && timer !== null) return;
+    if (timer !== null) clearTimeout(timer);
+    timerHeld = persistHeld;
+    const delay = persistHeld
+      ? HOLD_LIMIT_MS
+      : Math.max(delayMs, quietUntil - performance.now());
+    timer = setTimeout(flush, delay);
+  };
+
+  activeStorage = { flush, arm };
 
   return {
-    getItem: (name) => store.getItem(name),
+    getItem: (name) => {
+      const raw = store.getItem(name);
+      if (raw === null) return null;
+      try {
+        return JSON.parse(raw) as StorageValue<PersistedDoska>;
+      } catch (err) {
+        // Buzilgan yozuv (qoʻlda tahrir, yarim yozilgan disk) doskani
+        // butunlay ochilmaydigan qilmasin — yangi ekran bilan boshlanadi.
+        console.error("[doska] saqlangan ekranni oʻqib boʻlmadi", err);
+        return null;
+      }
+    },
     setItem: (name, value) => {
       pending = { name, value };
-      if (timer !== null) clearTimeout(timer);
-      timer = setTimeout(flush, delayMs);
+      arm();
     },
     removeItem: (name) => {
       pending = null;
@@ -171,10 +262,10 @@ function emptyDeck(): DoskaDeck {
    fon, ekran qoʻshish/oʻchirish/tozalash.
 
    ⚠️ Vidjetning ICHKI holati (`state`) tarixga YOZILMAYDI va qaytarishda
-   TIKLANMAYDI (`keepLiveState`). Sabab: taymer har soniya holatini
-   yangilaydi, gʻildirak aylanadi — agar qaytarish ularni ham eski
+   TIKLANMAYDI (`keepLiveState`). Sabab: taymer ishga tushadi va
+   toʻxtaydi, gʻildirak aylanadi — agar qaytarish ularni ham eski
    snapshotga qaytarsa, oʻqituvchi oʻchirishni bekor qilganda ishlab
-   turgan taymer bir necha soniya orqaga sakrardi. Faqat OʻCHIRILGAN
+   turgan taymer toʻxtab yoki orqaga sakrab qolardi. Faqat OʻCHIRILGAN
    vidjet oʻzining oʻchirilgan paytdagi holati bilan qaytadi.
 
    Tarix saqlanmaydi (`partialize`): u dars ichidagi xavfsizlik, sahifa
@@ -778,8 +869,8 @@ export const useDoskaStore = create<DoskaState>()(
     },
     {
       name: STORAGE_KEY,
-      storage: createJSONStorage(() => deferredLocalStorage(SAVE_DELAY_MS)),
-      partialize: (s) => ({ deck: s.deck, activeScreenId: s.activeScreenId }),
+      storage: deferredLocalStorage(SAVE_DELAY_MS),
+      partialize: (s): PersistedDoska => ({ deck: s.deck, activeScreenId: s.activeScreenId }),
       onRehydrateStorage: () => (state) => {
         if (state) state.hydrated = true;
       },
@@ -795,9 +886,31 @@ export function useIsSelected(id: string): boolean {
   return useDoskaStore((s) => s.selectedId === id);
 }
 
-/** Joriy ekran — komponentlar shu selektor orqali oʻqiydi. */
+/** Holatdan joriy ekran — selektorlar uchun umumiy yordamchi. */
+export function activeScreenOf(s: PersistedDoska): DoskaScreen | undefined {
+  return s.deck.screens.find((x) => x.id === s.activeScreenId);
+}
+
+/**
+ * Joriy ekran — komponentlar shu selektor orqali oʻqiydi.
+ *
+ * ⚠️ Ekran obyekti har chiziqda (siyoh) va vidjet holatining har
+ * oʻzgarishida yangilanadi. Faqat vidjetlar yoki fon kerak boʻlsa —
+ * `useActiveWidgets` / `useActiveBackground`: ular siyoh oʻzgarganda
+ * qayta chizishga sabab boʻlmaydi.
+ */
 export function useActiveScreen(): DoskaScreen | undefined {
-  return useDoskaStore((s) => s.deck.screens.find((x) => x.id === s.activeScreenId));
+  return useDoskaStore(activeScreenOf);
+}
+
+/** Joriy ekran vidjetlari — siyoh oʻzgarsa massiv oʻsha-oʻsha qoladi. */
+export function useActiveWidgets(): DoskaWidget[] | undefined {
+  return useDoskaStore((s) => activeScreenOf(s)?.widgets);
+}
+
+/** Joriy ekran foni (kalit). */
+export function useActiveBackground(): string | null | undefined {
+  return useDoskaStore((s) => activeScreenOf(s)?.background);
 }
 
 /**
@@ -805,6 +918,5 @@ export function useActiveScreen(): DoskaScreen | undefined {
  * amallar uchun (siyoh qatlami, belgilash amallari).
  */
 export function getActiveScreen(): DoskaScreen | undefined {
-  const s = useDoskaStore.getState();
-  return s.deck.screens.find((x) => x.id === s.activeScreenId);
+  return activeScreenOf(useDoskaStore.getState());
 }

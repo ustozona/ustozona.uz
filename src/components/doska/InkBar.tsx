@@ -4,7 +4,7 @@ import * as React from "react";
 import { useTranslations } from "next-intl";
 
 import { cn } from "@/lib/utils";
-import { useActiveScreen, useDoskaStore } from "@/lib/doska/store";
+import { activeScreenOf, useActiveBackground, useDoskaStore } from "@/lib/doska/store";
 import { backgroundById } from "@/lib/doska/backgrounds";
 import {
   currentSize,
@@ -16,7 +16,15 @@ import {
   type InkMode,
 } from "@/lib/doska/ink-tool";
 import type { GuideKind } from "@/lib/doska/guides";
-import { INK_SIZES, MARKER_COLORS, PEN_COLORS, inkColorVar, visibleInk, type InkSize } from "@/lib/doska/ink";
+import {
+  INK_SIZES,
+  MARKER_COLORS,
+  PEN_COLORS,
+  hasVisibleInk,
+  inkColorVar,
+  visibleInk,
+  type InkSize,
+} from "@/lib/doska/ink";
 import { BarButton } from "./BarButton";
 import { BarGroup, BarSeparator, BarTextButton } from "./BarGroup";
 import { useDockLayout } from "./dock";
@@ -94,14 +102,20 @@ export function InkBar() {
   const protractor = useInkTool((s) => s.protractor !== null);
   const toggleGuide = useInkTool((s) => s.toggleGuide);
 
-  const clearInk = useDoskaStore((s) => s.clearInk);
-  const screen = useActiveScreen();
-  // Koʻrinib turgan yozuv: taqdimotning boshqa slaydidagi belgi «Tozalash» ga kirmaydi.
-  const placed = React.useMemo(() => visibleInk(screen), [screen]);
-  const hasInk = placed.length > 0;
-  const tone = backgroundById(screen?.background).tone;
-
   const lasso = mode === "lasso";
+  const clearInk = useDoskaStore((s) => s.clearInk);
+  // Koʻrinib turgan yozuv: taqdimotning boshqa slaydidagi belgi «Tozalash» ga kirmaydi.
+  //
+  // ⚠️ Panel butun ekranga EMAS, «yozuv bormi» degan boolean'ga obuna:
+  // ekran obyekti har chiziq tugashida yangilanadi, panelni esa faqat
+  // birinchi chiziq va oxirgisining oʻchishi qiziqtiradi. Toʻliq roʻyxat
+  // faqat lassoda kerak (belgilangan chiziqlarning rangi va qalinligi) —
+  // u rejimda yangi chiziq yozilmaydi.
+  const hasInk = useDoskaStore((s) => hasVisibleInk(activeScreenOf(s)));
+  const lassoScreen = useDoskaStore((s) => (lasso ? activeScreenOf(s) : undefined));
+  const placed = React.useMemo(() => visibleInk(lassoScreen), [lassoScreen]);
+  const tone = backgroundById(useActiveBackground()).tone;
+
   const picked = React.useMemo(() => (lasso ? selectedInk(placed, selection) : []), [lasso, placed, selection]);
   const hasSelection = picked.length > 0;
 

@@ -47,6 +47,17 @@ export function WidgetFrame({
   children: React.ReactNode;
 }) {
   const spotlight = useDoskaStore((s) => s.spotlightId === widget.id);
+  const [, relayout] = React.useReducer((n: number) => n + 1, 0);
+
+  // Markazdagi oʻrin oyna oʻlchamidan hisoblanadi (`spotlightRect`). Ramka
+  // endi siyoh oʻzgarganda qayta chizilmaydi (`WidgetSlot`, `React.memo`),
+  // shuning uchun oyna aylansa yoki toʻliq ekranga oʻtilsa uni shu yerda
+  // yangilash kerak — aks holda vidjet eski oʻlchamda qiyshiq qoladi.
+  React.useEffect(() => {
+    if (!spotlight) return;
+    window.addEventListener("resize", relayout);
+    return () => window.removeEventListener("resize", relayout);
+  }, [spotlight]);
 
   return (
     <div
