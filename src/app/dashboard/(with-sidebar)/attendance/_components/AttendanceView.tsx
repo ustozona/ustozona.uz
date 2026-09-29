@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 import { DAYS_UZ_SUN } from "@/lib/localization";
 import {
   type AttendanceStatus, type AttendanceStatusDef, type AttendanceRecord,
-  deriveLessonDays, isEnrolledOn,
+  deriveLessonDays,
   weightedRate, percentile, statusWeights,
   MONTH_NAMES,
 } from "@/lib/attendance-data";
@@ -24,6 +24,7 @@ import { resolveVersionForDate } from "@/lib/timetable-versions";
 import TimetableCoverageBanner from "@/components/timetable/TimetableCoverageBanner";
 import Link from "next/link";
 import { todayKey } from "@/lib/date-keys";
+import { isMemberOn, overlapsRange } from "@/lib/membership";
 import { useAttendanceStore } from "@/store/useAttendanceStore";
 import { useCalendarStore } from "@/store/useCalendarStore";
 import { useTimetableStore } from "@/store/useTimetableStore";
@@ -76,6 +77,8 @@ const CHIP_BTN =
   "flex items-center justify-center rounded-md cursor-pointer transition-all hover:ring-2 hover:ring-inset hover:ring-primary/30";
 
 const UZ_COLLATOR = new Intl.Collator("uz", { sensitivity: "base" });
+/** "2026-09-15" → "15.09" (aʼzolik belgilari va tooltiplar uchun). */
+const shortDate = (key: string) => `${key.slice(8, 10)}.${key.slice(5, 7)}`;
 function splitName(name: string): { first: string; last: string } {
   const parts = name.trim().split(/\s+/);
   return parts.length >= 2
@@ -393,7 +396,8 @@ export default function AttendanceView({
   }, [demoMode]);
 
   // Roster va sinf nomi — baholar jurnali bilan bitta manba (server-backed).
-  const gradesClass = useGradesStore((s) => s.classDataMap[classId]);
+  const classDataMap = useGradesStore((s) => s.classDataMap);
+  const gradesClass = classDataMap[classId];
   const versions = useTimetableStore((s) => s.versions);
   // Chiqib ketgan oʻquvchi davomat roʻyxatida koʻrinmaydi (xulq sahifasi bilan
   // bir xil naqsh, [[student-status-model]]) — tarixi saqlanadi, faqat
@@ -572,16 +576,28 @@ export default function AttendanceView({
         return y === month.year && m === month.month;
       });
 
-  // Oʻquvchilar — tartiblash
-  const baseStudents = [...roster]
-    .sort((a, b) => {
-      const na = splitName(a.name);
-      const nb = splitName(b.name);
-      const ka = sortField === "lastName" ? na.last || na.first : na.first;
-      const kb = sortField === "lastName" ? nb.last || nb.first : nb.first;
-      const cmp = UZ_COLLATOR.compare(ka, kb);
-      return sortDir === "asc" ? cmp : -cmp;
-    });
+  /* Boshqa sinfga KETGANLAR — koʻrilayotgan davrda kamida bir kun shu sinfda
+     boʻlganlar. Eski sinf bolani chiqish sanasigacha koʻrsatadi: aks holda
+     uning ketishdan oldingi kunlari hech qayerda belgilanmasdi
+     (docs/sinf-azoligi-spec.md §7). Roʻyxat OXIRIDA (Q2). */
+  const viewFrom = monthDays[0]?.date;
+  const viewTo = monthDays[monthDays.length - 1]?.date;
+  const formerInView = demoMode || !viewFrom || !viewTo
+    ? []
+    : (gradesClass?.formerStudents ?? []).filter(
+        (s) => s.status !== "archived" && overlapsRange(s, viewFrom, viewTo)
+      );
+
+  // Oʻquvchilar — tartiblash (ketganlar har doim oxirida)
+  const byName = (a: Student, b: Student) => {
+    const na = splitName(a.name);
+    const nb = splitName(b.name);
+    const ka = sortField === "lastName" ? na.last || na.first : na.first;
+    const kb = sortField === "lastName" ? nb.last || nb.first : nb.first;
+    const cmp = UZ_COLLATOR.compare(ka, kb);
+    return sortDir === "asc" ? cmp : -cmp;
+  };
+  const baseStudents = [...[...roster].sort(byName), ...[...formerInView].sort(byName)];
 
   // Davomat foizi — dars kunlari boʻyicha (koʻrinishdan mustaqil; docs/attendance-model.md)
   const lessonDatesIn = (year: number, months: number[]) =>
@@ -659,13 +675,30 @@ export default function AttendanceView({
 
   const students = onlyAttention ? baseStudents.filter((s) => needsAttention(s.id)) : baseStudents;
 
-  // Aʼzolik oraligʻi: bola sinfga yozilgan kundan OLDINGI BELGISIZ katak yopiq.
+  // Aʼzolik oraligʻi [joinedAt, leftAt) dan tashqaridagi BELGISIZ katak yopiq.
   // ⚠️ Yozuvi allaqachon bor katak yopilmaydi — aks holda mavjud belgi/izoh
   // koʻrinmay va tuzatib boʻlmay qolardi, hisoblagichlarda esa qolaverardi
-  // (kech kiritilgan koʻchirish, sinfga qaytish: `started_at` yangi sanaga
-  // yoziladi, eski davrning belgilari sana ORQASIDA qoladi).
-  const isCellClosed = (student: Pick<Student, "id" | "joinedAt">, date: string) =>
-    !isEnrolledOn(student.joinedAt, date) && !recordByKey.has(`${student.id}:${date}`);
+  // (kech kiritilgan koʻchirish, sinfga qaytish: sana keyin oʻzgargan,
+  // eski belgilar oraliqdan TASHQARIDA qolgan).
+  type Span = Pick<Student, "id" | "joinedAt" | "leftAt">;
+  const isCellClosed = (student: Span, date: string) =>
+    !isMemberOn(student, date) && !recordByKey.has(`${student.id}:${date}`);
+  const closedHintFor = (student: Span, date: string) =>
+    student.joinedAt && date < student.joinedAt
+      ? t("notEnrolledYet", { date: shortDate(student.joinedAt) })
+      : t("leftClassOn", { date: shortDate(student.leftAt ?? date) });
+
+  /** Ketgan bolaning belgisi: «→ 7-A · 15.09» (yangi sinfi shu oʻqituvchida
+      boʻlsa) yoki «Chiqdi · 15.09». */
+  const leftLabel = (student: Span) => {
+    if (!student.leftAt) return null;
+    const target = Object.values(classDataMap).find(
+      (c) => c.info.id !== classId && c.students.some((x) => x.id === student.id && x.joinedAt === student.leftAt)
+    );
+    return target
+      ? t("movedTo", { className: target.info.name, date: shortDate(student.leftAt) })
+      : t("leftOn", { date: shortDate(student.leftAt) });
+  };
 
   // Jonli xulosa — koʻrinayotgan oy × oʻquvchilar boʻyicha holat sonlari.
   // Kelasi (hali boʻlib oʻtmagan) kunlar "Belgilanmagan"ga kirmaydi — ular
@@ -684,7 +717,7 @@ export default function AttendanceView({
   const markedCount = scopeRecords.filter((r) => r.status !== UNMARKED).length;
   const unmarkedCount = Math.max(0, totalOpenCells - markedCount);
 
-  const handleCell = (student: Pick<Student, "id" | "joinedAt">, date: string) => {
+  const handleCell = (student: Span, date: string) => {
     if (isCellClosed(student, date)) return;
     const studentId = student.id;
     setRecords((prev) => {
@@ -707,8 +740,8 @@ export default function AttendanceView({
       const already = new Set(
         prev.filter((r) => r.date === date && r.status !== UNMARKED).map((r) => r.studentId)
       );
-      const additions = roster
-        .filter((s) => !already.has(s.id) && isEnrolledOn(s.joinedAt, date))
+      const additions = [...roster, ...formerInView]
+        .filter((s) => !already.has(s.id) && isMemberOn(s, date))
         .map((s) => ({ studentId: s.id, date, status }));
       return [...prev, ...additions];
     });
@@ -1041,7 +1074,12 @@ export default function AttendanceView({
                             </Tooltip>
                             <HoverCard openDelay={120} closeDelay={60}>
                               <HoverCardTrigger asChild>
-                                <span className="text-data-row whitespace-nowrap inline-block pt-px cursor-default">{student.name}</span>
+                                <span className={cn("text-data-row whitespace-nowrap inline-block pt-px cursor-default", student.leftAt && "text-muted-foreground")}>
+                                  {student.name}
+                                  {student.leftAt && (
+                                    <span className="ml-2 text-caption text-muted-foreground">{leftLabel(student)}</span>
+                                  )}
+                                </span>
                               </HoverCardTrigger>
                               <HoverCardContent align="start" className="w-64">
                                 <AttendancePreview
@@ -1064,7 +1102,7 @@ export default function AttendanceView({
                               onClick={() => handleCell(student, d.date)}
                               onNote={() => setNotePopup({ studentId: student.id, date: d.date })}
                               future={d.date > today}
-                              closedHint={isCellClosed(student, d.date) ? t("notEnrolledYet", { date: student.joinedAt ?? "" }) : undefined}
+                              closedHint={isCellClosed(student, d.date) ? closedHintFor(student, d.date) : undefined}
                             />
                           </TableCell>
                         ))}
@@ -1097,7 +1135,7 @@ export default function AttendanceView({
 
           {/* Jonli xulosa — holat sonlari + taqsimot bari */}
           <CardFooter className={cn(panelCardFooterClass, "flex items-center gap-4")}>
-            <span className="shrink-0 text-caption">{t("studentCount", { count: students.length })}</span>
+            <span className="shrink-0 text-caption">{t("studentCount", { count: students.filter((s) => !s.leftAt).length })}</span>
 
             {/* Oʻrta — holat sonlari, markazda */}
             <div className="flex flex-1 items-center justify-center gap-x-5 gap-y-2 flex-wrap">

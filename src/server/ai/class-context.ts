@@ -13,6 +13,8 @@ import {
   behaviorEvents,
 } from "@/server/db/schema";
 import { visibleClassIds } from "@/server/workspace";
+import { memberOnSql } from "@/server/db/membership";
+import { todayTashkentKey } from "@/lib/date-keys";
 
 /* ════════════════════════════════════════════════════════════════════
    AI SINF-KONTEKSTI — "sinfga moslab reja tuz" uchun AGREGAT xulosa.
@@ -55,12 +57,18 @@ export async function buildClassContext(
     attendanceCounts,
     [behaviorSummary],
   ] = await Promise.all([
-    // Faol oʻquvchilar soni
+    // Faol oʻquvchilar soni — BUGUN sinfda boʻlganlar (ketganlar kirmaydi)
     db
       .select({ n: sql<number>`count(*)::int` })
       .from(enrollments)
       .innerJoin(students, eq(students.id, enrollments.studentId))
-      .where(and(eq(enrollments.classId, classId), eq(students.status, "active"))),
+      .where(
+        and(
+          eq(enrollments.classId, classId),
+          eq(students.status, "active"),
+          memberOnSql(todayTashkentKey())
+        )
+      ),
 
     // Toifa boʻyicha oʻrtacha foiz (score/maxScore, draft va missing chiqarilgan)
     db

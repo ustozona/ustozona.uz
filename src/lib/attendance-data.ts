@@ -5,7 +5,7 @@ import {
 import {
   resolveVersionForDate, type TimetableVersion,
 } from "@/lib/timetable-versions";
-import { addDaysKey, dateKeyToDate, isDateKeyShape } from "@/lib/date-keys";
+import { addDaysKey, dateKeyToDate } from "@/lib/date-keys";
 
 // Davomat holati — QULFLANGAN toʻplam: faqat 4 ta built-in (Keldi/Kelmadi/
 // Kechikdi/Sababli). Maxsus status yoʻq — real foydalanuvchilar soʻrasa
@@ -120,27 +120,6 @@ export function deriveLessonDays(
     }
   }
   return days;
-}
-
-/**
- * Bola shu kuni sinfda edimi — YOZILISH boshlangan sana
- * (`enrollments.started_at`) boʻyicha.
- *
- * `startedAt` yoʻq (null / undefined) = sana koʻrsatilmagan: yozilish
- * koʻchirish amali orqali emas, oddiy qoʻshish bilan yaratilgan (yoki
- * koʻchirish paydo boʻlishidan oldingi yozuv) — hech qaysi kun yopilmaydi.
- * Oʻqituvchi sinfni yil oʻrtasida ilovaga kiritib, oldingi haftalar
- * davomatini toʻldirishi mumkin, shuning uchun «qoʻshilgan kun = bugun»
- * deb taxmin QILINMAYDI.
- *
- * ⚠️ Sayt (katakni yopish), server (yozuvni rad etish) va mobil (varaq
- * roʻyxati) BIR xil qoidadan foydalanadi — uch joyda uch xil solishtirish
- * yozilmasin. "YYYY-MM-DD" shaklida boʻlmagan sana solishtirib boʻlmaydi,
- * shu bois «sinfda emas» deb olinadi.
- */
-export function isEnrolledOn(startedAt: string | null | undefined, date: string): boolean {
-  if (!startedAt) return true;
-  return isDateKeyShape(date) && date >= startedAt;
 }
 
 export function getStatus(

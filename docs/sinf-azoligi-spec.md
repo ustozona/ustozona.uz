@@ -191,8 +191,15 @@ filtrlanadi.
 | Admin statistikasi | SQL: davr jadvali bilan `JOIN` |
 | Profil | `membershipOf` |
 
-`isEnrolledOn` (lib/attendance-data.ts) va `formerStudents` shu
-funksiyalarga koʻchadi.
+Mijoz tomonidagi qoida — `lib/membership.ts` (`isMemberOn`,
+`overlapsRange`); server SQL qismi — `memberOnSql` (aynan bir xil shart).
+
+**PR-1 da bajarilgan (hozirgi ustunlar ustida):** `rosterOn`, `isMember`,
+`activeClassRoster` (Toshkent «bugun»i boʻyicha), `boundedSpans`; §2.3
+dagi toʻrt joy tuzatildi; davomat server guardi ikkala chegarani
+tekshiradi; eski sinf davomati bolani chiqish sanasigacha oxirida
+koʻrsatadi; jurnalda ikki tomonlama yopiq kataklar va Q1.
+`rosterDuring` / `membershipOf` — PR-2 (davr jadvali) bilan.
 
 ## 6. Yozish amallari
 

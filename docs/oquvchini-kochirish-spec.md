@@ -147,8 +147,12 @@ Tegiladigan soʻrovlar: `dal/grades.ts:168`, `dal/baholash-sheets.ts:106`,
 
 ### 4.1. Davomat: yozilishdan oldingi kunlar
 
+> ⚠️ Bu boʻlim tarixiy. Amaldagi qoida — [sinf-azoligi-spec.md](sinf-azoligi-spec.md):
+> oraliq ikki tomonlama `[started_at, ended_at)`, qoida `isMemberOn`
+> (`lib/membership.ts`), server roʻyxati `dal/class-roster.ts`.
+
 Yangi sinfda `started_at` dan OLDINGI kunlarga davomat qoʻyilmaydi. Qoida
-bitta — `isEnrolledOn` (`lib/attendance-data.ts`) — va uch joyda ishlaydi:
+bitta va uch joyda ishlaydi:
 
 | Joy | Nima qiladi |
 |---|---|

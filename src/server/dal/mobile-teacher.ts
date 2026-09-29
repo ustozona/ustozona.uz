@@ -1,15 +1,16 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
-import { and, asc, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, asc, eq, gt, inArray, isNull, lte, or, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import { assignments, attendanceRecords, attendanceStatuses, behaviorEvents, behaviorSkills, classes, enrollments, grades, students } from "@/server/db/schema";
 import { ForbiddenError, requireTeacher } from "@/server/session";
 import { assertTeachesClass, visibleClassIds } from "@/server/workspace";
-import { activeClassRoster, activeClassRosterWithStart } from "@/server/dal/class-roster";
+import { activeClassRoster, rosterOn } from "@/server/dal/class-roster";
 import { applyAttendanceBatch } from "@/server/dal/attendance";
 import { applyGradesBatch } from "@/server/dal/grades";
 import { applyBehaviorBatch, getBehaviorPayload } from "@/server/dal/behavior";
-import { BUILTIN_STATUSES, isEnrolledOn } from "@/lib/attendance-data";
+import { BUILTIN_STATUSES } from "@/lib/attendance-data";
+import { isMemberOn } from "@/lib/membership";
 import { getTimetablePayload } from "@/server/dal/timetable";
 import { normalizeLegacyVersions, resolveVersionForDate } from "@/lib/timetable-versions";
 import { dateKeyToDate } from "@/lib/date-keys";
@@ -123,7 +124,7 @@ export type MobileAttendanceSheet = {
 export async function getMobileAttendance(classId: string, date: string): Promise<MobileAttendanceSheet> {
   const ctx = await assertTeachesClass(classId);
   const [roster, statuses, records] = await Promise.all([
-    activeClassRosterWithStart(classId),
+    rosterOn(classId, date),
     activeStatuses(ctx.teacherId),
     db
       .select({ studentId: attendanceRecords.studentId, status: attendanceRecords.status })
@@ -137,29 +138,48 @@ export async function getMobileAttendance(classId: string, date: string): Promis
       ),
   ]);
   const byStudent = new Map(records.map((r) => [r.studentId, r.status]));
+  /* Varaq — SHU KUNI sinfda boʻlganlar (qoʻshilishidan oldin ham, ketganidan
+     keyin ham chiqmaydi: belgi baribir saqlanmasdi). Shu kunga yozuvi
+     allaqachon bor bola esa aʼzolikdan tashqarida boʻlsa ham koʻrinadi —
+     tarix yashirilmaydi (sana keyin tuzatilgan boʻlishi mumkin). */
+  const inRoster = new Set(roster.map((s) => s.id));
+  const extraIds = records.map((r) => r.studentId).filter((id) => !inRoster.has(id));
+  const extra = extraIds.length
+    ? await db
+        .select({ id: students.id, name: students.name })
+        .from(students)
+        .where(inArray(students.id, extraIds))
+    : [];
   return {
     classId,
     date,
     statuses: statuses.map(({ key, label, tone }) => ({ key, label, tone })),
-    /* Bola sinfga yozilishidan OLDINGI kun uchun varaqda chiqmaydi — belgi
-       baribir saqlanmasdi (`applyAttendanceBatch`). Shu kunga yozuvi allaqachon
-       bor boʻlsa koʻrinadi: tarix yashirilmaydi. */
-    students: roster
-      .filter((s) => isEnrolledOn(s.startedAt, date) || byStudent.has(s.id))
-      .map((s) => ({ id: s.id, name: s.name, status: byStudent.get(s.id) ?? null })),
+    students: [...roster, ...extra].map((s) => ({
+      id: s.id,
+      name: s.name,
+      status: byStudent.get(s.id) ?? null,
+    })),
   };
 }
 
-/** `rejected` — belgisi saqlanmagan oʻquvchilar id'si: bola shu kunda hali sinfda emas edi. */
+/** `rejected` — belgisi saqlanmagan oʻquvchilar id'si: bola shu kuni sinfda emas edi. */
 export async function setMobileAttendance(
   classId: string,
   date: string,
   marks: { studentId: string; status: string }[]
 ): Promise<{ rejected: string[] }> {
   const ctx = await assertTeachesClass(classId);
-  const [statuses, roster] = await Promise.all([activeStatuses(ctx.teacherId), activeClassRoster(classId)]);
+  // Varaq bilan bir xil qamrov: shu kuni aʼzolar + shu kunga yozuvi borlar.
+  const [statuses, roster, existing] = await Promise.all([
+    activeStatuses(ctx.teacherId),
+    rosterOn(classId, date),
+    db
+      .select({ studentId: attendanceRecords.studentId })
+      .from(attendanceRecords)
+      .where(and(eq(attendanceRecords.classId, classId), eq(attendanceRecords.date, date))),
+  ]);
   const allowed = new Set(statuses.map((s) => s.key));
-  const rosterIds = new Set(roster.map((s) => s.id));
+  const rosterIds = new Set([...roster.map((s) => s.id), ...existing.map((r) => r.studentId)]);
   const recordsUpsert = marks
     .filter((m) => rosterIds.has(m.studentId) && allowed.has(m.status))
     .map((m) => ({ classId, studentId: m.studentId, date, status: m.status, note: null }));
@@ -344,9 +364,9 @@ export async function giveMobileBehavior(
 export type MobileSync = {
   date: string;
   classes: { id: string; name: string; subject: string | null }[];
-  /** `joinedAt` — sinfga yozilish sanasi (faqat koʻchirilgan bolada): undan oldingi
-      kunlarga belgi saqlanmaydi. */
-  rosters: Record<string, { id: string; name: string; joinedAt?: string }[]>;
+  /** Aʼzolik oraligʻi `[joinedAt, leftAt)` — faqat chegarasi bor bolada: undan
+      tashqaridagi kunlarga yangi belgi saqlanmaydi. */
+  rosters: Record<string, { id: string; name: string; joinedAt?: string; leftAt?: string }[]>;
   timetable: { day: number; classId: string; startMin: number; endMin: number; id: string }[];
   statuses: { key: string; label: string; tone: string }[];
   attendance: Record<string, Record<string, Record<string, string>>>; // date → class → student → status
@@ -391,10 +411,17 @@ export async function getMobileSync(date: string): Promise<MobileSync> {
   const [rosterRows, statuses, records, totals, columnRows] = await Promise.all([
     classIds.length
       ? db
-          .select({ classId: enrollments.classId, id: students.id, name: students.name, status: students.status, startedAt: enrollments.startedAt })
+          .select({ classId: enrollments.classId, id: students.id, name: students.name, status: students.status, joinedAt: enrollments.startedAt, leftAt: enrollments.endedAt })
           .from(enrollments)
           .innerJoin(students, eq(students.id, enrollments.studentId))
-          .where(and(inArray(enrollments.classId, classIds), isNull(enrollments.endedAt)))
+          // Oyna [from, date] bilan kesishgan aʼzoliklar; aniq filtr pastda.
+          .where(
+            and(
+              inArray(enrollments.classId, classIds),
+              or(isNull(enrollments.startedAt), lte(enrollments.startedAt, date)),
+              or(isNull(enrollments.endedAt), gt(enrollments.endedAt, from))
+            )
+          )
       : Promise.resolve([]),
     activeStatuses(tid),
     classIds.length
@@ -426,14 +453,19 @@ export async function getMobileSync(date: string): Promise<MobileSync> {
   ]);
 
   const rosters: MobileSync["rosters"] = {};
-  /* Bugungi kunga hali sinfga yozilmagan bola (koʻchirish kelajak sanaga
-     qoʻyilgan) varaqda chiqmaydi — belgisi saqlanmasdi. Oxirgi 7 kunda
-     yozuvi bor boʻlsa qoladi. */
+  /* Roʻyxat — BUGUN sinfda boʻlganlar. Oxirgi 7 kunda yozuvi bor, lekin
+     bugun aʼzo boʻlmagan bola (yaqinda ketgan) ham qoladi — oflayn
+     ekranlarda oʻsha kunlar tarixi koʻrinsin. Oraliq bilan birga beriladi. */
   const withRecord = new Set(records.map((r) => `${r.classId}|${r.studentId}`));
   for (const r of rosterRows) {
     if (r.status === "archived") continue;
-    if (!isEnrolledOn(r.startedAt, date) && !withRecord.has(`${r.classId}|${r.id}`)) continue;
-    (rosters[r.classId] ??= []).push({ id: r.id, name: r.name, ...(r.startedAt ? { joinedAt: r.startedAt } : {}) });
+    if (!isMemberOn(r, date) && !withRecord.has(`${r.classId}|${r.id}`)) continue;
+    (rosters[r.classId] ??= []).push({
+      id: r.id,
+      name: r.name,
+      ...(r.joinedAt ? { joinedAt: r.joinedAt } : {}),
+      ...(r.leftAt ? { leftAt: r.leftAt } : {}),
+    });
   }
   for (const list of Object.values(rosters)) list.sort((a, b) => a.name.localeCompare(b.name, "uz"));
 

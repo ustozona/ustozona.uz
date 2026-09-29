@@ -191,14 +191,24 @@ export async function getGradesPayload(): Promise<Record<string, ClassData>> {
   for (const r of rosterRows) {
     const cd = map[r.classId];
     if (!cd) continue;
-    /* `joinedAt` — yozilish sanasi (faqat koʻchirish amali yozadi); davomat
-       shu sanadan oldingi belgisiz kunlarni yopadi. */
-    const student = { ...rowToStudent(r.student), ...(r.startedAt ? { joinedAt: r.startedAt } : {}) };
+    /* Aʼzolik oraligʻi `[joinedAt, leftAt)` — davomat va jurnal undan
+       tashqaridagi belgisiz kataklarni yopadi (lib/membership.ts). */
+    const student = {
+      ...rowToStudent(r.student),
+      ...(r.startedAt ? { joinedAt: r.startedAt } : {}),
+      ...(r.endedAt ? { leftAt: r.endedAt } : {}),
+    };
+    /* ⛔ Chiqish sanasi bor HAR bola — kelajak sana boʻlsa ham —
+       `formerStudents` ga. `students` ga tushgan bola uchun snapshot sync
+       (`applyGradesBatch`) yozilishni «ochiq» deb qayta yozadi
+       (`ended_at = NULL`): rejalashtirilgan koʻchirish sinf tahrirlanganda
+       jimgina bekor boʻlardi. Kelajak sanagacha ekranlar uni
+       `leftAt` boʻyicha koʻrsatadi (davomatda kataklar ochiq). */
     if (r.endedAt) {
       /* ⛔ `students` ga TUSHMAYDI — aks holda chiqib ketgan bola davomat
          roʻyxatida va yangi topshiriqda paydo boʻlardi. Jurnal uni shu
          maydondan oʻzi qoʻshib koʻrsatadi. */
-      (cd.formerStudents ??= []).push({ ...student, leftAt: r.endedAt });
+      (cd.formerStudents ??= []).push(student);
     } else {
       cd.students.push(student);
     }
@@ -354,7 +364,7 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
       // `started_at` bu yerda ATAYLAB yozilmaydi (NULL = sana koʻrsatilmagan):
       // oddiy qoʻshishda oʻqituvchi sinfni yil oʻrtasida kiritib, oldingi
       // haftalar davomatini toʻldirishi mumkin. Sanani faqat koʻchirish
-      // amali qoʻyadi (`isEnrolledOn`, docs/oquvchini-kochirish-spec.md §4.1).
+      // amali qoʻyadi (lib/membership.ts, docs/sinf-azoligi-spec.md).
       await tx
         .insert(enrollments)
         .values(

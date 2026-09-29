@@ -93,6 +93,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { studentProfileHref } from "@/lib/student-profile";
+import { isMemberOn } from "@/lib/membership";
 
 function LetterAvg({
   percent,
@@ -408,11 +409,12 @@ export default function GradesTable({
     [grades]
   );
 
-  /* Koʻchgan bola bu topshiriq sanasida sinfdan allaqachon chiqqan — katak
-     yopiq. Haqiqiy baho yoki Q/T belgisi oldindan bor boʻlsa yopilmaydi:
-     tarix yashirilmaydi (boʻsh baho yozuvi hisobga olinmaydi). */
+  /* Topshiriq sanasida bola bu sinfda boʻlmagan — qoʻshilishidan oldin
+     (yangi sinf) yoki ketganidan keyin (eski sinf): katak yopiq, «baholanmagan»
+     ga ham kirmaydi. Haqiqiy baho yoki Q/T belgisi oldindan bor boʻlsa
+     yopilmaydi: tarix yashirilmaydi (boʻsh baho yozuvi hisobga olinmaydi). */
   const isClosedCell = (s: (typeof students)[number], a: (typeof assignments)[number]) => {
-    if (!s.leftAt || !a.date || a.date < s.leftAt) return false;
+    if (!a.date || isMemberOn(s, a.date)) return false;
     const g = gradeMap.get(`${s.id}:${a.id}`);
     return !(g && ((g.score !== null && g.score !== undefined) || g.missing || g.isMissing));
   };
@@ -587,6 +589,7 @@ export default function GradesTable({
                 const hex = topic ? TOPIC_COLOR_HEX[topic.color] : null;
                 const draftCount = grades.filter((g) => g.assignmentId === a.id && g.isDraft).length;
                 const ungradedCount = activeStudents.filter((s) => {
+                  if (isClosedCell(s, a)) return false;
                   const gg = gradeMap.get(`${s.id}:${a.id}`);
                   return !gg || (gg.score === null && !gg.missing);
                 }).length;
@@ -755,7 +758,7 @@ export default function GradesTable({
                 <LetterAvg
                   percent={classAverage}
                   classId={classData.info.id}
-                  hasData={rawTotals.some((t) => t.summary.summativeCount > 0)}
+                  hasData={rawTotals.some((t) => !t.student.leftAt && t.summary.summativeCount > 0)}
                 />
               </TableCell>
             </TableRow>
@@ -876,10 +879,12 @@ export default function GradesTable({
                     className="sticky right-0 z-10 border-b border-l border-border p-0 w-16 min-w-16 max-w-16 h-16"
                     style={{ backgroundColor: HOLAT_BG }}
                   >
+                    {/* Ketgan bolaning yakuniy koʻrsatkichi eski sinfda chiqmaydi —
+                        u faqat yangi sinf baholaridan (Q1, docs/sinf-azoligi-spec.md). */}
                     <LetterAvg
                       percent={total.percent}
                       classId={classData.info.id}
-                      hasData={total.summary.summativeCount > 0}
+                      hasData={!s.leftAt && total.summary.summativeCount > 0}
                     />
                   </TableCell>
                 </TableRow>
