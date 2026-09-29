@@ -2,7 +2,7 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
-import { activities, activityItems, responses, sessionParticipants } from "@/server/db/schema";
+import { activities, activityItems, activitySets, responses, sessionParticipants } from "@/server/db/schema";
 import { requireParticipant, ForbiddenError } from "@/server/play/session";
 import { scoreResponse } from "@/lib/assess/score";
 import { isSessionPastDue } from "@/lib/assess/session-due";
@@ -49,6 +49,20 @@ export async function submitResponse(input: SubmitResponseInput) {
     .from(activities)
     .where(eq(activities.id, item.activityId));
   if (!activity) throw new ForbiddenError("Faoliyat topilmadi");
+
+  // Token faqat sessiyaga kirishni tasdiqlaydi. Yuborilgan itemId shu
+  // sessiyaning testiga tegishli boʻlishi ham alohida tekshiriladi.
+  const [set] = await db
+    .select({ items: activitySets.items })
+    .from(activitySets)
+    .where(and(eq(activitySets.id, session.setId), eq(activitySets.teacherId, session.teacherId)));
+  if (
+    !set?.items.some((entry) => entry.activityId === activity.id) ||
+    activity.teacherId !== session.teacherId ||
+    item.teacherId !== session.teacherId
+  ) {
+    throw new ForbiddenError("Element bu sessiyaning testiga tegishli emas");
+  }
 
   const [{ count: previousAttempts }] = await db
     .select({ count: sql<number>`count(*)::int` })
