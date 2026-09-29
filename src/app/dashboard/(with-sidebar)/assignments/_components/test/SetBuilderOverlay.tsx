@@ -16,7 +16,7 @@ import {
   AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter,
   AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction,
 } from "@/components/ui/alert-dialog";
-import { getSetDraftAction, saveSetDraftAction, type SetDraft } from "@/server/actions/assess";
+import { getSetDraftAction, saveSetDraftResultAction, type SetDraft } from "@/server/actions/assess";
 import type { ActivitySetRow } from "@/server/db/schema";
 import QuestionCanvas from "./builder/QuestionCanvas";
 import PropertiesPanel from "./builder/PropertiesPanel";
@@ -63,10 +63,14 @@ export default function SetBuilderOverlay({
   /** Yangi topshiriq ichidagi «Bankdan savol olish» bosilganda darhol bankni ochadi. */
   startWithBank?: boolean;
   onClose: () => void;
-  onSaved: (set: ActivitySetRow) => void;
+  onSaved: (set: ActivitySetRow, copiedFromUsedSet?: boolean) => void;
 }) {
   const t = useTranslations("SetBuilder");
+  const ta = useTranslations("AssignmentsPage");
   const [loading, setLoading] = useState(Boolean(setId));
+  const [hasSessions, setHasSessions] = useState(false);
+  const [copyOnly, setCopyOnly] = useState(false);
+  const copyAnnounced = useRef(false);
   /* ⚠️ Toʻplam id'si REF'da (holatda emas). `persist` ketma-ket ikki marta
      chaqirilishi mumkin — avtosaqlash ustiga "Saqlash" bosilsa yoki sekin
      tarmoqda birinchi yozuv 2 soniyadan uzoq ketsa. React holati oʻsha
@@ -121,6 +125,7 @@ export default function SetBuilderOverlay({
       setStageTheme(config.stageTheme ?? "violet");
       setStageFont(stageFontOf(config.stageFont).id);
       setStageStyle(stageStyleOf(config.stageStyle).id);
+      setHasSessions(Boolean(draft.hasSessions));
       const appended = (initialQuestions ?? []).map((q) => ({
         ...q, key: crypto.randomUUID(), activityId: undefined,
       }));
@@ -129,6 +134,11 @@ export default function SetBuilderOverlay({
         : [newQuestion("mcq")]);
       if (appended[0]) setActiveKey(appended[0].key);
       setLoading(false);
+    }).catch(() => {
+      if (!cancelled) {
+        setError(t("errLoadFailed"));
+        setLoading(false);
+      }
     });
     return () => {
       cancelled = true;
@@ -175,6 +185,23 @@ export default function SetBuilderOverlay({
     });
     setActiveKey(imported[0]?.key ?? null);
     toast.success(t("bankAdded", { count: imported.length }));
+  }
+
+  function copyUsedSet() {
+    setIdRef.current = undefined;
+    const copied = questions.map((q) => ({
+      ...q,
+      key: crypto.randomUUID(),
+      activityId: undefined,
+      options: q.options.map((o) => ({ ...o, id: crypto.randomUUID() })),
+      pairs: q.pairs.map((p) => ({ ...p, id: crypto.randomUUID() })),
+    }));
+    setQuestions(copied);
+    setActiveKey(copied[0]?.key ?? null);
+    setTitle(ta("copySuffix", { title }).slice(0, 200));
+    setHasSessions(false);
+    setCopyOnly(true);
+    setError(null);
   }
 
   /* ── TAQDIMOT IMPORTI (docs/taqdimot-spec.md, 2-qavat) ──
@@ -391,7 +418,7 @@ export default function SetBuilderOverlay({
 
     const run = (async () => {
       const questionKeys = questions.map((q) => q.key);
-      const draft = await saveSetDraftAction({
+      const result = await saveSetDraftResultAction({
         setId: setIdRef.current,
         classId,
         title: cleanTitle,
@@ -401,6 +428,14 @@ export default function SetBuilderOverlay({
         stageStyle,
         questions: buildPayload(),
       });
+      if (!result.ok) {
+        if (result.reason === "already_used") {
+          setHasSessions(true);
+          throw new Error(t("usedSetHint"));
+        }
+        throw new Error(result.reason === "invalid" ? result.message : t("errSaveFailed"));
+      }
+      const draft = result.draft;
       setIdRef.current = draft.set.id;
       // Savollar server javobini kutayotganda koʻchirilishi/import qilinishi
       // mumkin. Pozitsiya emas, barqaror key orqali activityId bogʻlanadi.
@@ -430,7 +465,11 @@ export default function SetBuilderOverlay({
     try {
       const draft = await persist(cleanTitle);
       savedSnapshotRef.current = JSON.stringify({ title: cleanTitle, questions: buildPayload(), stageTheme, stageFont, stageStyle });
-      onSaved(draft.set);
+      onSaved(draft.set, copyOnly);
+      if (copyOnly && !copyAnnounced.current) {
+        copyAnnounced.current = true;
+        toast.success(t("copySaved"));
+      }
       onClose();
     } catch (e) {
       setError(e instanceof Error ? e.message : t("errSaveFailed"));
@@ -444,7 +483,7 @@ export default function SetBuilderOverlay({
      Nom kiritilmagan boʻlsa saqlanmaydi (server talabi) — bu holat
      `requestClose`da alohida ogohlantiriladi. */
   useEffect(() => {
-    if (loading) return;
+    if (loading || hasSessions) return;
     const cleanTitle = title.trim();
     if (!cleanTitle) return;
     const sig = JSON.stringify({ title: cleanTitle, questions: buildPayload(), stageTheme, stageFont, stageStyle });
@@ -458,7 +497,11 @@ export default function SetBuilderOverlay({
         // paydo boʻlgani zahoti topshiriq bilan halqasi bogʻlansin.
         // Ilgari faqat "Saqlash" bosilganda edi — oʻqituvchi ✕ bilan
         // chiqsa test yaratilgan, lekin biriktirilmagan boʻlib qolardi.
-        onSaved(draft.set);
+        onSaved(draft.set, copyOnly);
+        if (copyOnly && !copyAnnounced.current) {
+          copyAnnounced.current = true;
+          toast.success(t("copySaved"));
+        }
         setJustSaved(true);
         setTimeout(() => setJustSaved(false), 2000);
       } catch {
@@ -469,7 +512,7 @@ export default function SetBuilderOverlay({
     }, 2000);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [title, questions, stageTheme, stageFont, stageStyle, loading]);
+  }, [title, questions, stageTheme, stageFont, stageStyle, loading, hasSessions, copyOnly]);
 
   /* Yopishni soʻraydi: nom hali kiritilmagan boʻlsa avtosaqlash ishlamagan
      boʻladi — shu bitta holatda "chindan ham tashlaymizmi?" soʻraladi. */
@@ -525,7 +568,12 @@ export default function SetBuilderOverlay({
               <Check className="size-3.5" /> {t("saved")}
             </span>
           )}
-          <Button size="sm" onClick={handleSave} disabled={saving || loading}>
+          {hasSessions && (
+            <Button size="sm" variant="outline" onClick={copyUsedSet} disabled={loading}>
+              {t("copyToEdit")}
+            </Button>
+          )}
+          <Button size="sm" onClick={handleSave} disabled={saving || loading || hasSessions}>
             {saving && <Loader2 className="size-4 animate-spin" />}
             {saving ? t("saving") : t("save")}
           </Button>
@@ -546,6 +594,12 @@ export default function SetBuilderOverlay({
           </Button>
         </div>
       </header>
+
+      {hasSessions && !loading && (
+        <p className="border-b border-border bg-muted/50 px-4 py-2 text-sm text-muted-foreground" role="status">
+          {t("usedSetHint")}
+        </p>
+      )}
 
       {loading ? (
         <div className="flex flex-1 items-center justify-center gap-2 text-sm text-muted-foreground">

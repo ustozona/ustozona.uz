@@ -3992,6 +3992,10 @@
     "highlight": "Highlight"
   },
   "SetBuilder": {
+    "errLoadFailed": "Could not load the test. Open it again.",
+    "usedSetHint": "This test has already been used. To preserve results, copy it instead. The copy will appear in Tests and can be attached to a new assignment.",
+    "copyToEdit": "Copy to edit",
+    "copySaved": "Copy saved. Attach it to a new assignment.",
     "importFromBank": "Import from bank",
     "bankAdded": "Added {count} questions",
     "titlePlaceholder": "Enter test name…",

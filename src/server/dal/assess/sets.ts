@@ -293,14 +293,18 @@ export type UpdateSetInput = Partial<Omit<CreateSetInput, "classId">>;
 
 /** Sessiya boshlangan toʻplamning savollarini almashtirish javoblar
     tarixini va keyingi baho maxrajini oʻzgartiradi. */
-export async function assertSetEditable(id: string): Promise<void> {
+export async function hasSetSessions(id: string): Promise<boolean> {
   const teacher = await requireTeacher();
   const [used] = await db
     .select({ id: quizSessions.id })
     .from(quizSessions)
     .where(and(eq(quizSessions.setId, id), eq(quizSessions.teacherId, teacher.id)))
     .limit(1);
-  if (used) {
+  return Boolean(used);
+}
+
+export async function assertSetEditable(id: string): Promise<void> {
+  if (await hasSetSessions(id)) {
     throw new Error("Bu test allaqachon oʻtkazilgan. Natijalarni saqlash uchun yangi test yarating.");
   }
 }
