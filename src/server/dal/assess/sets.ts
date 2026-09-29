@@ -153,6 +153,8 @@ export async function summarizeSetContent(
     countByShape: {},
     minOptions: null,
     maxOptions: null,
+    gradedItems: 0,
+    incompatibleMcq: 0,
   });
 
   const allActivityIds = [...new Set(sets.flatMap((s) => s.items.map((i) => i.activityId)))];
@@ -164,37 +166,58 @@ export async function summarizeSetContent(
   const teacher = await requireTeacher();
 
   const activityRows = await db
-    .select({ id: activities.id, shape: activities.shape })
+    .select({
+      id: activities.id,
+      shape: activities.shape,
+      grading: activities.grading,
+      config: activities.config,
+    })
     .from(activities)
     .where(and(eq(activities.teacherId, teacher.id), inArray(activities.id, allActivityIds)));
-  const shapeById = new Map(activityRows.map((a) => [a.id, a.shape as string]));
+  const activityById = new Map(activityRows.map((a) => [a.id, a]));
 
   const itemRows = await db
     .select({ activityId: activityItems.activityId, content: activityItems.content })
     .from(activityItems)
     .where(inArray(activityItems.activityId, allActivityIds));
 
-  // Faoliyat → shu faoliyatdagi mcq variantlari soni. `mcq` da bitta
-  // element boʻladi (content.ts shu taxminda ishlaydi), lekin bir
-  // nechta kelsa ham eng kengini olamiz — qobiq eng ogʻir holatni
-  // chiza olishi kerak.
-  const optionsById = new Map<string, number[]>();
+  // Har faoliyatning elementlarini saqlaymiz: oʻyin bitta MCQ elementi
+  // va bitta toʻgʻri javobni kutadi, jurnal esa barcha graded elementni
+  // maxrajga qoʻshadi.
+  const contentsById = new Map<string, Record<string, unknown>[]>();
   for (const row of itemRows) {
-    const options = (row.content as { options?: unknown[] } | null)?.options;
-    if (!Array.isArray(options)) continue;
-    const list = optionsById.get(row.activityId) ?? [];
-    list.push(options.length);
-    optionsById.set(row.activityId, list);
+    const list = contentsById.get(row.activityId) ?? [];
+    list.push(row.content);
+    contentsById.set(row.activityId, list);
   }
 
   for (const set of sets) {
     const summary = empty();
     for (const { activityId } of set.items) {
-      const shape = shapeById.get(activityId);
-      if (!shape) continue; // oʻchirilgan yoki begona faoliyat — sanalmaydi
+      const activity = activityById.get(activityId);
+      if (!activity) continue; // oʻchirilgan yoki begona faoliyat — sanalmaydi
+      const { shape } = activity;
+      const contents = contentsById.get(activityId) ?? [];
       summary.countByShape[shape] = (summary.countByShape[shape] ?? 0) + 1;
+      if (activity.grading !== "none") summary.gradedItems += contents.length;
       if (shape !== "mcq") continue;
-      for (const count of optionsById.get(activityId) ?? []) {
+      const options = (contents[0] as { options?: unknown } | undefined)?.options;
+      const validOptions = Array.isArray(options) &&
+        options.every((option) => option && typeof option === "object");
+      const correctCount = validOptions
+        ? options.filter((option) => (option as { isCorrect?: boolean }).isCorrect === true).length
+        : 0;
+      if (
+        activity.grading !== "exact" ||
+        contents.length !== 1 ||
+        !validOptions ||
+        correctCount !== 1 ||
+        (activity.config as { multiSelect?: boolean }).multiSelect === true
+      ) summary.incompatibleMcq += 1;
+      for (const content of contents) {
+        const list = (content as { options?: unknown }).options;
+        if (!Array.isArray(list)) continue;
+        const count = list.length;
         summary.minOptions =
           summary.minOptions === null ? count : Math.min(summary.minOptions, count);
         summary.maxOptions =

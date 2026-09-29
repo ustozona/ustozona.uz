@@ -169,7 +169,7 @@ export async function launchSetInfo(setId: string): Promise<LaunchSetInfo> {
     summarizeSetContent([set]).then((m) => m.get(set.id)),
     gradedCountBySet([set]),
   ]);
-  const summary = content ?? { countByShape: {}, minOptions: null, maxOptions: null };
+  const summary = content ?? { countByShape: {}, minOptions: null, maxOptions: null, gradedItems: 0, incompatibleMcq: 0 };
   return {
     setId: set.id,
     title: set.title,
@@ -221,7 +221,7 @@ export async function startRun(input: StartRunInput): Promise<RunSummary> {
     const summary = (await summarizeSetContent([set])).get(set.id);
     const verdict = shellAvailability(
       shell,
-      summary ?? { countByShape: {}, minOptions: null, maxOptions: null },
+      summary ?? { countByShape: {}, minOptions: null, maxOptions: null, gradedItems: 0, incompatibleMcq: 0 },
     );
     if (!verdict.ok) throw new ForbiddenError(verdict.reason);
     shellId = shell.id;
