@@ -60,8 +60,13 @@ import {
    → kontekst → yuqori tugmalar.
    ════════════════════════════════════════════════════════════════════ */
 export function DoskaShell() {
-  const deck = useDoskaStore((s) => s.deck);
-  const activeScreenId = useDoskaStore((s) => s.activeScreenId);
+  // ⚠️ Butun `deck` ga EMAS, faqat son va oʻringa obuna: deck har chiziq
+  // tugashida va ishlayotgan taymerning har soniyasida yangilanadi. Qobiq
+  // unga obuna boʻlsa butun doska (hamma vidjet, panellar) qayta chizilib,
+  // sensorli doskaning kuchsiz protsessorida qalam ostidagi siyoh
+  // kechikardi — kompyuterda esa bu umuman sezilmaydi.
+  const screenCount = useDoskaStore((s) => s.deck.screens.length);
+  const index = useDoskaStore((s) => s.deck.screens.findIndex((x) => x.id === s.activeScreenId));
   const addScreen = useDoskaStore((s) => s.addScreen);
   const setActiveScreen = useDoskaStore((s) => s.setActiveScreen);
   const undo = useDoskaStore((s) => s.undo);
@@ -84,9 +89,11 @@ export function DoskaShell() {
    */
   const [barHidden, setBarHidden] = React.useState(false);
 
-  const index = deck.screens.findIndex((s) => s.id === activeScreenId);
-  const prev = deck.screens[index - 1];
-  const next = deck.screens[index + 1];
+  /** Qoʻshni ekranga oʻtish — `id` bosilgan paytda oʻqiladi. */
+  const goTo = (offset: number) => {
+    const target = useDoskaStore.getState().deck.screens[index + offset];
+    if (target) setActiveScreen(target.id);
+  };
 
   // Ekran holati kechiktirilib saqlanadi (store.ts). Sahifa yopilishi
   // yoki tab almashishida kutilayotgan yozuvni darhol tushiramiz —
@@ -190,18 +197,18 @@ export function DoskaShell() {
                     <BarGroup layer="bar">
                       <BarIconButton
                         label={t("prevScreen")}
-                        disabled={!prev}
-                        onClick={() => prev && setActiveScreen(prev.id)}
+                        disabled={index <= 0}
+                        onClick={() => goTo(-1)}
                       >
                         <IconArrowLeft className="size-6" />
                       </BarIconButton>
 
-                      <ScreenCounter current={index + 1} total={deck.screens.length} />
+                      <ScreenCounter current={index + 1} total={screenCount} />
 
                       <BarIconButton
                         label={t("nextScreen")}
-                        disabled={!next}
-                        onClick={() => next && setActiveScreen(next.id)}
+                        disabled={index + 1 >= screenCount}
+                        onClick={() => goTo(1)}
                       >
                         <IconArrowRight className="size-6" />
                       </BarIconButton>

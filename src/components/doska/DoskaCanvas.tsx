@@ -4,9 +4,10 @@ import * as React from "react";
 import { useTranslations } from "next-intl";
 
 import { cn } from "@/lib/utils";
-import { useActiveScreen, useDoskaStore } from "@/lib/doska/store";
+import { useActiveBackground, useActiveWidgets, useDoskaStore } from "@/lib/doska/store";
 import { backgroundById } from "@/lib/doska/backgrounds";
 import { Z_SPOTLIGHT_EXIT, Z_SPOTLIGHT_SCRIM } from "@/lib/doska/layers";
+import type { DoskaWidget } from "@/lib/doska/types";
 import { IconSpotlightExit } from "./icons";
 import { InkGuides } from "./InkGuides";
 import { InkLayer } from "./InkLayer";
@@ -30,13 +31,17 @@ import { WIDGET_COMPONENTS } from "./widgets";
  * oʻtkazadi (src/styles/doska.css). Vidjetlar bu haqda bilmaydi.
  */
 export function DoskaCanvas() {
-  const screen = useActiveScreen();
+  // Ekranning oʻzi emas, faqat vidjetlari va foni: siyoh qoʻshilganda
+  // ekran obyekti yangilanadi, vidjetlar massivi esa oʻsha-oʻsha qoladi —
+  // kanvas har chiziqdan keyin qayta chizilmaydi.
+  const widgets = useActiveWidgets();
+  const backgroundId = useActiveBackground();
   const hydrated = useDoskaStore((s) => s.hydrated);
 
   const rootRef = React.useRef<HTMLDivElement>(null);
   useDoskaInteraction(rootRef);
 
-  const background = backgroundById(screen?.background);
+  const background = backgroundById(backgroundId);
 
   // localStorage oʻqilmaguncha vidjet chizilmaydi — aks holda server
   // boʻsh ekran, brauzer esa toʻla ekran qaytarib hydration buziladi.
@@ -53,15 +58,9 @@ export function DoskaCanvas() {
     >
       {hydrated && (
         <>
-          {screen?.widgets.map((widget) => {
-            const Component = WIDGET_COMPONENTS[widget.kind];
-            if (!Component) return null; // notanish `kind` — eski/kelgusi versiya
-            return (
-              <WidgetFrame key={widget.id} widget={widget}>
-                <Component widget={widget} />
-              </WidgetFrame>
-            );
-          })}
+          {widgets?.map((widget) => (
+            <WidgetSlot key={widget.id} widget={widget} />
+          ))}
 
           {/* Qoʻlyozma vidjetlar USTIDA — taqdimot va taymer ustiga ham
               yoziladi (R338); tanlov tutqichlari va panel esa undan yuqori. */}
@@ -79,6 +78,21 @@ export function DoskaCanvas() {
     </div>
   );
 }
+
+/**
+ * Bitta vidjet. `memo` — oʻzgarmagan vidjet qayta chizilmaydi: store
+ * faqat oʻzgargan vidjet obyektini almashtiradi, shuning uchun taymer
+ * har soniya faqat oʻzini yangilaydi, qoʻshnilarini emas.
+ */
+const WidgetSlot = React.memo(function WidgetSlot({ widget }: { widget: DoskaWidget }) {
+  const Component = WIDGET_COMPONENTS[widget.kind];
+  if (!Component) return null; // notanish `kind` — eski/kelgusi versiya
+  return (
+    <WidgetFrame widget={widget}>
+      <Component widget={widget} />
+    </WidgetFrame>
+  );
+});
 
 /**
  * «MARKAZGA» PARDASI — markazdagi vidjetdan boshqa hamma narsani yopadi

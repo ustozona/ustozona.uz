@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useDoskaStore, useActiveScreen } from "@/lib/doska/store";
+import { useDoskaStore, useActiveBackground } from "@/lib/doska/store";
 import { DOSKA_BACKGROUNDS, backgroundById } from "@/lib/doska/backgrounds";
 import { BarButton } from "./BarButton";
 import { useDockLayout } from "./dock";
@@ -20,9 +20,9 @@ import { IconBackground, IconCheck } from "./icons";
  * deyarli oq boʻlib qoladi va tugma boʻsh koʻrinardi.
  */
 export function BackgroundPicker() {
-  const screen = useActiveScreen();
+  const backgroundId = useActiveBackground();
   const setBackground = useDoskaStore((s) => s.setBackground);
-  const current = backgroundById(screen?.background);
+  const current = backgroundById(backgroundId);
   const { side } = useDockLayout();
   const t = useTranslations("Doska");
 

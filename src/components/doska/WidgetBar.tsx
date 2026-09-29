@@ -4,7 +4,7 @@ import * as React from "react";
 import { useTranslations } from "next-intl";
 
 import { cn } from "@/lib/utils";
-import { useDoskaStore, useActiveScreen } from "@/lib/doska/store";
+import { useDoskaStore, useActiveWidgets } from "@/lib/doska/store";
 import { widgetMeta } from "@/lib/doska/registry";
 import { pinnedTools, useDoskaPrefs } from "@/lib/doska/prefs";
 import { useInkTool } from "@/lib/doska/ink-tool";
@@ -44,15 +44,14 @@ import { WIDGET_ICONS } from "./widgets";
 export function WidgetBar() {
   const addWidget = useDoskaStore((s) => s.addWidget);
   const tools = useDoskaPrefs((s) => s.tools);
-  const screen = useActiveScreen();
+  const widgets = useActiveWidgets();
   const { orientation } = useDockLayout();
   const t = useTranslations("Doska.widgets");
   const tInk = useTranslations("Doska.ink");
   const setInkMode = useInkTool((s) => s.setMode);
 
-  // ⚠️ `?? []` bu yerda EMAS: har renderda yangi massiv yaratilib,
-  // quyidagi `useMemo` ni har safar qayta hisoblatardi.
-  const widgets = screen?.widgets;
+  // ⚠️ `widgets` ga `?? []` qoʻyilmaydi: har renderda yangi massiv
+  // yaratilib, quyidagi `useMemo` ni har safar qayta hisoblatardi.
 
   /** Ekranda shu turdagi vidjet bormi — tugma tepasidagi 3 px belgi. */
   const onScreen = React.useMemo(() => {
