@@ -106,7 +106,11 @@ export default function GradesView({
       ? []
       : (classData.formerStudents ?? []).filter((s) => {
           if (yearRange.start && s.leftAt && s.leftAt < yearRange.start) return false;
-          return classData.grades.some((g) => g.studentId === s.id);
+          /* Haqiqiy baho yoki Q/T belgisi shart: bahosiz katak qatori
+             (boʻsh baho yozuvi) bolani jurnalga qaytarmaydi. */
+          return classData.grades.some(
+            (g) => g.studentId === s.id && (g.score !== null || !!g.missing || !!g.isMissing)
+          );
         });
 
     /* ⚠️ Uzunlik solishtirish YETARLI EMAS: arxivlangan bitta bola

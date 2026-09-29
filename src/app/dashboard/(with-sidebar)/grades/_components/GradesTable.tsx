@@ -283,6 +283,16 @@ export default function GradesTable({
     return m;
   }, [grades]);
 
+  /* Boshqa sinfga koʻchganlar (`leftAt`) jadvalda faqat eski baholari uchun
+     turadi: sinf statistikasi (oʻrtacha, formativ, baholanmaganlar soni)
+     faqat JORIY oʻquvchilar boʻyicha hisoblanadi. */
+  const activeStudents = useMemo(() => students.filter((s) => !s.leftAt), [students]);
+  const activeGrades = useMemo(() => {
+    if (activeStudents.length === students.length) return grades;
+    const ids = new Set(activeStudents.map((s) => s.id));
+    return grades.filter((g) => ids.has(g.studentId));
+  }, [activeStudents, students, grades]);
+
   const rawTotals = useMemo(
     () => calcStudentTotals(students, grades, assignments, topics),
     [students, grades, assignments, topics]
@@ -311,12 +321,12 @@ export default function GradesTable({
   }, [assignments, topics, topicMap, colFilter]);
 
   const assignmentAverages = useMemo(
-    () => calcAssignmentAverages(orderedAssignments, grades),
-    [orderedAssignments, grades]
+    () => calcAssignmentAverages(orderedAssignments, activeGrades),
+    [orderedAssignments, activeGrades]
   );
   const classAverage = useMemo(
-    () => classSummativeAverage(students, assignments, grades, topics),
-    [students, assignments, grades, topics]
+    () => classSummativeAverage(activeStudents, assignments, grades, topics),
+    [activeStudents, assignments, grades, topics]
   );
   // Formativ ustuni — har oʻquvchining oxirgi 3 formativ ishi mediani.
   const formativeById = useMemo(() => {
@@ -327,8 +337,8 @@ export default function GradesTable({
     return m;
   }, [students, assignments, grades, topics]);
   const classFormative = useMemo(
-    () => classFormativeRecent(students, assignments, grades, topics),
-    [students, assignments, grades, topics]
+    () => classFormativeRecent(activeStudents, assignments, grades, topics),
+    [activeStudents, assignments, grades, topics]
   );
   /** Ustun boʻyicha saralash: yangi ustun → oʻsish; oʻsha ustun → yoʻnalish teskari. */
   const toggleSort = useCallback(
@@ -364,6 +374,8 @@ export default function GradesTable({
   const sortedStudents = useMemo(() => {
     const byName = sortField === "firstName" || sortField === "lastName";
     return [...students].sort((a, b) => {
+      // Koʻchganlar har doim roʻyxat OXIRIDA (saralashdan qatʼi nazar).
+      if (!!a.leftAt !== !!b.leftAt) return a.leftAt ? 1 : -1;
       if (byName) {
         const na = splitName(a.name);
         const nb = splitName(b.name);
@@ -560,7 +572,7 @@ export default function GradesTable({
                 const topic = topicMap.get(a.topicId ?? "");
                 const hex = topic ? TOPIC_COLOR_HEX[topic.color] : null;
                 const draftCount = grades.filter((g) => g.assignmentId === a.id && g.isDraft).length;
-                const ungradedCount = students.filter((s) => {
+                const ungradedCount = activeStudents.filter((s) => {
                   const gg = gradeMap.get(`${s.id}:${a.id}`);
                   return !gg || (gg.score === null && !gg.missing);
                 }).length;
@@ -790,6 +802,21 @@ export default function GradesTable({
                     const g = gradeMap.get(`${s.id}:${a.id}`);
                     const isEditing = editingCell?.s === s.id && editingCell?.a === a.id;
                     const hasScore = g?.score !== null && g?.score !== undefined;
+
+                    /* Bola bu topshiriq sanasida sinfdan allaqachon chiqqan —
+                       katak yopiq (baho qoʻyib boʻlmaydi). Baho oldindan
+                       bor boʻlsa yopilmaydi: tarix yashirilmaydi. */
+                    if (s.leftAt && a.date && a.date >= s.leftAt && !g) {
+                      return (
+                        <TableCell
+                          key={a.id}
+                          title={`Boshqa sinfga koʻchgan (${s.leftAt})`}
+                          className="border-b border-r border-border p-0 w-16 min-w-16 h-16 text-center cursor-not-allowed bg-muted/30 text-muted-foreground/40"
+                        >
+                          —
+                        </TableCell>
+                      );
+                    }
 
                     return (
                       <TableCell
