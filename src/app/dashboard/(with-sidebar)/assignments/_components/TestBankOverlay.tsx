@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
   BadgeCheck, Check, ChevronLeft, ChevronRight, Globe, Link as LinkIcon,
-  Presentation, Search, User, X,
+  Plus, Presentation, Search, User, X,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -89,6 +89,7 @@ export default function TestBankOverlay({
   onClose,
   onAssigned,
   onRun,
+  onCreate,
 }: {
   classId: string;
   className: string;
@@ -98,6 +99,8 @@ export default function TestBankOverlay({
   /** «Darsda oʻtkazish» — test shu sinfga qoʻshilgach oʻtkazish oynasi
       (Topshiriqlardagi bilan bir xil). Berilmasa tugma chiqmaydi. */
   onRun?: (setId: string, title: string) => void;
+  /** Bank ichidan yangi test muharririni ochish. */
+  onCreate?: () => void;
 }) {
   const t = useTranslations("TestBank");
 
@@ -309,6 +312,9 @@ export default function TestBankOverlay({
             </TypographyMuted>
           </div>
         </div>
+        {onCreate && <Button variant="outline" size="sm" onClick={onCreate} className="shrink-0 gap-1.5">
+          <Plus className="size-4" /> {t("createLocal")}
+        </Button>}
         <button
           type="button"
           onClick={onClose}

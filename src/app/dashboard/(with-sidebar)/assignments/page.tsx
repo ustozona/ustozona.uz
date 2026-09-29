@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
-  ClipboardList, Plus, FileCheck2, Copy, Trash2, Tag, Library, Columns3,
+  Archive, ClipboardList, Plus, FileCheck2, Copy, Trash2, Tag, Library, Columns3,
   PenLine, MoreHorizontal, RefreshCw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -50,8 +50,9 @@ import {
   useAssignmentEditorStore, makeDraftPayload,
 } from "@/store/useAssignmentEditorStore";
 import {
-  deleteSetAction, listSetsWithPublishStateAction,
+  deleteSetAction, getSetDraftAction, listSetsWithPublishStateAction, setSetArchivedAction,
 } from "@/server/actions/assess";
+import type { DraftQuestion } from "./_components/test/builder/types";
 import SetBuilderOverlay from "./_components/test/SetBuilderOverlay";
 import TestBankOverlay from "./_components/TestBankOverlay";
 import { useLaunchFlow } from "@/components/launch/useLaunchFlow";
@@ -131,13 +132,14 @@ export default function AssignmentsPage() {
      izlagani uchun oldindan yaratilgan ustun nashrda IKKINCHI marta
      qoʻshilardi — bitta test ikkita baho ustuni boʻlib chiqardi. */
   const [pendingSets, setPendingSets] = useState<
-    { id: string; title: string; itemCount: number }[]
+    { id: string; title: string; itemCount: number; hasSessions: boolean; archived: boolean }[]
   >([]);
   /* Toʻplam amallari — savol muharriri, oʻchirish. Ilgari "Testlar (5-A)"
      oraliq overlay'ida edi; u sidebar'dan olib tashlangan
      `/dashboard/baholash` sahifasining qoldigʻi bo'lib, ortiqcha
      toʻliq-ekran qavati qoʻshardi. Roʻyxatning uyi — shu sahifa. */
   const [builderSetId, setBuilderSetId] = useState<string | null>(null);
+  const [builderCopy, setBuilderCopy] = useState<{ title: string; questions: DraftQuestion[] } | null>(null);
   const [deleteSet, setDeleteSet] = useState<{ id: string; title: string } | null>(null);
   /* Test banki — LessonLab bazasidan tayyor test tanlash. Ayni shu
      sahifada, chunki bank testi ham «tayyorlangan test» boʻlib tushadi:
@@ -223,7 +225,8 @@ export default function AssignmentsPage() {
         setPendingSets(
           rows
             .filter((r) => r.assignmentId === null)
-            .map((r) => ({ id: r.set.id, title: r.set.title, itemCount: r.set.items.length }))
+            .map((r) => ({ id: r.set.id, title: r.set.title, itemCount: r.set.items.length,
+              hasSessions: r.hasSessions, archived: r.set.config.archived === true }))
         );
       })
       .catch(() => {
@@ -261,10 +264,38 @@ export default function AssignmentsPage() {
     deleteSetAction(removed.id)
       .then(() => toast.success(t("toastDeleted"), { description: removed.title }))
       // Server rad etsa roʻyxat haqiqatdan chetga chiqmasin.
-      .catch(() => {
-        toast.error(t("deleteSetFailed"));
+      .catch((error) => {
+        toast.error(t("deleteSetFailed"), { description: error instanceof Error ? error.message : undefined });
         setBankVersion((v) => v + 1);
       });
+  }
+
+  async function toggleSetArchive(id: string, archived: boolean) {
+    setPendingSets((prev) => prev.map((set) => set.id === id ? { ...set, archived } : set));
+    try {
+      await setSetArchivedAction(id, archived);
+      toast.success(archived ? t("testArchived") : t("testRestored"));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("deleteSetFailed"));
+      setBankVersion((v) => v + 1);
+    }
+  }
+
+  async function copySetForEditing(set: { id: string; title: string }) {
+    try {
+      const draft = await getSetDraftAction(set.id);
+      if (!draft) throw new Error(t("setMissing"));
+      setBuilderCopy({
+        title: t("copySuffix", { title: set.title }),
+        questions: draft.questions.map((q) => ({
+          ...q, key: crypto.randomUUID(), activityId: undefined,
+          options: q.options.map((o) => ({ ...o, id: crypto.randomUUID() })),
+          pairs: q.pairs.map((p) => ({ ...p, id: crypto.randomUUID() })),
+        })),
+      });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("setMissing"));
+    }
   }
 
   /* Roʻyxat SINFNING BARCHA topshirigʻini qamraydi — mazmunlisini ham,
@@ -280,7 +311,11 @@ export default function AssignmentsPage() {
     [classData]
   );
   const orphanSets = useMemo(
-    () => pendingSets.filter((s) => !linkedSetIds.has(s.id)),
+    () => pendingSets.filter((s) => !linkedSetIds.has(s.id) && !s.archived),
+    [pendingSets, linkedSetIds]
+  );
+  const archivedSets = useMemo(
+    () => pendingSets.filter((s) => !linkedSetIds.has(s.id) && s.archived),
     [pendingSets, linkedSetIds]
   );
 
@@ -403,6 +438,8 @@ export default function AssignmentsPage() {
   function handleDeleteConfirm() {
     if (!deleteTarget || !selectedClassId) return;
     const removed = deleteTarget;
+    const removedGrades = classData?.grades.filter((g) => g.assignmentId === removed.id) ?? [];
+    const classId = selectedClassId;
     updateClass(selectedClassId, (cd) => ({
       ...cd,
       assignments: cd.assignments.filter((a) => a.id !== removed.id),
@@ -415,7 +452,9 @@ export default function AssignmentsPage() {
       action: {
         label: t("undo"),
         onClick: () =>
-          updateClass(selectedClassId, (cd) => ({ ...cd, assignments: [removed, ...cd.assignments] })),
+          updateClass(classId, (cd) => ({
+            ...cd, assignments: [removed, ...cd.assignments], grades: [...cd.grades, ...removedGrades],
+          })),
       },
     });
   }
@@ -499,7 +538,7 @@ export default function AssignmentsPage() {
                 {/* Boʻsh holat — toifa ham, tayyor test ham yoʻq. `groups`
                     endi BOʻSH toifalarni ham qamraydi, shuning uchun shart
                     `totalCount` emas: toifasi bor sinf boʻsh koʻrinmasin. */}
-                {groups.length === 0 && orphanSets.length === 0 && !draftCard && runs.length === 0 ? (
+                {groups.length === 0 && orphanSets.length === 0 && archivedSets.length === 0 && !draftCard && runs.length === 0 ? (
                   <Empty className="h-full border-0">
                     <EmptyHeader>
                       <EmptyMedia><Illustration name="29" className="h-32 text-black dark:text-white" /></EmptyMedia>
@@ -561,25 +600,30 @@ export default function AssignmentsPage() {
                         </ContextMenu>
                       )}
 
-                      {/* Tuzilgan, lekin hali jurnalga chiqmagan testlar —
-                          eng tepada, chunki oʻqituvchi aynan ularni
-                          qidirib keladi (endigina tuzgan). */}
+                      {/* Tayyor testlar talabga koʻra dastlab yopiq;
+                          ustoz istasa ochib, bankdan oladi yoki boshqaradi. */}
                       {orphanSets.length > 0 && (
-                        <div className="flex flex-col gap-3">
-                          <div className="flex items-center gap-2">
+                        <Accordion type="single" collapsible className="rounded-xl border">
+                          <AccordionItem value="ready-tests" className="border-0">
+                          <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                          <span className="flex items-center gap-2">
                             <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
                               <FileCheck2 className="size-3.5" />
                             </div>
-                            <h3 className="text-sm font-semibold text-foreground">
+                            <span className="text-sm font-semibold text-foreground">
                               {t("orphanSetsTitle")}
-                            </h3>
+                            </span>
                             <TypographyMuted className="text-xs">
                               {orphanSets.length}
                             </TypographyMuted>
-                          </div>
-                          <TypographyMuted className="text-xs">
-                            {t("orphanSetsDescription")}
-                          </TypographyMuted>
+                          </span>
+                          </AccordionTrigger>
+                          <AccordionContent className="px-4 pb-4">
+                          <div className="flex flex-col gap-3">
+                            <TypographyMuted className="text-xs">{t("orphanSetsDescription")}</TypographyMuted>
+                            <Button variant="outline" size="sm" className="w-fit gap-2" onClick={() => setBankOpen(true)}>
+                              <Library className="size-4" /> {t("browseBank")}
+                            </Button>
                           {/* Karta bosilsa savollar muharriri ochiladi;
                               sessiya va oʻchirish — oʻng-tugma menyusida
                               (topshiriq kartalari bilan bir til). */}
@@ -590,7 +634,7 @@ export default function AssignmentsPage() {
                                   <div className="list-card group flex items-center gap-2 pr-2">
                                     <button
                                       type="button"
-                                      onClick={() => setBuilderSetId(set.id)}
+                                      onClick={() => set.hasSessions ? void copySetForEditing(set) : setBuilderSetId(set.id)}
                                       className="flex min-w-0 flex-1 items-center gap-3 py-3 pl-4 text-left"
                                     >
                                       <div className="list-card-icon flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
@@ -600,6 +644,7 @@ export default function AssignmentsPage() {
                                         <h4 className="truncate text-sm font-medium text-foreground">
                                           {set.title}
                                         </h4>
+                                        {set.hasSessions && <p className="text-xs text-muted-foreground">{t("usedSetHint")}</p>}
                                       </div>
                                     </button>
                                     <Badge size="sm"
@@ -608,6 +653,7 @@ export default function AssignmentsPage() {
                                     >
                                       {t("questionCount", { count: set.itemCount })}
                                     </Badge>
+                                    {set.hasSessions && <Badge size="sm" variant="outline" className="shrink-0">{t("usedSetBadge")}</Badge>}
                                     {/* KOʻRINADIGAN asosiy amal — test tayyor,
                                         keyingi qadam uni oʻquvchilarga berish. */}
                                     <RunButtons labels="sm" onRun={(intent) => launchSet(set, intent)} />
@@ -617,12 +663,15 @@ export default function AssignmentsPage() {
                                           variant="ghost"
                                           size="icon"
                                           aria-label={t("actionsMenu")}
-                                          className="size-8 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 data-[state=open]:opacity-100"
+                                          className="size-8 shrink-0 text-muted-foreground"
                                         >
                                           <MoreHorizontal className="size-4" />
                                         </Button>
                                       </DropdownMenuTrigger>
                                       <DropdownMenuContent align="end">
+                                        <DropdownMenuItem className="gap-2" onSelect={() => set.hasSessions ? void copySetForEditing(set) : setBuilderSetId(set.id)}>
+                                          <PenLine className="size-4" /> {set.hasSessions ? t("copyToEdit") : t("edit")}
+                                        </DropdownMenuItem>
                                         {RUN_INTENTS.map((intent) => {
                                           const Icon = LAUNCH_INTENTS[intent].icon;
                                           return (
@@ -637,19 +686,25 @@ export default function AssignmentsPage() {
                                           );
                                         })}
                                         <DropdownMenuSeparator />
-                                        <DropdownMenuItem
+                                        {!set.hasSessions && <DropdownMenuItem
                                           variant="destructive"
                                           className="gap-2"
                                           onSelect={() => setDeleteSet({ id: set.id, title: set.title })}
                                         >
                                           <Trash2 className="size-4" />
                                           {t("delete")}
+                                        </DropdownMenuItem>}
+                                        <DropdownMenuItem className="gap-2" onSelect={() => void toggleSetArchive(set.id, true)}>
+                                          <Archive className="size-4" /> {t("archiveTest")}
                                         </DropdownMenuItem>
                                       </DropdownMenuContent>
                                     </DropdownMenu>
                                   </div>
                                 </ContextMenuTrigger>
                                 <ContextMenuContent>
+                                  <ContextMenuItem className="gap-2" onSelect={() => set.hasSessions ? void copySetForEditing(set) : setBuilderSetId(set.id)}>
+                                    <PenLine className="size-4" /> {set.hasSessions ? t("copyToEdit") : t("edit")}
+                                  </ContextMenuItem>
                                   {RUN_INTENTS.map((intent) => {
                                     const Icon = LAUNCH_INTENTS[intent].icon;
                                     return (
@@ -664,19 +719,47 @@ export default function AssignmentsPage() {
                                     );
                                   })}
                                   <ContextMenuSeparator />
-                                  <ContextMenuItem
+                                  {!set.hasSessions && <ContextMenuItem
                                     variant="destructive"
                                     className="gap-2"
                                     onSelect={() => setDeleteSet({ id: set.id, title: set.title })}
                                   >
                                     <Trash2 className="size-4" />
                                     {t("delete")}
+                                  </ContextMenuItem>}
+                                  <ContextMenuItem className="gap-2" onSelect={() => void toggleSetArchive(set.id, true)}>
+                                    <Archive className="size-4" /> {t("archiveTest")}
                                   </ContextMenuItem>
                                 </ContextMenuContent>
                               </ContextMenu>
                             ))}
                           </div>
-                        </div>
+                          </div>
+                          </AccordionContent>
+                          </AccordionItem>
+                        </Accordion>
+                      )}
+
+                      {archivedSets.length > 0 && (
+                        <Accordion type="single" collapsible className="rounded-xl border">
+                          <AccordionItem value="archive" className="border-0">
+                            <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                              <span className="flex items-center gap-2 text-sm font-semibold">
+                                <Archive className="size-4" /> {t("archivedTests")} ({archivedSets.length})
+                              </span>
+                            </AccordionTrigger>
+                            <AccordionContent className="flex flex-col gap-2 px-4 pb-4">
+                              {archivedSets.map((set) => (
+                                <div key={set.id} className="list-card flex items-center justify-between gap-3 p-3">
+                                  <span className="min-w-0 truncate text-sm">{set.title}</span>
+                                  <Button variant="outline" size="sm" onClick={() => void toggleSetArchive(set.id, false)}>
+                                    {t("restoreTest")}
+                                  </Button>
+                                </div>
+                              ))}
+                            </AccordionContent>
+                          </AccordionItem>
+                        </Accordion>
                       )}
 
                     <Accordion
@@ -921,12 +1004,15 @@ export default function AssignmentsPage() {
                                                 variant="ghost"
                                                 size="icon"
                                                 aria-label={t("actionsMenu")}
-                                                className="size-8 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 data-[state=open]:opacity-100"
+                                                className="size-8 shrink-0 text-muted-foreground"
                                               >
                                                 <MoreHorizontal className="size-4" />
                                               </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
+                                              <DropdownMenuItem className="gap-2" onSelect={() => openEditor(a.id)}>
+                                                <PenLine className="size-4" /> {t("edit")}
+                                              </DropdownMenuItem>
                                               {a.setId &&
                                                 RUN_INTENTS.map((intent) => {
                                                   const Icon = LAUNCH_INTENTS[intent].icon;
@@ -964,6 +1050,9 @@ export default function AssignmentsPage() {
                                         </div>
                                       </ContextMenuTrigger>
                                       <ContextMenuContent>
+                                        <ContextMenuItem className="gap-2" onSelect={() => openEditor(a.id)}>
+                                          <PenLine className="size-4" /> {t("edit")}
+                                        </ContextMenuItem>
                                         {a.setId &&
                                           RUN_INTENTS.map((intent) => {
                                             const Icon = LAUNCH_INTENTS[intent].icon;
@@ -1023,6 +1112,7 @@ export default function AssignmentsPage() {
             setBankOpen(false);
             launchFlow.openLaunch(selectedClassId, { setId, title, intent: "class" });
           }}
+          onCreate={() => { setBankOpen(false); setBuilderCopy({ title: "", questions: [] }); }}
         />
       )}
 
@@ -1033,6 +1123,15 @@ export default function AssignmentsPage() {
           setId={builderSetId}
           onSaved={() => setBankVersion((v) => v + 1)}
           onClose={() => setBuilderSetId(null)}
+        />
+      )}
+      {builderCopy && selectedClassId && (
+        <SetBuilderOverlay
+          classId={selectedClassId}
+          initialTitle={builderCopy.title}
+          initialQuestions={builderCopy.questions.length ? builderCopy.questions : undefined}
+          onSaved={() => setBankVersion((v) => v + 1)}
+          onClose={() => setBuilderCopy(null)}
         />
       )}
 

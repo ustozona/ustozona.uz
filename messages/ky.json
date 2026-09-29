@@ -3993,6 +3993,8 @@
     "highlight": "Түстүү белгилөө"
   },
   "SetBuilder": {
+    "importFromBank": "Банктан суроо алуу",
+    "bankAdded": "{count} суроо кошулду",
     "titlePlaceholder": "Тест атын киргизиңиз…",
     "save": "Сактоо",
     "saving": "Сакталууда…",
@@ -4364,6 +4366,17 @@
     }
   },
   "AssignmentsPage": {
+    "edit": "Оңдоо",
+    "copyToEdit": "Оңдоо үчүн көчүрүү",
+    "usedSetBadge": "Жыйынтыктары бар",
+    "usedSetHint": "Жыйынтыктар сакталсын үчүн баштапкы тест өчүрүлбөйт; көчүрүңүз же архивдеңиз.",
+    "browseBank": "Банктан тест тандоо",
+    "attachFromBank": "Банктан суроо тандоо",
+    "archiveTest": "Архивге салуу",
+    "archivedTests": "Архивдеги тесттер",
+    "restoreTest": "Калыбына келтирүү",
+    "testArchived": "Тест архивге салынды",
+    "testRestored": "Тест калыбына келтирилди",
     "status_today": "Бүгүн",
     "statusHint_today": "Бүгүн өткөрүлөт — азырынча баа киргизилген эмес.",
     "syncFailing": "Сакталган жок",
@@ -4465,7 +4478,25 @@
     "actionsMenu": "Аракеттер",
     "groupClassesHint": "Бул тапшырма {classes} класстарында да бар — өзгөртүү бардыгына тиет."
   },
+  "BankPicker": {
+    "title": "Банктан суроолорду тандоо",
+    "description": "Тестти ачып керектүү суроолорду тандаңыз. Баштапкы тест өзгөрбөйт.",
+    "tier_tasdiqlangan": "Тастыкталган",
+    "tier_ommaviy": "Жалпы",
+    "tier_shaxsiy": "Жеке",
+    "search": "Тест издөө",
+    "empty": "Тест табылган жок",
+    "count": "{count} суроо",
+    "back": "Артка",
+    "chosen": "{count} тандалды",
+    "clear": "Тазалоо",
+    "all": "Баары",
+    "add": "{count} суроо кошуу",
+    "unsupported": "Бул суроонун варианттары колдоого алынбайт",
+    "loadFailed": "Тесттер жүктөлгөн жок"
+  },
   "TestBank": {
+    "createLocal": "Ustozonaда тест түзүү",
     "title": "Test banki",
     "openButton": "Test banki",
     "subtitle": "Tayyor testni tanlang — «{className}» sinfiga qoʻshiladi.",

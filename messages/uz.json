@@ -3870,6 +3870,8 @@
     "highlight": "Rangli belgilash"
   },
   "SetBuilder": {
+    "importFromBank": "Test bankidan savol olish",
+    "bankAdded": "{count} ta savol qoʻshildi",
     "titlePlaceholder": "Test nomini kiriting…",
     "save": "Saqlash",
     "saving": "Saqlanmoqda…",
@@ -4241,6 +4243,17 @@
     }
   },
   "AssignmentsPage": {
+    "edit": "Tahrirlash",
+    "copyToEdit": "Tahrirlash uchun nusxa olish",
+    "usedSetBadge": "Natijalari bor",
+    "usedSetHint": "Natijalar saqlanishi uchun asl test oʻchirilmaydi; nusxa oling yoki arxivlang.",
+    "browseBank": "Bankdan test tanlash",
+    "attachFromBank": "Test bankidan savollar olish",
+    "archiveTest": "Arxivga olish",
+    "archivedTests": "Arxivdagi testlar",
+    "restoreTest": "Qaytarish",
+    "testArchived": "Test arxivga olindi",
+    "testRestored": "Test qaytarildi",
     "status_today": "Bugun",
     "statusHint_today": "Bugun oʻtkaziladi — hali baho kiritilmagan.",
     "syncFailing": "Saqlanmadi",
@@ -4342,7 +4355,25 @@
     "actionsMenu": "Amallar",
     "groupClassesHint": "Shu topshiriq {classes} sinflarida ham bor — tahrir hammasiga tegadi."
   },
+  "BankPicker": {
+    "title": "Bankdan savollar tanlash",
+    "description": "Testni oching, kerakli savollarni belgilang va topshiriqqa qoʻshing. Manba test oʻzgarmaydi.",
+    "tier_tasdiqlangan": "Tasdiqlangan",
+    "tier_ommaviy": "Ommaviy",
+    "tier_shaxsiy": "Shaxsiy",
+    "search": "Test qidirish",
+    "empty": "Test topilmadi",
+    "count": "{count} savol",
+    "back": "Orqaga",
+    "chosen": "{count} ta tanlandi",
+    "clear": "Tanlovni tozalash",
+    "all": "Hammasi",
+    "add": "{count} ta savolni qoʻshish",
+    "unsupported": "Bu savolda muharrir qoʻllamaydigan variantlar bor",
+    "loadFailed": "Testlarni yuklab boʻlmadi"
+  },
   "TestBank": {
+    "createLocal": "Ustozonada test yaratish",
     "title": "Test banki",
     "openButton": "Test banki",
     "subtitle": "Tayyor testni tanlang — «{className}» sinfiga qoʻshiladi.",

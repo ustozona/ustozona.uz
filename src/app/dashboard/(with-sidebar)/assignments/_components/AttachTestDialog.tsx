@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { ClipboardCheck, Plus } from "lucide-react";
+import { ClipboardCheck, Library, Plus } from "lucide-react";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
@@ -54,6 +54,7 @@ export default function AttachTestDialog({
   assignmentId,
   onPick,
   onCreateNew,
+  onPickBank,
   onClose,
 }: {
   classId: string;
@@ -61,6 +62,7 @@ export default function AttachTestDialog({
   assignmentId: string;
   onPick: (set: { id: string; title: string; containerKind: string }) => void;
   onCreateNew: () => void;
+  onPickBank: () => void;
   onClose: () => void;
 }) {
   const t = useTranslations("AssignmentsPage");
@@ -73,7 +75,7 @@ export default function AttachTestDialog({
     listSetsWithPublishStateAction()
       .then((list) => {
         if (!alive) return;
-        const mapped = list.map((r) => ({
+        const mapped = list.filter((r) => r.set.config.archived !== true).map((r) => ({
           id: r.set.id,
           title: r.set.title,
           itemCount: r.set.items.length,
@@ -182,6 +184,9 @@ export default function AttachTestDialog({
         )}
 
         <DialogFooter className="sm:justify-between">
+          <Button variant="outline" className="gap-2" onClick={onPickBank}>
+            <Library className="size-4" /> {t("attachFromBank")}
+          </Button>
           <Button variant="outline" className="gap-2" onClick={onCreateNew}>
             <Plus className="size-4" />
             {t("attachNewTest")}

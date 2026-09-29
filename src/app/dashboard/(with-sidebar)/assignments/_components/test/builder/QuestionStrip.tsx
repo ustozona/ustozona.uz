@@ -1,6 +1,8 @@
 "use client";
 
 import {
+  ArrowDown,
+  ArrowUp,
   ChevronDown,
   Copy,
   FileUp,
@@ -37,6 +39,7 @@ type Props = {
   onImport: () => void;
   onDuplicate: (key: string) => void;
   onRemove: (key: string) => void;
+  onMove: (key: string, direction: -1 | 1) => void;
 };
 
 export default function QuestionStrip({
@@ -47,6 +50,7 @@ export default function QuestionStrip({
   onImport,
   onDuplicate,
   onRemove,
+  onMove,
 }: Props) {
   return (
     <div className="flex h-full min-h-0 flex-col border-r border-border bg-muted/30">
@@ -114,7 +118,15 @@ export default function QuestionStrip({
                   </div>
                 </button>
 
-                <div className="absolute right-1.5 top-1.5 flex gap-0.5 opacity-0 transition-opacity group-hover/item:opacity-100">
+                <div className="absolute right-1.5 top-1.5 flex gap-0.5 opacity-0 transition-opacity group-hover/item:opacity-100 group-focus-within/item:opacity-100">
+                  <Button variant="ghost" size="icon" className="size-6" aria-label="Yuqoriga koʻchirish"
+                    disabled={index === 0} onClick={() => onMove(question.key, -1)}>
+                    <ArrowUp className="size-3.5" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="size-6" aria-label="Pastga koʻchirish"
+                    disabled={index === questions.length - 1} onClick={() => onMove(question.key, 1)}>
+                    <ArrowDown className="size-3.5" />
+                  </Button>
                   <Button
                     variant="ghost"
                     size="icon"

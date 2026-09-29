@@ -5,7 +5,7 @@ import { stageFontOf, type StageFontId } from "@/lib/stage-fonts";
 import { stageStyleOf, type StageStyleId } from "@/lib/stage-styles";
 import { useTranslations } from "next-intl";
 import { createPortal } from "react-dom";
-import { Check, Loader2, Minus, X } from "lucide-react";
+import { Check, Library, Loader2, Minus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +28,7 @@ import { toast } from "sonner";
 import { uploadEditorImageAction } from "@/server/actions/uploads";
 import { MAX_PDF_PAGES, pdfToImages } from "@/lib/pdf-to-images";
 import { MAX_PPTX_SLIDES, pptxToSlides } from "@/lib/pptx-to-slides";
+import BankQuestionPicker from "./BankQuestionPicker";
 
 /**
  * Toʻplam builder — viktorina-uslub uch ustunli muharrir: chapda
@@ -44,6 +45,7 @@ export default function SetBuilderOverlay({
   initialTitle,
   firstShape = "mcq",
   initialQuestions,
+  startWithBank = false,
   onClose,
   onSaved,
 }: {
@@ -59,6 +61,8 @@ export default function SetBuilderOverlay({
       Nom ham berilgan boʻlsa, jim avtosaqlash uni odatdagidek 2 soniyada
       yozadi va topshiriqqa ulaydi — oʻqituvchi koʻrib chiqib tahrirlaydi. */
   initialQuestions?: DraftQuestion[];
+  /** Yangi topshiriq ichidagi «Bankdan savol olish» bosilganda darhol bankni ochadi. */
+  startWithBank?: boolean;
   onClose: () => void;
   onSaved: (set: ActivitySetRow) => void;
 }) {
@@ -81,6 +85,7 @@ export default function SetBuilderOverlay({
     // Taqdimot sarlavha slaydidan boshlanadi — birinchi ekran mavzu nomi.
     return [firstShape === "slide" ? { ...newQuestion("slide"), slideLayout: "title" } : newQuestion(firstShape)];
   });
+  const [bankPickerOpen, setBankPickerOpen] = useState(startWithBank);
   const [activeKey, setActiveKey] = useState<string | null>(null);
   const [panel, setPanel] = useState<BuilderPanel>("properties");
   const [saving, setSaving] = useState(false);
@@ -150,6 +155,21 @@ export default function SetBuilderOverlay({
     const created = newQuestion(shape);
     setQuestions((prev) => [...prev, created]);
     setActiveKey(created.key);
+  }
+
+  function insertBankQuestions(bankTitle: string, imported: DraftQuestion[]) {
+    if (!setIdRef.current && !title.trim()) setTitle(bankTitle);
+    setQuestions((prev) => {
+      // Yangi testning boʻsh boshlangʻich savoli importdan keyin qolmasin.
+      const blank = prev.length === 1 && !prev[0].stem.trim() && !prev[0].title.trim()
+        && prev[0].options.every((o) => !o.text.trim());
+      const base = blank ? [] : prev;
+      const at = base.findIndex((q) => q.key === activeKey);
+      const insertAt = at < 0 ? base.length : at + 1;
+      return [...base.slice(0, insertAt), ...imported, ...base.slice(insertAt)];
+    });
+    setActiveKey(imported[0]?.key ?? null);
+    toast.success(t("bankAdded", { count: imported.length }));
   }
 
   /* ── TAQDIMOT IMPORTI (docs/taqdimot-spec.md, 2-qavat) ──
@@ -317,6 +337,17 @@ export default function SetBuilderOverlay({
     setQuestions((prev) => (prev.length <= 1 ? prev : prev.filter((q) => q.key !== key)));
   }
 
+  function moveQuestion(key: string, direction: -1 | 1) {
+    setQuestions((prev) => {
+      const from = prev.findIndex((q) => q.key === key);
+      const to = from + direction;
+      if (from < 0 || to < 0 || to >= prev.length) return prev;
+      const next = [...prev];
+      [next[from], next[to]] = [next[to], next[from]];
+      return next;
+    });
+  }
+
   // Boʻsh variant/juftliklar saqlashdan oldin tushirib qoldiriladi —
   // server validatsiyasi shu tozalangan roʻyxat ustida ishlaydi.
   function buildPayload() {
@@ -354,6 +385,7 @@ export default function SetBuilderOverlay({
     if (previous) await previous.catch(() => {});
 
     const run = (async () => {
+      const questionKeys = questions.map((q) => q.key);
       const draft = await saveSetDraftAction({
         setId: setIdRef.current,
         classId,
@@ -365,8 +397,11 @@ export default function SetBuilderOverlay({
         questions: buildPayload(),
       });
       setIdRef.current = draft.set.id;
+      // Savollar server javobini kutayotganda koʻchirilishi/import qilinishi
+      // mumkin. Pozitsiya emas, barqaror key orqali activityId bogʻlanadi.
+      const idByKey = new Map(questionKeys.map((key, index) => [key, draft.questions[index]?.activityId]));
       setQuestions((prev) =>
-        prev.map((q, index) => ({ ...q, activityId: draft.questions[index]?.activityId }))
+        prev.map((q) => idByKey.has(q.key) ? { ...q, activityId: idByKey.get(q.key) } : q)
       );
       return draft;
     })();
@@ -463,6 +498,10 @@ export default function SetBuilderOverlay({
           className="h-9 max-w-xs border-0 bg-transparent px-0 text-base font-semibold shadow-none focus-visible:ring-0"
         />
 
+        <Button variant="outline" size="sm" className="shrink-0 gap-1.5" onClick={() => setBankPickerOpen(true)}>
+          <Library className="size-4" /> {t("importFromBank")}
+        </Button>
+
         <div className="ml-auto flex shrink-0 items-center gap-2">
           {error && <span className="max-w-xs truncate text-sm text-destructive">{error}</span>}
           {importProgress && (
@@ -526,6 +565,7 @@ export default function SetBuilderOverlay({
             onImport={() => importInputRef.current?.click()}
             onDuplicate={duplicateQuestion}
             onRemove={removeQuestion}
+            onMove={moveQuestion}
           />
 
           {active ? (
@@ -584,6 +624,9 @@ export default function SetBuilderOverlay({
         if (file && !importProgress) void importPresentation(file);
       }}
     />
+
+    {bankPickerOpen && <BankQuestionPicker classId={classId}
+      onClose={() => setBankPickerOpen(false)} onPick={insertBankQuestions} />}
 
     {/* Kichraytirilgan yorliq — bosilsa quruvchi oʻsha holatida qaytadi.
         z-[49]: quruvchining oʻzidan (48) baland, shuning uchun ostidagi

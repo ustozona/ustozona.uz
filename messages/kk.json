@@ -3993,6 +3993,8 @@
     "highlight": "Түспен белгілеу"
   },
   "SetBuilder": {
+    "importFromBank": "Банктен сұрақ алу",
+    "bankAdded": "{count} сұрақ қосылды",
     "titlePlaceholder": "Тест атауын енгізіңіз…",
     "save": "Сақтау",
     "saving": "Сақталуда…",
@@ -4364,6 +4366,17 @@
     }
   },
   "AssignmentsPage": {
+    "edit": "Өңдеу",
+    "copyToEdit": "Өңдеу үшін көшіру",
+    "usedSetBadge": "Нәтижелері бар",
+    "usedSetHint": "Нәтижелер сақталуы үшін бастапқы тест өшірілмейді; көшіріңіз немесе мұрағаттаңыз.",
+    "browseBank": "Банктен тест таңдау",
+    "attachFromBank": "Банктен сұрақ таңдау",
+    "archiveTest": "Мұрағаттау",
+    "archivedTests": "Мұрағаттағы тесттер",
+    "restoreTest": "Қалпына келтіру",
+    "testArchived": "Тест мұрағатталды",
+    "testRestored": "Тест қалпына келтірілді",
     "status_today": "Бүгін",
     "statusHint_today": "Бүгін өткізіледі — әзірге баға енгізілмеген.",
     "syncFailing": "Сақталмады",
@@ -4465,7 +4478,25 @@
     "actionsMenu": "Әрекеттер",
     "groupClassesHint": "Бұл тапсырма {classes} сыныптарында да бар — өзгеріс барлығына әсер етеді."
   },
+  "BankPicker": {
+    "title": "Банктен сұрақтарды таңдау",
+    "description": "Тестті ашып, қажетті сұрақтарды таңдаңыз. Бастапқы тест өзгермейді.",
+    "tier_tasdiqlangan": "Расталған",
+    "tier_ommaviy": "Ашық",
+    "tier_shaxsiy": "Жеке",
+    "search": "Тест іздеу",
+    "empty": "Тест табылмады",
+    "count": "{count} сұрақ",
+    "back": "Артқа",
+    "chosen": "{count} таңдалды",
+    "clear": "Тазалау",
+    "all": "Барлығы",
+    "add": "{count} сұрақты қосу",
+    "unsupported": "Бұл сұрақтың нұсқалары қолдау таппайды",
+    "loadFailed": "Тесттер жүктелмеді"
+  },
   "TestBank": {
+    "createLocal": "Ustozona-да тест жасау",
     "title": "Test banki",
     "openButton": "Test banki",
     "subtitle": "Tayyor testni tanlang — «{className}» sinfiga qoʻshiladi.",
