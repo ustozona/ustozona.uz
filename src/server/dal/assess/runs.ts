@@ -575,8 +575,8 @@ export async function reopenRun(sessionId: string): Promise<void> {
  *
  * Yarim natija yozilmaydi: sessiya yakunlangan, muddati oʻtgan,
  * eskirgan (`isStale`) yoki qogʻoz (oʻqituvchi yigʻgan javoblar) boʻlishi
- * shart. Muddati oʻtgan yoki eskirgan ochiq sessiya avval yopiladi —
- * dars allaqachon tugagan, ochiq qoldirishdan foyda yoʻq.
+ * shart. Ochiq sessiya jurnalga yozishdan avval yopiladi, shunda shu
+ * testning keyingi qogʻoz oʻtkazishi alohida sessiya ochadi.
  */
 export async function publishRun(
   sessionId: string,
@@ -584,8 +584,8 @@ export async function publishRun(
 ): Promise<PublishRunResult> {
   const teacher = await requireTeacher();
   const session = await loadOwnedSession(sessionId, teacher.id);
-  if (session.state !== "completed" && session.mode !== "paper") {
-    if (!isSessionPastDue(session) && !isStale(session)) {
+  if (session.state !== "completed") {
+    if (session.mode !== "paper" && !isSessionPastDue(session) && !isStale(session)) {
       throw new ForbiddenError("Avval testni tugating — keyin natija jurnalga yoziladi");
     }
     await closeSession(sessionId);
