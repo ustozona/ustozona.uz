@@ -168,6 +168,7 @@ function zoneLabel(now: Date): string {
 export function QuickCreatePanel({
   classId,
   isDraft,
+  hasContent = false,
   topic,
   fallbackTitle,
   onTopicChange,
@@ -177,6 +178,7 @@ export function QuickCreatePanel({
 }: {
   classId: string;
   isDraft: boolean;
+  hasContent?: boolean;
   /** `null` — oʻqituvchi hali tanlamagan: ish rejadagi joriy mavzu turadi. */
   topic: QuickTopic | null;
   /** Ish reja boʻlmasa — topshiriq sarlavhasi mavzu boʻladi. */
@@ -415,7 +417,7 @@ export function QuickCreatePanel({
         className="flex flex-wrap"
         icon={<Sparkles />}
         title={t("title")}
-        description={t("subtitle")}
+        description={t(hasContent ? "continueSubtitle" : "subtitle")}
         actions={
           <div className="min-w-0 text-left sm:text-right" title={t("timezone", { zone: zoneLabel(now) })}>
             <p className="text-sm font-medium tabular-nums text-foreground">
@@ -563,7 +565,7 @@ export function QuickCreatePanel({
               className="inline-flex items-center gap-1 text-caption font-medium text-foreground underline-offset-4 hover:underline"
             >
               <Library className="size-3.5" />
-              {t("attachExisting")}
+              {t(hasContent ? "importMore" : "attachExisting")}
             </button>
           </div>
           <MaterialKindPicker

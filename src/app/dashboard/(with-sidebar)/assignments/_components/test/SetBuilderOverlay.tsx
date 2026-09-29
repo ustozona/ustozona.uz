@@ -57,9 +57,8 @@ export default function SetBuilderOverlay({
   initialTitle?: string;
   /** Yangi toʻplamning birinchi elementi: test savoli yoki slayd (taqdimot). */
   firstShape?: DraftQuestion["shape"];
-  /** Tayyor qoralama (AI yoki shablon, «+ Yaratish» → Tezkor yaratish).
-      Nom ham berilgan boʻlsa, jim avtosaqlash uni odatdagidek 2 soniyada
-      yozadi va topshiriqqa ulaydi — oʻqituvchi koʻrib chiqib tahrirlaydi. */
+  /** Yangi toʻplamning boshlangʻich materiallari yoki mavjud toʻplamning
+      oxiriga qoʻshiladigan AI/shablon materiallari. */
   initialQuestions?: DraftQuestion[];
   /** Yangi topshiriq ichidagi «Bankdan savol olish» bosilganda darhol bankni ochadi. */
   startWithBank?: boolean;
@@ -122,7 +121,13 @@ export default function SetBuilderOverlay({
       setStageTheme(config.stageTheme ?? "violet");
       setStageFont(stageFontOf(config.stageFont).id);
       setStageStyle(stageStyleOf(config.stageStyle).id);
-      setQuestions(loaded.length > 0 ? loaded : [newQuestion("mcq")]);
+      const appended = (initialQuestions ?? []).map((q) => ({
+        ...q, key: crypto.randomUUID(), activityId: undefined,
+      }));
+      setQuestions(loaded.length || appended.length
+        ? [...loaded, ...appended]
+        : [newQuestion("mcq")]);
+      if (appended[0]) setActiveKey(appended[0].key);
       setLoading(false);
     });
     return () => {
@@ -625,7 +630,7 @@ export default function SetBuilderOverlay({
       }}
     />
 
-    {bankPickerOpen && <BankQuestionPicker classId={classId}
+    {bankPickerOpen && !loading && <BankQuestionPicker classId={classId}
       onClose={() => setBankPickerOpen(false)} onPick={insertBankQuestions} />}
 
     {/* Kichraytirilgan yorliq — bosilsa quruvchi oʻsha holatida qaytadi.

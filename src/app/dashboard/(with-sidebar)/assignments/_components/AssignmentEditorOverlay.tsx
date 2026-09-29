@@ -42,7 +42,7 @@ import {
   type BuilderInit,
   type QuickTopic,
 } from "./quick-create/QuickCreatePanel";
-import type { DraftQuestion } from "./test/builder/types";
+import { newQuestion, type DraftQuestion } from "./test/builder/types";
 import { BackButton } from "@/components/ui/back-button";
 import type { LaunchIntent } from "@/lib/launch-types";
 import {
@@ -214,9 +214,11 @@ export default function AssignmentEditorOverlay({
   /* Biriktirilgan toʻplam pasporti (nom · savol soni · maks. ball).
      Toʻplamning butun qoralamasi kerak emas — shuning uchun yengil amal. */
   const [setMeta, setSetMeta] = useState<SetMeta | null>(null);
+  const metaRequest = useRef(0);
   /* Mavjud testni tanlash oynasi — toʻplam muharrirdan tashqarida ham
      tugʻiladi (bank, oldingi ishlar), ularni ulash yoʻli kerak. */
   const [attachOpen, setAttachOpen] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
   /** Tezkor yaratish mavzusi. `null` — ish rejadagi joriy mavzu turadi;
       «Olish» (ish reja kartasi) yoki qoʻlda yozish uni belgilaydi. */
   const [quickTopic, setQuickTopic] = useState<QuickTopic | null>(null);
@@ -346,16 +348,16 @@ export default function AssignmentEditorOverlay({
      qaytadi — karta oʻzini "topilmadi" holatida chizadi, halqa esa
      `on delete set null` bilan serverda allaqachon uzilgan. */
   useEffect(() => {
+    const request = ++metaRequest.current;
     if (!attachedSetId) {
       setSetMeta(null);
       return;
     }
-    let alive = true;
     getSetMetaAction(attachedSetId)
-      .then((meta) => alive && setSetMeta(meta))
-      .catch(() => alive && setSetMeta(null));
+      .then((meta) => request === metaRequest.current && setSetMeta(meta))
+      .catch(() => request === metaRequest.current && setSetMeta(null));
     return () => {
-      alive = false;
+      metaRequest.current++;
     };
   }, [attachedSetId]);
 
@@ -364,7 +366,7 @@ export default function AssignmentEditorOverlay({
      esa hech kim: oʻqituvchi "8" yozadi (8/10 demoqchi), tizim standart
      100 maxraji bilan 8% deb oʻqirdi. */
   useEffect(() => {
-    if (!attachedSetId || !setMeta || setMeta.maxScore <= 0) return;
+    if (!attachedSetId || setMeta?.id !== attachedSetId || setMeta.maxScore <= 0) return;
     if (current.maxScore === setMeta.maxScore) return;
     patch({ maxScore: setMeta.maxScore });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -383,19 +385,23 @@ export default function AssignmentEditorOverlay({
       tugʻilardi. */
   function handleAttachTest() {
     setAttachOpen(false);
-    setBuilder({});
+    setBuilder(attachedSetId
+      ? { setId: attachedSetId, initialQuestions: [newQuestion("mcq")] }
+      : {});
   }
 
   function handlePickBankQuestions() {
     setAttachOpen(false);
-    setBuilder({ startWithBank: true });
+    setBuilder({ setId: attachedSetId, startWithBank: true });
   }
 
   /** Yangi taqdimot — xuddi shu toʻplam muharriri, faqat birinchi element
       slayd (R276: taqdimot = toʻplam + slaydlar, alohida muharrir yoʻq). */
   function handleAttachDeck() {
     setAttachOpen(false);
-    setBuilder({ firstShape: "slide" });
+    setBuilder(attachedSetId
+      ? { setId: attachedSetId, initialQuestions: [newQuestion("slide")] }
+      : { firstShape: "slide" });
   }
 
   /** Tezkor yaratish natijasi (AI yoki shablon) — toʻplam muharriri shu
@@ -404,6 +410,7 @@ export default function AssignmentEditorOverlay({
   function handleQuickBuild(init: BuilderInit) {
     setAttachOpen(false);
     setBuilder({
+      setId: attachedSetId,
       firstShape: init.firstShape,
       initialQuestions: init.questions,
       initialTitle: init.title,
@@ -445,6 +452,10 @@ export default function AssignmentEditorOverlay({
     title: string;
     containerKind?: string;
   }) {
+    const request = ++metaRequest.current;
+    getSetMetaAction(set.id)
+      .then((meta) => request === metaRequest.current && setSetMeta(meta))
+      .catch(() => request === metaRequest.current && setSetMeta(null));
     const needsTitle = !current.title.trim();
     /* Tur toʻplamdan HISOBLANADI: slaydi bor toʻplam — taqdimot. */
     const kind = set.containerKind === "deck" ? "deck" : "test";
@@ -771,10 +782,8 @@ export default function AssignmentEditorOverlay({
   const bareControl =
     "h-auto w-full justify-between gap-1.5 border-none bg-transparent p-0 text-sm font-medium text-foreground shadow-none hover:bg-transparent focus-visible:ring-0 [&>svg]:opacity-40";
 
-  /* ── MAZMUN BOʻLIMI ─────────────────────────────────────────────────
-     Toʻrt holat, ikkala rejimda ham bir xil chiziladi. Tartib muhim:
-     biriktirilgan toʻplam eng aniq belgi, `sourceSessionId` esa eski
-     (sessiyadan nashr qilingan) ustunlar uchun zaxira. */
+  /* Biriktirilgan toʻplam materiallar zanjiri: savol va slaydlar uning
+     ichida tartiblanadi. Asboblar keyingi qadamda ham ochilishi kerak. */
   function renderContent() {
     if (attachedSetId) {
       /* Taqdimot ham, test ham shu kartada — faqat belgi, rang va yozuv
@@ -783,7 +792,8 @@ export default function AssignmentEditorOverlay({
       const kindLabel = isDeck ? t("kindDeck") : t("kindTest");
       const KindIcon = isDeck ? Presentation : ClipboardCheck;
       return (
-        <div className="flex items-center gap-3 rounded-xl border border-border p-3">
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-3 rounded-xl border border-border p-3">
           <button
             type="button"
             onClick={handleEditAttachedTest}
@@ -829,6 +839,33 @@ export default function AssignmentEditorOverlay({
               {t("detachTestHint")}
             </TooltipContent>
           </Tooltip>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" size="sm" onClick={handleEditAttachedTest}>
+              <Plus className="size-4" /> {t("composerEditOrder")}
+            </Button>
+            <Button variant="outline" size="sm" onClick={handlePickBankQuestions}>
+              <ClipboardCheck className="size-4" /> {t("composerBank")}
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => setToolsOpen((open) => !open)} aria-expanded={toolsOpen}>
+              {t("composerMoreTools")}
+              <ChevronDown className={cn("size-4 transition-transform", toolsOpen && "rotate-180")} />
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">{t("composerOrderHint")}</p>
+          {toolsOpen && (
+            <QuickCreatePanel
+              classId={classId}
+              isDraft={isDraft}
+              hasContent
+              topic={quickTopic}
+              fallbackTitle={current.title}
+              onTopicChange={setQuickTopic}
+              onOpenBuilder={handleQuickBuild}
+              onManual={(kind) => (kind === "deck" ? handleAttachDeck() : handleAttachTest())}
+              onAttachExisting={handlePickBankQuestions}
+            />
+          )}
         </div>
       );
     }
