@@ -3992,6 +3992,8 @@
     "highlight": "Highlight"
   },
   "SetBuilder": {
+    "importFromBank": "Import from bank",
+    "bankAdded": "Added {count} questions",
     "titlePlaceholder": "Enter test name…",
     "save": "Save",
     "saving": "Saving…",
@@ -4363,6 +4365,17 @@
     }
   },
   "AssignmentsPage": {
+    "edit": "Edit",
+    "copyToEdit": "Copy to edit",
+    "usedSetBadge": "Has results",
+    "usedSetHint": "The original test keeps its results; copy it to edit or archive it.",
+    "browseBank": "Browse test bank",
+    "attachFromBank": "Choose questions from bank",
+    "archiveTest": "Archive",
+    "archivedTests": "Archived tests",
+    "restoreTest": "Restore",
+    "testArchived": "Test archived",
+    "testRestored": "Test restored",
     "status_today": "Today",
     "statusHint_today": "Happens today — no grades entered yet.",
     "syncFailing": "Not saved",
@@ -4464,7 +4477,25 @@
     "actionsMenu": "Actions",
     "groupClassesHint": "This assignment also exists in {classes} — edits apply to all."
   },
+  "BankPicker": {
+    "title": "Choose questions from bank",
+    "description": "Open a test, select the questions you need, and add them to this assignment. The source test stays unchanged.",
+    "tier_tasdiqlangan": "Verified",
+    "tier_ommaviy": "Public",
+    "tier_shaxsiy": "Personal",
+    "search": "Search tests",
+    "empty": "No tests found",
+    "count": "{count} questions",
+    "back": "Back",
+    "chosen": "{count} selected",
+    "clear": "Clear",
+    "all": "Select all",
+    "add": "Add {count} questions",
+    "unsupported": "This question has an unsupported number of options",
+    "loadFailed": "Could not load tests"
+  },
   "TestBank": {
+    "createLocal": "Create a test in Ustozona",
     "title": "Test bank",
     "openButton": "Test bank",
     "subtitle": "Pick a ready test — it will be added to “{className}”.",

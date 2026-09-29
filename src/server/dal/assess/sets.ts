@@ -63,6 +63,8 @@ export type SetPublishState = {
   set: ActivitySetRow;
   /** Jurnalga koʻchirilgan boʻlsa — topshiriq id'si. */
   assignmentId: string | null;
+  /** Ishlatilgan toʻplamni tahrirlash/oʻchirish baho tarixiga zarar beradi. */
+  hasSessions: boolean;
 };
 
 /** Sinf toʻplamlari, har biri jurnalga chiqqan-chiqmagani bilan.
@@ -103,7 +105,7 @@ export async function listSetsWithPublishState(classId?: string): Promise<SetPub
     .from(quizSessions)
     .where(and(eq(quizSessions.teacherId, teacher.id), inArray(quizSessions.setId, setIds)));
   if (sessionRows.length === 0) {
-    return sets.map((set) => ({ set, assignmentId: assignmentBySet.get(set.id) ?? null }));
+    return sets.map((set) => ({ set, assignmentId: assignmentBySet.get(set.id) ?? null, hasSessions: false }));
   }
 
   const publishedRows = await db
@@ -131,7 +133,8 @@ export async function listSetsWithPublishState(classId?: string): Promise<SetPub
     }
   }
 
-  return sets.map((set) => ({ set, assignmentId: assignmentBySet.get(set.id) ?? null }));
+  const usedSetIds = new Set(sessionRows.map((row) => row.setId));
+  return sets.map((set) => ({ set, assignmentId: assignmentBySet.get(set.id) ?? null, hasSessions: usedSetIds.has(set.id) }));
 }
 
 /**
@@ -319,5 +322,18 @@ export async function deleteSet(id: string): Promise<void> {
   const teacher = await requireTeacher();
   await db
     .delete(activitySets)
+    .where(and(eq(activitySets.id, id), eq(activitySets.teacherId, teacher.id)));
+}
+
+/** Faqat koʻrinish metamaʼlumoti: oʻtkazilgan testning savollari va
+    sessiya natijalari oʻzgarmaydi. Oʻqituvchi arxivdan qaytara oladi. */
+export async function setSetArchived(id: string, archived: boolean): Promise<void> {
+  const teacher = await requireTeacher();
+  const [set] = await db.select({ config: activitySets.config })
+    .from(activitySets)
+    .where(and(eq(activitySets.id, id), eq(activitySets.teacherId, teacher.id)));
+  if (!set) throw new Error("Test topilmadi yoki sizga tegishli emas");
+  await db.update(activitySets)
+    .set({ config: { ...set.config, archived }, updatedAt: new Date() })
     .where(and(eq(activitySets.id, id), eq(activitySets.teacherId, teacher.id)));
 }

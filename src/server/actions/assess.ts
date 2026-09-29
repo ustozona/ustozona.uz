@@ -20,6 +20,7 @@ import {
   getSetMeta,
   listSets,
   listSetsWithPublishState,
+  setSetArchived,
   updateSet,
   type SetMeta,
   type SetPublishState,
@@ -192,6 +193,10 @@ export async function createSetAction(input: CreateSetFormValues): Promise<Activ
 
 export async function deleteSetAction(id: string): Promise<void> {
   await deleteSet(id);
+}
+
+export async function setSetArchivedAction(id: string, archived: boolean): Promise<void> {
+  await setSetArchived(z.string().min(1).parse(id), z.boolean().parse(archived));
 }
 
 /* ════════════════════════════════════════════════════════════════════

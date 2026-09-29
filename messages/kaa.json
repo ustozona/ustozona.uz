@@ -3993,6 +3993,8 @@
     "highlight": "Reńli belgilew"
   },
   "SetBuilder": {
+    "importFromBank": "Banktan soraw alıw",
+    "bankAdded": "{count} soraw qosıldı",
     "titlePlaceholder": "Test atın kiritiń…",
     "save": "Saqlaw",
     "saving": "Saqlanbaqta…",
@@ -4364,6 +4366,17 @@
     }
   },
   "AssignmentsPage": {
+    "edit": "Ózgertiw",
+    "copyToEdit": "Ózgertiw ushın nusqa alıw",
+    "usedSetBadge": "Nátiyjeleri bar",
+    "usedSetHint": "Nátiyjeler saqlanıwı ushın tiykarǵı test óshirilmedi; nusqa alıń yamasa arxivleń.",
+    "browseBank": "Banktan test tańlaw",
+    "attachFromBank": "Banktan soraw tańlaw",
+    "archiveTest": "Arxivke alıw",
+    "archivedTests": "Arxivtegi testler",
+    "restoreTest": "Qaytarıw",
+    "testArchived": "Test arxivke alındı",
+    "testRestored": "Test qaytarıldı",
     "status_today": "Búgin",
     "statusHint_today": "Búgin ótkeriledi — ele baha kirgizilmegen.",
     "syncFailing": "Saqlanbadı",
@@ -4465,7 +4478,25 @@
     "actionsMenu": "Ámeller",
     "groupClassesHint": "Bul tapsırma {classes} klaslarında da bar — ózgeris hámmesine tiyedi."
   },
+  "BankPicker": {
+    "title": "Banktan sorawlar tańlaw",
+    "description": "Testti ashıp, kerekli sorawlardı tańlań. Derektiń ózi ózgermeydi.",
+    "tier_tasdiqlangan": "Tastıyıqlanǵan",
+    "tier_ommaviy": "Ámmewiy",
+    "tier_shaxsiy": "Jeke",
+    "search": "Test izlew",
+    "empty": "Test tabılmadı",
+    "count": "{count} soraw",
+    "back": "Artqa",
+    "chosen": "{count} tańlandı",
+    "clear": "Tazalaw",
+    "all": "Hámmesi",
+    "add": "{count} sorawdı qosıw",
+    "unsupported": "Bul soraw variantları qollanılmaydı",
+    "loadFailed": "Testler júklenbedi"
+  },
   "TestBank": {
+    "createLocal": "Ustozonada test jaratıw",
     "title": "Test banki",
     "openButton": "Test banki",
     "subtitle": "Tayyor testni tanlang — «{className}» sinfiga qoʻshiladi.",

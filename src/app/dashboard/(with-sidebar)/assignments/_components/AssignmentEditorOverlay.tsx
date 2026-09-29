@@ -234,6 +234,7 @@ export default function AssignmentEditorOverlay({
     initialQuestions?: DraftQuestion[];
     /** Qoralamaning oʻz nomi — topshiriq sarlavhasi boʻsh boʻlsa ishlatiladi. */
     initialTitle?: string;
+    startWithBank?: boolean;
   } | null>(null);
   /* Testni oʻquvchilarga berish — Topshiriqlar sahifasidagi bilan AYNAN
      bir oqim («Darsda oʻtkazish» / «Uyga berish» → natija ekrani →
@@ -383,6 +384,11 @@ export default function AssignmentEditorOverlay({
   function handleAttachTest() {
     setAttachOpen(false);
     setBuilder({});
+  }
+
+  function handlePickBankQuestions() {
+    setAttachOpen(false);
+    setBuilder({ startWithBank: true });
   }
 
   /** Yangi taqdimot — xuddi shu toʻplam muharriri, faqat birinchi element
@@ -1396,6 +1402,7 @@ export default function AssignmentEditorOverlay({
             assignmentId={current.id}
             onPick={handlePickExistingSet}
             onCreateNew={handleAttachTest}
+            onPickBank={handlePickBankQuestions}
             onClose={() => setAttachOpen(false)}
           />
         )}
@@ -1407,6 +1414,7 @@ export default function AssignmentEditorOverlay({
             setId={builder.setId}
             firstShape={builder.firstShape}
             initialQuestions={builder.initialQuestions}
+            startWithBank={builder.startWithBank}
             initialTitle={
               builder.setId
                 ? undefined

@@ -4059,6 +4059,8 @@
     "highlight": "Выделение"
   },
   "SetBuilder": {
+    "importFromBank": "Добавить из банка",
+    "bankAdded": "Добавлено вопросов: {count}",
     "titlePlaceholder": "Введите название теста…",
     "save": "Сохранить",
     "saving": "Сохранение…",
@@ -4430,6 +4432,17 @@
     }
   },
   "AssignmentsPage": {
+    "edit": "Редактировать",
+    "copyToEdit": "Копировать для правки",
+    "usedSetBadge": "Есть результаты",
+    "usedSetHint": "Исходный тест хранит результаты; скопируйте его для правки или отправьте в архив.",
+    "browseBank": "Выбрать в банке",
+    "attachFromBank": "Выбрать вопросы из банка",
+    "archiveTest": "В архив",
+    "archivedTests": "Тесты в архиве",
+    "restoreTest": "Восстановить",
+    "testArchived": "Тест отправлен в архив",
+    "testRestored": "Тест восстановлен",
     "status_today": "Сегодня",
     "statusHint_today": "Проводится сегодня — оценок пока нет.",
     "syncFailing": "Не сохранено",
@@ -4531,7 +4544,25 @@
     "actionsMenu": "Действия",
     "groupClassesHint": "Это задание есть также в {classes} — правки применяются ко всем."
   },
+  "BankPicker": {
+    "title": "Выбрать вопросы из банка",
+    "description": "Откройте тест и отметьте нужные вопросы. Исходный тест не изменится.",
+    "tier_tasdiqlangan": "Проверенные",
+    "tier_ommaviy": "Общие",
+    "tier_shaxsiy": "Личные",
+    "search": "Поиск тестов",
+    "empty": "Тесты не найдены",
+    "count": "Вопросов: {count}",
+    "back": "Назад",
+    "chosen": "Выбрано: {count}",
+    "clear": "Очистить",
+    "all": "Выбрать все",
+    "add": "Добавить вопросов: {count}",
+    "unsupported": "Число вариантов этого вопроса не поддерживается",
+    "loadFailed": "Не удалось загрузить тесты"
+  },
   "TestBank": {
+    "createLocal": "Создать тест в Ustozona",
     "title": "Банк тестов",
     "openButton": "Банк тестов",
     "subtitle": "Выберите готовый тест — он добавится в класс «{className}».",

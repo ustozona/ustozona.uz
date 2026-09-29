@@ -3822,6 +3822,8 @@
     "highlight": "Рангли белгилаш"
   },
   "SetBuilder": {
+    "importFromBank": "Банкдан савол олиш",
+    "bankAdded": "{count} та савол қўшилди",
     "titlePlaceholder": "Тест номини киритинг…",
     "save": "Сақлаш",
     "saving": "Сақланмоқда…",
@@ -4193,6 +4195,17 @@
     }
   },
   "AssignmentsPage": {
+    "edit": "Таҳрирлаш",
+    "copyToEdit": "Таҳрирлаш учун нусха олиш",
+    "usedSetBadge": "Натижалари бор",
+    "usedSetHint": "Натижалар сақланиши учун асл тест ўчирилмайди; нусха олинг ёки архивланг.",
+    "browseBank": "Банкдан тест танлаш",
+    "attachFromBank": "Банкдан савол танлаш",
+    "archiveTest": "Архивга олиш",
+    "archivedTests": "Архивдаги тестлар",
+    "restoreTest": "Қайтариш",
+    "testArchived": "Тест архивга олинди",
+    "testRestored": "Тест қайтарилди",
     "status_today": "Бугун",
     "statusHint_today": "Бугун ўтказилади — ҳали баҳо киритилмаган.",
     "syncFailing": "Сақланмади",
@@ -4294,7 +4307,25 @@
     "actionsMenu": "Амаллар",
     "groupClassesHint": "Шу топшириқ {classes} синфларида ҳам бор — таҳрир ҳаммасига тегади."
   },
+  "BankPicker": {
+    "title": "Банкдан саволлар танлаш",
+    "description": "Тестни очинг, керакли саволларни белгиланг ва топшириққа қўшинг. Манба тест ўзгармайди.",
+    "tier_tasdiqlangan": "Тасдиқланган",
+    "tier_ommaviy": "Оммавий",
+    "tier_shaxsiy": "Шахсий",
+    "search": "Тест қидириш",
+    "empty": "Тест топилмади",
+    "count": "{count} савол",
+    "back": "Орқага",
+    "chosen": "{count} та танланди",
+    "clear": "Танловни тозалаш",
+    "all": "Ҳаммаси",
+    "add": "{count} та саволни қўшиш",
+    "unsupported": "Бу савол вариантлари муҳаррирда қўлланмайди",
+    "loadFailed": "Тестлар юкланмади"
+  },
   "TestBank": {
+    "createLocal": "Ustozonaда тест яратиш",
     "title": "Тест банки",
     "openButton": "Тест банки",
     "subtitle": "Тайёр тестни танланг — «{className}» синфига қўшилади.",
