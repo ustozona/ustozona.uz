@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import { Settings, LogOut, ChevronDown, Moon, Sun, Check, ShieldCheck } from "lucide-react";
+import { Settings, LogOut, ChevronDown, Moon, Sun, Check, ShieldCheck, UserRound } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,6 +27,7 @@ import { LANGUAGES } from "@/lib/languages";
 import { LOCALE_COOKIE, isLocale } from "@/i18n/config";
 import { authClient } from "@/lib/auth-client";
 import { isSuperAdmin } from "@/lib/auth-roles";
+import { displayEmail } from "@/lib/placeholder-email";
 
 function initialsOf(name: string) {
   return name
@@ -58,6 +59,7 @@ export default function HeaderAccountMenu() {
   const router = useRouter();
   const profile = useSettingsStore((s) => s.profile);
   const hydrated = useSettingsStore((s) => s._hasHydrated);
+  const { data: session } = authClient.useSession();
   const language = useSettingsStore((s) => s.language);
   const setLanguage = useSettingsStore((s) => s.setLanguage);
   const activeLang = LANGUAGES.find((l) => l.value === language);
@@ -74,13 +76,15 @@ export default function HeaderAccountMenu() {
   const [mounted, setMounted] = React.useState(false);
   React.useEffect(() => setMounted(true), []);
   const isDark = mounted && resolvedTheme === "dark";
-  // `profile.name` BO'SH bo'lishi mumkin: hydration yiqilganda store
-  // standart (neytral) qiymatda qoladi. Bo'sh satr ko'rsatish menyuni
-  // buzardi, shuning uchun umumiy nom bilan almashtiriladi.
-  // ⛔ Bu yerga haqiqiy ism yozib qo'ymang — sabab: useSettingsStore.ts
-  // dagi DEFAULT_PROFILE izohi.
-  const name = (hydrated && profile.name) || t("defaultUserName");
-  const initials = hydrated ? initialsOf(profile.name) || t("defaultInitial") : t("defaultInitial");
+  // Sessiya GET soʻrovi 13 ta fon boʻlagini kutmaydi. Settings kelgach
+  // ustozning tahrirlangan ismi/rasmi ustun turadi; sessiya faqat shu
+  // akkauntning xavfsiz vaqtinchalik pasporti. Hech qachon boshqa
+  // foydalanuvchining lokal profilini taxmin qilib koʻrsatmaymiz.
+  const name = (hydrated && profile.name) || session?.user.name || t("defaultUserName");
+  const email = displayEmail((hydrated && profile.email) || session?.user.email);
+  const avatarUrl = (hydrated && profile.avatarUrl) || session?.user.image || "";
+  const initials = initialsOf(name);
+  const unknown = !(hydrated && profile.name) && !session?.user.name;
   const avatarHex = hydrated
     ? CLASS_COLOR_HEX[(profile.avatarColor as ClassColor) ?? "orange"] ?? CLASS_COLOR_HEX.orange
     : undefined;
@@ -89,9 +93,9 @@ export default function HeaderAccountMenu() {
     <DropdownMenu>
       <DropdownMenuTrigger className="flex items-center gap-1.5 rounded-lg px-1.5 py-1 transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
         <Avatar size="sm">
-          {hydrated && profile.avatarUrl && <AvatarImage src={profile.avatarUrl} alt={name} />}
+          {avatarUrl && <AvatarImage src={avatarUrl} alt={name} />}
           <AvatarFallback style={avatarHex ? { background: avatarHex, color: "white" } : undefined}>
-            {initials}
+            {unknown ? <UserRound className="size-4" aria-hidden="true" /> : initials}
           </AvatarFallback>
         </Avatar>
         <ChevronDown className="hidden size-3.5 text-muted-foreground sm:block" />
@@ -100,15 +104,15 @@ export default function HeaderAccountMenu() {
         <DropdownMenuItem asChild className="cursor-pointer">
           <Link href="/dashboard/settings?section=profil" className="flex items-center gap-3 py-2">
             <Avatar size="sm">
-              {hydrated && profile.avatarUrl && <AvatarImage src={profile.avatarUrl} alt={name} />}
+              {avatarUrl && <AvatarImage src={avatarUrl} alt={name} />}
               <AvatarFallback style={avatarHex ? { background: avatarHex, color: "white" } : undefined}>
-                {initials}
+                {unknown ? <UserRound className="size-4" aria-hidden="true" /> : initials}
               </AvatarFallback>
             </Avatar>
             <div className="flex min-w-0 flex-col items-start gap-0.5">
               <span className="truncate text-sm font-medium">{name}</span>
               <span className="truncate text-xs font-normal text-muted-foreground">
-                {hydrated ? profile.email : ""}
+                {email}
               </span>
             </div>
           </Link>

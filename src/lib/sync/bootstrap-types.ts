@@ -77,3 +77,7 @@ export type SliceResult<T> = { ok: true; value: T } | { ok: false; error: string
 export type DashboardBootstrap = {
   [K in keyof DashboardPayloads]: SliceResult<DashboardPayloads[K]>;
 };
+
+/** Profil va sinflar mustaqil, tezkor soʻrovlarda keladi. Qolgan boʻlaklar
+    ularni kutdirib qoʻymasligi uchun alohida bootstrap javobida turadi. */
+export type DashboardBackground = Omit<DashboardBootstrap, "settings" | "grades">;

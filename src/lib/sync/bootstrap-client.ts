@@ -1,14 +1,18 @@
 "use client";
 
-import { fetchDashboardBootstrapAction } from "@/server/actions/bootstrap";
-import type { DashboardBootstrap, DashboardPayloads } from "@/lib/sync/bootstrap-types";
+import { fetchDashboardBackgroundAction } from "@/server/actions/bootstrap";
+import { fetchSettingsAction } from "@/server/actions/settings";
+import { fetchGradesAction } from "@/server/actions/grades";
+import type { DashboardBackground, DashboardPayloads } from "@/lib/sync/bootstrap-types";
 
 /* ════════════════════════════════════════════════════════════════════
    BOOTSTRAP — CLIENT TOMONI.
 
    Barcha `*ServerSync` komponentlari mount'da shu yerdan oʻz boʻlagini
-   soʻraydi. Soʻrov modul darajasida BIR MARTA yuboriladi: kim birinchi
-   soʻrasa oʻsha boshlaydi, qolganlari AYNAN SHU promise'ni kutadi.
+   soʻraydi. Profil → sinflar → qolgan boʻlaklar tartibida uchta soʻrov:
+   13 ta sekinroq boʻlak profil/sinfni 5–10 soniya ushlab turmasin.
+   Har bosqich modul darajasida bir marta yuboriladi, barcha isteʼmolchi
+   ayni promise'ni kutadi. Serverdagi pool avvalgidek chegaralangan.
 
    Nega context emas: soʻrov faqat effekt ichidan boshlanishi kerak
    (SSR paytida boshlanib qolmasin), effektlar esa tartibi kafolatlanmagan
@@ -22,16 +26,32 @@ import type { DashboardBootstrap, DashboardPayloads } from "@/lib/sync/bootstrap
    (`useHydrateStore` izohiga qarang) oʻz kuchida qoladi.
    ════════════════════════════════════════════════════════════════════ */
 
-let inFlight: Promise<DashboardBootstrap> | null = null;
+let settingsFlight: ReturnType<typeof fetchSettingsAction> | null = null;
+let gradesFlight: ReturnType<typeof fetchGradesAction> | null = null;
+let backgroundFlight: Promise<DashboardBackground> | null = null;
 
-function bootstrapOnce(): Promise<DashboardBootstrap> {
-  inFlight ??= fetchDashboardBootstrapAction();
-  return inFlight;
+function settingsOnce() {
+  settingsFlight ??= fetchSettingsAction();
+  return settingsFlight;
+}
+
+function gradesOnce() {
+  // Settings xatosi qolgan boʻlimlarni bloklamaydi: oʻzining store'i
+  // hydrate boʻlmaydi, sinflar baribir mustaqil olinadi.
+  gradesFlight ??= settingsOnce().then(fetchGradesAction, fetchGradesAction);
+  return gradesFlight;
+}
+
+function backgroundOnce() {
+  // Hamma sync mount'da boshlanadi, lekin ogʻir 13 boʻlak sinflarni
+  // DB pool'ida navbatga qoʻymasligi uchun avval sinflarni kutadi.
+  backgroundFlight ??= gradesOnce().then(fetchDashboardBackgroundAction, fetchDashboardBackgroundAction);
+  return backgroundFlight;
 }
 
 /**
- * `useHydrateStore` kutadigan shakldagi fetcher qaytaradi — lekin tarmoqqa
- * chiqmaydi, umumiy bootstrap javobidan bitta boʻlakni oladi.
+ * `useHydrateStore` kutadigan shakldagi fetcher qaytaradi. Profil va
+ * sinflar alohida keladi; qolganlar umumiy javobdan oʻz boʻlagini oladi.
  *
  * Boʻlak serverda yiqilgan boʻlsa TASHLAYDI — shunda faqat SHU store
  * hydrate boʻlmaydi, qoʻshnilari normal ishlayveradi.
@@ -43,8 +63,12 @@ export function bootstrapSlice<K extends keyof DashboardPayloads>(
   key: K
 ): () => Promise<DashboardPayloads[K]> {
   return async () => {
-    const slice = (await bootstrapOnce())[key];
+    if (key === "settings") return settingsOnce() as Promise<DashboardPayloads[K]>;
+    if (key === "grades") return gradesOnce() as Promise<DashboardPayloads[K]>;
+
+    const background = await backgroundOnce();
+    const slice = background[key as keyof DashboardBackground];
     if (!slice.ok) throw new Error(`bootstrap "${String(key)}": ${slice.error}`);
-    return slice.value;
+    return slice.value as DashboardPayloads[K];
   };
 }

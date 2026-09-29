@@ -1,7 +1,5 @@
 "use server";
 
-import { getSettings } from "@/server/dal/settings";
-import { getGradesPayload } from "@/server/dal/grades";
 import { getAttendancePayload } from "@/server/dal/attendance";
 import { getLessonsPayload } from "@/server/dal/lessons";
 import { getTimetablePayload } from "@/server/dal/timetable";
@@ -17,13 +15,13 @@ import { getStudentNotesPayload } from "@/server/dal/student-notes";
 import { getTasksPayload } from "@/server/dal/tasks";
 import { activeYear } from "@/lib/academic-years";
 import type {
-  DashboardBootstrap,
+  DashboardBackground,
   DashboardPayloads,
   SliceResult,
 } from "@/lib/sync/bootstrap-types";
 
 /* ════════════════════════════════════════════════════════════════════
-   DASHBOARD BOOTSTRAP — 15 ta hydration soʻrovi oʻrniga BITTA.
+   DASHBOARD BOOTSTRAP — ikkinchi darajali 13 boʻlak bitta soʻrovda.
 
    Ilgari `dashboard/layout.tsx` dagi har `*ServerSync` mount'da oʻz
    `fetch*Action()` ini chaqirardi. Next Server Action'larni NAVBATGA
@@ -31,9 +29,10 @@ import type {
    oxirgisi qaytgandan keyin paydo boʻlardi. Har soʻrov, ustiga, oʻz
    sessiya tekshiruvini ham olib kelardi.
 
-   Endi hammasi bitta soʻrovda: DAL chaqiruvlari server ichida PARALLEL
-   ketadi, `requireTeacher` esa React `cache()` bilan oʻralgani uchun
-   sessiya bir marta oʻqiladi.
+   Profil va sinflar oldin alohida olinadi (`bootstrap-client.ts`). Bu
+   soʻrovning sekin boʻlagi ular va akkaunt belgisini ushlab qolmaydi.
+   Qolgan DAL chaqiruvlari shu action ichida chegaralangan parallel
+   ishlaydi, `requireTeacher` sessiyani bitta soʻrovda qayta ishlatadi.
 
    ⚠️ XATOLIK BIRLASHTIRILMAYDI. Har boʻlak alohida `SliceResult`
    qaytaradi — sabab `bootstrap-types.ts` dagi izohda. Shuning uchun bu
@@ -66,7 +65,7 @@ function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
 }
 
 /* ⚠️ BIR VAQTDA KOʻPI BILAN 3 BOʻLAK (2026-09-21 prod hodisasi).
-   15 boʻlak birdan ishga tushganda soʻrovlar soni pool'dagi ulanishlardan
+   Barcha boʻlaklar birdan ishga tushganda soʻrovlar soni pool'dagi ulanishlardan
    (`max: 5`, db/client.ts) oshib ketardi va postgres-js ularni bitta
    ulanishga ketma-ket (pipeline) yozardi. Supavisor transaction
    rejimida shunday yuklanishda har soʻrovda bittasining javobi
@@ -105,10 +104,8 @@ async function settle<K extends keyof DashboardPayloads>(
   }
 }
 
-export async function fetchDashboardBootstrapAction(): Promise<DashboardBootstrap> {
+export async function fetchDashboardBackgroundAction(): Promise<DashboardBackground> {
   const entries = await Promise.all([
-    settle("settings", getSettings),
-    settle("grades", async () => ({ classDataMap: await getGradesPayload() })),
     settle("attendance", getAttendancePayload),
     settle("lessons", getLessonsPayload),
     settle("timetable", getTimetablePayload),
@@ -131,5 +128,5 @@ export async function fetchDashboardBootstrapAction(): Promise<DashboardBootstra
     settle("tasks", getTasksPayload),
   ]);
 
-  return Object.fromEntries(entries) as DashboardBootstrap;
+  return Object.fromEntries(entries) as DashboardBackground;
 }
