@@ -29,3 +29,12 @@ export function addDaysKey(key: string, days: number): string {
 export function todayKey(): string {
   return dateToKey(new Date());
 }
+
+const DATE_KEY_SHAPE = /^\d{4}-\d{2}-\d{2}$/;
+
+/** Satr "YYYY-MM-DD" shaklidami (kalendarda bor-yoʻqligini tekshirmaydi).
+    Lexikografik solishtirish faqat shu shakldagi kalitlar uchun toʻgʻri:
+    "2026-9-05" > "2026-09-15". */
+export function isDateKeyShape(v: string): boolean {
+  return DATE_KEY_SHAPE.test(v);
+}

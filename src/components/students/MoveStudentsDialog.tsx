@@ -192,7 +192,9 @@ export function MoveStudentsDialog({
               className="w-full"
             />
             <p className="text-sm text-muted-foreground">
-              Eski sinfdagi baho va davomat oʻsha yerda saqlanib qoladi.
+              Eski sinfdagi baho va davomat oʻsha yerda saqlanib qoladi. Yangi sinfda
+              shu sanadan oldingi kunlarga davomat qoʻyib boʻlmaydi — sanani haqiqiy
+              koʻchgan kunga qoʻying.
             </p>
           </div>
         </div>

@@ -4,7 +4,11 @@ import { mobileError, requireBearer } from "../_errors";
 
 /* GET  /api/mobile/v1/attendance?classId=…&date=YYYY-MM-DD — roʻyxat va belgilar.
    POST /api/mobile/v1/attendance {classId, date, marks:[{studentId,status}]}.
-   Ikkalasi ham `Authorization: Bearer`; ruxsat — saytdagi DAL tekshiruvlari. */
+   Ikkalasi ham `Authorization: Bearer`; ruxsat — saytdagi DAL tekshiruvlari.
+
+   POST javobi — yangilangan varaq. Agar baʼzi belgilar saqlanmagan boʻlsa
+   (bola shu kunda hali sinfda emas edi) varaqqa `rejected: [studentId, …]`
+   qoʻshiladi; hammasi saqlangan boʻlsa maydon umuman yoʻq. */
 
 export const dynamic = "force-dynamic";
 
@@ -39,9 +43,11 @@ export async function POST(request: Request) {
   if (!parsed.success) return Response.json({ error: "bad_request" }, { status: 400 });
   const { classId, date, marks } = parsed.data;
   try {
-    await setMobileAttendance(classId, date, marks);
+    const { rejected } = await setMobileAttendance(classId, date, marks);
     const sheet = await getMobileAttendance(classId, date);
-    return Response.json(sheet, { headers: { "Cache-Control": "no-store" } });
+    return Response.json(rejected.length > 0 ? { ...sheet, rejected } : sheet, {
+      headers: { "Cache-Control": "no-store" },
+    });
   } catch (err) {
     return mobileError(err, "attendance.post");
   }

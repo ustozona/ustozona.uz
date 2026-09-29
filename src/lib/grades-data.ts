@@ -48,6 +48,12 @@ export type Student = {
       `undefined`. Bir bola boshqa sinfda hali oʻqiyotgan boʻlishi mumkin,
       shuning uchun bu maydon bolaga emas, YOZILISHGA tegishli. */
   leftAt?: string;
+  /** Shu sinfga YOZILGAN sana ("YYYY-MM-DD") — uni faqat koʻchirish amali
+      yozadi (docs/oquvchini-kochirish-spec.md). `undefined` = sana
+      koʻrsatilmagan (oddiy qoʻshish yoki eski yozuv): hech qaysi kun
+      yopilmaydi. Bu sanadan oldingi BELGISIZ kunlar davomatda yopiq;
+      allaqachon belgisi bor kun yopilmaydi (`isEnrolledOn`). */
+  joinedAt?: string;
 };
 
 // Topic = baholash turi (Tests, Homework, Projects ...)

@@ -111,6 +111,7 @@
     "clear": "Tazalaw",
     "unmarked": "Belgilenbegen",
     "futureLessonDay": "Ali bolıp ótpedi — belgilew múmkin emes",
+    "notEnrolledYet": "{date} sanadan sınıpta — belgilew múmkin emes",
     "todayOutsideYearTitle": "Búgin tańlanǵan oqıw jılınan tısqarı",
     "todayOutsideYearDescription": "Búgingi sáne ({date}) aktiv kalendar ({year}) diapazonınan tısqarı — sonlıqtan ayırım aylarda sabaq kúni kórinbewi múmkin.",
     "currentYearFallback": "aǵımdaǵı jıl",

@@ -5,11 +5,11 @@ import { db } from "@/server/db/client";
 import { assignments, attendanceRecords, attendanceStatuses, behaviorEvents, behaviorSkills, classes, enrollments, grades, students } from "@/server/db/schema";
 import { ForbiddenError, requireTeacher } from "@/server/session";
 import { assertTeachesClass, visibleClassIds } from "@/server/workspace";
-import { activeClassRoster } from "@/server/dal/class-roster";
+import { activeClassRoster, activeClassRosterWithStart } from "@/server/dal/class-roster";
 import { applyAttendanceBatch } from "@/server/dal/attendance";
 import { applyGradesBatch } from "@/server/dal/grades";
 import { applyBehaviorBatch, getBehaviorPayload } from "@/server/dal/behavior";
-import { BUILTIN_STATUSES } from "@/lib/attendance-data";
+import { BUILTIN_STATUSES, isEnrolledOn } from "@/lib/attendance-data";
 import { getTimetablePayload } from "@/server/dal/timetable";
 import { normalizeLegacyVersions, resolveVersionForDate } from "@/lib/timetable-versions";
 import { dateKeyToDate } from "@/lib/date-keys";
@@ -123,7 +123,7 @@ export type MobileAttendanceSheet = {
 export async function getMobileAttendance(classId: string, date: string): Promise<MobileAttendanceSheet> {
   const ctx = await assertTeachesClass(classId);
   const [roster, statuses, records] = await Promise.all([
-    activeClassRoster(classId),
+    activeClassRosterWithStart(classId),
     activeStatuses(ctx.teacherId),
     db
       .select({ studentId: attendanceRecords.studentId, status: attendanceRecords.status })
@@ -141,15 +141,21 @@ export async function getMobileAttendance(classId: string, date: string): Promis
     classId,
     date,
     statuses: statuses.map(({ key, label, tone }) => ({ key, label, tone })),
-    students: roster.map((s) => ({ id: s.id, name: s.name, status: byStudent.get(s.id) ?? null })),
+    /* Bola sinfga yozilishidan OLDINGI kun uchun varaqda chiqmaydi — belgi
+       baribir saqlanmasdi (`applyAttendanceBatch`). Shu kunga yozuvi allaqachon
+       bor boʻlsa koʻrinadi: tarix yashirilmaydi. */
+    students: roster
+      .filter((s) => isEnrolledOn(s.startedAt, date) || byStudent.has(s.id))
+      .map((s) => ({ id: s.id, name: s.name, status: byStudent.get(s.id) ?? null })),
   };
 }
 
+/** `rejected` — belgisi saqlanmagan oʻquvchilar id'si: bola shu kunda hali sinfda emas edi. */
 export async function setMobileAttendance(
   classId: string,
   date: string,
   marks: { studentId: string; status: string }[]
-): Promise<void> {
+): Promise<{ rejected: string[] }> {
   const ctx = await assertTeachesClass(classId);
   const [statuses, roster] = await Promise.all([activeStatuses(ctx.teacherId), activeClassRoster(classId)]);
   const allowed = new Set(statuses.map((s) => s.key));
@@ -157,9 +163,10 @@ export async function setMobileAttendance(
   const recordsUpsert = marks
     .filter((m) => rosterIds.has(m.studentId) && allowed.has(m.status))
     .map((m) => ({ classId, studentId: m.studentId, date, status: m.status, note: null }));
-  if (recordsUpsert.length === 0) return;
+  if (recordsUpsert.length === 0) return { rejected: [] };
   // Egalik filtri va idempotent upsert — saytdagi bilan aynan bir yoʻl.
-  await applyAttendanceBatch({ statusesUpsert: [], statusesDelete: [], recordsUpsert, recordsDelete: [] });
+  const result = await applyAttendanceBatch({ statusesUpsert: [], statusesDelete: [], recordsUpsert, recordsDelete: [] });
+  return { rejected: result.rejected.map((k) => k.studentId) };
 }
 
 /* ── Tezkor baho ─────────────────────────────────────────────────────
@@ -337,7 +344,9 @@ export async function giveMobileBehavior(
 export type MobileSync = {
   date: string;
   classes: { id: string; name: string; subject: string | null }[];
-  rosters: Record<string, { id: string; name: string }[]>;
+  /** `joinedAt` — sinfga yozilish sanasi (faqat koʻchirilgan bolada): undan oldingi
+      kunlarga belgi saqlanmaydi. */
+  rosters: Record<string, { id: string; name: string; joinedAt?: string }[]>;
   timetable: { day: number; classId: string; startMin: number; endMin: number; id: string }[];
   statuses: { key: string; label: string; tone: string }[];
   attendance: Record<string, Record<string, Record<string, string>>>; // date → class → student → status
@@ -382,7 +391,7 @@ export async function getMobileSync(date: string): Promise<MobileSync> {
   const [rosterRows, statuses, records, totals, columnRows] = await Promise.all([
     classIds.length
       ? db
-          .select({ classId: enrollments.classId, id: students.id, name: students.name, status: students.status })
+          .select({ classId: enrollments.classId, id: students.id, name: students.name, status: students.status, startedAt: enrollments.startedAt })
           .from(enrollments)
           .innerJoin(students, eq(students.id, enrollments.studentId))
           .where(and(inArray(enrollments.classId, classIds), isNull(enrollments.endedAt)))
@@ -417,9 +426,14 @@ export async function getMobileSync(date: string): Promise<MobileSync> {
   ]);
 
   const rosters: MobileSync["rosters"] = {};
+  /* Bugungi kunga hali sinfga yozilmagan bola (koʻchirish kelajak sanaga
+     qoʻyilgan) varaqda chiqmaydi — belgisi saqlanmasdi. Oxirgi 7 kunda
+     yozuvi bor boʻlsa qoladi. */
+  const withRecord = new Set(records.map((r) => `${r.classId}|${r.studentId}`));
   for (const r of rosterRows) {
     if (r.status === "archived") continue;
-    (rosters[r.classId] ??= []).push({ id: r.id, name: r.name });
+    if (!isEnrolledOn(r.startedAt, date) && !withRecord.has(`${r.classId}|${r.id}`)) continue;
+    (rosters[r.classId] ??= []).push({ id: r.id, name: r.name, ...(r.startedAt ? { joinedAt: r.startedAt } : {}) });
   }
   for (const list of Object.values(rosters)) list.sort((a, b) => a.name.localeCompare(b.name, "uz"));
 

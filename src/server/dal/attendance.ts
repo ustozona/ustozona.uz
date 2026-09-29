@@ -1,11 +1,12 @@
 import "server-only";
-import { and, asc, eq, inArray, or } from "drizzle-orm";
+import { and, asc, eq, inArray, isNotNull, or } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import {
   attendanceRecords,
   attendanceStatuses,
   classes,
+  enrollments,
   students,
   type AttendanceRecordRow,
   type AttendanceStatusRow,
@@ -14,11 +15,12 @@ import { requireTeacher } from "@/server/session";
 import { visibleClassIds, visibleStudentIds } from "@/server/workspace";
 import {
   BUILTIN_STATUSES,
+  isEnrolledOn,
   normalizeScoreImpact,
   type AttendanceRecord,
   type AttendanceStatusDef,
 } from "@/lib/attendance-data";
-import type { AttendanceBatch } from "@/lib/sync/attendance-batch";
+import type { AttendanceBatch, RecordKey, RecordUpsert } from "@/lib/sync/attendance-batch";
 
 /* ════════════════════════════════════════════════════════════════════
    ATTENDANCE DAL — useAttendanceStore'ning server tomoni.
@@ -99,7 +101,88 @@ export async function getAttendancePayload(): Promise<AttendancePayload> {
   };
 }
 
-export async function applyAttendanceBatch(batch: AttendanceBatch): Promise<void> {
+/* ────────────────────────────────────────────────────────────────────
+   YOZILISH SANASI — bola sinfga yozilishidan OLDINGI kunga YANGI belgi
+   yozilmaydi (`enrollments.started_at`, qoida — `isEnrolledOn`).
+
+   UI ham shu kataklarni yopadi, lekin qoida serverda ham turishi shart:
+   ommaviy amal, eskirgan sahifa yoki mobil ilova yopiq katakka yozishi
+   mumkin.
+
+   ⚠️ Faqat YANGI yozuv rad etiladi. Bazada allaqachon bor yozuvni
+   oʻzgartirish/izoh qoʻshish — RUXSAT: sana koʻchirish paytida
+   kiritilgani uchun tarix sana ORQASIDA qolishi mumkin (kech kiritilgan
+   koʻchirish, sinfga qaytish — `started_at` yangi sanaga yoziladi) va
+   jadval uni yashirmaydi (AttendanceView `isCellClosed`).
+
+   Rad etilganlar JIMGINA tashlanmaydi: chaqiruvchiga qaytariladi, sayt
+   ularni store'dan olib tashlab foydalanuvchiga aytadi.
+   ──────────────────────────────────────────────────────────────────── */
+const keyOf = (...parts: string[]) => parts.join("|");
+
+const sameRecord = (k: RecordKey) =>
+  and(
+    eq(attendanceRecords.classId, k.classId),
+    eq(attendanceRecords.studentId, k.studentId),
+    eq(attendanceRecords.date, k.date)
+  );
+
+async function splitByEnrollmentStart(
+  rows: RecordUpsert[]
+): Promise<{ accepted: RecordUpsert[]; rejected: RecordUpsert[] }> {
+  const none = { accepted: rows, rejected: [] as RecordUpsert[] };
+  if (rows.length === 0) return none;
+
+  /* Faqat sanasi koʻrsatilgan yozilishlar olinadi (`started_at IS NOT NULL`):
+     oddiy sinfda bu jadval boʻsh qaytadi. Soʻrovlar ketma-ket — bitta amalda
+     koʻp parallel soʻrov pool'ni boʻgʻadi. */
+  const classIds = [...new Set(rows.map((r) => r.classId))];
+  const starts = new Map<string, string>();
+  for (const part of chunks([...new Set(rows.map((r) => r.studentId))])) {
+    const found = await db
+      .select({
+        classId: enrollments.classId,
+        studentId: enrollments.studentId,
+        startedAt: enrollments.startedAt,
+      })
+      .from(enrollments)
+      .where(
+        and(
+          inArray(enrollments.classId, classIds),
+          inArray(enrollments.studentId, part),
+          isNotNull(enrollments.startedAt)
+        )
+      );
+    for (const e of found) if (e.startedAt) starts.set(keyOf(e.classId, e.studentId), e.startedAt);
+  }
+  if (starts.size === 0) return none;
+
+  const early = rows.filter((r) => !isEnrolledOn(starts.get(keyOf(r.classId, r.studentId)), r.date));
+  if (early.length === 0) return none;
+
+  const existing = new Set<string>();
+  for (const part of chunks(early)) {
+    const found = await db
+      .select({
+        classId: attendanceRecords.classId,
+        studentId: attendanceRecords.studentId,
+        date: attendanceRecords.date,
+      })
+      .from(attendanceRecords)
+      .where(or(...part.map(sameRecord)));
+    for (const e of found) existing.add(keyOf(e.classId, e.studentId, e.date));
+  }
+
+  const rejected = early.filter((r) => !existing.has(keyOf(r.classId, r.studentId, r.date)));
+  if (rejected.length === 0) return none;
+  const dropped = new Set(rejected);
+  return { accepted: rows.filter((r) => !dropped.has(r)), rejected };
+}
+
+/** Rad etilgan yozuvlar (`rejected`) — yozilishidan oldingi kunga YANGI belgi. */
+export async function applyAttendanceBatch(
+  batch: AttendanceBatch
+): Promise<{ rejected: RecordKey[] }> {
   const teacher = await requireTeacher();
   const tid = teacher.id;
   const now = new Date();
@@ -153,9 +236,10 @@ export async function applyAttendanceBatch(batch: AttendanceBatch): Promise<void
   const ownClasses = new Set(classIds);
   const ownStudents = new Set(studentIds);
 
-  const recordUpserts = batch.recordsUpsert.filter(
+  const scoped = batch.recordsUpsert.filter(
     (r) => ownClasses.has(r.classId) && ownStudents.has(r.studentId)
   );
+  const { accepted: recordUpserts, rejected } = await splitByEnrollmentStart(scoped);
   for (const part of chunks(recordUpserts)) {
     await db
       .insert(attendanceRecords)
@@ -190,16 +274,12 @@ export async function applyAttendanceBatch(batch: AttendanceBatch): Promise<void
       .where(
         and(
           eq(attendanceRecords.teacherId, tid),
-          or(
-            ...part.map((k) =>
-              and(
-                eq(attendanceRecords.classId, k.classId),
-                eq(attendanceRecords.studentId, k.studentId),
-                eq(attendanceRecords.date, k.date)
-              )
-            )
-          )
+          or(...part.map(sameRecord))
         )
       );
   }
+
+  return {
+    rejected: rejected.map(({ classId, studentId, date }) => ({ classId, studentId, date })),
+  };
 }

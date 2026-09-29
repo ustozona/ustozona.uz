@@ -112,6 +112,7 @@
     "clear": "Тазалау",
     "unmarked": "Белгіленбеген",
     "futureLessonDay": "Әлі болған жоқ — белгілеу мүмкін емес",
+    "notEnrolledYet": "{date} күнінен бері сыныпта — белгілеуге болмайды",
     "todayOutsideYearTitle": "Бүгін таңдалған оқу жылынан тыс",
     "todayOutsideYearDescription": "Бүгінгі күн ({date}) белсенді күнтізбе ({year}) ауқымынан тыс — сондықтан кейбір айларда сабақ күні көрінбеуі мүмкін.",
     "currentYearFallback": "ағымдағы жыл",

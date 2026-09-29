@@ -17,12 +17,32 @@ import { enrollments, students } from "@/server/db/schema";
  * oʻzgarsa, Baholash varaqlari ham, Doska gʻildiragi ham birga oʻzgaradi.
  */
 export async function activeClassRoster(classId: string): Promise<{ id: string; name: string }[]> {
+  const roster = await activeClassRosterWithStart(classId);
+  return roster.map(({ id, name }) => ({ id, name }));
+}
+
+/**
+ * Xuddi `activeClassRoster`, lekin yozilish boshlangan sana bilan
+ * (`startedAt`, null = sana koʻrsatilmagan). Sanaga bogʻliq ekranlar
+ * (mobil davomat varagʻi) shu bilan «bola shu kuni sinfda edimi» ni
+ * `isEnrolledOn` orqali hal qiladi.
+ */
+export async function activeClassRosterWithStart(
+  classId: string
+): Promise<{ id: string; name: string; startedAt: string | null }[]> {
   const rows = await db
-    .select({ id: students.id, name: students.name, status: students.status })
+    .select({
+      id: students.id,
+      name: students.name,
+      status: students.status,
+      startedAt: enrollments.startedAt,
+    })
     .from(enrollments)
     .innerJoin(students, eq(students.id, enrollments.studentId))
     .where(and(eq(enrollments.classId, classId), isNull(enrollments.endedAt)))
     .orderBy(asc(enrollments.sortOrder), asc(students.createdAt));
 
-  return rows.filter((r) => r.status !== "archived").map(({ id, name }) => ({ id, name }));
+  return rows
+    .filter((r) => r.status !== "archived")
+    .map(({ id, name, startedAt }) => ({ id, name, startedAt }));
 }
