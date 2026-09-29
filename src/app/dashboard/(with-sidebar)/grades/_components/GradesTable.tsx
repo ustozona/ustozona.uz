@@ -408,6 +408,15 @@ export default function GradesTable({
     [grades]
   );
 
+  /* Koʻchgan bola bu topshiriq sanasida sinfdan allaqachon chiqqan — katak
+     yopiq. Haqiqiy baho yoki Q/T belgisi oldindan bor boʻlsa yopilmaydi:
+     tarix yashirilmaydi (boʻsh baho yozuvi hisobga olinmaydi). */
+  const isClosedCell = (s: (typeof students)[number], a: (typeof assignments)[number]) => {
+    if (!s.leftAt || !a.date || a.date < s.leftAt) return false;
+    const g = gradeMap.get(`${s.id}:${a.id}`);
+    return !(g && ((g.score !== null && g.score !== undefined) || g.missing || g.isMissing));
+  };
+
   // Baho kiritgandan keyin keyingi katakka o‘tish (klaviatura navigatsiyasi).
   function moveEditing(curS: string, curA: string, move: Move) {
     if (!move) {
@@ -426,6 +435,11 @@ export default function GradesTable({
     if (move === "up") ns = Math.max(sIdx - 1, 0);
     if (move === "right") na = Math.min(aIdx + 1, orderedAssignments.length - 1);
     if (move === "left") na = Math.max(aIdx - 1, 0);
+    // Yopiq katakka oʻtilmaydi — u yerda muharrir ochilmaydi va kiritish qotib qolardi.
+    if (isClosedCell(filteredStudents[ns], orderedAssignments[na])) {
+      setEditingCell(null);
+      return;
+    }
     setEditingCell({ s: filteredStudents[ns].id, a: orderedAssignments[na].id });
   }
 
@@ -806,7 +820,7 @@ export default function GradesTable({
                     /* Bola bu topshiriq sanasida sinfdan allaqachon chiqqan —
                        katak yopiq (baho qoʻyib boʻlmaydi). Baho oldindan
                        bor boʻlsa yopilmaydi: tarix yashirilmaydi. */
-                    if (s.leftAt && a.date && a.date >= s.leftAt && !g) {
+                    if (isClosedCell(s, a)) {
                       return (
                         <TableCell
                           key={a.id}
@@ -837,7 +851,12 @@ export default function GradesTable({
                               moveEditing(s.id, a.id, move);
                             }}
                             onPaste={(values) =>
-                              onPasteColumn(s.id, a.id, filteredStudents.map((x) => x.id), values)
+                              onPasteColumn(
+                                s.id,
+                                a.id,
+                                filteredStudents.filter((x) => !isClosedCell(x, a)).map((x) => x.id),
+                                values
+                              )
                             }
                             onCancel={() => setEditingCell(null)}
                           />
