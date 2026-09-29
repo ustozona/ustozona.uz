@@ -13,6 +13,7 @@ import {
   type ActivityWithItems,
 } from "@/server/dal/assess/activities";
 import {
+  assertSetEditable,
   createSet,
   deleteSet,
   getSet,
@@ -444,6 +445,9 @@ export async function saveSetDraftAction(input: SaveSetDraftValues): Promise<Set
 
   const previous = parsed.setId ? await getSet(parsed.setId) : null;
   if (parsed.setId && !previous) throw new Error("Toʻplam topilmadi yoki sizga tegishli emas");
+  // Savollarga tegishdan OLDIN tekshiramiz: aks holda birinchi update
+  // javoblarni CASCADE bilan oʻchirib, keyingisi xato qaytarishi mumkin.
+  if (previous) await assertSetEditable(previous.id);
 
   const saved = await Promise.all(
     parsed.questions.map(async (q) => {
