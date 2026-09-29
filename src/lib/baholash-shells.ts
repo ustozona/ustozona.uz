@@ -117,7 +117,7 @@ export const GAME_SHELLS: GameShell[] = [
     accepts: {
       shapes: ["mcq"],
       optionRange: { min: 2, max: 4 },
-      minQuestions: 6,
+      minQuestions: 10,
     },
     supports: { teams: false, capture: "device" },
     gradable: true,
@@ -155,6 +155,10 @@ export type SetContentSummary = {
   /** `mcq` variantlarining eng kami va eng koʻpi. mcq boʻlmasa `null`. */
   minOptions: number | null;
   maxOptions: number | null;
+  /** Jurnaldagi maxrajga kiradigan elementlarning jami. */
+  gradedItems: number;
+  /** Bir javobli, bitta elementli MCQ talabiga mos kelmaydiganlar. */
+  incompatibleMcq: number;
 };
 
 export type ShellAvailability =
@@ -208,6 +212,21 @@ export function shellAvailability(
     return {
       ok: false,
       reason: `Bu oʻyin ${labels} savollarni oʻynaydi — testingizda bunday savol yoʻq.`,
+    };
+  }
+
+  if (content.incompatibleMcq > 0) {
+    return {
+      ok: false,
+      reason: "Oʻyin faqat bitta toʻgʻri javobli, baholanadigan variantli savollarni qabul qiladi.",
+    };
+  }
+  // Oʻyin faqat MCQ ni yuboradi. Boshqa baholanadigan element qolsa,
+  // jurnal maxraji oʻyinda koʻrsatilgan savollardan katta boʻlib ketadi.
+  if (content.gradedItems !== playable) {
+    return {
+      ok: false,
+      reason: "Oʻyin barcha baholanadigan savollarni koʻrsata olmaydi. Alohida variantli test tanlang.",
     };
   }
 
