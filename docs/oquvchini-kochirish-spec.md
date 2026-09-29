@@ -2,6 +2,9 @@
 
 Holat: 1–4-qadam bajarildi (2026-09-08). 5-qadam (sudrab tortish) qoldi.
 
+➡️ Davomi: [sinf-azoligi-spec.md](sinf-azoligi-spec.md) — davrlar modeli,
+sanani tuzatish, yagona `roster.ts` (2026-09-29, taklif).
+
 ## 1. Muammo
 
 Falonchi oʻtgan yili 5-A da oʻqigan, bu yil 6-B ga (oʻtgan yilgi 5-B)
