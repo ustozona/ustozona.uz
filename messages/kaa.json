@@ -4263,6 +4263,8 @@
     "label": "Artqa"
   },
   "QuickCreate": {
+    "continueSubtitle": "Material qosıp, tártipke keltiriń",
+    "importMore": "Test bankinen jáne soraw alıw",
     "title": "Tez jaratıw",
     "subtitle": "Temanı tańlań — AI bir neshe sekundta tayarlaydı, siz kórip shıǵasız",
     "timezone": "Waqıt zonası: {zone}",
@@ -4366,6 +4368,10 @@
     }
   },
   "AssignmentsPage": {
+    "composerEditOrder": "Tártibin ózgertiw",
+    "composerBank": "Bankten soraw qosıw",
+    "composerMoreTools": "Jáne material qosıw",
+    "composerOrderHint": "Sorawlar hám slaydlar bir izbe-izlikte. Olarǵa redaktorda joqarı/tómen túymeleri menen tártip beriń.",
     "edit": "Ózgertiw",
     "copyToEdit": "Ózgertiw ushın nusqa alıw",
     "usedSetBadge": "Nátiyjeleri bar",

@@ -4140,6 +4140,8 @@
     "label": "Orqaga"
   },
   "QuickCreate": {
+    "continueSubtitle": "Mavjud materialning oxiriga qoʻshing va tartibini oʻzgartiring",
+    "importMore": "Test bankidan yana savol olish",
     "title": "Tezkor yaratish",
     "subtitle": "Mavzuni tanlang — AI bir necha soniyada tayyorlaydi, siz koʻrib chiqasiz",
     "timezone": "Vaqt mintaqasi: {zone}",
@@ -4243,6 +4245,10 @@
     }
   },
   "AssignmentsPage": {
+    "composerEditOrder": "Materiallarni tahrirlash",
+    "composerBank": "Bankdan savol qoʻshish",
+    "composerMoreTools": "Yana material qoʻshish",
+    "composerOrderHint": "Test savollari va slaydlar bitta ketma-ketlikda. Tartibini «Materiallarni tahrirlash» oynasida yuqoriga/pastga koʻchiring.",
     "edit": "Tahrirlash",
     "copyToEdit": "Tahrirlash uchun nusxa olish",
     "usedSetBadge": "Natijalari bor",

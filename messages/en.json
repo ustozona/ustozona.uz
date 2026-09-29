@@ -4262,6 +4262,8 @@
     "label": "Back"
   },
   "QuickCreate": {
+    "continueSubtitle": "Add more material and arrange its order",
+    "importMore": "Import more questions from the test bank",
     "title": "Quick create",
     "subtitle": "Pick a topic — AI drafts it in seconds, you review",
     "timezone": "Time zone: {zone}",
@@ -4365,6 +4367,10 @@
     }
   },
   "AssignmentsPage": {
+    "composerEditOrder": "Edit and arrange",
+    "composerBank": "Add bank questions",
+    "composerMoreTools": "Add more material",
+    "composerOrderHint": "Questions and slides share one sequence. Use the up/down controls in the editor to change their order.",
     "edit": "Edit",
     "copyToEdit": "Copy to edit",
     "usedSetBadge": "Has results",

@@ -7,7 +7,6 @@ import {
   Copy,
   FileUp,
   GitCompareArrows,
-  Image as ImageIcon,
   ListChecks,
   Plus,
   Presentation,
@@ -17,7 +16,6 @@ import {
   Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SLIDE_LAYOUT_META, slideLayoutOf } from "@/lib/slide-layouts";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -60,65 +58,32 @@ export default function QuestionStrip({
           qoladi, pastda ishlatilmagan boʻshliq esa ekran tagida —
           kontent bilan bogʻliqligi buzilmaydi. */}
       <div className="min-h-0 flex-1 scrollbar-hover overflow-y-auto p-3">
-        <ul className="flex flex-col gap-3">
+        <ul className="flex flex-col gap-2">
           {questions.map((question, index) => {
             const isActive = question.key === activeKey;
             return (
-              <li key={question.key} className="group/item relative">
+              <li key={question.key} className={cn(
+                "rounded-lg border bg-card p-2 transition-colors",
+                isActive ? "border-primary ring-1 ring-primary" : "border-border hover:border-primary/40",
+              )}>
                 <button
                   type="button"
                   onClick={() => onSelect(question.key)}
-                  className={cn(
-                    "flex w-full flex-col gap-2 rounded-lg border bg-card p-3 text-left transition-colors",
-                    isActive
-                      ? "border-primary ring-1 ring-primary"
-                      : "border-border hover:border-primary/40"
-                  )}
+                  aria-current={isActive ? "step" : undefined}
+                  className="flex w-full min-w-0 items-start gap-2 text-left"
                 >
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-semibold text-muted-foreground">{index + 1}</span>
-                    <span className="truncate text-tag text-muted-foreground">
+                  <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-muted text-xs font-semibold text-foreground">{index + 1}</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-micro text-muted-foreground">
                       {SHAPE_LABEL[question.shape]}
                     </span>
-                  </div>
-
-                  {/* Mini-slayd — sahna bilan bir xil 16:9 nisbat va bir
-                      xil tartib (savol tepada, javoblar pastda), shuning
-                      uchun tasmaga qarab kompozitsiyani baholash mumkin. */}
-                  <div className="flex aspect-video flex-col gap-1 rounded-md bg-muted/60 p-1.5">
-                    <span className="line-clamp-2 text-micro font-medium leading-tight text-foreground">
+                    <span className="line-clamp-2 text-xs font-medium leading-snug text-foreground">
                       {questionLabel(question, index)}
                     </span>
-                    {question.shape === "slide" ? (
-                      /* Slaydda vaqt va javob yoʻq — maket nomi koʻrsatiladi. */
-                      <div className="flex flex-1 items-end justify-center gap-1 text-muted-foreground">
-                        {question.imageUrl && <ImageIcon className="size-3.5 opacity-50" />}
-                        <span className="truncate text-micro">
-                          {SLIDE_LAYOUT_META[slideLayoutOf(question.slideLayout)].label}
-                        </span>
-                      </div>
-                    ) : (
-                      <>
-                        <div className="flex flex-1 items-center justify-center gap-1.5 text-muted-foreground">
-                          <span className="flex size-4 items-center justify-center rounded-full bg-background text-micro font-semibold">
-                            {question.timeLimitSec}
-                          </span>
-                          <ImageIcon className="size-3.5 opacity-50" />
-                        </div>
-                        <div className="grid grid-cols-2 gap-0.5">
-                          {(question.shape === "mcq" || question.shape === "poll"
-                            ? question.options.slice(0, 4)
-                            : question.pairs.slice(0, 4)
-                          ).map((slot) => (
-                            <span key={slot.id} className="h-1.5 rounded-sm bg-background" />
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </div>
+                  </span>
                 </button>
 
-                <div className="absolute right-1.5 top-1.5 flex gap-0.5 opacity-0 transition-opacity group-hover/item:opacity-100 group-focus-within/item:opacity-100">
+                <div className="mt-1 flex justify-end gap-0.5" role="group" aria-label={`${index + 1}. ${SHAPE_LABEL[question.shape]}`}>
                   <Button variant="ghost" size="icon" className="size-6" aria-label="Yuqoriga koʻchirish"
                     disabled={index === 0} onClick={() => onMove(question.key, -1)}>
                     <ArrowUp className="size-3.5" />
