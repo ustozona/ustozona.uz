@@ -864,6 +864,7 @@ export default function AssignmentEditorOverlay({
               onOpenBuilder={handleQuickBuild}
               onManual={(kind) => (kind === "deck" ? handleAttachDeck() : handleAttachTest())}
               onAttachExisting={handlePickBankQuestions}
+              onPickBank={handlePickBankQuestions}
             />
           )}
         </div>
@@ -909,6 +910,7 @@ export default function AssignmentEditorOverlay({
         onOpenBuilder={handleQuickBuild}
         onManual={(kind) => (kind === "deck" ? handleAttachDeck() : handleAttachTest())}
         onAttachExisting={() => setAttachOpen(true)}
+        onPickBank={handlePickBankQuestions}
       />
     );
   }

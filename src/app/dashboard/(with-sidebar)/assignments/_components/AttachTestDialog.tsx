@@ -4,11 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { ClipboardCheck, Library, Plus } from "lucide-react";
 import {
-  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Spinner } from "@/components/ui/spinner";
 import {
   Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle,
@@ -102,8 +101,8 @@ export default function AttachTestDialog({
 
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
+      <DialogContent className="flex max-h-[min(90dvh,44rem)] min-w-0 flex-col overflow-hidden sm:max-w-lg">
+        <DialogHeader className="shrink-0">
           <DialogTitle>{t("attachExistingTitle")}</DialogTitle>
           <DialogDescription>{t("attachExistingDescription")}</DialogDescription>
         </DialogHeader>
@@ -121,15 +120,15 @@ export default function AttachTestDialog({
             </EmptyHeader>
           </Empty>
         ) : (
-          <ScrollArea className="max-h-[50vh]">
-            <div className="flex flex-col gap-4 pr-3">
+          <div className="min-h-0 w-full min-w-0 overflow-x-hidden overflow-y-auto scrollbar-hover">
+            <div className="flex min-w-0 flex-col gap-4 pr-2">
               {[
                 { key: "own", label: t("attachFromThisClass"), items: ownRows },
                 { key: "library", label: t("attachFromLibrary"), items: libraryRows },
               ]
                 .filter((group) => group.items.length > 0)
                 .map((group) => (
-                  <div key={group.key} className="flex flex-col gap-2">
+                  <div key={group.key} className="flex min-w-0 flex-col gap-2">
                     {/* Sarlavha faqat ikkala boʻlim ham toʻlgan boʻlsa maʼnoli —
                         bitta boʻlim qolganda ham qoldirilgan: oʻqituvchi
                         toʻplam QAYERDAN kelayotganini bilishi kerak. */}
@@ -145,7 +144,7 @@ export default function AttachTestDialog({
                           key={row.id}
                           type="button"
                           onClick={() => onPick({ id: row.id, title: row.title, containerKind: row.containerKind })}
-                          className="list-card flex items-center gap-3 p-3 text-left"
+                          className="flex w-full min-w-0 items-center gap-3 overflow-hidden rounded-xl border border-border bg-card px-3 py-2 text-left transition-colors hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
                             <ClipboardCheck className="size-4" />
@@ -163,7 +162,7 @@ export default function AttachTestDialog({
                           {group.key === "library" && origin && (
                             <Badge size="sm"
                               variant="outline"
-                              className="shrink-0 text-muted-foreground"
+                              className="max-w-20 shrink-0 truncate text-muted-foreground"
                             >
                               {origin}
                             </Badge>
@@ -180,21 +179,21 @@ export default function AttachTestDialog({
                   </div>
                 ))}
             </div>
-          </ScrollArea>
+          </div>
         )}
 
-        <DialogFooter className="sm:justify-between">
-          <Button variant="outline" className="gap-2" onClick={onPickBank}>
+        <div className="grid min-w-0 shrink-0 grid-cols-1 gap-2 border-t border-border pt-3 sm:grid-cols-2">
+          <Button variant="outline" className="min-w-0 gap-2 sm:col-span-2" onClick={onPickBank}>
             <Library className="size-4" /> {t("attachFromBank")}
           </Button>
-          <Button variant="outline" className="gap-2" onClick={onCreateNew}>
+          <Button variant="outline" className="min-w-0 gap-2" onClick={onCreateNew}>
             <Plus className="size-4" />
             {t("attachNewTest")}
           </Button>
           <Button variant="ghost" onClick={onClose}>
             {t("cancel")}
           </Button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );

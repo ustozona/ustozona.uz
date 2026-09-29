@@ -175,6 +175,7 @@ export function QuickCreatePanel({
   onOpenBuilder,
   onManual,
   onAttachExisting,
+  onPickBank,
 }: {
   classId: string;
   isDraft: boolean;
@@ -187,8 +188,10 @@ export function QuickCreatePanel({
   onOpenBuilder: (init: BuilderInit) => void;
   onManual: (kind: "test" | "deck") => void;
   onAttachExisting: () => void;
+  onPickBank: () => void;
 }) {
   const t = useTranslations("QuickCreate");
+  const ta = useTranslations("AssignmentsPage");
   const locale = useLocale();
   const router = useRouter();
   const topicId = useId();
@@ -559,15 +562,22 @@ export function QuickCreatePanel({
         <div className="flex flex-col gap-2">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="text-label text-muted-foreground">{t("manualLabel")}</span>
-            <button
-              type="button"
-              onClick={onAttachExisting}
-              className="inline-flex items-center gap-1 text-caption font-medium text-foreground underline-offset-4 hover:underline"
-            >
-              <Library className="size-3.5" />
-              {t(hasContent ? "importMore" : "attachExisting")}
-            </button>
+            {!hasContent && (
+              <button
+                type="button"
+                onClick={onAttachExisting}
+                className="inline-flex items-center gap-1 text-caption font-medium text-foreground underline-offset-4 hover:underline"
+              >
+                <Library className="size-3.5" />
+                {t("attachExisting")}
+              </button>
+            )}
           </div>
+          {!hasContent && (
+            <Button variant="outline" className="w-full justify-start gap-2" onClick={onPickBank}>
+              <Library className="size-4" /> {ta("attachFromBank")}
+            </Button>
+          )}
           <MaterialKindPicker
             onPick={(kind) => {
               if (kind === "test") onManual("test");
