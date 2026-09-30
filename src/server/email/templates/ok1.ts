@@ -58,9 +58,9 @@ const MATN: Record<Ok1Variant, { foyda: string; punktlar: string[]; tugma: strin
     ⚠️ Rasmda haqiqiy ustoz/oʻquvchi maʼlumoti boʻlmasin (demo hisob, ismsiz).
     ⚠️ Gmail rasmni bloklashi mumkin: xat rasmsiz ham tushunarli boʻlsin. */
 const RASM: Record<Ok1Variant, { src: string; alt: string } | null> = {
-  sinf: null,
-  jadval: null,
-  faol: null,
+  sinf: { src: "/email/sinf.png", alt: "Ustozona: sinflar, boʻlimlar va mavzular — dars rejasi" },
+  jadval: { src: "/email/jadval.png", alt: "Ustozona: haftalik dars jadvali" },
+  faol: { src: "/email/faol.png", alt: "Ustozona: bugungi va kelgusi darslar" },
 };
 
 export function ok1Html({
