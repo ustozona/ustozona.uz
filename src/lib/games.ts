@@ -79,6 +79,65 @@ export const GAME_LABEL_KEYS: Record<GameFile, string> = {
   krossvord: "gameKrossvord",
 };
 
+/* ── Qidiruv (SEO) ────────────────────────────────────────────────────
+   `/games/<oʻyin>` — har biri oʻz sarlavha, tavsif va canonical bilan
+   indekslanadi («arqon tortish oʻyini», «onlayn krossvord» kabi qidiruvdan
+   kirish). Bu roʻyxatda YOʻQ sahifalar (`live-play` — PIN bilan qoʻshilish,
+   `host`, `piyoda-poyga` — Poyganing koʻrinishi) `noindex` boʻladi.
+
+   ⚠️ Matn haqiqatga mos boʻlishi shart: «roʻyxatsiz» faqat mehmon HOZIR
+   qila oladigan ishga aytiladi — oʻynash. Jonli xonani ochish (mezbon) va
+   oʻz testlari kirishni talab qiladi, shuning uchun `live-host` matnida
+   «oʻqituvchi kirib» deyilgan. Sarlavha oxiriga « — Ustozona» root
+   layout'dagi `title.template` bilan qoʻshiladi. */
+export const GAME_SEO = {
+  arqon: {
+    title: "Arqon tortish — jamoaviy taʼlimiy oʻyin",
+    description:
+      "Ikki jamoa savollarga tez javob berib, arqonni oʻz tomoniga tortadi. Tayyor fan testlari bilan roʻyxatsiz oʻynash mumkin.",
+  },
+  poyga: {
+    title: "Poyga — savolga javob berib oldinga oʻting",
+    description:
+      "Toʻgʻri javob mashinani marra tomon suradi. Ikki kishilik duel yoki turnir; tayyor fan testlari bilan roʻyxatsiz oʻynash mumkin.",
+  },
+  "live-host": {
+    title: "Jonli oʻyin — PIN bilan sinf viktorinasi",
+    description:
+      "Oʻqituvchi kirib, testdan xona ochadi; oʻquvchilar PIN kod bilan roʻyxatsiz qoʻshilib, bir vaqtda savollarga javob beradi.",
+  },
+  xotira: {
+    title: "Xotira — juftlarni topish oʻyini",
+    description:
+      "Kartalarni oching va juftlarni toping — diqqat va xotirani mashq qiladi. Roʻyxatsiz oʻynash mumkin.",
+  },
+  "qaysi-katta": {
+    title: "Qaysi katta? — sonlarni solishtirish oʻyini",
+    description:
+      "Ikki sondan kattasini tez tanlang — sanoq va solishtirishni mashq qiladi. Roʻyxatsiz oʻynash mumkin.",
+  },
+  "so-z-topish": {
+    title: "Soʻz topish — harflardan soʻz tuzing",
+    description:
+      "Berilgan harflardan soʻzlar tuzing — lugʻat va imloni mashq qiladi. Roʻyxatsiz oʻynash mumkin.",
+  },
+  krossvord: {
+    title: "Krossvord — soʻzlarni katakka joylashtiring",
+    description:
+      "Soʻzlarni krossvord katagiga joylashtiring — lugʻatni mashq qiladi. Roʻyxatsiz oʻynash mumkin.",
+  },
+} as const satisfies Partial<Record<GameFile, { title: string; description: string }>>;
+
+export type IndexableGame = keyof typeof GAME_SEO;
+
+/** Qidiruvga ochiq oʻyinlar — sitemap va `generateMetadata` shundan oʻqiydi. */
+export const INDEXABLE_GAMES = Object.keys(GAME_SEO) as IndexableGame[];
+
+/** Oʻyinning qidiruv matni; `noindex` sahifalar uchun `null`. */
+export function gameSeo(game: GameFile): { title: string; description: string } | null {
+  return game in GAME_SEO ? GAME_SEO[game as IndexableGame] : null;
+}
+
 /** iframe manzili: katalog uchun `<base>/`, oʻyin uchun `<base>/<nom>.html`.
     `lang` — Ustozona tili (oʻyinlar oʻz matnlarini shu tilda koʻrsatadi,
     `edugames/eg-i18n.js`). */

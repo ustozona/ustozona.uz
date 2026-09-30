@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { getLocale } from "next-intl/server";
 import { getSession } from "@/server/session";
 import { isTeacher } from "@/lib/auth-roles";
-import { gameFrameUrl, gamePath, isGameFile, resolveGamesBase, type GameFile } from "@/lib/games";
+import { gameFrameUrl, gamePath, gameSeo, isGameFile, resolveGamesBase, type GameFile } from "@/lib/games";
 import GamesFrame from "../_components/GamesFrame";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -31,13 +31,38 @@ import GamesFrame from "../_components/GamesFrame";
    shu tufayli oʻzgartirishsiz ishlayveradi.
    ════════════════════════════════════════════════════════════════════ */
 
-export const metadata: Metadata = {
+const catalogMetadata: Metadata = {
   title: "Ustozona-Games — ta'limiy o'yinlar",
   description:
     "Arqon tortish, Poyga, Jonli o'yin (PIN), Xotira, Krossvord — testdan o'yin yarating va sinfda o'ynang.",
   alternates: { canonical: "/games" },
   icons: { icon: "/ustozona-games.svg" },
 };
+
+/* Har oʻyin oʻz sarlavha, tavsif va canonical bilan (`GAME_SEO`): ilgari
+   hamma `/games/<oʻyin>` sahifasi bitta katalog metadatasini olib,
+   `canonical` ni `/games` ga qaratgan edi — chuqur sahifalar qidiruvda
+   alohida koʻrinmasdi. PIN, mezbon va Poyga koʻrinishi sahifalari `noindex`. */
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ game?: string[] }>;
+}): Promise<Metadata> {
+  const { game: segments } = await params;
+  const name = segments?.length === 1 ? segments[0] : undefined;
+  if (!isGameFile(name)) return catalogMetadata;
+
+  const seo = gameSeo(name);
+  if (!seo) {
+    return { title: catalogMetadata.title, icons: catalogMetadata.icons, robots: { index: false } };
+  }
+  return {
+    title: seo.title,
+    description: seo.description,
+    alternates: { canonical: gamePath(name) },
+    icons: catalogMetadata.icons,
+  };
+}
 
 export default async function GamesPage({
   params,

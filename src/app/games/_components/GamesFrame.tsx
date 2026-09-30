@@ -3,8 +3,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
-import { ArrowLeft, ExternalLink, Maximize2, Send } from "lucide-react";
+import { ArrowLeft, ExternalLink, Info, Maximize2, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { InlineBanner } from "@/components/ui/inline-banner";
 import { gamePath, isGameFile, type GameFile } from "@/lib/games";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -28,6 +29,7 @@ import { gamePath, isGameFile, type GameFile } from "@/lib/games";
    ════════════════════════════════════════════════════════════════════ */
 
 const TELEGRAM_BOT_URL = "https://t.me/UstozonaBot";
+const GUEST_HINT_KEY = "ugames_guest_hint_dismissed";
 
 export default function GamesFrame({
   base,
@@ -45,6 +47,25 @@ export default function GamesFrame({
   const frameRef = useRef<HTMLIFrameElement>(null);
   const [game, setGame] = useState<GameFile | null>(initialGame);
   const frameOrigin = new URL(base).origin;
+
+  // Mehmon tasmasi: bir marta yopilsa qayta chiqmaydi. Boshlangʻichda
+  // yashirin — server bilan mijoz bir xil chizsin (localStorage faqat mijozda).
+  const [hintHidden, setHintHidden] = useState(true);
+  useEffect(() => {
+    try {
+      setHintHidden(localStorage.getItem(GUEST_HINT_KEY) === "1");
+    } catch {
+      setHintHidden(false);
+    }
+  }, []);
+  function dismissHint() {
+    setHintHidden(true);
+    try {
+      localStorage.setItem(GUEST_HINT_KEY, "1");
+    } catch {
+      /* xususiy rejim — faqat shu safar yashiriladi */
+    }
+  }
 
   useEffect(() => {
     function onMessage(event: MessageEvent) {
@@ -100,12 +121,20 @@ export default function GamesFrame({
           {/* Kirgan oʻqituvchi bu yerga kelmaydi (dashboard'ga yoʻnaltiriladi),
               ya'ni `signedIn` — Shogird (oʻquvchi/ota-ona) akkaunti. */}
           {!signedIn && (
-            <Button asChild variant="ghost" size="sm" className="max-sm:hidden">
-              <a href={TELEGRAM_BOT_URL} target="_blank" rel="noopener noreferrer">
-                <Send />
-                Telegram bot
-              </a>
-            </Button>
+            <>
+              <Button asChild variant="ghost" size="sm" className="max-sm:hidden">
+                <a href={TELEGRAM_BOT_URL} target="_blank" rel="noopener noreferrer">
+                  <Send />
+                  Telegram bot
+                </a>
+              </Button>
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/login">Kirish</Link>
+              </Button>
+              <Button asChild size="sm" className="max-sm:hidden">
+                <Link href="/register">Roʻyxatdan oʻtish</Link>
+              </Button>
+            </>
           )}
           <Button variant="ghost" size="icon-sm" onClick={fullscreen} aria-label="Toʻliq ekran" title="Toʻliq ekran">
             <Maximize2 />
@@ -117,6 +146,22 @@ export default function GamesFrame({
           </Button>
         </nav>
       </header>
+
+      {/* Mehmon nimani qila olishini ochiq aytamiz: oʻynash — roʻyxatsiz;
+          oʻz testlari, sinf va natijani saqlash — kirgandan keyin. */}
+      {!signedIn && !hintHidden && (
+        <InlineBanner variant="info" icon={Info} onDismiss={dismissHint}>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <span className="min-w-0 flex-1">
+              Roʻyxatsiz oʻynash mumkin — oʻyinni tanlang va boshlang. Oʻz testingiz, sinf roʻyxati va natijani
+              saqlash kirgandan keyin ochiladi.
+            </span>
+            <Button size="sm" asChild>
+              <Link href="/register">Roʻyxatdan oʻtish</Link>
+            </Button>
+          </div>
+        </InlineBanner>
+      )}
 
       <iframe
         ref={frameRef}
