@@ -1027,7 +1027,9 @@
     "tabNotes": "Жазуулар",
     "tabNotesSub": "Байкоолор жана эскертүүлөр",
     "tabBehavior": "Жүрүм-турум",
-    "tabBehaviorSub": "Упайлар жана сыйлыктар"
+    "tabBehaviorSub": "Упайлар жана сыйлыктар",
+    "tabMembership": "Мүчөлүк",
+    "tabMembershipSub": "Класстар тарыхы"
   },
   "OverviewTab": {
     "overallGrade": "Жалпы баа",

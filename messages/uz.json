@@ -1027,7 +1027,9 @@
     "tabNotes": "Qaydlar",
     "tabNotesSub": "Kuzatuvlar va eslatmalar",
     "tabBehavior": "Xulq-atvor",
-    "tabBehaviorSub": "Ballar va ragʻbat"
+    "tabBehaviorSub": "Ballar va ragʻbat",
+    "tabMembership": "Aʼzolik",
+    "tabMembershipSub": "Sinflar tarixi"
   },
   "OverviewTab": {
     "overallGrade": "Umumiy baho",

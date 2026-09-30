@@ -24,7 +24,7 @@ import {
 } from "@/server/dal/workspace-roles";
 import { getClassParentInfo, setClassParent } from "@/server/dal/class-parent";
 import { findDuplicateStudents, mergeStudents } from "@/server/dal/student-merge";
-import { moveStudents } from "@/server/dal/student-move";
+import { correctMoveDate, membershipOf, moveStudents } from "@/server/dal/student-move";
 import { listWorkspaceAudit } from "@/server/dal/workspace-audit";
 import { runAction } from "@/server/action-result";
 import { dateKeyToDate, dateToKey } from "@/lib/date-keys";
@@ -241,15 +241,18 @@ export async function setClassParentAction(input: unknown) {
    store qayta yuklanadi.
    ──────────────────────────────────────────────────────────────────── */
 
+/** "YYYY-MM-DD" va haqiqatan mavjud kun. */
+const dateKeySchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Sana YYYY-MM-DD koʻrinishida boʻlishi kerak")
+  // «2026-02-31» kabi mavjud boʻlmagan kun shaklga oʻtadi, lekin sana emas.
+  .refine((v) => dateToKey(dateKeyToDate(v)) === v, "Bunday sana yoʻq");
+
 const moveStudentsSchema = z.object({
   studentIds: z.array(z.string().min(1).max(200)).min(1).max(500),
   fromClassId: z.string().min(1).max(200),
   toClassId: z.string().min(1).max(200),
-  date: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Sana YYYY-MM-DD koʻrinishida boʻlishi kerak")
-    // «2026-02-31» kabi mavjud boʻlmagan kun shaklga oʻtadi, lekin sana emas.
-    .refine((v) => dateToKey(dateKeyToDate(v)) === v, "Bunday sana yoʻq"),
+  date: dateKeySchema,
   /** Buyruq raqami — ixtiyoriy. */
   orderNo: z.string().trim().max(50).optional(),
 });
@@ -259,6 +262,29 @@ export async function moveStudentsAction(input: unknown) {
     const parsed = moveStudentsSchema.parse(input);
     const result = await moveStudents(parsed);
     // Roster ikkala sinfda ham oʻzgardi.
+    revalidatePath("/dashboard", "layout");
+    return result;
+  });
+}
+
+/** Oʻquvchining aʼzolik tarixi (profil «Aʼzolik» tabi). */
+export async function getMembershipHistoryAction(input: unknown) {
+  return runAction(async () => {
+    const { studentId } = z.object({ studentId: z.string().min(1).max(200) }).parse(input);
+    return membershipOf(studentId);
+  });
+}
+
+const correctMoveDateSchema = z.object({
+  moveId: z.string().uuid(),
+  date: dateKeySchema,
+});
+
+/** Koʻchirish sanasini tuzatadi — ikkala sinfdagi davr birga oʻzgaradi. */
+export async function correctMoveDateAction(input: unknown) {
+  return runAction(async () => {
+    const { moveId, date } = correctMoveDateSchema.parse(input);
+    const result = await correctMoveDate(moveId, date);
     revalidatePath("/dashboard", "layout");
     return result;
   });

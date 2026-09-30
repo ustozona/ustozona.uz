@@ -1027,7 +1027,9 @@
     "tabNotes": "Қайдлар",
     "tabNotesSub": "Кузатувлар ва эслатмалар",
     "tabBehavior": "Хулқ-атвор",
-    "tabBehaviorSub": "Баллар ва рағбат"
+    "tabBehaviorSub": "Баллар ва рағбат",
+    "tabMembership": "Аъзолик",
+    "tabMembershipSub": "Синфлар тарихи"
   },
   "OverviewTab": {
     "overallGrade": "Умумий баҳо",
