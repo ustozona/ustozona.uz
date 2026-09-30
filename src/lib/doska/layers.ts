@@ -20,6 +20,15 @@ export const Z_SPOTLIGHT_EXIT = "calc(var(--z-doska-top) + 12)";
 export const Z_CURTAIN = "calc(var(--z-doska-tooltip) + 1000)";
 
 /**
+ * Yorliqlar roʻyxati (`K`) — butun boshqaruvdan va «Markazga» dan
+ * yuqori: uni oʻqituvchining oʻzi chaqiradi va u hamma narsani yopib
+ * turishi kerak. Tooltipdan past, pardadan past (parda ochiq paytda
+ * klaviatura baribir pardaniki).
+ */
+export const Z_SHORTCUTS_SCRIM = "calc(var(--z-doska-top) + 20)";
+export const Z_SHORTCUTS = "calc(var(--z-doska-top) + 21)";
+
+/**
  * Chizgʻich va transportir — siyoh USTIDA, shaffof plastik kabi: ostidagi
  * yozuv koʻrinib turadi, barmoq esa yozuvni emas, asbobni ushlaydi.
  * Tanlov tutqichlaridan past.

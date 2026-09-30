@@ -2102,6 +2102,9 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "doska-yorliqlar": {
+        "title": "Doska: K túymesi barlıq tez túymelerdi kórsetedi — olar rus klaviaturasında da isleydi, pult ekranlardı almastıradı"
+      },
       "tezkor-yaratish": {
         "title": "«+ Jaratıw»: sabaqqa 1–2 minutta tayarlanıń — AI test, interaktiv sabaq, aqıl kartası",
         "body": "Tapsırma jaratıp atırǵanda búgingi sáne, waqıt hám is rejesindegi tema birden turadı — bir basıw menen AI test, interaktiv sabaq (túsindiriw slaydları hám arasında «túsindińizbe?» sorawları), prezentatsiya, aqıl kartası yamasa infografika tayarlaydı. Barlıǵın kórip shıǵıp redaktorlaysız, keyin sabaqta ótkeresiz yamasa úyge beresiz. Proektor bolmasa — qaǵaz, QR-kartalar yamasa pult penen ótkeriń, súwretlerdi basıp shıǵarıń.",
@@ -5317,6 +5320,7 @@
       "promoBody": "Ekranlarıńız akkauntıńızda saqlanadı, klas dizimi jalǵanadı hám shaqırılǵan oqıwshı jurnalǵa túsedi.",
       "promoCta": "Múmkinshiliklerdi kóriw",
       "appearance": "Kóriniw",
+      "shortcuts": "Klaviatura jarlıqları",
       "saveImage": "Súwret etip saqlaw",
       "savingImage": "Tayarlanbaqta…",
       "saveImageFailed": "Súwret saqlanbadı — qaytadan urınıp kóriń"
@@ -5486,6 +5490,40 @@
       "rotate": "Burıw",
       "hideGuide": "Jabıw: {guide}",
       "deleteSelection": "Óshiriw"
+    },
+    "shortcuts": {
+      "title": "Klaviatura jarlıqları",
+      "description": "Noutbukta yamasa klaviaturalı doskada tezirek islew ushın. Hár ámeldiń ekranda túymesi de bar.",
+      "close": "Jabıw",
+      "groups": {
+        "general": "Ulıwma",
+        "widget": "Saylanǵan vidjet",
+        "ink": "Qálem hám marker"
+      },
+      "items": {
+        "shortcuts": "Usı dizim",
+        "undo": "Biykarlaw",
+        "redo": "Qaytadan orınlaw",
+        "screens": "Aldınǵı / keyingi ekran",
+        "remote": "Pult penen ekrandı almastırıw",
+        "fullscreen": "Tolıq ekran",
+        "controls": "Basqarıwdı jasırıw",
+        "curtain": "Ekrandı jabıw",
+        "bell": "Qońıraw qaǵıw",
+        "back": "Artqa: saylawdı yamasa jazıwdı jabıw",
+        "settings": "Sazlaw",
+        "duplicate": "Nusqa alıw",
+        "delete": "Óshiriw",
+        "move": "Jıljıtıw",
+        "moveFar": "10 px ge jıljıtıw",
+        "pen": "Qálem",
+        "marker": "Marker",
+        "eraser": "Óshirgish",
+        "laser": "Lazer"
+      },
+      "notes": {
+        "inkNote": "Qayta basılsa — saylaw rejimine qaytadı."
+      }
     }
   },
   "GamesPage": {

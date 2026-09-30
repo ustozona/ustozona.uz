@@ -666,6 +666,30 @@ export function IconPalette({ className }: IconProps) {
 }
 
 /**
+ * Klaviatura yorliqlari — oʻzimiz chizdik: korpus (massa) va tugmalar
+ * (detal), Solar oʻlchamlarida — tashqi chegara 20×14, radius 3.5
+ * (`DockGlyph` bilan bir xil).
+ */
+export function IconKeyboard({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={cn("doska-icon", className)} aria-hidden="true">
+      <g>
+        <rect x="2" y="5" width="20" height="14" rx="3.5" opacity=".5" />
+        <rect x="5.25" y="8" width="2" height="2" rx=".6" />
+        <rect x="8.75" y="8" width="2" height="2" rx=".6" />
+        <rect x="12.25" y="8" width="2" height="2" rx=".6" />
+        <rect x="15.75" y="8" width="3" height="2" rx=".6" />
+        <rect x="5.25" y="11.25" width="3" height="2" rx=".6" />
+        <rect x="9.75" y="11.25" width="2" height="2" rx=".6" />
+        <rect x="13.25" y="11.25" width="2" height="2" rx=".6" />
+        <rect x="16.75" y="11.25" width="2" height="2" rx=".6" />
+        <rect x="7.5" y="14.5" width="9" height="1.75" rx=".875" />
+      </g>
+    </svg>
+  );
+}
+
+/**
  * Panel joyi — oʻzimiz chizdik: ekran (massa) va undagi panel (detal).
  * Solarʼda «panel ekranning qaysi chetida» degan ikona yoʻq; uchala
  * variant bitta shakldan, faqat detal joyi farq qiladi.
@@ -756,6 +780,7 @@ export const DOSKA_ICONS: { name: string; source: string; Icon: React.ComponentT
   { name: "IconCatalog", source: "solar:widget", Icon: IconCatalog },
   { name: "IconPin", source: "solar:pin", Icon: IconPin },
   { name: "IconPalette", source: "solar:palette-round", Icon: IconPalette },
+  { name: "IconKeyboard", source: "oʻzimiz:klaviatura", Icon: IconKeyboard },
   { name: "IconDockBottom", source: "oʻzimiz:panel-past", Icon: IconDockBottom },
   { name: "IconDockLeft", source: "oʻzimiz:panel-chap", Icon: IconDockLeft },
   { name: "IconDockRight", source: "oʻzimiz:panel-oʻng", Icon: IconDockRight },

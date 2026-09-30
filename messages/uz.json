@@ -2102,6 +2102,9 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "doska-yorliqlar": {
+        "title": "Doska: «K» tugmasi barcha tezkor tugmalarni koʻrsatadi, ular rus klaviaturasida ham ishlaydi, pult bilan ekran almashadi"
+      },
       "darslar-oqimi-vizual": {
         "title": "Darslar oqimini koʻring: zanjir, yillik yoʻl xaritasi va «sigʻmaydi» ogohlantirishi",
         "body": "Darslar roʻyxati chapida zanjir har darsning holatini koʻrsatadi, tartiblayotganda yangi sanalar darhol koʻrinadi. «Yoʻl xaritasi» koʻrinishida boʻlimlar yil boʻylab polosa boʻlib turadi — sudrab tartibini oʻzgartirasiz. Yil oxirigacha dars sigʻmasa, qaysilari va nimani qisqartirish mumkinligini koʻrasiz. Planner'da darsga kursorni olib borsangiz, oqimdagi oldingi va keyingi darsi ajraladi."
@@ -5194,6 +5197,7 @@
       "promoBody": "Ekranlaringiz hisobingizda saqlanadi, sinf roʻyxatingiz ulanadi va soʻralgan oʻquvchi jurnalga tushadi.",
       "promoCta": "Imkoniyatlarni koʻrish",
       "appearance": "Koʻrinish",
+      "shortcuts": "Klaviatura yorliqlari",
       "saveImage": "Rasm qilib saqlash",
       "savingImage": "Tayyorlanmoqda…",
       "saveImageFailed": "Rasm chiqmadi — qayta urinib koʻring"
@@ -5363,6 +5367,40 @@
       "rotate": "Burish",
       "hideGuide": "Yopish: {guide}",
       "deleteSelection": "Oʻchirish"
+    },
+    "shortcuts": {
+      "title": "Klaviatura yorliqlari",
+      "description": "Noutbuk yoki klaviaturali doskada tezroq ishlash uchun. Har amalning ekranda tugmasi ham bor.",
+      "close": "Yopish",
+      "groups": {
+        "general": "Umumiy",
+        "widget": "Tanlangan vidjet",
+        "ink": "Qalam va marker"
+      },
+      "items": {
+        "shortcuts": "Shu roʻyxat",
+        "undo": "Bekor qilish",
+        "redo": "Qaytadan bajarish",
+        "screens": "Oldingi / keyingi ekran",
+        "remote": "Pult bilan ekran almashtirish",
+        "fullscreen": "Toʻliq ekran",
+        "controls": "Boshqaruvni yashirish",
+        "curtain": "Ekranni yopish",
+        "bell": "Qoʻngʻiroq chalish",
+        "back": "Orqaga: tanlovni yoki yozishni yopish",
+        "settings": "Sozlash",
+        "duplicate": "Nusxa olish",
+        "delete": "Oʻchirish",
+        "move": "Siljitish",
+        "moveFar": "10 px ga siljitish",
+        "pen": "Qalam",
+        "marker": "Marker",
+        "eraser": "Oʻchirgʻich",
+        "laser": "Lazer"
+      },
+      "notes": {
+        "inkNote": "Qayta bosilsa — tanlash rejimiga qaytadi."
+      }
     }
   },
   "LessonPlanWizard": {

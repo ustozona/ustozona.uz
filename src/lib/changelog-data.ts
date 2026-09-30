@@ -36,6 +36,13 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "doska-yorliqlar",
+    date: "2026-10-01",
+    type: "yaxshilandi",
+    title: "Doska: «K» tugmasi barcha tezkor tugmalarni koʻrsatadi, ular rus klaviaturasida ham ishlaydi, pult bilan ekran almashadi",
+    href: "/doska",
+  },
+  {
     id: "darslar-oqimi-vizual",
     date: "2026-09-28",
     type: "yangi",

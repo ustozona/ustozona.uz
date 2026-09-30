@@ -9,6 +9,9 @@ export const metadata: Metadata = {
   description:
     "Taymer, svetofor, soat — projektorga chiqariladigan sinf ekrani. Roʻyxatdan oʻtmasdan, darhol ishlaydi.",
   alternates: { canonical: "/doska" },
+  // Brauzer tarjimoni sahifani oʻgirmasin — interfeys oʻzi 7 tilda,
+  // tarjimon esa React daraxtini buzadi (DoskaShell `useNoTranslate`).
+  other: { google: "notranslate" },
 };
 
 /* ════════════════════════════════════════════════════════════════════

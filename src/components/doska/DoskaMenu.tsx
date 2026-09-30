@@ -23,6 +23,7 @@ import {
   IconPalette,
   IconArrowRight,
   IconImageDownload,
+  IconKeyboard,
 } from "./icons";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -45,6 +46,9 @@ import {
    «Ekranni tozalash» va «Shu ekranni oʻchirish» tasdiq soʻramaydi —
    ikkalasi ham «Qaytarish» xabari bilan qaytariladi (store, DoskaNotice).
 
+   «Klaviatura yorliqlari» (`K`) roʻyxat oynasini ochadi — oyna
+   `DoskaShell` da turadi, chunki `K` menyu yopiq paytda ham ishlaydi.
+
    ⚠️ BIZNES MODELI (2026-08-21 qarori):
      • Mehmon — doska toʻliq ishlaydi, ekran shu brauzerda qoladi
      • Pullik — hisobga saqlash (istalgan qurilmadan), sinf roʻyxatini
@@ -56,7 +60,7 @@ import {
    holatda emas: oʻchirilgan tugma sababini tushuntirmaydi
    (docs/design-system.md modal qoidasi).
    ════════════════════════════════════════════════════════════════════ */
-export function DoskaMenu() {
+export function DoskaMenu({ onShowShortcuts }: { onShowShortcuts: () => void }) {
   // Butun `deck` ga emas: u har chiziqda va taymerning har soniyasida yangilanadi.
   const title = useDoskaStore((s) => s.deck.title);
   const screenCount = useDoskaStore((s) => s.deck.screens.length);
@@ -157,6 +161,9 @@ export function DoskaMenu() {
           <div className="border-b py-1">
             <MenuItem Icon={IconPalette} next onClick={() => setView("appearance")}>
               {tm("appearance")}
+            </MenuItem>
+            <MenuItem Icon={IconKeyboard} shortcut="K" onClick={run(onShowShortcuts)}>
+              {tm("shortcuts")}
             </MenuItem>
           </div>
 

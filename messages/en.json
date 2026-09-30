@@ -2102,6 +2102,9 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "doska-yorliqlar": {
+        "title": "Doska: press K to see every shortcut — they also work with a Russian keyboard, and a clicker switches screens"
+      },
       "tezkor-yaratish": {
         "title": "«+ Create»: get ready for a lesson in 1–2 minutes — AI test, interactive lesson, mind map",
         "body": "When you create an assignment, today’s date, the time and the topic from your work plan are already there — one click and AI prepares a test, an interactive lesson (explanation slides with “got it?” questions in between), a presentation, a mind map or an infographic. You review and edit everything, then run it in class or assign it as homework. No projector? Run it on paper, with QR cards or clickers, and print the pictures.",
@@ -5316,6 +5319,7 @@
       "promoBody": "Your screens are saved to your account, your class list connects, and the student you call on is recorded in the gradebook.",
       "promoCta": "See the features",
       "appearance": "Appearance",
+      "shortcuts": "Keyboard shortcuts",
       "saveImage": "Save as image",
       "savingImage": "Preparing…",
       "saveImageFailed": "Couldn't save the image — try again"
@@ -5485,6 +5489,40 @@
       "rotate": "Rotate",
       "hideGuide": "Hide: {guide}",
       "deleteSelection": "Delete"
+    },
+    "shortcuts": {
+      "title": "Keyboard shortcuts",
+      "description": "For working faster on a laptop or a board with a keyboard. Every action also has an on-screen button.",
+      "close": "Close",
+      "groups": {
+        "general": "General",
+        "widget": "Selected widget",
+        "ink": "Pen and marker"
+      },
+      "items": {
+        "shortcuts": "This list",
+        "undo": "Undo",
+        "redo": "Redo",
+        "screens": "Previous / next screen",
+        "remote": "Change screens with a clicker",
+        "fullscreen": "Full screen",
+        "controls": "Hide controls",
+        "curtain": "Cover the screen",
+        "bell": "Ring the bell",
+        "back": "Back: clear the selection or stop drawing",
+        "settings": "Settings",
+        "duplicate": "Duplicate",
+        "delete": "Delete",
+        "move": "Move",
+        "moveFar": "Move by 10 px",
+        "pen": "Pen",
+        "marker": "Marker",
+        "eraser": "Eraser",
+        "laser": "Laser"
+      },
+      "notes": {
+        "inkNote": "Press again to go back to selecting."
+      }
     }
   },
   "LessonPlanWizard": {
