@@ -1,5 +1,5 @@
 import "server-only";
-import { and, desc, eq, type SQL } from "drizzle-orm";
+import { and, eq, sql, type SQL } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import { feedback, teachers } from "@/server/db/schema";
 import { requireAdmin } from "@/server/session";
@@ -64,7 +64,12 @@ export async function listAllFeedback(params: {
       .from(feedback)
       .innerJoin(teachers, eq(teachers.id, feedback.teacherId))
       .where(where)
-      .orderBy(desc(feedback.updatedAt))
+      // Yopilganlar (bajarildi/rad) pastga; qolganlar eng yangisi tepada.
+      // updatedAt emas, yaratilgan vaqt — reaksiya/javob tartibni siljitmasin.
+      .orderBy(
+        sql`(${feedback.status} in ('bajarildi', 'rad'))`,
+        sql`(${feedback.data}->>'createdAt') desc`,
+      )
       .limit(pageSize)
       .offset((page - 1) * pageSize),
     db.$count(feedback, where),

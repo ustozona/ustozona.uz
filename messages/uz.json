@@ -2671,6 +2671,7 @@
       "doneTitle": "Hali bajarilgan fikr yoʻq",
       "doneDesc": "Amalga oshirilgan taklif va tuzatilgan xatolar shu yerda koʻrinadi."
     },
+    "doneGroup": "Bajarilganlar ({count})",
     "toast": {
       "replySent": "Javob yuborildi",
       "replySentDesc": "{author}ga bildirishnoma yuborildi.",
