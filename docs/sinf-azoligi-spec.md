@@ -361,3 +361,27 @@ PR-1 dan keyin 2–5 ekranlarga tegmaydi — faqat `roster.ts` ichi almashadi.
    aʼzolik kunlaridagi yozuvlarini hisoblaydi (2026-09-30): maxraj —
    aʼzolik kunlari, arxivlanganlar chiqarilgan
    (`hooks/useClassPanelStats.ts`).
+
+## 11. Qolgan ishlar — hozir ZARUR EMAS (2026-09-30)
+
+PR-1…PR-5 bajarildi (§5, §7, Q3). Quyidagilar ataylab qoldirilgan: hech
+kim soʻramagan, hozirgi ish oqimiga toʻsiq emas. Kerak boʻlganda shu
+yerdan olinadi.
+
+| Ish | Nega kutmoqda | Boshlashdan oldin |
+|---|---|---|
+| **Rollover: davrlarni yopish/ochish (§6.2, PR-6)** | Hozirgi rollover sinfni joyida oshiradi (5-A → 6-A), id oʻzgarmaydi va ishlayapti. Davr chegarasi yil oxirida aniq boʻlishi — qoʻshimcha aniqlik, zarurat emas | Sehrgarga «ketdi / sinfda qoldi» qadami; roʻyxat yozilishini oʻzgartiradi — alohida qaror |
+| **Parallel almashishi (§6.1)** | Prod'da maʼmuriy sinf (`parent_class_id`) hech bir maydonda ishlatilmagan (2026-09-30). Maktab rejimi ochilganda kerak boʻladi: hozir bir necha fan guruhidagi bolani koʻchirish Q3 tufayli RAD etiladi | Maktab rejimi haqiqiy foydalanuvchiga chiqqanda |
+| **«Maktabdan ketdi»** | `status = archived` UI'da allaqachon «Chiqib ketgan». Alohida tugma ikki tushuncha yaratadi | Toʻgʻri yoʻl: «Chiqib ketgan»ni tanlaganda sana soʻrab, ochiq davrni `left_school` bilan yopish. Mavjud oqimni oʻzgartiradi — tasdiq kerak |
+| **«Qoʻshish (sana bilan)»** (§6) | Oddiy qoʻshish `[NULL, NULL)` davr ochadi va oʻqituvchiga oldingi haftalarni toʻldirish imkonini beradi | Dialogda ixtiyoriy «Qoʻshilgan sana» maydoni |
+| **`rosterDuring` / `membershipOf`-ga oʻxshash umumiy oʻqish** | Chaqiruvchisi yoʻq; ekranlar `getGradesPayload` orqali oladi | Yangi ekran davr roʻyxatini soʻrasa |
+| **Roʻyxat sinxroni orqali Q3 ni rad etish** | Butun batch yiqiladi, klient qayta yuboradi — hozir profilda ogohlantirish bilan cheklangan | `applyGradesBatch` rad etilgan qatorlarni qaytaradigan boʻlsa |
+| **`student_moves.created_by`** | Ish maydoni konteksti foydalanuvchi id'sini bermaydi — hozir null | Auditda kerak boʻlsa |
+| **Tab matnlari i18n** | «Aʼzolik» tabi ichidagi matnlar va koʻchirish dialogi faqat oʻzbekcha | Boshqa tillarni yoqishdan oldin |
+| **`scripts/metrics.ts` oʻquvchilar soni** | Ketganlarni ham sanaydi (§2.3 dagi toʻrt joyga kirmagan eski nuqson) | Metrikalar aniqligi kerak boʻlsa |
+
+**Tekshirilishi kerak, lekin kodda emas:**
+- Mobil sinxron (`getMobileSync`) mobil ilova bilan sinalmagan: roʻyxat endi
+  faqat bugungi aʼzolarni beradi; ilova `leftAt` ni oʻqimaydi degan taxmin.
+- Prod'da `student_moves` boʻsh: eski uchta yopiq yozilishda hodisa yoʻq,
+  shuning uchun ularda «Sanani tuzatish» chiqmaydi.
