@@ -28,7 +28,9 @@
   "Header": {
     "sidebar": "Каптал панели",
     "fullscreen": "Толук экран",
-    "exitFullscreen": "Толук экрандан чыгуу"
+    "exitFullscreen": "Толук экрандан чыгуу",
+    "doska": "Доска",
+    "games": "Оюндар"
   },
   "RouteLabels": {
     "home": "Башкы бет",

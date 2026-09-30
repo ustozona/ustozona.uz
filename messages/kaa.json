@@ -28,7 +28,9 @@
   "Header": {
     "sidebar": "Qaptal panel",
     "fullscreen": "Tolıq ekran",
-    "exitFullscreen": "Tolıq ekrannan shıǵıw"
+    "exitFullscreen": "Tolıq ekrannan shıǵıw",
+    "doska": "Doska",
+    "games": "Oyınlar"
   },
   "RouteLabels": {
     "home": "Bas bet",

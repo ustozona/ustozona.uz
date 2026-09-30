@@ -28,7 +28,9 @@
   "Header": {
     "sidebar": "Ён панел",
     "fullscreen": "Тўлиқ экран",
-    "exitFullscreen": "Тўлиқ экрандан чиқиш"
+    "exitFullscreen": "Тўлиқ экрандан чиқиш",
+    "doska": "Доска",
+    "games": "Ўйинлар"
   },
   "RouteLabels": {
     "home": "Бош саҳифа",
