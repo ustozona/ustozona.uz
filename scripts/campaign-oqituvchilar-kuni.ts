@@ -48,7 +48,6 @@ const VARIANT = process.argv.find((a) => a.startsWith("--variant="))?.slice("--v
 type EmailNomzod = { id: string; email: string; name: string | null; variant: "sinf" | "jadval" | "faol" | "bot" };
 type TgNomzod = { id: string; email: string; name: string | null; chat_id: string; jadvalli: boolean };
 
-const BOSH_SAHIFA = (process.env.BETTER_AUTH_URL || "https://www.ustozona.uz").replace(/\/$/, "");
 
 async function main() {
   if (KANAL !== "email" && KANAL !== "telegram") {
@@ -149,30 +148,17 @@ async function main() {
     if (!YES) return;
 
     process.env.DATABASE_URL = url;
-    const { sendMessage, esc } = await import("../src/server/telegram/api");
+    const { sendMessage } = await import("../src/server/telegram/api");
+    const { tabrikXabari } = await import("../src/server/telegram/teachers-day");
     const { markCampaignSent } = await import("../src/server/dal/email-campaign");
     const hisob = new Map<string, number>();
     for (const n of nomzodlar) {
-      const ism = n.name?.trim().split(/\s+/)[0] ?? null;
-      const salom = ism ? `Hurmatli ${esc(ism)}` : "Hurmatli ustoz";
-      let matn: string;
-      let tugma: { text: string; url: string } | null = null;
-      if (VARIANT ? VARIANT !== "jadval" : n.jadvalli) {
-        matn =
-          `${salom}, sizni 1-oktyabr — Oʻqituvchi va murabbiylar kuni bilan samimiy tabriklaymiz! 🌷 ` +
-          `Kelajak avlodni tarbiyalashdek masʼuliyatli ishingizda doimo zafarlar yor boʻlsin. ` +
-          `Doimo sogʻ-salomat boʻling, mehnatingiz rohatini koʻring. Bayramingiz muborak boʻlsin!`;
-      } else {
-        matn =
-          `${salom}, sizni 1-oktyabr — kasb bayramingiz bilan samimiy muborakbod etamiz! 🌷 ` +
-          `Mashaqqatli va sharafli yoʻlingizda doim omad yor boʻlsin. ` +
-          `Tizimga dars jadvalingizni kiritsangiz, botimiz har kech ertangi darslaringizni eslatib turadi.`;
-        tugma = { text: "Jadvalni kiritish", url: `${BOSH_SAHIFA}/dashboard/timetable` };
-      }
+      const jadvalli = VARIANT ? VARIANT !== "jadval" : n.jadvalli;
+      const { text: matn, button } = tabrikXabari(n.name, jadvalli);
       const res = await sendMessage(
         n.chat_id,
         matn,
-        tugma ? { inline_keyboard: [[tugma]] } : undefined,
+        button ? { inline_keyboard: [[{ text: button.text, url: button.url }]] } : undefined,
       );
       if (res.ok) {
         if (!SINOV) await markCampaignSent(n.id, "ok1tg");
