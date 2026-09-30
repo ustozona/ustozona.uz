@@ -12,9 +12,10 @@ import postgres from "postgres";
    ⛔ `--yes` boʻlmasa hech narsa yuborilmaydi va bazaga yozilmaydi.
 
    EMAIL — kim oladi: tasdiqlangan email, obunadan chiqmagan, OK1 hali
-   yuborilmagan, Telegram'da botni ochib qoʻygan EMAS (ular bot orqali
-   oladi — ikki marta xabar bormasin). Variant (templates/ok1.ts):
-     sinf — sinfi yoʻq · jadval — sinfi bor, jadvali boʻsh · faol — qolgan
+   yuborilmagan. Botni ochganlar HAM oladi (bot xabari alohida ketadi).
+   Variant (templates/ok1.ts):
+     sinf — sinfi yoʻq · jadval — sinfi bor, jadvali boʻsh
+     faol — jadvali bor, Telegram ulanmagan · bot — jadvali bor, Telegram ulangan
    Ommaviy yuborish 1 soatga rejalashtiriladi (Resend panelidan bekor
    qilish mumkin). `--only` bilan — darhol.
 
@@ -28,12 +29,12 @@ const YES = process.argv.includes("--yes");
 const KANAL = process.argv.find((a) => a.startsWith("--kanal="))?.slice("--kanal=".length);
 const ONLY = process.argv.find((a) => a.startsWith("--only="))?.slice("--only=".length) ?? null;
 const KECHIKISH_SOAT = ONLY ? 0 : 1;
-/** Sinov: faqat `--only` bilan. Telegram sharti va «allaqachon yuborilgan» oʻtkaziladi,
-    jurnalga yozilmaydi. `--variant=sinf|jadval|faol` — xat variantini tanlash. */
+/** Sinov: faqat `--only` bilan. «Allaqachon yuborilgan» tekshiruvi oʻtkaziladi,
+    jurnalga yozilmaydi. `--variant=sinf|jadval|faol|bot` — xat variantini tanlash. */
 const SINOV = process.argv.includes("--sinov");
 const VARIANT = process.argv.find((a) => a.startsWith("--variant="))?.slice("--variant=".length) ?? null;
 
-type EmailNomzod = { id: string; email: string; name: string | null; variant: "sinf" | "jadval" | "faol" };
+type EmailNomzod = { id: string; email: string; name: string | null; variant: "sinf" | "jadval" | "faol" | "bot" };
 type TgNomzod = { id: string; email: string; name: string | null; chat_id: string; jadvalli: boolean };
 
 const BOSH_SAHIFA = (process.env.BETTER_AUTH_URL || "https://www.ustozona.uz").replace(/\/$/, "");
@@ -43,8 +44,8 @@ async function main() {
     throw new Error("--kanal=email yoki --kanal=telegram kerak.");
   }
   if (SINOV && !ONLY) throw new Error("--sinov faqat --only=email bilan ishlaydi.");
-  if (VARIANT && !["sinf", "jadval", "faol"].includes(VARIANT)) {
-    throw new Error("--variant=sinf | jadval | faol");
+  if (VARIANT && !["sinf", "jadval", "faol", "bot"].includes(VARIANT)) {
+    throw new Error("--variant=sinf | jadval | faol | bot");
   }
   const url = PROD ? process.env.PROD_DATABASE_URL : process.env.DATABASE_URL;
   if (!url) throw new Error(`${PROD ? "PROD_DATABASE_URL" : "DATABASE_URL"} topilmadi (.env.local).`);
@@ -53,7 +54,7 @@ async function main() {
   const label = host.includes("supabase") ? "SUPABASE — JONLI BAZA" : "NEON — dev bazasi";
   console.log(`\n  Baza: ${label}  (${host})`);
   console.log(`  Kanal: ${KANAL}`);
-  if (SINOV) console.log("  ⚙️  SINOV rejimi: jurnalga yozilmaydi, Telegram sharti oʻtkaziladi");
+  if (SINOV) console.log("  ⚙️  SINOV rejimi: jurnalga yozilmaydi, takror yuborish mumkin");
   console.log(`  Rejim: ${YES ? "⚠️  HAQIQATAN YUBORILADI" : "quruq yurish (hech narsa yuborilmaydi)"}\n`);
 
   const sql = postgres(url, { prepare: false, max: 1, onnotice: () => {} });
@@ -66,6 +67,9 @@ async function main() {
              CASE
                WHEN NOT EXISTS (SELECT 1 FROM class_teachers ct WHERE ct.teacher_id = u.id) THEN 'sinf'
                WHEN NOT ${jadvalBor} THEN 'jadval'
+               WHEN EXISTS (SELECT 1 FROM user_telegram ut
+                              JOIN tg_chats c ON c.telegram_id = ut.telegram_id AND c.blocked_at IS NULL
+                             WHERE ut.user_id = u.id) THEN 'bot'
                ELSE 'faol'
              END AS variant
         FROM "user" u
@@ -76,9 +80,6 @@ async function main() {
          AND split_part(lower(u.email), '@', 2) NOT IN ('telegram.invalid', 'example.com', 'test.invalid')
          AND COALESCE(ea.opted_out, false) = false
          AND (${SINOV}::boolean OR (t.prefs -> 'campaigns' -> 'ok1') IS NULL)
-         AND (${SINOV}::boolean OR NOT EXISTS (SELECT 1 FROM user_telegram ut
-                           JOIN tg_chats c ON c.telegram_id = ut.telegram_id AND c.blocked_at IS NULL
-                          WHERE ut.user_id = u.id))
          AND (${ONLY}::text IS NULL OR lower(u.email) = lower(${ONLY}))
        ORDER BY variant, u.created_at
     `) as EmailNomzod[];
@@ -86,15 +87,15 @@ async function main() {
     if (VARIANT) for (const n of nomzodlar) n.variant = VARIANT as EmailNomzod["variant"];
     const soni = (v: EmailNomzod["variant"]) => nomzodlar.filter((n) => n.variant === v).length;
     console.log(
-      `  Nomzod: ${nomzodlar.length} ta  (sinf: ${soni("sinf")}, jadval: ${soni("jadval")}, faol: ${soni("faol")})\n`,
+      `  Nomzod: ${nomzodlar.length} ta  (sinf: ${soni("sinf")}, jadval: ${soni("jadval")}, faol: ${soni("faol")}, bot: ${soni("bot")})\n`,
     );
     for (const n of nomzodlar) {
       console.log(`    ${n.variant.padEnd(8)}${(n.name ?? "—").slice(0, 22).padEnd(24)}${n.email}`);
     }
     if (ONLY && nomzodlar.length === 0) {
       console.log(
-        "\n  Bu manzil roʻyxatga tushmadi. Sabablari: email tasdiqlanmagan, botni ochgan\n" +
-          "  (u bot orqali oladi), obunadan chiqqan, yoki OK1 yuborilib boʻlgan.\n",
+        "\n  Bu manzil roʻyxatga tushmadi. Sabablari: email tasdiqlanmagan,\n" +
+          "  obunadan chiqqan, yoki OK1 yuborilib boʻlgan.\n",
       );
     }
     await tugat(sql, PROD, YES);

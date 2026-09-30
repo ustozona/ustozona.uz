@@ -6,6 +6,7 @@
      sinf   — sinfi yoʻq: birinchi sinfni qoʻshish
      jadval — sinfi bor, jadvali boʻsh: jadvalni kiritish
      faol   — jadvali bor, Telegram ulanmagan: Telegramni ulash
+     bot    — jadvali bor, Telegram ulangan: tabrik + kirish (ulash taklif qilinmaydi)
 
    Tabrik — hammada bir xil, foyda va tugma — holatga qarab.
 
@@ -18,7 +19,7 @@
 
 import { YORDAM_TELEGRAM, YORDAM_TELEGRAM_URL, brendSarlavha, qalqon } from "./_brand";
 
-export type Ok1Variant = "sinf" | "jadval" | "faol";
+export type Ok1Variant = "sinf" | "jadval" | "faol" | "bot";
 
 /* Matnlar tashqaridan (tayyor kopirayt) keltirilgan; oʻzgartirilgan joyi:
    «faol» 3-band — bot faqat darslar va muddatli vazifalarni eslatadi. */
@@ -26,6 +27,7 @@ export const OK1_SUBJECT: Record<Ok1Variant, string> = {
   sinf: "1-oktyabr — kasb bayramingiz muborak!",
   jadval: "Bayramingiz qutlugʻ boʻlsin, aziz ustoz!",
   faol: "1-oktyabr — Oʻqituvchilar kuni muborak!",
+  bot: "1-oktyabr — Oʻqituvchilar kuni muborak!",
 };
 
 const MATN: Record<Ok1Variant, { foyda: string; punktlar: string[]; tugma: string }> = {
@@ -52,6 +54,13 @@ const MATN: Record<Ok1Variant, { foyda: string; punktlar: string[]; tugma: strin
     ],
     tugma: "Telegramni ulash",
   },
+  // «bot» matni — oʻzimiz yozgan qoralama (tashqi kopirayt bermagan).
+  bot: {
+    foyda:
+      "Telegram botimiz ertangi darslaringizni eslatib turadi. Fikr va takliflaringiz biz uchun juda muhim — shu xatga javob yozing.",
+    punktlar: [],
+    tugma: "Ustozonaga kirish",
+  },
 };
 
 /** Skrinshot — ixtiyoriy. Fayl `public/email/` ga qoʻyiladi, bu yerga yoʻli yoziladi.
@@ -61,6 +70,7 @@ const RASM: Record<Ok1Variant, { src: string; alt: string } | null> = {
   sinf: { src: "/email/sinf.png", alt: "Ustozona: sinflar, boʻlimlar va mavzular — dars rejasi" },
   jadval: { src: "/email/jadval.png", alt: "Ustozona: haftalik dars jadvali" },
   faol: { src: "/email/faol.png", alt: "Ustozona: bugungi va kelgusi darslar" },
+  bot: { src: "/email/faol.png", alt: "Ustozona: bugungi va kelgusi darslar" },
 };
 
 export function ok1Html({
@@ -72,7 +82,7 @@ export function ok1Html({
 }: {
   variant: Ok1Variant;
   name: string | null;
-  /** sinf: sinflar sahifasi; jadval: jadval sahifasi; faol: Telegram ulash oynasi. */
+  /** sinf: sinflar sahifasi; jadval: jadval sahifasi; faol: Telegram ulash oynasi; bot: bosh sahifa. */
   ctaUrl: string;
   /** Rasm yoʻli shu domenga qoʻshiladi. */
   siteUrl: string;
@@ -89,6 +99,13 @@ export function ok1Html({
   const royxat = punktlar
     .map((p, i) => `<li style="margin:0${i < punktlar.length - 1 ? " 0 4px" : ""}">${p}</li>`)
     .join("\n    ");
+  const royxatHtml = punktlar.length
+    ? `<ul style="margin:0 0 24px;padding-left:20px">
+    ${royxat}
+  </ul>
+
+  `
+    : "";
 
   return `<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;font-size:15px;line-height:1.6;color:#1f2937;max-width:480px;margin:0 auto;padding:8px">
   ${brendSarlavha()}
@@ -100,13 +117,9 @@ export function ok1Html({
     Kasb bayramingiz — <b>Oʻqituvchi va murabbiylar kuni</b> muborak boʻlsin!
   </p>
 
-  <p style="margin:0 0 12px">${foyda}</p>
+  <p style="margin:0 0 ${punktlar.length ? 12 : 24}px">${foyda}</p>
 
-  <ul style="margin:0 0 24px;padding-left:20px">
-    ${royxat}
-  </ul>
-
-  ${rasmHtml}<p style="margin:0 0 28px">
+  ${royxatHtml}${rasmHtml}<p style="margin:0 0 28px">
     <a href="${qalqon(ctaUrl)}"
        style="background:#111827;color:#ffffff;padding:12px 22px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:600">
       ${tugma}
