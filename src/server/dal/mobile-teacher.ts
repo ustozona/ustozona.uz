@@ -1,16 +1,16 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
-import { and, asc, eq, gt, inArray, isNull, lte, or, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, ne, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import { assignments, attendanceRecords, attendanceStatuses, behaviorEvents, behaviorSkills, classes, enrollments, grades, students } from "@/server/db/schema";
 import { ForbiddenError, requireTeacher } from "@/server/session";
 import { assertTeachesClass, visibleClassIds } from "@/server/workspace";
 import { activeClassRoster, rosterOn } from "@/server/dal/class-roster";
+import { memberOnSql } from "@/server/db/membership";
 import { applyAttendanceBatch } from "@/server/dal/attendance";
 import { applyGradesBatch } from "@/server/dal/grades";
 import { applyBehaviorBatch, getBehaviorPayload } from "@/server/dal/behavior";
 import { BUILTIN_STATUSES } from "@/lib/attendance-data";
-import { isMemberOn } from "@/lib/membership";
 import { getTimetablePayload } from "@/server/dal/timetable";
 import { normalizeLegacyVersions, resolveVersionForDate } from "@/lib/timetable-versions";
 import { dateKeyToDate } from "@/lib/date-keys";
@@ -148,7 +148,8 @@ export async function getMobileAttendance(classId: string, date: string): Promis
     ? await db
         .select({ id: students.id, name: students.name })
         .from(students)
-        .where(inArray(students.id, extraIds))
+        // Arxivlangan bola saytdagi kabi koʻrinmaydi — yozuvi boʻlsa ham.
+        .where(and(inArray(students.id, extraIds), ne(students.status, "archived")))
     : [];
   return {
     classId,
@@ -176,7 +177,14 @@ export async function setMobileAttendance(
     db
       .select({ studentId: attendanceRecords.studentId })
       .from(attendanceRecords)
-      .where(and(eq(attendanceRecords.classId, classId), eq(attendanceRecords.date, date))),
+      .innerJoin(students, eq(students.id, attendanceRecords.studentId))
+      .where(
+        and(
+          eq(attendanceRecords.classId, classId),
+          eq(attendanceRecords.date, date),
+          ne(students.status, "archived")
+        )
+      ),
   ]);
   const allowed = new Set(statuses.map((s) => s.key));
   const rosterIds = new Set([...roster.map((s) => s.id), ...existing.map((r) => r.studentId)]);
@@ -364,8 +372,9 @@ export async function giveMobileBehavior(
 export type MobileSync = {
   date: string;
   classes: { id: string; name: string; subject: string | null }[];
-  /** Aʼzolik oraligʻi `[joinedAt, leftAt)` — faqat chegarasi bor bolada: undan
-      tashqaridagi kunlarga yangi belgi saqlanmaydi. */
+  /** Bugun (`date`) sinfda boʻlganlar. Aʼzolik oraligʻi `[joinedAt, leftAt)` —
+      faqat chegarasi bor bolada: undan tashqaridagi kunlarga yangi belgi
+      saqlanmaydi (masalan kelajak sanaga koʻchirilgan bolaning `leftAt`). */
   rosters: Record<string, { id: string; name: string; joinedAt?: string; leftAt?: string }[]>;
   timetable: { day: number; classId: string; startMin: number; endMin: number; id: string }[];
   statuses: { key: string; label: string; tone: string }[];
@@ -414,14 +423,10 @@ export async function getMobileSync(date: string): Promise<MobileSync> {
           .select({ classId: enrollments.classId, id: students.id, name: students.name, status: students.status, joinedAt: enrollments.startedAt, leftAt: enrollments.endedAt })
           .from(enrollments)
           .innerJoin(students, eq(students.id, enrollments.studentId))
-          // Oyna [from, date] bilan kesishgan aʼzoliklar; aniq filtr pastda.
-          .where(
-            and(
-              inArray(enrollments.classId, classIds),
-              or(isNull(enrollments.startedAt), lte(enrollments.startedAt, date)),
-              or(isNull(enrollments.endedAt), gt(enrollments.endedAt, from))
-            )
-          )
+          // Faqat BUGUN (`date`) sinfda boʻlganlar — ilova roʻyxatni bugungi
+          // varaq sifatida koʻrsatadi va `leftAt` ni hali oʻqimaydi: yaqinda
+          // ketgan bola bu yerda boʻlsa, unga qoʻyilgan belgi rad etilardi.
+          .where(and(inArray(enrollments.classId, classIds), memberOnSql(date)))
       : Promise.resolve([]),
     activeStatuses(tid),
     classIds.length
@@ -453,13 +458,8 @@ export async function getMobileSync(date: string): Promise<MobileSync> {
   ]);
 
   const rosters: MobileSync["rosters"] = {};
-  /* Roʻyxat — BUGUN sinfda boʻlganlar. Oxirgi 7 kunda yozuvi bor, lekin
-     bugun aʼzo boʻlmagan bola (yaqinda ketgan) ham qoladi — oflayn
-     ekranlarda oʻsha kunlar tarixi koʻrinsin. Oraliq bilan birga beriladi. */
-  const withRecord = new Set(records.map((r) => `${r.classId}|${r.studentId}`));
   for (const r of rosterRows) {
     if (r.status === "archived") continue;
-    if (!isMemberOn(r, date) && !withRecord.has(`${r.classId}|${r.id}`)) continue;
     (rosters[r.classId] ??= []).push({
       id: r.id,
       name: r.name,

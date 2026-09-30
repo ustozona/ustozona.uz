@@ -7,11 +7,13 @@ import {
   DEFAULT_TOPIC_TEMPLATES,
   type Assignment,
   type ClassData,
+  type Student,
 } from "@/lib/grades-data";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useCalendarStore } from "@/store/useCalendarStore";
 import { inRange } from "@/lib/academic-calendar";
 import { todayKey } from "@/lib/date-keys";
+import { hasLeft, isMemberOn } from "@/lib/membership";
 import { useMounted } from "@/lib/use-mounted";
 import GradesTable from "./GradesTable";
 import dynamic from "next/dynamic";
@@ -105,6 +107,10 @@ export default function GradesView({
     const formerWithGrades = demoClassData
       ? []
       : (classData.formerStudents ?? []).filter((s) => {
+          if (s.status === "archived") return false;
+          /* Kelajak sanaga koʻchirilgan bola hali JORIY — bahosi boʻlmasa ham
+             koʻrinadi (server roʻyxatlari bilan bir xil, `hasLeft`). */
+          if (!hasLeft(s, todayKey())) return true;
           if (yearRange.start && s.leftAt && s.leftAt < yearRange.start) return false;
           /* Haqiqiy baho yoki Q/T belgisi shart: bahosiz katak qatori
              (boʻsh baho yozuvi) bolani jurnalga qaytarmaydi. */
@@ -261,6 +267,18 @@ export default function GradesView({
   }
 
   // Baholanmagan (ball ham, Q/T ham yo‘q) o‘quvchilarga ommaviy qo‘llash.
+  /* Ommaviy amallar (toʻldirish, «qolganlarni T») kimga tegadi — jadvaldagi
+     «baholanmagan» soni bilan AYNAN bir xil: joriy (ketmagan, arxivlanmagan)
+     va topshiriq sanasida sinfda boʻlgan bolalar. Aks holda 15.09 da
+     qoʻshilgan bolaga 10.09 dagi ish uchun baho yozilardi. */
+  function bulkTargets(cd: ClassData, assignmentId: string): Student[] {
+    const date = cd.assignments.find((a) => a.id === assignmentId)?.date;
+    const today = todayKey();
+    return [...cd.students, ...(cd.formerStudents ?? [])].filter(
+      (s) => s.status !== "archived" && !hasLeft(s, today) && (!date || isMemberOn(s, date))
+    );
+  }
+
   function handleFillColumn(assignmentId: string, score: number) {
     updateClass(classId, (cd) => {
       const graded = new Set(
@@ -268,12 +286,13 @@ export default function GradesView({
           .filter((g) => g.assignmentId === assignmentId && (g.score !== null || g.missing))
           .map((g) => g.studentId)
       );
-      const additions = cd.students
-        .filter((s) => !graded.has(s.id))
-        .map((s) => ({ studentId: s.id, assignmentId, score, isDraft: true }));
+      const targets = new Set(bulkTargets(cd, assignmentId).map((s) => s.id));
+      const additions = [...targets]
+        .filter((id) => !graded.has(id))
+        .map((id) => ({ studentId: id, assignmentId, score, isDraft: true }));
       // Mavjud bo‘sh (score=null, missing yo‘q) yozuvlarni ham yangilaymiz.
       const nextGrades = cd.grades.map((g) =>
-        g.assignmentId === assignmentId && g.score === null && !g.missing
+        g.assignmentId === assignmentId && g.score === null && !g.missing && targets.has(g.studentId)
           ? { ...g, score, isDraft: true }
           : g
       );
@@ -289,11 +308,12 @@ export default function GradesView({
           .filter((g) => g.assignmentId === assignmentId && (g.score !== null || g.missing))
           .map((g) => g.studentId)
       );
-      const additions = cd.students
-        .filter((s) => !graded.has(s.id))
-        .map((s) => ({ studentId: s.id, assignmentId, score: null, missing: "unsubmitted" as const }));
+      const targets = new Set(bulkTargets(cd, assignmentId).map((s) => s.id));
+      const additions = [...targets]
+        .filter((id) => !graded.has(id))
+        .map((id) => ({ studentId: id, assignmentId, score: null, missing: "unsubmitted" as const }));
       const nextGrades = cd.grades.map((g) =>
-        g.assignmentId === assignmentId && g.score === null && !g.missing
+        g.assignmentId === assignmentId && g.score === null && !g.missing && targets.has(g.studentId)
           ? { ...g, missing: "unsubmitted" as const }
           : g
       );

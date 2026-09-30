@@ -39,6 +39,18 @@ export function isMemberOn(span: MembershipSpan, date: string): boolean {
   return true;
 }
 
+/**
+ * Bola `today` ga kelib sinfdan allaqachon KETGANMI (`leftAt <= today`).
+ *
+ * «Ketgan» va «chiqish sanasi bor» bir narsa emas: kelajak sanaga
+ * qoʻyilgan koʻchirishda bola hali sinfda — roʻyxatda odatdagidek turadi,
+ * statistikaga kiradi. Server roʻyxatlari (`memberOnSql`) ham shunday
+ * hisoblaydi.
+ */
+export function hasLeft(span: MembershipSpan, today: string): boolean {
+  return !!span.leftAt && span.leftAt <= today;
+}
+
 /** Aʼzolik [from, to] (ikkalasi ham KIRITILGAN) oraligʻi bilan kamida bir
     kun kesishadimi — «shu oy / shu yil jadvalida koʻrinadimi». */
 export function overlapsRange(span: MembershipSpan, from: string, to: string): boolean {

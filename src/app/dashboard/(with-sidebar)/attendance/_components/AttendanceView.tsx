@@ -24,7 +24,7 @@ import { resolveVersionForDate } from "@/lib/timetable-versions";
 import TimetableCoverageBanner from "@/components/timetable/TimetableCoverageBanner";
 import Link from "next/link";
 import { todayKey } from "@/lib/date-keys";
-import { isMemberOn, overlapsRange } from "@/lib/membership";
+import { hasLeft, isMemberOn, overlapsRange } from "@/lib/membership";
 import { useAttendanceStore } from "@/store/useAttendanceStore";
 import { useCalendarStore } from "@/store/useCalendarStore";
 import { useTimetableStore } from "@/store/useTimetableStore";
@@ -399,9 +399,10 @@ export default function AttendanceView({
   const classDataMap = useGradesStore((s) => s.classDataMap);
   const gradesClass = classDataMap[classId];
   const versions = useTimetableStore((s) => s.versions);
-  // Chiqib ketgan oʻquvchi davomat roʻyxatida koʻrinmaydi (xulq sahifasi bilan
+  // ARXIVLANGAN oʻquvchi davomat roʻyxatida koʻrinmaydi (xulq sahifasi bilan
   // bir xil naqsh, [[student-status-model]]) — tarixi saqlanadi, faqat
-  // koʻrinishdan chiqadi.
+  // koʻrinishdan chiqadi. Boshqa sinfga KOʻCHGANLAR esa koʻrinadi — pastda
+  // `formerInView`.
   const roster = demoMode
     ? (demoRoster ?? [])
     : (gradesClass?.students ?? []).filter((s) => s.status !== "archived");
@@ -588,7 +589,9 @@ export default function AttendanceView({
         (s) => s.status !== "archived" && overlapsRange(s, viewFrom, viewTo)
       );
 
-  // Oʻquvchilar — tartiblash (ketganlar har doim oxirida)
+  // Oʻquvchilar — tartiblash (KETGANLAR har doim oxirida; kelajak sanaga
+  // koʻchirilgan bola hali joriy — odatdagi joyida, `hasLeft`)
+  const isGone = (s: Pick<Student, "leftAt">) => hasLeft(s, today);
   const byName = (a: Student, b: Student) => {
     const na = splitName(a.name);
     const nb = splitName(b.name);
@@ -597,7 +600,10 @@ export default function AttendanceView({
     const cmp = UZ_COLLATOR.compare(ka, kb);
     return sortDir === "asc" ? cmp : -cmp;
   };
-  const baseStudents = [...[...roster].sort(byName), ...[...formerInView].sort(byName)];
+  const baseStudents = [
+    ...[...roster, ...formerInView.filter((s) => !isGone(s))].sort(byName),
+    ...formerInView.filter(isGone).sort(byName),
+  ];
 
   // Davomat foizi — dars kunlari boʻyicha (koʻrinishdan mustaqil; docs/attendance-model.md)
   const lessonDatesIn = (year: number, months: number[]) =>
@@ -645,7 +651,10 @@ export default function AttendanceView({
   // "Xavfsiz poyabzal": 90%+ hech qachon faqat pertsentil sababli qizil boʻlmaydi —
   // aks holda hamma aʼlo boʻlgan sinfda ham eng "pastroq" 25% sunʼiy qizil chiqadi.
   const SAFE_FLOOR_PCT = 90;
-  const periodPcts = baseStudents.map((s) => periodRateOf(s.id)?.pct).filter((p): p is number => p != null);
+  // Ketganlar sinf pertsentilini ham, «diqqat» bayrogʻini ham oʻzgartirmaydi —
+  // bu joriy sinf uchun koʻrsatkich.
+  const currentStudents = baseStudents.filter((s) => !isGone(s));
+  const periodPcts = currentStudents.map((s) => periodRateOf(s.id)?.pct).filter((p): p is number => p != null);
   const p25 = percentile(periodPcts, 25);
   // Surunkali — oyiga ≥3 Kelmadi. Oy rejimida koʻrilayotgan oy; chorak/yil
   // rejimida koʻrinayotgan davrdagi ISTALGAN oy (yashirin `month` holati emas).
@@ -670,8 +679,9 @@ export default function AttendanceView({
     if (r.pct >= SAFE_FLOOR_PCT) return false;
     return p25 != null && r.pct < p25;
   };
-  const needsAttention = (id: string) => isChronic(id) || isDanger(id);
-  const attentionCount = baseStudents.filter((s) => needsAttention(s.id)).length;
+  const goneIds = new Set(baseStudents.filter(isGone).map((s) => s.id));
+  const needsAttention = (id: string) => !goneIds.has(id) && (isChronic(id) || isDanger(id));
+  const attentionCount = currentStudents.filter((s) => needsAttention(s.id)).length;
 
   const students = onlyAttention ? baseStudents.filter((s) => needsAttention(s.id)) : baseStudents;
 
@@ -1074,7 +1084,7 @@ export default function AttendanceView({
                             </Tooltip>
                             <HoverCard openDelay={120} closeDelay={60}>
                               <HoverCardTrigger asChild>
-                                <span className={cn("text-data-row whitespace-nowrap inline-block pt-px cursor-default", student.leftAt && "text-muted-foreground")}>
+                                <span className={cn("text-data-row whitespace-nowrap inline-block pt-px cursor-default", isGone(student) && "text-muted-foreground")}>
                                   {student.name}
                                   {student.leftAt && (
                                     <span className="ml-2 text-caption text-muted-foreground">{leftLabel(student)}</span>
@@ -1135,7 +1145,7 @@ export default function AttendanceView({
 
           {/* Jonli xulosa — holat sonlari + taqsimot bari */}
           <CardFooter className={cn(panelCardFooterClass, "flex items-center gap-4")}>
-            <span className="shrink-0 text-caption">{t("studentCount", { count: students.filter((s) => !s.leftAt).length })}</span>
+            <span className="shrink-0 text-caption">{t("studentCount", { count: students.filter((s) => !isGone(s)).length })}</span>
 
             {/* Oʻrta — holat sonlari, markazda */}
             <div className="flex flex-1 items-center justify-center gap-x-5 gap-y-2 flex-wrap">

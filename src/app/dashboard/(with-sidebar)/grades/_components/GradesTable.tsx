@@ -93,7 +93,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { studentProfileHref } from "@/lib/student-profile";
-import { isMemberOn } from "@/lib/membership";
+import { hasLeft, isMemberOn } from "@/lib/membership";
+import { todayKey } from "@/lib/date-keys";
 
 function LetterAvg({
   percent,
@@ -284,10 +285,16 @@ export default function GradesTable({
     return m;
   }, [grades]);
 
-  /* Boshqa sinfga koʻchganlar (`leftAt`) jadvalda faqat eski baholari uchun
-     turadi: sinf statistikasi (oʻrtacha, formativ, baholanmaganlar soni)
-     faqat JORIY oʻquvchilar boʻyicha hisoblanadi. */
-  const activeStudents = useMemo(() => students.filter((s) => !s.leftAt), [students]);
+  /* Boshqa sinfga KETGANLAR (`leftAt <= bugun`) jadvalda faqat eski baholari
+     uchun turadi: sinf statistikasi (oʻrtacha, formativ, baholanmaganlar soni)
+     faqat JORIY oʻquvchilar boʻyicha hisoblanadi. Kelajak sanaga koʻchirilgan
+     bola hali joriy — server roʻyxatlari bilan bir xil (`hasLeft`). */
+  const today = todayKey();
+  const isGone = (s: (typeof students)[number]) => hasLeft(s, today);
+  const activeStudents = useMemo(
+    () => students.filter((s) => !hasLeft(s, today)),
+    [students, today]
+  );
   const activeGrades = useMemo(() => {
     if (activeStudents.length === students.length) return grades;
     const ids = new Set(activeStudents.map((s) => s.id));
@@ -375,8 +382,8 @@ export default function GradesTable({
   const sortedStudents = useMemo(() => {
     const byName = sortField === "firstName" || sortField === "lastName";
     return [...students].sort((a, b) => {
-      // Koʻchganlar har doim roʻyxat OXIRIDA (saralashdan qatʼi nazar).
-      if (!!a.leftAt !== !!b.leftAt) return a.leftAt ? 1 : -1;
+      // Ketganlar har doim roʻyxat OXIRIDA (saralashdan qatʼi nazar).
+      if (isGone(a) !== isGone(b)) return isGone(a) ? 1 : -1;
       if (byName) {
         const na = splitName(a.name);
         const nb = splitName(b.name);
@@ -431,18 +438,23 @@ export default function GradesTable({
       setEditingCell(null);
       return;
     }
-    let ns = sIdx,
-      na = aIdx;
-    if (move === "down") ns = Math.min(sIdx + 1, filteredStudents.length - 1);
-    if (move === "up") ns = Math.max(sIdx - 1, 0);
-    if (move === "right") na = Math.min(aIdx + 1, orderedAssignments.length - 1);
-    if (move === "left") na = Math.max(aIdx - 1, 0);
-    // Yopiq katakka oʻtilmaydi — u yerda muharrir ochilmaydi va kiritish qotib qolardi.
-    if (isClosedCell(filteredStudents[ns], orderedAssignments[na])) {
-      setEditingCell(null);
-      return;
+    /* Yoʻnalish boʻyicha keyingi OCHIQ katakka oʻtiladi. Yopiq kataklar
+       (qoʻshilishdan oldin / ketgandan keyin) ustun oʻrtasida ham boʻlishi
+       mumkin — ularda muharrir ochilmaydi, shuning uchun sakrab oʻtiladi.
+       Chetga yetilsa (yoki oldinda faqat yopiqlar) — joriy katakda qoladi. */
+    const dRow = move === "down" ? 1 : move === "up" ? -1 : 0;
+    const dCol = move === "right" ? 1 : move === "left" ? -1 : 0;
+    let ns = sIdx + dRow,
+      na = aIdx + dCol;
+    while (ns >= 0 && ns < filteredStudents.length && na >= 0 && na < orderedAssignments.length) {
+      if (!isClosedCell(filteredStudents[ns], orderedAssignments[na])) {
+        setEditingCell({ s: filteredStudents[ns].id, a: orderedAssignments[na].id });
+        return;
+      }
+      ns += dRow;
+      na += dCol;
     }
-    setEditingCell({ s: filteredStudents[ns].id, a: orderedAssignments[na].id });
+    setEditingCell({ s: curS, a: curA });
   }
 
   function handleCreate(type: "assignment" | "reuse" | "topic") {
@@ -758,7 +770,7 @@ export default function GradesTable({
                 <LetterAvg
                   percent={classAverage}
                   classId={classData.info.id}
-                  hasData={rawTotals.some((t) => !t.student.leftAt && t.summary.summativeCount > 0)}
+                  hasData={rawTotals.some((t) => !isGone(t.student) && t.summary.summativeCount > 0)}
                 />
               </TableCell>
             </TableRow>
@@ -786,12 +798,18 @@ export default function GradesTable({
                           <span
                             className={cn(
                               "min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap font-semibold decoration-muted-foreground/40 underline-offset-4 group-hover/name:underline",
-                              /* Boshqa sinfga koʻchgan — jurnalda faqat eski
+                              /* Boshqa sinfga ketgan — jurnalda faqat eski
                                  baholari uchun turibdi. Soʻnik koʻrinish uni
                                  joriy roʻyxatdan ajratadi. */
-                              s.leftAt && "text-muted-foreground"
+                              isGone(s) && "text-muted-foreground"
                             )}
-                            title={s.leftAt ? `Boshqa sinfga koʻchgan (${s.leftAt})` : undefined}
+                            title={
+                              s.leftAt
+                                ? isGone(s)
+                                  ? `Boshqa sinfga koʻchgan (${s.leftAt})`
+                                  : `${s.leftAt} dan boshqa sinfga koʻchadi`
+                                : undefined
+                            }
                           >
                             {s.name}
                           </span>
@@ -820,14 +838,17 @@ export default function GradesTable({
                     const isEditing = editingCell?.s === s.id && editingCell?.a === a.id;
                     const hasScore = g?.score !== null && g?.score !== undefined;
 
-                    /* Bola bu topshiriq sanasida sinfdan allaqachon chiqqan —
-                       katak yopiq (baho qoʻyib boʻlmaydi). Baho oldindan
-                       bor boʻlsa yopilmaydi: tarix yashirilmaydi. */
+                    /* Topshiriq sanasida bola bu sinfda boʻlmagan — katak yopiq
+                       (qarang: isClosedCell). */
                     if (isClosedCell(s, a)) {
                       return (
                         <TableCell
                           key={a.id}
-                          title={`Boshqa sinfga koʻchgan (${s.leftAt})`}
+                          title={
+                            s.joinedAt && a.date && a.date < s.joinedAt
+                              ? `Sinfga ${s.joinedAt} dan qoʻshilgan`
+                              : `Boshqa sinfga koʻchgan (${s.leftAt})`
+                          }
                           className="border-b border-r border-border p-0 w-16 min-w-16 h-16 text-center cursor-not-allowed bg-muted/30 text-muted-foreground/40"
                         >
                           —
@@ -884,7 +905,7 @@ export default function GradesTable({
                     <LetterAvg
                       percent={total.percent}
                       classId={classData.info.id}
-                      hasData={!s.leftAt && total.summary.summativeCount > 0}
+                      hasData={!isGone(s) && total.summary.summativeCount > 0}
                     />
                   </TableCell>
                 </TableRow>

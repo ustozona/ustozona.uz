@@ -58,19 +58,6 @@ export async function activeClassRoster(classId: string): Promise<{ id: string; 
   return roster.map(({ id, name }) => ({ id, name }));
 }
 
-/** Bola `date` kuni shu sinfda boʻlganmi (arxivlanganlik tekshirilmaydi —
-    bu aʼzolik savoli, roʻyxat savoli emas). */
-export async function isMember(classId: string, studentId: string, date: string): Promise<boolean> {
-  const [row] = await db
-    .select({ id: enrollments.studentId })
-    .from(enrollments)
-    .where(
-      and(eq(enrollments.classId, classId), eq(enrollments.studentId, studentId), memberOnSql(date))
-    )
-    .limit(1);
-  return !!row;
-}
-
 const CHUNK = 400;
 
 /**
