@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { listPublishedPosts } from "@/server/dal/blog";
 import { abs } from "@/lib/site-url";
+import { INDEXABLE_GAMES, gamePath } from "@/lib/games";
 
 /* `baholash` yoʻq — sahifa arxivlandi, imkoniyatlari Topshiriqlarda
    (docs/topshiriq-boshlash-markazi.md §8). */
@@ -41,6 +42,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified,
       changeFrequency: "monthly" as const,
       priority: 0.8,
+    })),
+    /* Har oʻyin — alohida qidiruv sahifasi (`GAME_SEO`); noindex
+       sahifalar (PIN, mezbon) bu yerda yoʻq. */
+    ...INDEXABLE_GAMES.map((game) => ({
+      url: abs(gamePath(game)),
+      lastModified,
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
     })),
     {
       url: abs("/blog"),
