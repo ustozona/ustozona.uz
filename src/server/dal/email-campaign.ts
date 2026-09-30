@@ -12,7 +12,7 @@ import { teachers } from "@/server/db/schema";
    zanjir (`onClassPresent`) ishga tushib ketardi.
    ════════════════════════════════════════════════════════════════════ */
 
-export type CampaignId = "tg1";
+export type CampaignId = "tg1" | "ok1" | "ok1tg";
 
 type CampaignLog = Partial<Record<CampaignId, string>>;
 
