@@ -169,6 +169,7 @@ export function QuickCreatePanel({
   classId,
   isDraft,
   hasContent = false,
+  compact = false,
   topic,
   fallbackTitle,
   onTopicChange,
@@ -180,6 +181,7 @@ export function QuickCreatePanel({
   classId: string;
   isDraft: boolean;
   hasContent?: boolean;
+  compact?: boolean;
   /** `null` — oʻqituvchi hali tanlamagan: ish rejadagi joriy mavzu turadi. */
   topic: QuickTopic | null;
   /** Ish reja boʻlmasa — topshiriq sarlavhasi mavzu boʻladi. */
@@ -416,7 +418,7 @@ export function QuickCreatePanel({
   return (
     <Panel className="h-auto">
       {/* Sarlavha — chapda nima, oʻngda qachon. Telefonda soat pastga oʻraladi. */}
-      <PanelHeader
+      {!compact && <PanelHeader
         className="flex flex-wrap"
         icon={<Sparkles />}
         title={t("title")}
@@ -433,7 +435,7 @@ export function QuickCreatePanel({
             )}
           </div>
         }
-      />
+      />}
 
       <PanelBody inset className="flex flex-col gap-5">
         {/* MAVZU */}
@@ -471,7 +473,7 @@ export function QuickCreatePanel({
               </span>
             )}
           </div>
-          <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(148px,1fr))]">
+          <div className={cn("grid gap-3", compact ? "grid-cols-1" : "[grid-template-columns:repeat(auto-fit,minmax(148px,1fr))]")}>
             {AI_CARDS.map(({ kind, icon, color }) => (
               <ActionCard
                 key={kind}
@@ -573,11 +575,9 @@ export function QuickCreatePanel({
               </button>
             )}
           </div>
-          {!hasContent && (
-            <Button variant="outline" className="w-full justify-start gap-2" onClick={onPickBank}>
-              <Library className="size-4" /> {ta("attachFromBank")}
-            </Button>
-          )}
+          <Button variant="outline" className="w-full justify-start gap-2" onClick={onPickBank}>
+            <Library className="size-4" /> {ta("attachFromBank")}
+          </Button>
           <MaterialKindPicker
             onPick={(kind) => {
               if (kind === "test") onManual("test");

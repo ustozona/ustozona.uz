@@ -1,20 +1,18 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode, type CSSProperties } from "react";
 import { useTranslations } from "next-intl";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import {
   X,
   FileCheck2,
-  Presentation,
   Check,
   Tag,
   Star,
   CloudOff,
   ChevronRight,
   ChevronDown,
-  ClipboardCheck,
   Info,
   Plus,
   MoreHorizontal,
@@ -35,7 +33,6 @@ import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { getSetMetaAction } from "@/server/actions/assess";
 import type { SetMeta } from "@/server/dal/assess/sets";
 import { useLaunchFlow } from "@/components/launch/useLaunchFlow";
-import { RunButtons } from "@/components/launch/RunButtons";
 import { WorkPlanCard } from "@/components/work-plan/WorkPlanCard";
 import {
   QuickCreatePanel,
@@ -97,11 +94,11 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { EditorSidePanelHeader } from "@/components/ui/editor-side-panel";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { useResponsivePanelWidth } from "@/hooks/useResponsivePanelWidth";
 import StandardTagPicker from "./StandardTagPicker";
 import SetBuilderOverlay from "./test/SetBuilderOverlay";
 import AttachTestDialog from "./AttachTestDialog";
+import { AssignmentSequence } from "./AssignmentSequence";
 
 const NO_TOPIC_VALUE = "__no_topic__";
 
@@ -200,7 +197,6 @@ export default function AssignmentEditorOverlay({
   const setClassDataMap = useGradesStore((s) => s.setClassDataMap);
   const liveClasses = useLiveClasses();
   const syncFailing = useSyncFailing("grades");
-  const isMobile = useIsMobile();
   const detailsPanelWidth = useResponsivePanelWidth(300, 0.25);
   const classData = classDataMap[classId] as ClassData | undefined;
 
@@ -218,7 +214,8 @@ export default function AssignmentEditorOverlay({
   /* Mavjud testni tanlash oynasi — toʻplam muharrirdan tashqarida ham
      tugʻiladi (bank, oldingi ishlar), ularni ulash yoʻli kerak. */
   const [attachOpen, setAttachOpen] = useState(false);
-  const [toolsOpen, setToolsOpen] = useState(false);
+  const [sequenceRevision, setSequenceRevision] = useState(0);
+  const [paletteOpen, setPaletteOpen] = useState(false);
   /** Tezkor yaratish mavzusi. `null` — ish rejadagi joriy mavzu turadi;
       «Olish» (ish reja kartasi) yoki qoʻlda yozish uni belgilaydi. */
   const [quickTopic, setQuickTopic] = useState<QuickTopic | null>(null);
@@ -257,7 +254,7 @@ export default function AssignmentEditorOverlay({
       : undefined;
   const assignment = stored;
   const current = (assignment ?? draft)!;
-  const isDeck = current.kind === "deck";
+
   /* Biriktirilgan toʻplam — mazmun kartasining va maks. ball qulfining
      yagona sharti (R215/R216). `sourceSessionId` esa ESKI, sessiyadan
      tugʻilgan ustunlar uchun: ular biriktirilmagan, nashr qilingan. */
@@ -453,6 +450,7 @@ export default function AssignmentEditorOverlay({
     containerKind?: string;
   }) {
     const request = ++metaRequest.current;
+    setSequenceRevision((value) => value + 1);
     getSetMetaAction(set.id)
       .then((meta) => request === metaRequest.current && setSetMeta(meta))
       .catch(() => request === metaRequest.current && setSetMeta(null));
@@ -782,137 +780,33 @@ export default function AssignmentEditorOverlay({
   const bareControl =
     "h-auto w-full justify-between gap-1.5 border-none bg-transparent p-0 text-sm font-medium text-foreground shadow-none hover:bg-transparent focus-visible:ring-0 [&>svg]:opacity-40";
 
-  /* Biriktirilgan toʻplam materiallar zanjiri: savol va slaydlar uning
-     ichida tartiblanadi. Asboblar keyingi qadamda ham ochilishi kerak. */
   function renderContent() {
     if (attachedSetId) {
-      /* Taqdimot ham, test ham shu kartada — faqat belgi, rang va yozuv
-         turga qarab. Faqat slayddan iborat taqdimot baholanmaydi
-         (maks. ball 0), shuning uchun «Avtomatik» yozuvi unda chiqmaydi. */
-      const kindLabel = isDeck ? t("kindDeck") : t("kindTest");
-      const KindIcon = isDeck ? Presentation : ClipboardCheck;
       return (
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center gap-3 rounded-xl border border-border p-3">
-          <button
-            type="button"
-            onClick={handleEditAttachedTest}
-            className="flex min-w-0 flex-1 items-center gap-3 text-left"
-          >
-            <span
-              className="flex size-10 shrink-0 items-center justify-center rounded-lg text-white"
-              style={{ backgroundColor: isDeck ? CLASS_COLOR_HEX.orange : "#22c55e" }}
-            >
-              <KindIcon className="size-5" />
-            </span>
-            <div className="min-w-0 flex-1">
-              <h4 className="truncate text-sm font-semibold text-foreground">
-                {setMeta?.title ?? (current.title || kindLabel)}
-              </h4>
-              <p className="truncate text-xs text-muted-foreground">
-                {setMeta
-                  ? [
-                      kindLabel,
-                      t("questionCount", { count: setMeta.itemCount }),
-                      setMeta.maxScore > 0 ? t("gradingAuto") : null,
-                    ]
-                      .filter(Boolean)
-                      .join(" · ")
-                  : t("loadingLabel")}
-              </p>
-            </div>
-          </button>
-          {/* Topshiriqlar roʻyxatidagi tugmalarning aynan oʻzi. */}
-          <RunButtons labels="sm" onRun={handleRun} />
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                type="button"
-                onClick={handleDetachTest}
-                className="flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              >
-                <X className="size-4" />
-                <span className="sr-only">{t("detachTest")}</span>
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="top" className="max-w-56">
-              {t("detachTestHint")}
-            </TooltipContent>
-          </Tooltip>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button variant="outline" size="sm" onClick={handleEditAttachedTest}>
-              <Plus className="size-4" /> {t("composerEditOrder")}
-            </Button>
-            <Button variant="outline" size="sm" onClick={handlePickBankQuestions}>
-              <ClipboardCheck className="size-4" /> {t("composerBank")}
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => setToolsOpen((open) => !open)} aria-expanded={toolsOpen}>
-              {t("composerMoreTools")}
-              <ChevronDown className={cn("size-4 transition-transform", toolsOpen && "rotate-180")} />
-            </Button>
-          </div>
-          <p className="text-xs text-muted-foreground">{t("composerOrderHint")}</p>
-          {toolsOpen && (
-            <QuickCreatePanel
-              classId={classId}
-              isDraft={isDraft}
-              hasContent
-              topic={quickTopic}
-              fallbackTitle={current.title}
-              onTopicChange={setQuickTopic}
-              onOpenBuilder={handleQuickBuild}
-              onManual={(kind) => (kind === "deck" ? handleAttachDeck() : handleAttachTest())}
-              onAttachExisting={handlePickBankQuestions}
-              onPickBank={handlePickBankQuestions}
-            />
-          )}
+        <div className="flex flex-col gap-4">
+          <AssignmentSequence
+            setId={attachedSetId}
+            revision={sequenceRevision}
+            onEdit={handleEditAttachedTest}
+            onBank={handlePickBankQuestions}
+            onRun={handleRun}
+          />
+          <Button variant="ghost" size="sm" className="self-start text-muted-foreground" onClick={handleDetachTest}>
+            <X className="size-4" /> {t("detachTest")}
+          </Button>
         </div>
       );
     }
-
-    if (!isDeck && current.sourceSessionId) {
+    if (current.sourceSessionId) {
       return (
-        <button
-          type="button"
-          onClick={handleOpenQuiz}
-          className="flex w-full items-center gap-3 rounded-xl border border-border p-4 text-left transition-colors hover:bg-muted/50"
-        >
-          <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <FileCheck2 className="size-5" />
-          </span>
-          <div className="min-w-0 flex-1">
-            <h4 className="truncate text-sm font-semibold text-foreground">
-              {current.title}
-            </h4>
-            {/* Bosilsa natija ekrani ochiladi — yozuv shuni aytadi. */}
-            <p className="text-xs text-muted-foreground">
-              {t("kindTest")} · {tl("viewResults")}
-            </p>
-          </div>
-          <ChevronRight className="size-5 shrink-0 text-muted-foreground" />
+        <button type="button" onClick={handleOpenQuiz} className="flex items-center gap-3 rounded-xl border border-border p-4 text-left hover:bg-muted/50">
+          <FileCheck2 className="size-5 text-primary" />
+          <span className="min-w-0 flex-1 truncate text-sm font-medium">{current.title} · {tl("viewResults")}</span>
+          <ChevronRight className="size-4 text-muted-foreground" />
         </button>
       );
     }
-
-    /* Mazmun biriktirilmagan — TEZKOR YARATISH (quick-create/QuickCreatePanel).
-       Ilgari bu yerda «Baholash usuli: Qoʻlda | Avtomatik» tanlovi turardi
-       va yaratish yoʻli «Avtomatik» ortida yashirin edi; tanlov hech narsani
-       saqlamasdi. Endi yoʻl doim ochiq, qoʻlda baholanadigan ish uchun esa
-       hech narsa tanlash shart emas — «Yaratish» baribir ustun tugʻdiradi. */
-    return (
-      <QuickCreatePanel
-        classId={classId}
-        isDraft={isDraft}
-        topic={quickTopic}
-        fallbackTitle={current.title}
-        onTopicChange={setQuickTopic}
-        onOpenBuilder={handleQuickBuild}
-        onManual={(kind) => (kind === "deck" ? handleAttachDeck() : handleAttachTest())}
-        onAttachExisting={() => setAttachOpen(true)}
-        onPickBank={handlePickBankQuestions}
-      />
-    );
+    return <p className="rounded-xl border border-dashed border-border bg-muted/20 px-5 py-10 text-center text-sm text-muted-foreground">{t("sequenceEmpty")}</p>;
   }
 
   return createPortal(
@@ -1008,10 +902,47 @@ export default function AssignmentEditorOverlay({
           </div>
         </div>
 
-        {/* Tana: chap mazmun · yigʻiladigan Tafsilotlar paneli · ikonka reyi
-            — dars muharriridagi (LessonEditor) tuzilishning aynan oʻzi. */}
-        <div className="flex min-h-0 flex-1 flex-col md:flex-row">
-          <div className="min-h-0 flex-1 scrollbar-hover overflow-y-auto scrollbar-thin p-6">
+        {/* Vositalar · materiallar ketma-ketligi · tafsilotlar. */}
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
+          <aside className="shrink-0 border-b border-border bg-muted/10 p-4 lg:w-[310px] lg:overflow-y-auto lg:border-b-0 lg:border-r">
+            <button type="button" className="flex w-full items-center justify-between text-sm font-semibold lg:hidden" onClick={() => setPaletteOpen((open) => !open)} aria-expanded={paletteOpen}>
+              {t("sequenceTools")}
+              <ChevronDown className={cn("size-4 transition-transform", paletteOpen && "rotate-180")} />
+            </button>
+            <div className={cn("mt-4 lg:mt-0", !paletteOpen && "hidden lg:block")}>
+              <h2 className="mb-4 hidden text-sm font-semibold text-foreground lg:block">{t("sequenceTools")}</h2>
+              {isDraft && (
+                <details className="mb-4 rounded-xl border border-border bg-card p-3">
+                  <summary className="cursor-pointer text-sm font-medium text-foreground">{t("sequencePlan")}</summary>
+                  <div className="mt-3">
+                    <WorkPlanCard
+                      classId={classId}
+                      onPick={(row) => {
+                        patch({ title: row.lesson.title });
+                        setQuickTopic({ text: row.lesson.title, lessonId: row.lesson.id });
+                        if (row.date && row.date >= todayKey()) setDateFor(classId, row.date);
+                        toast.success(tw("picked"));
+                      }}
+                    />
+                  </div>
+                </details>
+              )}
+              <QuickCreatePanel
+                compact
+                classId={classId}
+                isDraft={isDraft}
+                hasContent={!!attachedSetId}
+                topic={quickTopic}
+                fallbackTitle={current.title}
+                onTopicChange={setQuickTopic}
+                onOpenBuilder={handleQuickBuild}
+                onManual={(kind) => kind === "deck" ? handleAttachDeck() : handleAttachTest()}
+                onAttachExisting={() => setAttachOpen(true)}
+                onPickBank={handlePickBankQuestions}
+              />
+            </div>
+          </aside>
+          <div className="min-w-0 flex-1 p-4 lg:min-h-0 lg:overflow-y-auto lg:scrollbar-thin lg:p-6">
             <div className="mx-auto flex max-w-2xl flex-col gap-6">
               <div className="flex flex-col gap-1.5">
                 <span className="text-label text-muted-foreground">
@@ -1025,30 +956,8 @@ export default function AssignmentEditorOverlay({
                 />
               </div>
 
-              {/* ISH REJA — yangi topshiriqda eslatma: bugun qaysi mavzu,
-                  oldingi va keyingilari (Darslar sahifasidan). «Olish» —
-                  mavzu nomi sarlavhaga, dars kuni sanaga. */}
-              {isDraft && (
-                <WorkPlanCard
-                  classId={classId}
-                  onPick={(row) => {
-                    patch({ title: row.lesson.title });
-                    setQuickTopic({ text: row.lesson.title, lessonId: row.lesson.id });
-                    if (row.date && row.date >= todayKey()) setDateFor(classId, row.date);
-                    toast.success(tw("picked"));
-                  }}
-                />
-              )}
-
-              {/* Boʻlim ATAYLAB NOMSIZ. «Kontent» — dasturchi soʻzi edi:
-                  oʻqituvchi test yoki taqdimotni «kontent» deb oʻylamaydi, va
-                  «Materiallar» deb nomlansa sidebar'dagi sahifa bilan
-                  chalkashardi. Nomsiz qoldirish taʼlim platformalari orasida keng tarqalgan naqsh —
-                  u ham bu joyni nomlamaydi.
-                  Joyi — sarlavha va ish rejadan keyin, yoʻriqnomadan OLDIN:
-                  «+ Yaratish» ning asosiy ishi shu (tezkor yaratish yoki
-                  biriktirilgan test va uning «Darsda oʻtkazish» tugmalari),
-                  yoʻriqnoma va standart esa ixtiyoriy. */}
+              {/* Materiallar markazda tartib bilan ko'rinadi, yaratish
+                  vositalari chapda, topshiriq tafsilotlari o'ngda. */}
               <div className="flex flex-col gap-3">{renderContent()}</div>
 
               {/* YOʻRIQNOMA (R203) — maydon tipda, bazada, sync'da va oltita
@@ -1079,19 +988,14 @@ export default function AssignmentEditorOverlay({
 
           <aside
             className={cn(
-              "shrink-0 overflow-hidden border-t border-border bg-card md:border-l md:border-t-0",
-              "md:transition-[width] md:duration-200 md:ease-out",
-              !panelOpen && "hidden md:block",
+              "shrink-0 overflow-hidden border-t border-border bg-card lg:w-[var(--panel-width)] lg:border-l lg:border-t-0",
+              "lg:transition-[width] lg:duration-200 lg:ease-out",
+              !panelOpen && "hidden lg:block",
             )}
-            style={
-              isMobile
-                ? undefined
-                : { width: panelOpen ? detailsPanelWidth : 0 }
-            }
+            style={{ "--panel-width": `${panelOpen ? detailsPanelWidth : 0}px`, "--inner-width": `${detailsPanelWidth}px` } as CSSProperties}
           >
             <div
-              className="flex h-full flex-col"
-              style={isMobile ? undefined : { width: detailsPanelWidth }}
+              className="flex flex-col lg:h-full lg:w-[var(--inner-width)]"
             >
               <EditorSidePanelHeader
                 icon={<SlidersHorizontal />}
@@ -1099,7 +1003,7 @@ export default function AssignmentEditorOverlay({
                 onClose={() => setPanelOpen(false)}
                 closeLabel={t("close")}
               />
-              <div className="flex min-h-0 flex-1 flex-col gap-5 scrollbar-hover overflow-y-auto scrollbar-thin px-5 py-5">
+              <div className="flex flex-col gap-5 px-5 py-5 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:scrollbar-thin">
                 {/* SINFLAR — koʻp tanlov (dars muharriridagi naqsh). */}
                 <div className="flex flex-col">
                   <h3 className="text-label mb-2">{t("classesLabel")}</h3>
@@ -1418,7 +1322,7 @@ export default function AssignmentEditorOverlay({
 
           {/* Ikonka reyi — hozircha bitta band (Tafsilotlar). "Baholash"
               paneli qoʻshilganda (R210) shu yerga ikkinchi ikonka tushadi. */}
-          <nav className="flex w-full shrink-0 flex-row items-center justify-center gap-1.5 border-t border-border bg-card py-2 md:w-14 md:flex-col md:justify-start md:border-l md:border-t-0 md:py-4">
+          <nav className="flex w-full shrink-0 flex-row items-center justify-center gap-1.5 border-t border-border bg-card py-2 lg:w-14 lg:flex-col lg:justify-start lg:border-l lg:border-t-0 lg:py-4">
             <Button
               variant="ghost"
               size="icon-lg"
