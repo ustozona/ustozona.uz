@@ -69,6 +69,7 @@ import {
 type SortDir = "asc" | "desc";
 type SortField = "firstName" | "lastName";
 const UNMARKED = "unmarked";
+const PERIOD_STORAGE_KEY = "attendance-period";
 
 // Sarlavha qatori foni — muted'dan sal ochroq (card tomon aralashtirilgan, lekin opaque)
 const HEADER_BG = "color-mix(in srgb, var(--muted) 55%, var(--card))";
@@ -383,7 +384,23 @@ export default function AttendanceView({
   // Davr granularligi — "Oy" (bitta oy) yoki "Chorak" (akademik chorak toʻlaligicha,
   // dars kunlari `quarter.range` boʻyicha; navigatsiya choraklar boʻylab) yoki
   // "Yil" (faol oʻquv yilining barcha dars kunlari bitta jadvalda).
-  const [period, setPeriod] = useState<"month" | "quarter" | "year">("month");
+  // Tanlov brauzerda eslab qolinadi (`periodPref`) — har kirganda qayta tanlash
+  // shart emas. Amaldagi `period` esa undan hosila: tanlangan rejim hozir
+  // mumkin boʻlmasa (choraksiz/sozlanmagan yil, demo) "Oy"ga qaytadi, lekin
+  // saqlangan afzallik oʻzgarmaydi.
+  const [periodPref, setPeriodPref] = useState<"month" | "quarter" | "year">("month");
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(PERIOD_STORAGE_KEY);
+      if (saved === "month" || saved === "quarter" || saved === "year") setPeriodPref(saved);
+    } catch {}
+  }, []);
+  const setPeriod = (v: "month" | "quarter" | "year") => {
+    setPeriodPref(v);
+    try {
+      localStorage.setItem(PERIOD_STORAGE_KEY, v);
+    } catch {}
+  };
   const [onlyAttention, setOnlyAttention] = useState(false);
   
   // Bugungi sana yil diapazonidan tashqaridaligi bo'yicha ogohlantirish (bir martalik yopish uchun)
@@ -534,12 +551,12 @@ export default function AttendanceView({
 
   // Oʻquv yili choraklarga boʻlinmay qolsa (masalan davrsiz shablonga
   // oʻtilsa) — "Chorak" rejimida qolib ketmaslik uchun "Oy"ga qaytariladi.
-  useEffect(() => {
-    if (period === "quarter" && calendar.quarters.length === 0) setPeriod("month");
-    // Yil rejimi — tanlagich yashiringan boʻlsa (demo/tur yoki yil sozlanmagan)
-    // va ‹ › oʻchiq boʻlsa, foydalanuvchi oyga qaytolmay qolmasin.
-    if (period === "year" && (demoMode || !isCalendarConfigured(calendar))) setPeriod("month");
-  }, [period, calendar, demoMode]);
+  // Yil rejimi — tanlagich yashiringan boʻlsa (demo/tur yoki yil sozlanmagan)
+  // va ‹ › oʻchiq boʻlsa, foydalanuvchi oyga qaytolmay qolmasin.
+  const period: "month" | "quarter" | "year" =
+    periodPref === "quarter" && calendar.quarters.length === 0 ? "month"
+    : periodPref === "year" && (demoMode || !isCalendarConfigured(calendar)) ? "month"
+    : periodPref;
 
   // Bugungi ustunga avtoscroll — jadval ochilganda (yoki oy/sinf almashganda)
   // bugungi sana koʻrinishda boʻlsa, ustun markazga keltiriladi.
