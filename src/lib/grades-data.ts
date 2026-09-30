@@ -57,6 +57,10 @@ export type Student = {
       belgisi allaqachon bor katak yopilmaydi. */
   joinedAt?: string;
   leftAt?: string;
+  /** Bola sinfga BIR NECHA marta kirib-chiqqan boʻlsa — barcha davrlari
+      (faqat 2+ davr boʻlganda; `joinedAt`/`leftAt` esa OXIRGI davrniki).
+      Server yozadi, mijoz faqat oʻqiydi (`isMemberOn`). */
+  periods?: { from: string | null; to: string | null }[];
 };
 
 // Topic = baholash turi (Tests, Homework, Projects ...)

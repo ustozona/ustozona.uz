@@ -1,7 +1,9 @@
 import "server-only";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
-import { classes, enrollments, students } from "@/server/db/schema";
+import { classes, enrollmentPeriods, enrollments, students } from "@/server/db/schema";
+import { mergePeriods } from "@/lib/membership";
+import { syncEnrollmentCache } from "@/server/dal/enrollment-periods";
 import { ForbiddenError } from "@/server/session";
 import { requireWorkspace, visibleStudentIds } from "@/server/workspace";
 import { writeWorkspaceAudit } from "./workspace-audit";
@@ -49,6 +51,7 @@ type StudentTable = {
 
 const STUDENT_TABLES: StudentTable[] = [
   { table: "enrollments", keys: ["class_id"] },
+  { table: "student_moves" },
   { table: "grades", keys: ["assignment_id"] },
   { table: "attendance_records", keys: ["class_id", "date"] },
   { table: "student_accommodations", keys: ["kind", "scope", "scope_ref"] },
@@ -179,6 +182,61 @@ export async function mergeStudents(survivorId: string, loserId: string): Promis
   const loser = rows.find((r) => r.id === loserId)!;
 
   await db.transaction(async (tx) => {
+    /* Ikkala bola ham yozilgan sinflarda aʼzolik DAVRLARI birlashtiriladi
+       (birlashma oraligʻi): keyingi qadam dublikatning `enrollments`
+       qatorini oʻchiradi va uning davrlari cascade bilan yoʻqoladi —
+       oldin ular tirik bolaga koʻchirilishi kerak (spec §6). Bir
+       sinfga koʻchadigan (faqat dublikatda bor) yozilishning davrlari
+       `ON UPDATE CASCADE` bilan oʻzi ergashadi. */
+    const shared = await tx
+      .select({ classId: enrollments.classId })
+      .from(enrollments)
+      .where(eq(enrollments.studentId, loserId));
+    const survivorClasses = new Set(
+      (await tx
+        .select({ classId: enrollments.classId })
+        .from(enrollments)
+        .where(eq(enrollments.studentId, survivorId))).map((r) => r.classId)
+    );
+    for (const { classId } of shared) {
+      if (!survivorClasses.has(classId)) continue;
+      const rows = await tx
+        .select({
+          from: enrollmentPeriods.startedOn,
+          to: enrollmentPeriods.endedOn,
+          reason: enrollmentPeriods.exitReason,
+        })
+        .from(enrollmentPeriods)
+        .where(
+          and(
+            eq(enrollmentPeriods.classId, classId),
+            inArray(enrollmentPeriods.studentId, [survivorId, loserId])
+          )
+        );
+      const union = mergePeriods(rows.map((r) => ({ from: r.from, to: r.to })));
+      // Hammasi boʻsh oraliq («kelmadi») boʻlsa ham qatorda kamida bitta davr qolsin.
+      const merged = union.length > 0 ? union : [{ from: rows[0].from, to: rows[0].to }];
+      // Avval eskilarini oʻchiramiz: EXCLUDE ustma-ust tushuvchi oraliq qoʻshtirmaydi.
+      await tx
+        .delete(enrollmentPeriods)
+        .where(
+          and(
+            eq(enrollmentPeriods.classId, classId),
+            inArray(enrollmentPeriods.studentId, [survivorId, loserId])
+          )
+        );
+      await tx.insert(enrollmentPeriods).values(
+        merged.map((p) => ({
+          classId,
+          studentId: survivorId,
+          startedOn: p.from,
+          endedOn: p.to,
+          exitReason: p.to ? (rows.find((r) => r.to === p.to)?.reason ?? null) : null,
+        }))
+      );
+      await syncEnrollmentCache(tx, classId, [survivorId]);
+    }
+
     for (const t of STUDENT_TABLES) {
       const tbl = sql.identifier(t.table);
       const col = sql.identifier(t.column ?? "student_id");

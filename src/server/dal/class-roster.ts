@@ -1,10 +1,10 @@
 import "server-only";
-import { and, asc, eq, inArray, isNotNull, or } from "drizzle-orm";
+import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
-import { enrollments, students } from "@/server/db/schema";
-import { memberOnSql } from "@/server/db/membership";
+import { enrollmentPeriods, enrollments, students } from "@/server/db/schema";
+import { periodOnSql } from "@/server/db/membership";
 import { todayTashkentKey } from "@/lib/date-keys";
-import type { MembershipSpan } from "@/lib/membership";
+import type { MembershipPeriod, MembershipSpan } from "@/lib/membership";
 
 /* ════════════════════════════════════════════════════════════════════
    SINF ROʻYXATI — «kim shu kuni shu guruhda?» ning YAGONA server manbasi.
@@ -14,9 +14,11 @@ import type { MembershipSpan } from "@/lib/membership";
    qoʻshilish, AI konteksti, admin statistikasi) ketgan bola «hali shu
    sinfda» deb hisoblanardi.
 
-   Qoida — `memberOnSql` (server/db/membership.ts), mijozdagi `isMemberOn`
-   bilan AYNAN bir xil: yarim-ochiq [started_at, ended_at), null = chegara
-   yoʻq. Arxivlangan oʻquvchi (`status = archived`) roʻyxatga kirmaydi.
+   Qoida — `memberOnSql` / `periodOnSql` (server/db/membership.ts),
+   mijozdagi `isMemberOn` bilan AYNAN bir xil: yarim-ochiq
+   [started_on, ended_on), null = chegara yoʻq. Haqiqat manbai —
+   `enrollment_periods`; `enrollments.started_at/ended_at` faqat kesh.
+   Arxivlangan oʻquvchi (`status = archived`) roʻyxatga kirmaydi.
 
    ⚠️ Ruxsat tekshiruvi BU YERDA YOʻQ — chaqiruvchi (`assertTeachesClass`
    va h.k.) oʻzi qiladi.
@@ -29,19 +31,27 @@ export type RosterMember = {
   leftAt: string | null;
 };
 
-/** Sinfda `date` kuni aʼzo boʻlganlar, jurnal tartibida. */
+/** Sinfda `date` kuni aʼzo boʻlganlar, jurnal tartibida. `joinedAt` /
+    `leftAt` — `date` ni qamragan DAVRniki (bola qaytgan boʻlsa — oʻsha stint). */
 export async function rosterOn(classId: string, date: string): Promise<RosterMember[]> {
   const rows = await db
     .select({
       id: students.id,
       name: students.name,
       status: students.status,
-      joinedAt: enrollments.startedAt,
-      leftAt: enrollments.endedAt,
+      joinedAt: enrollmentPeriods.startedOn,
+      leftAt: enrollmentPeriods.endedOn,
     })
     .from(enrollments)
     .innerJoin(students, eq(students.id, enrollments.studentId))
-    .where(and(eq(enrollments.classId, classId), memberOnSql(date)))
+    .innerJoin(
+      enrollmentPeriods,
+      and(
+        eq(enrollmentPeriods.classId, enrollments.classId),
+        eq(enrollmentPeriods.studentId, enrollments.studentId)
+      )
+    )
+    .where(and(eq(enrollments.classId, classId), periodOnSql(date)))
     .orderBy(asc(enrollments.sortOrder), asc(students.createdAt));
 
   return rows
@@ -62,8 +72,10 @@ const CHUNK = 400;
 
 /**
  * Chegarasi bor aʼzoliklar: `(classId|studentId) → oraliq`. Chegarasiz
- * (oddiy) yozilishlar qaytarilmaydi — ular har kuni aʼzo, soʻrovni
- * kichik tutish uchun. Yozuvlarni saralash (davomat serveri) uchun.
+ * (bitta `[NULL, NULL)` davrli, oddiy) yozilishlar qaytarilmaydi — ular har
+ * kuni aʼzo, soʻrovni kichik tutish uchun. Bola sinfga bir necha marta
+ * kirgan boʻlsa — `periods` bilan barcha davrlari (yozuvlarni saralash:
+ * davomat serveri).
  *
  * Soʻrovlar ketma-ket: bitta amalda pool'dan koʻp parallel soʻrov
  * Supavisor'da osilib qoladi.
@@ -78,21 +90,35 @@ export async function boundedSpans(
   for (let i = 0; i < uniqStudents.length; i += CHUNK) {
     const rows = await db
       .select({
-        classId: enrollments.classId,
-        studentId: enrollments.studentId,
-        joinedAt: enrollments.startedAt,
-        leftAt: enrollments.endedAt,
+        classId: enrollmentPeriods.classId,
+        studentId: enrollmentPeriods.studentId,
+        from: enrollmentPeriods.startedOn,
+        to: enrollmentPeriods.endedOn,
       })
-      .from(enrollments)
+      .from(enrollmentPeriods)
       .where(
         and(
-          inArray(enrollments.classId, [...new Set(classIds)]),
-          inArray(enrollments.studentId, uniqStudents.slice(i, i + CHUNK)),
-          or(isNotNull(enrollments.startedAt), isNotNull(enrollments.endedAt))
+          inArray(enrollmentPeriods.classId, [...new Set(classIds)]),
+          inArray(enrollmentPeriods.studentId, uniqStudents.slice(i, i + CHUNK))
         )
-      );
+      )
+      .orderBy(sql`${enrollmentPeriods.startedOn} ASC NULLS FIRST`);
+    const byKey = new Map<string, MembershipPeriod[]>();
     for (const r of rows) {
-      out.set(spanKey(r.classId, r.studentId), { joinedAt: r.joinedAt, leftAt: r.leftAt });
+      const key = spanKey(r.classId, r.studentId);
+      const list = byKey.get(key) ?? [];
+      list.push({ from: r.from, to: r.to });
+      byKey.set(key, list);
+    }
+    for (const [key, periods] of byKey) {
+      if (periods.length === 1) {
+        const [p] = periods;
+        if (p.from === null && p.to === null) continue;
+        out.set(key, { joinedAt: p.from, leftAt: p.to });
+      } else {
+        const last = periods[periods.length - 1];
+        out.set(key, { joinedAt: last.from, leftAt: last.to, periods });
+      }
     }
   }
   return out;

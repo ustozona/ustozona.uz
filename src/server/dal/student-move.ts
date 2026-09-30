@@ -1,7 +1,8 @@
 import "server-only";
 import { and, eq, inArray, isNull } from "drizzle-orm";
 import { db } from "@/server/db/client";
-import { academicYears, classes, enrollments } from "@/server/db/schema";
+import { academicYears, classes, enrollments, studentMoves } from "@/server/db/schema";
+import { closeOpenPeriods, openPeriods } from "@/server/dal/enrollment-periods";
 import { ForbiddenError } from "@/server/session";
 import {
   requireWorkspace, taughtClassIds, type WorkspaceContext,
@@ -187,38 +188,43 @@ export async function moveStudents(input: MoveStudentsInput): Promise<MoveStuden
   await db.transaction(async (tx) => {
     const ids = openRows.map((r) => r.id);
 
-    // 1) Eski yozilish YOPILADI — oʻchirilmaydi. Oʻtgan yil jurnali
-    //    roster'ni shu jadvaldan quradi; qator yoʻqolsa bolaning eski
-    //    baholari egasiz qolib koʻrinmay ketadi (spec §4).
-    await tx
-      .update(enrollments)
-      .set({ endedAt: date })
-      .where(
-        and(
-          eq(enrollments.classId, fromClassId),
-          inArray(enrollments.studentId, ids),
-          isNull(enrollments.endedAt)
-        )
-      );
-
-    // 2) Yangi sinfga yozilish. Bola ilgari u yerda boʻlib chiqib
-    //    ketgan boʻlsa `ended_at` tozalanadi — qaytib kelish ham shu
-    //    yoʻldan oʻtadi, yangi qator yaratilmaydi.
-    await tx
-      .insert(enrollments)
+    // 0) Koʻchirish HODISASI — bitta buyruq, bola boʻyicha bitta qator
+    //    (spec §4.3). Ikkala davr shunga bogʻlanadi.
+    const moves = await tx
+      .insert(studentMoves)
       .values(
-        openRows.map((r) => ({
-          classId: toClassId,
-          studentId: r.id,
-          sortOrder: r.sortOrder,
-          startedAt: date,
-          endedAt: null,
+        ids.map((studentId) => ({
+          workspaceId: ctx.workspaceId,
+          studentId,
+          fromClassId,
+          toClassId,
+          effectiveOn: date,
         }))
       )
-      .onConflictDoUpdate({
-        target: [enrollments.classId, enrollments.studentId],
-        set: { startedAt: date, endedAt: null },
-      });
+      .returning({ id: studentMoves.id, studentId: studentMoves.studentId });
+    const moveIdOf = new Map(moves.map((m) => [m.studentId, m.id]));
+
+    // 1) Eski davr YOPILADI — oʻchirilmaydi. Oʻtgan yil jurnali roster'ni
+    //    shu davrdan quradi; qator yoʻqolsa bolaning eski baholari egasiz
+    //    qolib koʻrinmay ketadi (spec §4).
+    await closeOpenPeriods(tx, {
+      classId: fromClassId,
+      studentIds: ids,
+      endedOn: date,
+      reason: "moved",
+      moveIdOf,
+    });
+
+    // 2) Yangi sinfda YANGI davr. Bola ilgari u yerda boʻlib chiqib
+    //    ketgan boʻlsa — qaytish: eski davr yopiq qoladi (tarix saqlanadi),
+    //    yangisi qoʻshiladi. Sana eski davr bilan kesishsa — rad etiladi.
+    await openPeriods(tx, {
+      classId: toClassId,
+      studentIds: ids,
+      startedOn: date,
+      sortOrderOf: new Map(openRows.map((r) => [r.id, r.sortOrder])),
+      moveIdOf,
+    });
   });
 
   return { moved: openRows.length };

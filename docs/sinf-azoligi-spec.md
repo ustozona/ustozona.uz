@@ -199,7 +199,21 @@ Mijoz tomonidagi qoida — `lib/membership.ts` (`isMemberOn`,
 dagi toʻrt joy tuzatildi; davomat server guardi ikkala chegarani
 tekshiradi; eski sinf davomati bolani chiqish sanasigacha oxirida
 koʻrsatadi; jurnalda ikki tomonlama yopiq kataklar va Q1.
-`rosterDuring` / `membershipOf` — PR-2 (davr jadvali) bilan.
+**PR-2 da bajarilgan (davr jadvali, 0049):** `enrollment_periods` va
+`student_moves`; davrlar ustma-ust tushmaydi (`EXCLUDE`), `enrollments` ga
+default-davr triggeri (LessonLab boti yozganda ham). `memberOnSql` /
+`periodOnSql` (server/db/membership.ts) davr jadvalidan oʻqiydi;
+`rosterOn` va `boundedSpans` ham; mobil sinxron va admin statistikasi
+ham. Yozish — faqat `dal/enrollment-periods.ts` (`openPeriods`,
+`closeOpenPeriods`, `reopenLatestPeriods`) orqali, `enrollments.started_at/
+ended_at` keshi har safar oxirgi davrdan qayta yoziladi. Koʻchirish
+`student_moves` yozadi va ikkala davrni `move_id` bilan bogʻlaydi; bolani
+qaytarish — yangi davr (tarix saqlanadi); bolalarni birlashtirish umumiy
+sinflarda davrlarni birlashma oraligʻiga keltiradi. Mijozga bola 2+
+davrli boʻlsagina `Student.periods` boradi (`isMemberOn` ularni hisobga
+oladi). Prod uchun qoʻlda SQL: `drizzle/PROD-0049-azolik-davrlari.sql`.
+`rosterDuring` / `membershipOf` — PR-3 (profil tarixi) bilan: hozir
+chaqiruvchisi yoʻq.
 
 ## 6. Yozish amallari
 
