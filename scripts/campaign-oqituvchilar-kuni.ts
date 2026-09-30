@@ -7,7 +7,8 @@ import postgres from "postgres";
      npm run campaign:oqituvchilar-kuni -- --kanal=email                       — QURUQ YURISH (dev)
      npm run campaign:oqituvchilar-kuni -- --kanal=email --prod                — QURUQ YURISH (jonli)
      npm run campaign:oqituvchilar-kuni -- --kanal=email --prod --only=siz@gmail.com --sinov --variant=sinf --yes   — SINOV
-     npm run campaign:oqituvchilar-kuni -- --kanal=email --prod --yes          — HAQIQATAN
+     npm run campaign:oqituvchilar-kuni -- --kanal=email --prod --yes          — HAQIQATAN (1 soatga)
+     npm run campaign:oqituvchilar-kuni -- --kanal=email --prod --vaqt=2026-10-01T08:00+05:00 --yes   — aniq vaqtga
 
    ⛔ `--yes` boʻlmasa hech narsa yuborilmaydi va bazaga yozilmaydi.
 
@@ -28,7 +29,17 @@ const PROD = process.argv.includes("--prod");
 const YES = process.argv.includes("--yes");
 const KANAL = process.argv.find((a) => a.startsWith("--kanal="))?.slice("--kanal=".length);
 const ONLY = process.argv.find((a) => a.startsWith("--only="))?.slice("--only=".length) ?? null;
-const KECHIKISH_SOAT = ONLY ? 0 : 1;
+/** `--vaqt=2026-10-01T08:00+05:00` — emailni aniq vaqtga rejalashtirish (Resend, 30 kungacha).
+    Berilmasa: ommaviy — 1 soatdan keyin, `--only` — darhol. Faqat email uchun. */
+const VAQT = process.argv.find((a) => a.startsWith("--vaqt="))?.slice("--vaqt=".length) ?? null;
+let KECHIKISH_SOAT = ONLY ? 0 : 1;
+if (VAQT) {
+  const ms = Date.parse(VAQT) - Date.now();
+  if (!Number.isFinite(ms) || ms <= 0 || ms > 30 * 24 * 3600_000) {
+    throw new Error("--vaqt kelajakdagi, 30 kun ichidagi vaqt boʻlsin (masalan 2026-10-01T08:00+05:00).");
+  }
+  KECHIKISH_SOAT = ms / 3_600_000;
+}
 /** Sinov: faqat `--only` bilan. «Allaqachon yuborilgan» tekshiruvi oʻtkaziladi,
     jurnalga yozilmaydi. `--variant=sinf|jadval|faol|bot` — xat variantini tanlash. */
 const SINOV = process.argv.includes("--sinov");
@@ -43,6 +54,7 @@ async function main() {
   if (KANAL !== "email" && KANAL !== "telegram") {
     throw new Error("--kanal=email yoki --kanal=telegram kerak.");
   }
+  if (VAQT && KANAL !== "email") throw new Error("--vaqt faqat --kanal=email uchun (Telegram xabari darhol ketadi).");
   if (SINOV && !ONLY) throw new Error("--sinov faqat --only=email bilan ishlaydi.");
   if (VARIANT && !["sinf", "jadval", "faol", "bot"].includes(VARIANT)) {
     throw new Error("--variant=sinf | jadval | faol | bot");
