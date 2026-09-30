@@ -59,6 +59,11 @@ type Row = {
   planReady: boolean;
 };
 
+/** Bot butunlay jim turadigan kunlar (umumxalq bayrami, dam olish). Ustoz
+    taqvimida bayram belgilanmagan boʻlsa ham: bu kunning ertalabki va kechki
+    xabari, shuningdek shu kunga yuboriladigan «Ertaga» xabari chiqmaydi. */
+const JIM_KUNLAR: readonly string[] = ["2026-10-01"];
+
 const MAX_ROWS = 12;
 const MAX_TASK_TITLES = 3;
 
@@ -162,6 +167,7 @@ function taskBlock(label: string, list: Task[]): string[] {
 export function buildDigest(input: DigestInput): DigestMessage | null {
   const { kind, todayKey, siteUrl } = input;
   const targetKey = kind === "evening" ? addDaysKey(todayKey, 1) : todayKey;
+  if (JIM_KUNLAR.includes(todayKey) || JIM_KUNLAR.includes(targetKey)) return null;
 
   // Yakshanba va taʼtilda slot yoʻq; qoʻlda qoʻyilgan sessiya boʻlsa baribir chiqadi.
   const rows = dayRows(targetKey, input);
