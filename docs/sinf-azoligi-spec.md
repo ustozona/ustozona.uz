@@ -322,6 +322,7 @@ PR-1 dan keyin 2–5 ekranlarga tegmaydi — faqat `roster.ts` ichi almashadi.
 
 ## 10. Ochiq savollar
 
-1. Sinf paneli statistikasi (Keldi / Kelmadi / Davomat) ketgan bolaning
-   aʼzolik kunlaridagi yozuvlarini hisoblasinmi? Standart — ha (maxraj
-   aʼzolik kunlari). Hozir faqat joriy roʻyxat hisoblanadi.
+1. ✅ Sinf paneli statistikasi (Keldi / Kelmadi / Davomat) ketgan bolaning
+   aʼzolik kunlaridagi yozuvlarini hisoblaydi (2026-09-30): maxraj —
+   aʼzolik kunlari, arxivlanganlar chiqarilgan
+   (`hooks/useClassPanelStats.ts`).
