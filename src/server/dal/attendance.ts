@@ -18,7 +18,9 @@ import {
   type AttendanceRecord,
   type AttendanceStatusDef,
 } from "@/lib/attendance-data";
-import type { AttendanceBatch } from "@/lib/sync/attendance-batch";
+import type { AttendanceBatch, RecordKey, RecordUpsert } from "@/lib/sync/attendance-batch";
+import { isMemberOn } from "@/lib/membership";
+import { boundedSpans, spanKey } from "@/server/dal/class-roster";
 
 /* ════════════════════════════════════════════════════════════════════
    ATTENDANCE DAL — useAttendanceStore'ning server tomoni.
@@ -99,7 +101,76 @@ export async function getAttendancePayload(): Promise<AttendancePayload> {
   };
 }
 
-export async function applyAttendanceBatch(batch: AttendanceBatch): Promise<void> {
+/* ────────────────────────────────────────────────────────────────────
+   AʼZOLIK ORALIGʻI — bola sinfda BOʻLMAGAN kunga (qoʻshilishidan oldin
+   yoki ketganidan keyin) YANGI belgi yozilmaydi. Qoida — `isMemberOn`,
+   oraliqlar — `boundedSpans` (class-roster.ts).
+
+   UI ham shu kataklarni yopadi, lekin qoida serverda ham turishi shart:
+   ommaviy amal, eskirgan sahifa yoki mobil ilova yopiq katakka yozishi
+   mumkin.
+
+   ⚠️ Faqat YANGI yozuv rad etiladi. Bazada allaqachon bor yozuvni
+   oʻzgartirish/izoh qoʻshish — RUXSAT: sana koʻchirish paytida
+   kiritilgani uchun tarix sana ORQASIDA qolishi mumkin (kech kiritilgan
+   koʻchirish, sinfga qaytish — `started_at` yangi sanaga yoziladi) va
+   jadval uni yashirmaydi (AttendanceView `isCellClosed`).
+
+   Rad etilganlar JIMGINA tashlanmaydi: chaqiruvchiga qaytariladi, sayt
+   ularni store'dan olib tashlab foydalanuvchiga aytadi.
+   ──────────────────────────────────────────────────────────────────── */
+const keyOf = (...parts: string[]) => parts.join("|");
+
+const sameRecord = (k: RecordKey) =>
+  and(
+    eq(attendanceRecords.classId, k.classId),
+    eq(attendanceRecords.studentId, k.studentId),
+    eq(attendanceRecords.date, k.date)
+  );
+
+async function splitByMembership(
+  rows: RecordUpsert[]
+): Promise<{ accepted: RecordUpsert[]; rejected: RecordUpsert[] }> {
+  const none = { accepted: rows, rejected: [] as RecordUpsert[] };
+  if (rows.length === 0) return none;
+
+  /* Faqat chegarasi bor aʼzoliklar olinadi — oddiy sinfda bu soʻrov boʻsh
+     qaytadi va ikkinchi soʻrov umuman ketmaydi. */
+  const spans = await boundedSpans(
+    rows.map((r) => r.classId),
+    rows.map((r) => r.studentId)
+  );
+  if (spans.size === 0) return none;
+
+  const outside = rows.filter((r) => {
+    const span = spans.get(spanKey(r.classId, r.studentId));
+    return !!span && !isMemberOn(span, r.date);
+  });
+  if (outside.length === 0) return none;
+
+  const existing = new Set<string>();
+  for (const part of chunks(outside)) {
+    const found = await db
+      .select({
+        classId: attendanceRecords.classId,
+        studentId: attendanceRecords.studentId,
+        date: attendanceRecords.date,
+      })
+      .from(attendanceRecords)
+      .where(or(...part.map(sameRecord)));
+    for (const e of found) existing.add(keyOf(e.classId, e.studentId, e.date));
+  }
+
+  const rejected = outside.filter((r) => !existing.has(keyOf(r.classId, r.studentId, r.date)));
+  if (rejected.length === 0) return none;
+  const dropped = new Set(rejected);
+  return { accepted: rows.filter((r) => !dropped.has(r)), rejected };
+}
+
+/** Rad etilgan yozuvlar (`rejected`) — bola sinfda boʻlmagan kunga YANGI belgi. */
+export async function applyAttendanceBatch(
+  batch: AttendanceBatch
+): Promise<{ rejected: RecordKey[] }> {
   const teacher = await requireTeacher();
   const tid = teacher.id;
   const now = new Date();
@@ -153,9 +224,10 @@ export async function applyAttendanceBatch(batch: AttendanceBatch): Promise<void
   const ownClasses = new Set(classIds);
   const ownStudents = new Set(studentIds);
 
-  const recordUpserts = batch.recordsUpsert.filter(
+  const scoped = batch.recordsUpsert.filter(
     (r) => ownClasses.has(r.classId) && ownStudents.has(r.studentId)
   );
+  const { accepted: recordUpserts, rejected } = await splitByMembership(scoped);
   for (const part of chunks(recordUpserts)) {
     await db
       .insert(attendanceRecords)
@@ -190,16 +262,12 @@ export async function applyAttendanceBatch(batch: AttendanceBatch): Promise<void
       .where(
         and(
           eq(attendanceRecords.teacherId, tid),
-          or(
-            ...part.map((k) =>
-              and(
-                eq(attendanceRecords.classId, k.classId),
-                eq(attendanceRecords.studentId, k.studentId),
-                eq(attendanceRecords.date, k.date)
-              )
-            )
-          )
+          or(...part.map(sameRecord))
         )
       );
   }
+
+  return {
+    rejected: rejected.map(({ classId, studentId, date }) => ({ classId, studentId, date })),
+  };
 }

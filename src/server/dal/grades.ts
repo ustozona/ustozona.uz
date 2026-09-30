@@ -171,6 +171,7 @@ export async function getGradesPayload(): Promise<Record<string, ClassData>> {
             .select({
               classId: enrollments.classId,
               endedAt: enrollments.endedAt,
+              startedAt: enrollments.startedAt,
               student: students,
             })
             .from(enrollments)
@@ -190,13 +191,26 @@ export async function getGradesPayload(): Promise<Record<string, ClassData>> {
   for (const r of rosterRows) {
     const cd = map[r.classId];
     if (!cd) continue;
+    /* Aʼzolik oraligʻi `[joinedAt, leftAt)` — davomat va jurnal undan
+       tashqaridagi belgisiz kataklarni yopadi (lib/membership.ts). */
+    const student = {
+      ...rowToStudent(r.student),
+      ...(r.startedAt ? { joinedAt: r.startedAt } : {}),
+      ...(r.endedAt ? { leftAt: r.endedAt } : {}),
+    };
+    /* ⛔ Chiqish sanasi bor HAR bola — kelajak sana boʻlsa ham —
+       `formerStudents` ga. `students` ga tushgan bola uchun snapshot sync
+       (`applyGradesBatch`) yozilishni «ochiq» deb qayta yozadi
+       (`ended_at = NULL`): rejalashtirilgan koʻchirish sinf tahrirlanganda
+       jimgina bekor boʻlardi. Kelajak sanagacha ekranlar uni
+       `leftAt` boʻyicha koʻrsatadi (davomatda kataklar ochiq). */
     if (r.endedAt) {
       /* ⛔ `students` ga TUSHMAYDI — aks holda chiqib ketgan bola davomat
          roʻyxatida va yangi topshiriqda paydo boʻlardi. Jurnal uni shu
          maydondan oʻzi qoʻshib koʻrsatadi. */
-      (cd.formerStudents ??= []).push({ ...rowToStudent(r.student), leftAt: r.endedAt });
+      (cd.formerStudents ??= []).push(student);
     } else {
-      cd.students.push(rowToStudent(r.student));
+      cd.students.push(student);
     }
   }
   // Roster STANDART tartibi — ism boʻyicha alifbo (oʻzbek kolatsiyasi).
@@ -346,6 +360,11 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
 
       // Sinfga bogʻlanish endi YOZILISH orqali. `sortOrder` shu yerda,
       // chunki bola ikki guruhda turlicha tartibda turishi mumkin.
+      //
+      // `started_at` bu yerda ATAYLAB yozilmaydi (NULL = sana koʻrsatilmagan):
+      // oddiy qoʻshishda oʻqituvchi sinfni yil oʻrtasida kiritib, oldingi
+      // haftalar davomatini toʻldirishi mumkin. Sanani faqat koʻchirish
+      // amali qoʻyadi (lib/membership.ts, docs/sinf-azoligi-spec.md).
       await tx
         .insert(enrollments)
         .values(

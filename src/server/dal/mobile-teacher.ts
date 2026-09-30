@@ -1,11 +1,12 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
-import { and, asc, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, ne, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import { assignments, attendanceRecords, attendanceStatuses, behaviorEvents, behaviorSkills, classes, enrollments, grades, students } from "@/server/db/schema";
 import { ForbiddenError, requireTeacher } from "@/server/session";
 import { assertTeachesClass, visibleClassIds } from "@/server/workspace";
-import { activeClassRoster } from "@/server/dal/class-roster";
+import { activeClassRoster, rosterOn } from "@/server/dal/class-roster";
+import { memberOnSql } from "@/server/db/membership";
 import { applyAttendanceBatch } from "@/server/dal/attendance";
 import { applyGradesBatch } from "@/server/dal/grades";
 import { applyBehaviorBatch, getBehaviorPayload } from "@/server/dal/behavior";
@@ -123,7 +124,7 @@ export type MobileAttendanceSheet = {
 export async function getMobileAttendance(classId: string, date: string): Promise<MobileAttendanceSheet> {
   const ctx = await assertTeachesClass(classId);
   const [roster, statuses, records] = await Promise.all([
-    activeClassRoster(classId),
+    rosterOn(classId, date),
     activeStatuses(ctx.teacherId),
     db
       .select({ studentId: attendanceRecords.studentId, status: attendanceRecords.status })
@@ -137,29 +138,63 @@ export async function getMobileAttendance(classId: string, date: string): Promis
       ),
   ]);
   const byStudent = new Map(records.map((r) => [r.studentId, r.status]));
+  /* Varaq — SHU KUNI sinfda boʻlganlar (qoʻshilishidan oldin ham, ketganidan
+     keyin ham chiqmaydi: belgi baribir saqlanmasdi). Shu kunga yozuvi
+     allaqachon bor bola esa aʼzolikdan tashqarida boʻlsa ham koʻrinadi —
+     tarix yashirilmaydi (sana keyin tuzatilgan boʻlishi mumkin). */
+  const inRoster = new Set(roster.map((s) => s.id));
+  const extraIds = records.map((r) => r.studentId).filter((id) => !inRoster.has(id));
+  const extra = extraIds.length
+    ? await db
+        .select({ id: students.id, name: students.name })
+        .from(students)
+        // Arxivlangan bola saytdagi kabi koʻrinmaydi — yozuvi boʻlsa ham.
+        .where(and(inArray(students.id, extraIds), ne(students.status, "archived")))
+    : [];
   return {
     classId,
     date,
     statuses: statuses.map(({ key, label, tone }) => ({ key, label, tone })),
-    students: roster.map((s) => ({ id: s.id, name: s.name, status: byStudent.get(s.id) ?? null })),
+    students: [...roster, ...extra].map((s) => ({
+      id: s.id,
+      name: s.name,
+      status: byStudent.get(s.id) ?? null,
+    })),
   };
 }
 
+/** `rejected` — belgisi saqlanmagan oʻquvchilar id'si: bola shu kuni sinfda emas edi. */
 export async function setMobileAttendance(
   classId: string,
   date: string,
   marks: { studentId: string; status: string }[]
-): Promise<void> {
+): Promise<{ rejected: string[] }> {
   const ctx = await assertTeachesClass(classId);
-  const [statuses, roster] = await Promise.all([activeStatuses(ctx.teacherId), activeClassRoster(classId)]);
+  // Varaq bilan bir xil qamrov: shu kuni aʼzolar + shu kunga yozuvi borlar.
+  const [statuses, roster, existing] = await Promise.all([
+    activeStatuses(ctx.teacherId),
+    rosterOn(classId, date),
+    db
+      .select({ studentId: attendanceRecords.studentId })
+      .from(attendanceRecords)
+      .innerJoin(students, eq(students.id, attendanceRecords.studentId))
+      .where(
+        and(
+          eq(attendanceRecords.classId, classId),
+          eq(attendanceRecords.date, date),
+          ne(students.status, "archived")
+        )
+      ),
+  ]);
   const allowed = new Set(statuses.map((s) => s.key));
-  const rosterIds = new Set(roster.map((s) => s.id));
+  const rosterIds = new Set([...roster.map((s) => s.id), ...existing.map((r) => r.studentId)]);
   const recordsUpsert = marks
     .filter((m) => rosterIds.has(m.studentId) && allowed.has(m.status))
     .map((m) => ({ classId, studentId: m.studentId, date, status: m.status, note: null }));
-  if (recordsUpsert.length === 0) return;
+  if (recordsUpsert.length === 0) return { rejected: [] };
   // Egalik filtri va idempotent upsert — saytdagi bilan aynan bir yoʻl.
-  await applyAttendanceBatch({ statusesUpsert: [], statusesDelete: [], recordsUpsert, recordsDelete: [] });
+  const result = await applyAttendanceBatch({ statusesUpsert: [], statusesDelete: [], recordsUpsert, recordsDelete: [] });
+  return { rejected: result.rejected.map((k) => k.studentId) };
 }
 
 /* ── Tezkor baho ─────────────────────────────────────────────────────
@@ -337,7 +372,10 @@ export async function giveMobileBehavior(
 export type MobileSync = {
   date: string;
   classes: { id: string; name: string; subject: string | null }[];
-  rosters: Record<string, { id: string; name: string }[]>;
+  /** Bugun (`date`) sinfda boʻlganlar. Aʼzolik oraligʻi `[joinedAt, leftAt)` —
+      faqat chegarasi bor bolada: undan tashqaridagi kunlarga yangi belgi
+      saqlanmaydi (masalan kelajak sanaga koʻchirilgan bolaning `leftAt`). */
+  rosters: Record<string, { id: string; name: string; joinedAt?: string; leftAt?: string }[]>;
   timetable: { day: number; classId: string; startMin: number; endMin: number; id: string }[];
   statuses: { key: string; label: string; tone: string }[];
   attendance: Record<string, Record<string, Record<string, string>>>; // date → class → student → status
@@ -382,10 +420,13 @@ export async function getMobileSync(date: string): Promise<MobileSync> {
   const [rosterRows, statuses, records, totals, columnRows] = await Promise.all([
     classIds.length
       ? db
-          .select({ classId: enrollments.classId, id: students.id, name: students.name, status: students.status })
+          .select({ classId: enrollments.classId, id: students.id, name: students.name, status: students.status, joinedAt: enrollments.startedAt, leftAt: enrollments.endedAt })
           .from(enrollments)
           .innerJoin(students, eq(students.id, enrollments.studentId))
-          .where(and(inArray(enrollments.classId, classIds), isNull(enrollments.endedAt)))
+          // Faqat BUGUN (`date`) sinfda boʻlganlar — ilova roʻyxatni bugungi
+          // varaq sifatida koʻrsatadi va `leftAt` ni hali oʻqimaydi: yaqinda
+          // ketgan bola bu yerda boʻlsa, unga qoʻyilgan belgi rad etilardi.
+          .where(and(inArray(enrollments.classId, classIds), memberOnSql(date)))
       : Promise.resolve([]),
     activeStatuses(tid),
     classIds.length
@@ -419,7 +460,12 @@ export async function getMobileSync(date: string): Promise<MobileSync> {
   const rosters: MobileSync["rosters"] = {};
   for (const r of rosterRows) {
     if (r.status === "archived") continue;
-    (rosters[r.classId] ??= []).push({ id: r.id, name: r.name });
+    (rosters[r.classId] ??= []).push({
+      id: r.id,
+      name: r.name,
+      ...(r.joinedAt ? { joinedAt: r.joinedAt } : {}),
+      ...(r.leftAt ? { leftAt: r.leftAt } : {}),
+    });
   }
   for (const list of Object.values(rosters)) list.sort((a, b) => a.name.localeCompare(b.name, "uz"));
 

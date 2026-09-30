@@ -93,6 +93,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { studentProfileHref } from "@/lib/student-profile";
+import { hasLeft, isMemberOn } from "@/lib/membership";
+import { todayKey } from "@/lib/date-keys";
 
 function LetterAvg({
   percent,
@@ -283,6 +285,22 @@ export default function GradesTable({
     return m;
   }, [grades]);
 
+  /* Boshqa sinfga KETGANLAR (`leftAt <= bugun`) jadvalda faqat eski baholari
+     uchun turadi: sinf statistikasi (oʻrtacha, formativ, baholanmaganlar soni)
+     faqat JORIY oʻquvchilar boʻyicha hisoblanadi. Kelajak sanaga koʻchirilgan
+     bola hali joriy — server roʻyxatlari bilan bir xil (`hasLeft`). */
+  const today = todayKey();
+  const isGone = (s: (typeof students)[number]) => hasLeft(s, today);
+  const activeStudents = useMemo(
+    () => students.filter((s) => !hasLeft(s, today)),
+    [students, today]
+  );
+  const activeGrades = useMemo(() => {
+    if (activeStudents.length === students.length) return grades;
+    const ids = new Set(activeStudents.map((s) => s.id));
+    return grades.filter((g) => ids.has(g.studentId));
+  }, [activeStudents, students, grades]);
+
   const rawTotals = useMemo(
     () => calcStudentTotals(students, grades, assignments, topics),
     [students, grades, assignments, topics]
@@ -311,12 +329,12 @@ export default function GradesTable({
   }, [assignments, topics, topicMap, colFilter]);
 
   const assignmentAverages = useMemo(
-    () => calcAssignmentAverages(orderedAssignments, grades),
-    [orderedAssignments, grades]
+    () => calcAssignmentAverages(orderedAssignments, activeGrades),
+    [orderedAssignments, activeGrades]
   );
   const classAverage = useMemo(
-    () => classSummativeAverage(students, assignments, grades, topics),
-    [students, assignments, grades, topics]
+    () => classSummativeAverage(activeStudents, assignments, grades, topics),
+    [activeStudents, assignments, grades, topics]
   );
   // Formativ ustuni — har oʻquvchining oxirgi 3 formativ ishi mediani.
   const formativeById = useMemo(() => {
@@ -327,8 +345,8 @@ export default function GradesTable({
     return m;
   }, [students, assignments, grades, topics]);
   const classFormative = useMemo(
-    () => classFormativeRecent(students, assignments, grades, topics),
-    [students, assignments, grades, topics]
+    () => classFormativeRecent(activeStudents, assignments, grades, topics),
+    [activeStudents, assignments, grades, topics]
   );
   /** Ustun boʻyicha saralash: yangi ustun → oʻsish; oʻsha ustun → yoʻnalish teskari. */
   const toggleSort = useCallback(
@@ -364,6 +382,8 @@ export default function GradesTable({
   const sortedStudents = useMemo(() => {
     const byName = sortField === "firstName" || sortField === "lastName";
     return [...students].sort((a, b) => {
+      // Ketganlar har doim roʻyxat OXIRIDA (saralashdan qatʼi nazar).
+      if (isGone(a) !== isGone(b)) return isGone(a) ? 1 : -1;
       if (byName) {
         const na = splitName(a.name);
         const nb = splitName(b.name);
@@ -396,6 +416,16 @@ export default function GradesTable({
     [grades]
   );
 
+  /* Topshiriq sanasida bola bu sinfda boʻlmagan — qoʻshilishidan oldin
+     (yangi sinf) yoki ketganidan keyin (eski sinf): katak yopiq, «baholanmagan»
+     ga ham kirmaydi. Haqiqiy baho yoki Q/T belgisi oldindan bor boʻlsa
+     yopilmaydi: tarix yashirilmaydi (boʻsh baho yozuvi hisobga olinmaydi). */
+  const isClosedCell = (s: (typeof students)[number], a: (typeof assignments)[number]) => {
+    if (!a.date || isMemberOn(s, a.date)) return false;
+    const g = gradeMap.get(`${s.id}:${a.id}`);
+    return !(g && ((g.score !== null && g.score !== undefined) || g.missing || g.isMissing));
+  };
+
   // Baho kiritgandan keyin keyingi katakka o‘tish (klaviatura navigatsiyasi).
   function moveEditing(curS: string, curA: string, move: Move) {
     if (!move) {
@@ -408,13 +438,23 @@ export default function GradesTable({
       setEditingCell(null);
       return;
     }
-    let ns = sIdx,
-      na = aIdx;
-    if (move === "down") ns = Math.min(sIdx + 1, filteredStudents.length - 1);
-    if (move === "up") ns = Math.max(sIdx - 1, 0);
-    if (move === "right") na = Math.min(aIdx + 1, orderedAssignments.length - 1);
-    if (move === "left") na = Math.max(aIdx - 1, 0);
-    setEditingCell({ s: filteredStudents[ns].id, a: orderedAssignments[na].id });
+    /* Yoʻnalish boʻyicha keyingi OCHIQ katakka oʻtiladi. Yopiq kataklar
+       (qoʻshilishdan oldin / ketgandan keyin) ustun oʻrtasida ham boʻlishi
+       mumkin — ularda muharrir ochilmaydi, shuning uchun sakrab oʻtiladi.
+       Chetga yetilsa (yoki oldinda faqat yopiqlar) — joriy katakda qoladi. */
+    const dRow = move === "down" ? 1 : move === "up" ? -1 : 0;
+    const dCol = move === "right" ? 1 : move === "left" ? -1 : 0;
+    let ns = sIdx + dRow,
+      na = aIdx + dCol;
+    while (ns >= 0 && ns < filteredStudents.length && na >= 0 && na < orderedAssignments.length) {
+      if (!isClosedCell(filteredStudents[ns], orderedAssignments[na])) {
+        setEditingCell({ s: filteredStudents[ns].id, a: orderedAssignments[na].id });
+        return;
+      }
+      ns += dRow;
+      na += dCol;
+    }
+    setEditingCell({ s: curS, a: curA });
   }
 
   function handleCreate(type: "assignment" | "reuse" | "topic") {
@@ -560,7 +600,8 @@ export default function GradesTable({
                 const topic = topicMap.get(a.topicId ?? "");
                 const hex = topic ? TOPIC_COLOR_HEX[topic.color] : null;
                 const draftCount = grades.filter((g) => g.assignmentId === a.id && g.isDraft).length;
-                const ungradedCount = students.filter((s) => {
+                const ungradedCount = activeStudents.filter((s) => {
+                  if (isClosedCell(s, a)) return false;
                   const gg = gradeMap.get(`${s.id}:${a.id}`);
                   return !gg || (gg.score === null && !gg.missing);
                 }).length;
@@ -729,7 +770,7 @@ export default function GradesTable({
                 <LetterAvg
                   percent={classAverage}
                   classId={classData.info.id}
-                  hasData={rawTotals.some((t) => t.summary.summativeCount > 0)}
+                  hasData={rawTotals.some((t) => !isGone(t.student) && t.summary.summativeCount > 0)}
                 />
               </TableCell>
             </TableRow>
@@ -757,12 +798,18 @@ export default function GradesTable({
                           <span
                             className={cn(
                               "min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap font-semibold decoration-muted-foreground/40 underline-offset-4 group-hover/name:underline",
-                              /* Boshqa sinfga koʻchgan — jurnalda faqat eski
+                              /* Boshqa sinfga ketgan — jurnalda faqat eski
                                  baholari uchun turibdi. Soʻnik koʻrinish uni
                                  joriy roʻyxatdan ajratadi. */
-                              s.leftAt && "text-muted-foreground"
+                              isGone(s) && "text-muted-foreground"
                             )}
-                            title={s.leftAt ? `Boshqa sinfga koʻchgan (${s.leftAt})` : undefined}
+                            title={
+                              s.leftAt
+                                ? isGone(s)
+                                  ? `Boshqa sinfga koʻchgan (${s.leftAt})`
+                                  : `${s.leftAt} dan boshqa sinfga koʻchadi`
+                                : undefined
+                            }
                           >
                             {s.name}
                           </span>
@@ -791,6 +838,24 @@ export default function GradesTable({
                     const isEditing = editingCell?.s === s.id && editingCell?.a === a.id;
                     const hasScore = g?.score !== null && g?.score !== undefined;
 
+                    /* Topshiriq sanasida bola bu sinfda boʻlmagan — katak yopiq
+                       (qarang: isClosedCell). */
+                    if (isClosedCell(s, a)) {
+                      return (
+                        <TableCell
+                          key={a.id}
+                          title={
+                            s.joinedAt && a.date && a.date < s.joinedAt
+                              ? `Sinfga ${s.joinedAt} dan qoʻshilgan`
+                              : `Boshqa sinfga koʻchgan (${s.leftAt})`
+                          }
+                          className="border-b border-r border-border p-0 w-16 min-w-16 h-16 text-center cursor-not-allowed bg-muted/30 text-muted-foreground/40"
+                        >
+                          —
+                        </TableCell>
+                      );
+                    }
+
                     return (
                       <TableCell
                         key={a.id}
@@ -810,7 +875,12 @@ export default function GradesTable({
                               moveEditing(s.id, a.id, move);
                             }}
                             onPaste={(values) =>
-                              onPasteColumn(s.id, a.id, filteredStudents.map((x) => x.id), values)
+                              onPasteColumn(
+                                s.id,
+                                a.id,
+                                filteredStudents.filter((x) => !isClosedCell(x, a)).map((x) => x.id),
+                                values
+                              )
                             }
                             onCancel={() => setEditingCell(null)}
                           />
@@ -830,10 +900,12 @@ export default function GradesTable({
                     className="sticky right-0 z-10 border-b border-l border-border p-0 w-16 min-w-16 max-w-16 h-16"
                     style={{ backgroundColor: HOLAT_BG }}
                   >
+                    {/* Ketgan bolaning yakuniy koʻrsatkichi eski sinfda chiqmaydi —
+                        u faqat yangi sinf baholaridan (Q1, docs/sinf-azoligi-spec.md). */}
                     <LetterAvg
                       percent={total.percent}
                       classId={classData.info.id}
-                      hasData={total.summary.summativeCount > 0}
+                      hasData={!isGone(s) && total.summary.summativeCount > 0}
                     />
                   </TableCell>
                 </TableRow>

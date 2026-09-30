@@ -7,6 +7,7 @@ import { user, session, teachers } from "@/server/db/schema";
 import { hasActivityViews } from "@/server/db/views";
 import { ACTIVATED_MIN_DAYS } from "@/lib/faollik";
 import { requireAdmin } from "@/server/session";
+import { todayTashkentKey } from "@/lib/date-keys";
 import { parseUserAgent, type DeviceKind } from "@/lib/user-agent";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -103,6 +104,7 @@ export async function getActivationOverview(): Promise<ActivationOverview> {
      ⚠️ Faollik koʻrinishi 19 ta jadval ustidan UNION qiladi va bu
      soʻrov HAMMA oʻqituvchi uchun ishlaydi. Hozir hajm kichik; sekinlik
      sezilsa koʻrinishni MATERIALIZED qilib, kunlik yangilash kerak. */
+  const today = todayTashkentKey();
   const result = await db.execute(sql`
     WITH scoped AS (
       SELECT t.id, u.name, u.email, u.created_at AS signed_up_at
@@ -123,10 +125,14 @@ export async function getActivationOverview(): Promise<ActivationOverview> {
       JOIN classes c ON c.id = ct.class_id
       GROUP BY ct.teacher_id
     ),
+    /* Faqat BUGUN aʼzo boʻlganlar — boshqa sinfga ketgan bola sanalmaydi.
+       Shart server/db/membership.ts dagi memberOnSql bilan aynan bir xil. */
     stu AS (
       SELECT ct.teacher_id, COUNT(DISTINCT e.student_id)::int AS student_count
       FROM class_teachers ct
       JOIN enrollments e ON e.class_id = ct.class_id
+      WHERE (e.started_at IS NULL OR e.started_at <= ${today})
+        AND (e.ended_at IS NULL OR e.ended_at > ${today})
       GROUP BY ct.teacher_id
     )
     /* ⛔ FAOLLIK BU YERDA QAYTA TAʼRIFLANMAYDI — v_teacher_activity_summary.

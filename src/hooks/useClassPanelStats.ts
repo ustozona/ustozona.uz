@@ -7,6 +7,7 @@ import { useBehaviorStore } from '@/store/useBehaviorStore';
 import { statusWeights } from '@/lib/attendance-data';
 import { isCalendarConfigured } from '@/lib/academic-calendar';
 import { todayKey } from '@/lib/date-keys';
+import { isMemberOn } from '@/lib/membership';
 import { useCalendarStore } from '@/store/useCalendarStore';
 import { classBalance } from '@/lib/behavior-data';
 import { classSummativeAverage } from '@/lib/grades-stats';
@@ -86,8 +87,15 @@ export function useClassPanelStats(page: Page, classId: string): {
         // Yozuvlar — useAttendanceStore, roster — useGradesStore (server-backed).
         // SSR va klient birinchi renderi mos boʻlishi uchun mount'dan keyin.
         if (!mounted) return undefined;
-        const roster = classDataMap[classId]?.students ?? [];
-        if (roster.length === 0) return undefined;
+        const classData = classDataMap[classId];
+        /* Joriy oʻquvchilar + boshqa sinfga ketganlar: ketgan bolaning
+           aʼzolik kunlaridagi yozuvlari ham hisobga kiradi (maxraj — aʼzolik
+           kunlari, docs/sinf-azoligi-spec.md). Arxivlanganlar sahifadagi
+           kabi chiqarilgan. */
+        const roster = [...(classData?.students ?? []), ...(classData?.formerStudents ?? [])].filter(
+          (s) => s.status !== "archived"
+        );
+        if ((classData?.students ?? []).length === 0) return undefined;
 
         // FAQAT faol oʻquv yili: yil boshidan bugungacha (kelajak sanadagi
         // yozuvlar ham, oldingi yillarniki ham hisobga olinmaydi).
@@ -95,10 +103,11 @@ export function useClassPanelStats(page: Page, classId: string): {
         const today = todayKey();
         const configured = isCalendarConfigured(calendar);
         const end = configured && calendar.range.end < today ? calendar.range.end : today;
-        const rosterIds = new Set(roster.map((s) => s.id));
+        const spanById = new Map(roster.map((s) => [s.id, s]));
         const records = (attendanceRecords ?? []).filter(
           (r) =>
-            rosterIds.has(r.studentId) &&
+            spanById.has(r.studentId) &&
+            isMemberOn(spanById.get(r.studentId)!, r.date) &&
             r.status !== "unmarked" &&
             r.date <= end &&
             (!configured || r.date >= calendar.range.start)

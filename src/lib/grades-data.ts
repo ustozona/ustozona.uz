@@ -43,10 +43,19 @@ export type Student = {
   parentName?: string;    // ota yoki onasining ismi sharifi
   parentPhone?: string;
   studentPhone?: string;
-  /** Shu sinfdan CHIQQAN sana ("YYYY-MM-DD"). Faqat `ClassData.formerStudents`
-      ichidagi yozuvlarda toʻladi — joriy roʻyxatdagi bolada har doim
-      `undefined`. Bir bola boshqa sinfda hali oʻqiyotgan boʻlishi mumkin,
-      shuning uchun bu maydon bolaga emas, YOZILISHGA tegishli. */
+  /** Aʼzolik oraligʻi `[joinedAt, leftAt)` — lib/membership.ts.
+      Maydonlar bolaga emas, shu sinfdagi YOZILISHGA tegishli: bola boshqa
+      sinfda hali oʻqiyotgan boʻlishi mumkin.
+
+      `joinedAt` — sinfdagi birinchi kun; `undefined` = boshidan (oddiy
+      qoʻshish, eski yozuv — hech qaysi kun yopilmaydi).
+      `leftAt` — sinfda BOʻLMAGAN birinchi kun. Toʻlgan boʻlsa (kelajak sana
+      ham) bola `ClassData.formerStudents` da, `students` da emas — sync
+      invarianti, grades.ts `getGradesPayload` izohiga qarang.
+
+      Oraliqdan tashqaridagi BELGISIZ kataklar davomat va jurnalda yopiq;
+      belgisi allaqachon bor katak yopilmaydi. */
+  joinedAt?: string;
   leftAt?: string;
 };
 

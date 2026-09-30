@@ -1,3 +1,5 @@
+import { todayTashkentKey } from "@/lib/date-keys";
+
 /* ════════════════════════════════════════════════════════════════════
    AI KVOTA — kun/oy hisobi va kreditlar YAGONA MANBADA.
 
@@ -21,9 +23,9 @@
 
 const TASHKENT_OFFSET_MS = 5 * 3600_000;
 
-/** Asia/Tashkent boʻyicha YYYY-MM-DD. */
+/** Asia/Tashkent boʻyicha YYYY-MM-DD (manba — `todayTashkentKey`). */
 export function todayTashkent(): string {
-  return new Date(Date.now() + TASHKENT_OFFSET_MS).toISOString().slice(0, 10);
+  return todayTashkentKey();
 }
 
 /** Bugundan `days` kun oldingi Toshkent kuni (YYYY-MM-DD). */

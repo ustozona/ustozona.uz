@@ -47,3 +47,8 @@ export type StatusUpsert = z.infer<typeof statusUpsertSchema>;
 export type RecordUpsert = z.infer<typeof recordUpsertSchema>;
 export type RecordKey = z.infer<typeof recordKeySchema>;
 export type AttendanceBatch = z.infer<typeof attendanceBatchSchema>;
+
+/** Server javobi. `rejected` — bola sinfga yozilishidan OLDINGI kunga yozilmoqchi
+    boʻlgan YANGI belgilar: ular bazaga tushmadi, sayt ularni store'dan olib tashlab
+    foydalanuvchiga xabar beradi (jimgina yoʻqolib qolmasin). */
+export type AttendanceSyncResult = { ok: true; rejected: RecordKey[] };

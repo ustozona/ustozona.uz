@@ -2,6 +2,9 @@
 
 Holat: 1–4-qadam bajarildi (2026-09-08). 5-qadam (sudrab tortish) qoldi.
 
+➡️ Davomi: [sinf-azoligi-spec.md](sinf-azoligi-spec.md) — davrlar modeli,
+sanani tuzatish, yagona `roster.ts` (2026-09-29, taklif).
+
 ## 1. Muammo
 
 Falonchi oʻtgan yili 5-A da oʻqigan, bu yil 6-B ga (oʻtgan yilgi 5-B)
@@ -141,6 +144,37 @@ muammoning aynan oʻzi qaytadi.
 Tegiladigan soʻrovlar: `dal/grades.ts:168`, `dal/baholash-sheets.ts:106`,
 `dal/grades.ts:529` (oʻchirish qamrovi), `dal/lessonlab-import.ts:253`,
 `dal/student-merge.ts:114`.
+
+### 4.1. Davomat: yozilishdan oldingi kunlar
+
+> ⚠️ Bu boʻlim tarixiy. Amaldagi qoida — [sinf-azoligi-spec.md](sinf-azoligi-spec.md):
+> oraliq ikki tomonlama `[started_at, ended_at)`, qoida `isMemberOn`
+> (`lib/membership.ts`), server roʻyxati `dal/class-roster.ts`.
+
+Yangi sinfda `started_at` dan OLDINGI kunlarga davomat qoʻyilmaydi. Qoida
+bitta va uch joyda ishlaydi:
+
+| Joy | Nima qiladi |
+|---|---|
+| Davomat jadvali | oldingi BELGISIZ kataklar yopiladi (shtrixli, tooltipda sana); «Belgilanmagan» soni va ommaviy «Hammasi keldi» ularni hisobga olmaydi |
+| Server (`applyAttendanceBatch`) | yangi yozuvni rad etadi va `rejected` sifatida QAYTARADI; sayt ularni store'dan olib tashlab xabar beradi |
+| Mobil | varaq yopiq kundagi bolani koʻrsatmaydi; POST javobida `rejected: [studentId]`; sinxron roʻyxatida `joinedAt` |
+
+⚠️ Faqat BELGISIZ katak yopiladi. Yozuvi allaqachon bor katak ochiq qoladi va
+uni oʻzgartirish mumkin (server ham ruxsat beradi): koʻchirish kech kiritilsa
+yoki bola sinfga qaytsa `started_at` yangi sanaga YOZILADI (ustiga yoziladi),
+eski davrning belgilari sana orqasida qolib, jimgina koʻrinmay ketmasligi kerak.
+
+`started_at = NULL` (oddiy qoʻshish, eski yozuvlar) — hech qaysi kun yopilmaydi:
+oʻqituvchi sinfni yil oʻrtasida kiritib, oldingi haftalar davomatini
+toʻldirishi mumkin, shuning uchun «qoʻshilgan kun = bugun» deb taxmin
+QILINMAYDI. Sana faqat koʻchirish dialogida oʻqituvchi aytganda yoziladi.
+
+Ochiq savol: koʻchirish sanasi xato kiritilsa (dialog sukut boʻyicha «bugun»)
+uni tuzatadigan amal YOʻQ. Eski sinf oʻquvchini butunlay roʻyxatdan olib
+tashlagani uchun sana orasidagi kunlarda bola na eski, na yangi sinfda
+belgilanadi. Sanani tuzatish (yoki eski sinfda `ended_at` gacha koʻrsatish)
+alohida qaror talab qiladi.
 
 ## 5. Interfeys
 

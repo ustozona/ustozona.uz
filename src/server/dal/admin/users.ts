@@ -26,6 +26,7 @@ import {
 } from "@/server/db/views";
 import { ACTIVATED_MIN_DAYS, QUIET_AFTER_DAYS } from "@/lib/faollik";
 import { requireAdmin } from "@/server/session";
+import { todayTashkentKey } from "@/lib/date-keys";
 
 /* ════════════════════════════════════════════════════════════════════
    ADMIN → FOYDALANUVCHILAR — kross-tenant oʻqish.
@@ -194,7 +195,10 @@ async function listTeacherTotals(ids: string[]): Promise<TeacherTotals[]> {
              WHERE ct.teacher_id = t.id AND c.archived_at IS NULL) AS class_count,
           (SELECT COUNT(DISTINCT e.student_id)::int FROM class_teachers ct
              JOIN enrollments e ON e.class_id = ct.class_id
-             WHERE ct.teacher_id = t.id) AS student_count
+             WHERE ct.teacher_id = t.id
+               -- faqat bugun aʼzolar (server/db/membership.ts memberOnSql bilan bir xil)
+               AND (e.started_at IS NULL OR e.started_at <= ${todayTashkentKey()})
+               AND (e.ended_at IS NULL OR e.ended_at > ${todayTashkentKey()})) AS student_count
         FROM teachers t
         WHERE t.id IN (${idList})
       `);

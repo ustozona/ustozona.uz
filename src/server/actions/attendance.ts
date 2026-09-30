@@ -8,6 +8,7 @@ import {
 import {
   attendanceBatchSchema,
   type AttendanceBatch,
+  type AttendanceSyncResult,
 } from "@/lib/sync/attendance-batch";
 
 /* Attendance server actions — yupqa qatlam: zod-parse → DAL.
@@ -19,7 +20,7 @@ export async function fetchAttendanceAction(): Promise<AttendancePayload> {
 
 export async function syncAttendanceAction(
   batch: AttendanceBatch
-): Promise<{ ok: true }> {
-  await applyAttendanceBatch(attendanceBatchSchema.parse(batch));
-  return { ok: true };
+): Promise<AttendanceSyncResult> {
+  const { rejected } = await applyAttendanceBatch(attendanceBatchSchema.parse(batch));
+  return { ok: true, rejected };
 }

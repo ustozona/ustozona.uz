@@ -1,8 +1,10 @@
 import "server-only";
 import { randomUUID, randomBytes } from "node:crypto";
-import { and, eq } from "drizzle-orm";
+import { and, asc, eq, ne } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import { enrollments, quizSessions, sessionParticipants, students } from "@/server/db/schema";
+import { memberOnSql } from "@/server/db/membership";
+import { todayTashkentKey } from "@/lib/date-keys";
 import { hashParticipantToken, ForbiddenError, UnauthorizedError } from "@/server/play/session";
 import { isSessionPastDue } from "@/lib/assess/session-due";
 import { scheduleNudge } from "@/server/realtime/broadcast";
@@ -35,12 +37,20 @@ export async function listRosterByCode(
   if (!session) return null;
 
   // Mehmon oqimi: oʻqituvchi sessiyasi yoʻq, shu bois qamrov join-kod
-  // orqali kelgan sinfning YOZILISH roʻyxatidan olinadi.
+  // orqali kelgan sinfning BUGUNGI roʻyxatidan olinadi — boshqa sinfga
+  // koʻchib ketgan yoki arxivlangan bola tanlovda chiqmaydi.
   return db
     .select({ id: students.id, name: students.name })
     .from(enrollments)
     .innerJoin(students, eq(students.id, enrollments.studentId))
-    .where(eq(enrollments.classId, session.classId));
+    .where(
+      and(
+        eq(enrollments.classId, session.classId),
+        ne(students.status, "archived"),
+        memberOnSql(todayTashkentKey())
+      )
+    )
+    .orderBy(asc(enrollments.sortOrder), asc(students.createdAt));
 }
 
 export async function joinByCode(
@@ -66,7 +76,11 @@ export async function joinByCode(
       .select({ id: enrollments.studentId })
       .from(enrollments)
       .where(
-        and(eq(enrollments.studentId, studentId), eq(enrollments.classId, session.classId))
+        and(
+          eq(enrollments.studentId, studentId),
+          eq(enrollments.classId, session.classId),
+          memberOnSql(todayTashkentKey())
+        )
       );
     if (!student) throw new ForbiddenError("Oʻquvchi shu sinfda topilmadi");
   }
