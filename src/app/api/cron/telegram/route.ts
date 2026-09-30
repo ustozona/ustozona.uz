@@ -1,6 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { isTelegramBotEnabled } from "@/server/telegram/config";
 import { runDigests } from "@/server/telegram/digest";
+import { runTeachersDayGreeting } from "@/server/telegram/teachers-day";
 
 /* /api/cron/telegram — kunlik Telegram xabarlari.
 
@@ -28,7 +29,12 @@ async function handle(request: Request) {
 
   try {
     const result = await runDigests();
-    return Response.json({ ok: true, ...result });
+    // Oʻqituvchilar kuni tabrigi — faqat 1-oktyabr 08:00–12:00, xatosi digestga taʼsir qilmaydi.
+    const tabrik = await runTeachersDayGreeting().catch((err) => {
+      console.error("[cron/telegram] tabrik yiqildi:", err);
+      return null;
+    });
+    return Response.json({ ok: true, ...result, tabrik });
   } catch (err) {
     console.error("[cron/telegram] yiqildi:", err);
     return Response.json({ ok: false }, { status: 500 });
