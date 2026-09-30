@@ -88,6 +88,7 @@ export function sendTeachersDay(
       sinf: `${site}/dashboard/classes`,
       jadval: `${site}/dashboard/timetable`,
       faol: `${site}/dashboard/settings?section=telegram&ulash=1`,
+      bot: `${site}/dashboard`,
     }[variant];
     return {
       subject: (sinov ? "[SINOV] " : "") + OK1_SUBJECT[variant],
