@@ -28,7 +28,9 @@
   "Header": {
     "sidebar": "Sidebar",
     "fullscreen": "Fullscreen",
-    "exitFullscreen": "Exit fullscreen"
+    "exitFullscreen": "Exit fullscreen",
+    "doska": "Board",
+    "games": "Games"
   },
   "RouteLabels": {
     "home": "Home",

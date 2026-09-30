@@ -14,6 +14,7 @@ import NotificationsBell from "@/components/NotificationsBell";
 import FocusTimerPill from "@/components/tasks/FocusTimerPill";
 import GuideHub from "@/components/onboarding/GuideHub";
 import HeaderAccountMenu from "@/components/HeaderAccountMenu";
+import HeaderToolLinks from "@/components/HeaderToolLinks";
 import { Maximize, Minimize } from "lucide-react";
 
 /** Butun oyna (tarayvcher) toʻliq ekran rejimini boshqaradi. */
@@ -108,6 +109,7 @@ export default function Header() {
           qolgani 32px tugmalar boʻlib 375px ga sigʻadi. Fikr bildirish
           `/dashboard/feedback` sahifasida ochiq qoladi. */}
       <div className="flex items-center gap-2 md:gap-3">
+        <HeaderToolLinks />
         <div className="flex items-center gap-1">
           <span className="hidden md:inline-flex">
             <QuickFeedback />

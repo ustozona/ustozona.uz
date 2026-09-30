@@ -28,7 +28,9 @@
   "Header": {
     "sidebar": "Yon panel",
     "fullscreen": "Toʻliq ekran",
-    "exitFullscreen": "Toʻliq ekrandan chiqish"
+    "exitFullscreen": "Toʻliq ekrandan chiqish",
+    "doska": "Doska",
+    "games": "Oʻyinlar"
   },
   "RouteLabels": {
     "home": "Bosh sahifa",

@@ -28,7 +28,9 @@
   "Header": {
     "sidebar": "Боковая панель",
     "fullscreen": "На весь экран",
-    "exitFullscreen": "Выйти из полноэкранного режима"
+    "exitFullscreen": "Выйти из полноэкранного режима",
+    "doska": "Доска",
+    "games": "Игры"
   },
   "RouteLabels": {
     "home": "Главная",
