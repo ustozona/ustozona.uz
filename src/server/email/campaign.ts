@@ -11,6 +11,7 @@ import {
   unsubscribePostUrl,
   unsubscribeUrl,
 } from "./activation";
+import { OK1_SUBJECT, ok1Html, type Ok1Variant } from "./templates/ok1";
 import { TG1_SUBJECT, tg1Html, type Tg1Variant } from "./templates/tg1";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -50,12 +51,63 @@ const DAY_MS = 24 * 60 * 60 * 1000;
  * Xatoni yutadi va sababini qaytaradi — skript har nomzod boʻyicha
  * sanaydi (activation.ts dagi `ActivationResult` izohi).
  */
-export async function sendTelegramInvite(
+export function sendTelegramInvite(
   userId: string,
   variant: Tg1Variant,
   kechikishSoat: number,
 ): Promise<CampaignResult> {
-  const id: CampaignId = "tg1";
+  return yuborKampaniya(userId, "tg1", variant, kechikishSoat, (recipient) => {
+    const site = siteUrl();
+    const ctaUrl = {
+      link: `${site}/dashboard/settings?section=telegram&ulash=1`,
+      start: `${site}/tg`,
+      jadval: `${site}/dashboard/timetable`,
+    }[variant];
+    return {
+      subject: TG1_SUBJECT[variant],
+      html: tg1Html({
+        variant,
+        name: recipient.name,
+        ctaUrl,
+        unsubscribeUrl: unsubscribeUrl(userId),
+      }),
+    };
+  });
+}
+
+/** Oʻqituvchilar kuni tabrigi (1-oktyabr) — ustoz holatiga qarab. */
+export function sendTeachersDay(
+  userId: string,
+  variant: Ok1Variant,
+  kechikishSoat: number,
+): Promise<CampaignResult> {
+  return yuborKampaniya(userId, "ok1", variant, kechikishSoat, (recipient) => {
+    const site = siteUrl();
+    const ctaUrl = {
+      sinf: `${site}/dashboard/classes`,
+      jadval: `${site}/dashboard/timetable`,
+      faol: `${site}/dashboard/settings?section=telegram&ulash=1`,
+    }[variant];
+    return {
+      subject: OK1_SUBJECT[variant],
+      html: ok1Html({
+        variant,
+        name: recipient.name,
+        ctaUrl,
+        siteUrl: site,
+        unsubscribeUrl: unsubscribeUrl(userId),
+      }),
+    };
+  });
+}
+
+async function yuborKampaniya(
+  userId: string,
+  id: CampaignId,
+  variant: string,
+  kechikishSoat: number,
+  yasash: (recipient: { name: string | null }) => { subject: string; html: string },
+): Promise<CampaignResult> {
   try {
     const log = await readCampaignLog(userId);
     if (!log) return "manzil-topilmadi"; // oʻqituvchi emas
@@ -74,19 +126,7 @@ export async function sendTelegramInvite(
     if (!recipient) return "manzil-topilmadi";
     if (FAQAT_TASDIQLANGAN && !recipient.verified) return "tasdiqlanmagan";
 
-    const site = siteUrl();
-    const ctaUrl = {
-      link: `${site}/dashboard/settings?section=telegram&ulash=1`,
-      start: `${site}/tg`,
-      jadval: `${site}/dashboard/timetable`,
-    }[variant];
-    const subject = TG1_SUBJECT[variant];
-    const html = tg1Html({
-      variant,
-      name: recipient.name,
-      ctaUrl,
-      unsubscribeUrl: unsubscribeUrl(userId),
-    });
+    const { subject, html } = yasash(recipient);
 
     const darhol = kechikishSoat <= 0;
     const scheduledFor = new Date(Date.now() + kechikishSoat * 60 * 60 * 1000);
