@@ -56,7 +56,7 @@ export function sendTelegramInvite(
   variant: Tg1Variant,
   kechikishSoat: number,
 ): Promise<CampaignResult> {
-  return yuborKampaniya(userId, "tg1", variant, kechikishSoat, (recipient) => {
+  return yuborKampaniya(userId, "tg1", variant, kechikishSoat, false, (recipient) => {
     const site = siteUrl();
     const ctaUrl = {
       link: `${site}/dashboard/settings?section=telegram&ulash=1`,
@@ -80,8 +80,9 @@ export function sendTeachersDay(
   userId: string,
   variant: Ok1Variant,
   kechikishSoat: number,
+  sinov = false,
 ): Promise<CampaignResult> {
-  return yuborKampaniya(userId, "ok1", variant, kechikishSoat, (recipient) => {
+  return yuborKampaniya(userId, "ok1", variant, kechikishSoat, sinov, (recipient) => {
     const site = siteUrl();
     const ctaUrl = {
       sinf: `${site}/dashboard/classes`,
@@ -89,7 +90,7 @@ export function sendTeachersDay(
       faol: `${site}/dashboard/settings?section=telegram&ulash=1`,
     }[variant];
     return {
-      subject: OK1_SUBJECT[variant],
+      subject: (sinov ? "[SINOV] " : "") + OK1_SUBJECT[variant],
       html: ok1Html({
         variant,
         name: recipient.name,
@@ -106,12 +107,15 @@ async function yuborKampaniya(
   id: CampaignId,
   variant: string,
   kechikishSoat: number,
+  /** Sinov: takror yuborish va kuniga bitta xat qoidasi oʻtkaziladi,
+      jurnalga YOZILMAYDI — oʻzingizga istagancha sinash uchun. */
+  sinov: boolean,
   yasash: (recipient: { name: string | null }) => { subject: string; html: string },
 ): Promise<CampaignResult> {
   try {
     const log = await readCampaignLog(userId);
     if (!log) return "manzil-topilmadi"; // oʻqituvchi emas
-    if (log[id]) return "allaqachon-yuborilgan";
+    if (log[id] && !sinov) return "allaqachon-yuborilgan";
 
     const state = await readState(userId);
     if (state?.optedOut) return "obunadan-chiqqan";
@@ -120,7 +124,7 @@ async function yuborKampaniya(
       ...(state?.sentLog ?? []).map((e) => Date.parse(e.at) || 0),
       state?.scheduledFor?.getTime() ?? 0,
     );
-    if (Math.abs(Date.now() - oxirgi) < DAY_MS) return "bugun-xat-bor";
+    if (!sinov && Math.abs(Date.now() - oxirgi) < DAY_MS) return "bugun-xat-bor";
 
     const recipient = await getRecipient(userId);
     if (!recipient) return "manzil-topilmadi";
@@ -155,7 +159,7 @@ async function yuborKampaniya(
       return "xato";
     }
 
-    await markCampaignSent(userId, id);
+    if (!sinov) await markCampaignSent(userId, id);
     return darhol ? "yuborildi" : "rejalashtirildi";
   } catch (err) {
     console.error(`[campaign] yuborib boʻlmadi (${userId}, ${id}):`, err);

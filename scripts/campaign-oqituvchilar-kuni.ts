@@ -6,7 +6,7 @@ import postgres from "postgres";
    Ishga tushirish (kanal: email | telegram):
      npm run campaign:oqituvchilar-kuni -- --kanal=email                       — QURUQ YURISH (dev)
      npm run campaign:oqituvchilar-kuni -- --kanal=email --prod                — QURUQ YURISH (jonli)
-     npm run campaign:oqituvchilar-kuni -- --kanal=email --prod --only=siz@gmail.com --yes   — SINOV
+     npm run campaign:oqituvchilar-kuni -- --kanal=email --prod --only=siz@gmail.com --sinov --variant=sinf --yes   — SINOV
      npm run campaign:oqituvchilar-kuni -- --kanal=email --prod --yes          — HAQIQATAN
 
    ⛔ `--yes` boʻlmasa hech narsa yuborilmaydi va bazaga yozilmaydi.
@@ -28,6 +28,10 @@ const YES = process.argv.includes("--yes");
 const KANAL = process.argv.find((a) => a.startsWith("--kanal="))?.slice("--kanal=".length);
 const ONLY = process.argv.find((a) => a.startsWith("--only="))?.slice("--only=".length) ?? null;
 const KECHIKISH_SOAT = ONLY ? 0 : 1;
+/** Sinov: faqat `--only` bilan. Telegram sharti va «allaqachon yuborilgan» oʻtkaziladi,
+    jurnalga yozilmaydi. `--variant=sinf|jadval|faol` — xat variantini tanlash. */
+const SINOV = process.argv.includes("--sinov");
+const VARIANT = process.argv.find((a) => a.startsWith("--variant="))?.slice("--variant=".length) ?? null;
 
 type EmailNomzod = { id: string; email: string; name: string | null; variant: "sinf" | "jadval" | "faol" };
 type TgNomzod = { id: string; email: string; name: string | null; chat_id: string; jadvalli: boolean };
@@ -38,6 +42,10 @@ async function main() {
   if (KANAL !== "email" && KANAL !== "telegram") {
     throw new Error("--kanal=email yoki --kanal=telegram kerak.");
   }
+  if (SINOV && !ONLY) throw new Error("--sinov faqat --only=email bilan ishlaydi.");
+  if (VARIANT && !["sinf", "jadval", "faol"].includes(VARIANT)) {
+    throw new Error("--variant=sinf | jadval | faol");
+  }
   const url = PROD ? process.env.PROD_DATABASE_URL : process.env.DATABASE_URL;
   if (!url) throw new Error(`${PROD ? "PROD_DATABASE_URL" : "DATABASE_URL"} topilmadi (.env.local).`);
 
@@ -45,6 +53,7 @@ async function main() {
   const label = host.includes("supabase") ? "SUPABASE — JONLI BAZA" : "NEON — dev bazasi";
   console.log(`\n  Baza: ${label}  (${host})`);
   console.log(`  Kanal: ${KANAL}`);
+  if (SINOV) console.log("  ⚙️  SINOV rejimi: jurnalga yozilmaydi, Telegram sharti oʻtkaziladi");
   console.log(`  Rejim: ${YES ? "⚠️  HAQIQATAN YUBORILADI" : "quruq yurish (hech narsa yuborilmaydi)"}\n`);
 
   const sql = postgres(url, { prepare: false, max: 1, onnotice: () => {} });
@@ -66,14 +75,15 @@ async function main() {
          AND COALESCE(u.banned, false) = false
          AND split_part(lower(u.email), '@', 2) NOT IN ('telegram.invalid', 'example.com', 'test.invalid')
          AND COALESCE(ea.opted_out, false) = false
-         AND (t.prefs -> 'campaigns' -> 'ok1') IS NULL
-         AND NOT EXISTS (SELECT 1 FROM user_telegram ut
+         AND (${SINOV}::boolean OR (t.prefs -> 'campaigns' -> 'ok1') IS NULL)
+         AND (${SINOV}::boolean OR NOT EXISTS (SELECT 1 FROM user_telegram ut
                            JOIN tg_chats c ON c.telegram_id = ut.telegram_id AND c.blocked_at IS NULL
-                          WHERE ut.user_id = u.id)
+                          WHERE ut.user_id = u.id))
          AND (${ONLY}::text IS NULL OR lower(u.email) = lower(${ONLY}))
        ORDER BY variant, u.created_at
     `) as EmailNomzod[];
 
+    if (VARIANT) for (const n of nomzodlar) n.variant = VARIANT as EmailNomzod["variant"];
     const soni = (v: EmailNomzod["variant"]) => nomzodlar.filter((n) => n.variant === v).length;
     console.log(
       `  Nomzod: ${nomzodlar.length} ta  (sinf: ${soni("sinf")}, jadval: ${soni("jadval")}, faol: ${soni("faol")})\n`,
@@ -94,7 +104,7 @@ async function main() {
     const { sendTeachersDay } = await import("../src/server/email/campaign");
     const hisob = new Map<string, number>();
     for (const n of nomzodlar) {
-      const natija = await sendTeachersDay(n.id, n.variant, KECHIKISH_SOAT);
+      const natija = await sendTeachersDay(n.id, n.variant, KECHIKISH_SOAT, SINOV);
       hisob.set(natija, (hisob.get(natija) ?? 0) + 1);
       if (natija !== "yuborildi" && natija !== "rejalashtirildi") {
         console.log(`    ⚠️  ${n.email} → ${natija}`);
@@ -111,7 +121,7 @@ async function main() {
        WHERE c.blocked_at IS NULL
          AND c.marketing_opt_out_at IS NULL
          AND COALESCE(u.banned, false) = false
-         AND (t.prefs -> 'campaigns' -> 'ok1tg') IS NULL
+         AND (${SINOV}::boolean OR (t.prefs -> 'campaigns' -> 'ok1tg') IS NULL)
          AND (${ONLY}::text IS NULL OR lower(u.email) = lower(${ONLY}))
        ORDER BY u.created_at
     `) as TgNomzod[];
@@ -134,7 +144,7 @@ async function main() {
       const salom = ism ? `Hurmatli ${esc(ism)}` : "Hurmatli ustoz";
       let matn: string;
       let tugma: { text: string; url: string } | null = null;
-      if (n.jadvalli) {
+      if (VARIANT ? VARIANT !== "jadval" : n.jadvalli) {
         matn =
           `${salom}, sizni 1-oktyabr — Oʻqituvchi va murabbiylar kuni bilan samimiy tabriklaymiz! 🌷 ` +
           `Kelajak avlodni tarbiyalashdek masʼuliyatli ishingizda doimo zafarlar yor boʻlsin. ` +
@@ -152,7 +162,7 @@ async function main() {
         tugma ? { inline_keyboard: [[tugma]] } : undefined,
       );
       if (res.ok) {
-        await markCampaignSent(n.id, "ok1tg");
+        if (!SINOV) await markCampaignSent(n.id, "ok1tg");
         hisob.set("yuborildi", (hisob.get("yuborildi") ?? 0) + 1);
       } else {
         const sabab = `xato-${res.status}`;
