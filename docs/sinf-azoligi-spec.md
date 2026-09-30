@@ -221,7 +221,20 @@ oladi). Prod uchun qoʻlda SQL: `drizzle/PROD-0049-azolik-davrlari.sql`.
 koʻchirish hodisasi bilan. «Sanani tuzatish» — `correctMoveDate`: hodisa
 boʻyicha ikkala sinfdagi davrni birga oʻzgartiradi, kesh yangilanadi;
 oraliqdan chiqib qolgan davomat yozuvlari OʻCHIRILMAYDI, faqat soni
-ogohlantirish sifatida chiqadi. Qolgan: parallel almashishi (§6.1).
+ogohlantirish sifatida chiqadi.
+
+**Q3 da bajarilgan (2026-09-30):** parallel kaliti — `lib/parallel.ts`
+(`parentClassId` yoki `(grade, section)`; darajasiz guruh — kalitsiz).
+Server qoidani koʻchirish va qaytishda MAJBURLAYDI
+(`assertSingleParallel`, `dal/enrollment-periods.ts`): bola shu sanada
+boshqa parallelda ham aʼzo boʻlsa — sabab bilan rad. Roʻyxat sinxroni
+(qoʻshish) orqali kelgan buzilishni rad etib boʻlmaydi — butun batch
+yiqilardi, klient qayta-qayta yuborardi — shuning uchun u profil
+«Aʼzolik» tabida ogohlantirish sifatida koʻrsatiladi
+(`MembershipHistory.parallelWarning`). Prod (2026-09-30): maʼmuriy sinf
+(`parent_class_id`) hali ishlatilmagan, bitta bola 2 parallelda.
+Qolgan: parallel almashishi (§6.1) — bola bir vaqtda bir necha fan
+guruhida boʻlganda koʻchirish hozir rad etiladi, toʻliq amal keyingi PR.
 
 ## 6. Yozish amallari
 

@@ -43,6 +43,13 @@ export type MembershipHistoryPeriod = {
   move: MembershipHistoryMove | null;
 };
 
+/** Aʼzolik tarixi javobi: davrlar + yaxlitlik ogohlantirishi. */
+export type MembershipHistory = {
+  periods: MembershipHistoryPeriod[];
+  /** Q3 buzilgan boʻlsa (bola bugun bir necha parallelda) — tushuntirish matni. */
+  parallelWarning: string | null;
+};
+
 export type CorrectMoveDateResult = {
   /** Yangi sana bilan oraliqdan chiqib qolgan davomat yozuvlari soni.
       Yozuvlar OʻCHIRILMAYDI — faqat ogohlantirish uchun. */

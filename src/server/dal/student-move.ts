@@ -12,7 +12,12 @@ import {
   assertCanTouchStudent, requireWorkspace, taughtClassIds, type WorkspaceContext,
 } from "@/server/workspace";
 import { gradeForYear } from "@/lib/class-naming";
-import type { CorrectMoveDateResult, MembershipHistoryPeriod } from "@/lib/membership-history";
+import type {
+  CorrectMoveDateResult, MembershipHistory, MembershipHistoryPeriod,
+} from "@/lib/membership-history";
+import { parallelKey } from "@/lib/parallel";
+import { isMemberOn } from "@/lib/membership";
+import { todayTashkentKey } from "@/lib/date-keys";
 
 /* ════════════════════════════════════════════════════════════════════
    OʻQUVCHINI BOSHQA SINFGA KOʻCHIRISH.
@@ -246,7 +251,7 @@ export async function moveStudents(input: MoveStudentsInput): Promise<MoveStuden
  * Faqat shu ish maydonidagi sinflar; koʻrish huquqi — roʻyxat darajasida
  * (`assertCanTouchStudent(…, "roster")`).
  */
-export async function membershipOf(studentId: string): Promise<MembershipHistoryPeriod[]> {
+export async function membershipOf(studentId: string): Promise<MembershipHistory> {
   const ctx = await assertCanTouchStudent(studentId, "roster");
 
   const rows = await db
@@ -254,6 +259,10 @@ export async function membershipOf(studentId: string): Promise<MembershipHistory
       id: enrollmentPeriods.id,
       classId: enrollmentPeriods.classId,
       className: classes.name,
+      parentClassId: classes.parentClassId,
+      grade: classes.grade,
+      section: classes.section,
+      archivedAt: classes.archivedAt,
       from: enrollmentPeriods.startedOn,
       to: enrollmentPeriods.endedOn,
       exitReason: enrollmentPeriods.exitReason,
@@ -306,7 +315,26 @@ export async function membershipOf(studentId: string): Promise<MembershipHistory
 
   // Yangisi tepada; boshlanishi yoʻq (boshidan) davr — eng pastda.
   out.sort((a, b) => (b.from ?? "").localeCompare(a.from ?? ""));
-  return out;
+
+  /* Yaxlitlik (Q3): bola BUGUN bir necha parallelda boʻlmasligi kerak.
+     Qoʻshish roʻyxat sinxroni orqali keladi va uni rad etib boʻlmaydi
+     (butun batch yiqilardi), shuning uchun buzilish shu yerda koʻrsatiladi. */
+  const today = todayTashkentKey();
+  const current = rows.filter(
+    (r) => !r.archivedAt && isMemberOn({ joinedAt: r.from, leftAt: r.to }, today)
+  );
+  const keys = new Map<string, string[]>();
+  for (const r of current) {
+    const key = parallelKey(r);
+    if (key === null) continue;
+    keys.set(key, [...(keys.get(key) ?? []), r.className]);
+  }
+  const parallelWarning =
+    keys.size > 1
+      ? `Bola bugun bir necha parallelda: ${[...keys.values()].map((n) => n.join(", ")).join(" | ")}. ` +
+        "Bir vaqtda bitta parallelda boʻlishi kerak — ortiqcha guruhdan chiqaring yoki koʻchiring."
+      : null;
+  return { periods: out, parallelWarning };
 }
 
 /**
