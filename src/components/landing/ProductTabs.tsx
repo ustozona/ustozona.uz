@@ -32,7 +32,7 @@ import {
 import {
   IconChartSquare,
   IconClipboard,
-  IconWidget,
+  IconBoard,
 } from "@/components/shadcn-space/blocks/hero-01/product-icons";
 import { IconTrafficLight } from "@/components/doska/icons";
 
@@ -100,7 +100,7 @@ const TABS: {
     key: "doska",
     tone: "doska",
     href: "/doska",
-    TabIcon: IconWidget,
+    TabIcon: IconBoard,
     Mock: BoardMock,
     factIcons: [Timer, IconTrafficLight, StickyNote, Zap],
   },
