@@ -2860,6 +2860,7 @@
       "doneTitle": "Ele orınlanǵan pikir joq",
       "doneDesc": "Ámelge asırılǵan usınıs hám tuwırlanǵan qáteler usı jerde kórinedi."
     },
+    "doneGroup": "Orınlanǵanlar ({count})",
     "toast": {
       "replySent": "Juwap jiberildi",
       "replySentDesc": "{author}ǵa xabarnama jiberildi.",

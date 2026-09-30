@@ -2856,6 +2856,7 @@
       "doneTitle": "No completed feedback yet",
       "doneDesc": "Implemented suggestions and fixed bugs appear here."
     },
+    "doneGroup": "Completed ({count})",
     "toast": {
       "replySent": "Reply sent",
       "replySentDesc": "{author} was notified.",

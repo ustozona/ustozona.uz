@@ -23,7 +23,7 @@ import {
   DropdownMenuSeparator, DropdownMenuItem, DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
 import {
-  Search, ArrowUpDown, ListFilter,
+  Search, ArrowUpDown, ListFilter, ChevronDown,
 } from "lucide-react";
 import {
   useFeedbackStore, initialsOf, upvoteCount,
@@ -145,6 +145,9 @@ export default function FeedbackPage() {
       if (sortKey === "votes") sorted.sort((a, b) => upvoteCount(b) - upvoteCount(a));
       else if (sortKey === "new") sorted.sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
       else sorted.sort((a, b) => b.replies.length - a.replies.length);
+      // Yopilganlar (bajarildi/rad) oxirga — sort barqaror, ichki tartib saqlanadi.
+      const closed = (s: string) => (s === "bajarildi" || s === "rad" ? 1 : 0);
+      sorted.sort((a, b) => closed(a.status) - closed(b.status));
       return sorted;
     };
   }, [sortKey]);
@@ -176,6 +179,14 @@ export default function FeedbackPage() {
     if (tab === "all") return feedList;
     return sortItems(filtered.filter((it) => it.status === TAB_STATUS[tab]));
   }, [tab, feedList, filtered, sortItems]);
+
+  // "Hammasi" tabida bajarilganlar yigʻilgan guruhga tushadi; boshqa tab,
+  // holat filtri yoki qidiruv boʻlsa — odatdagidek toʻliq koʻrinadi.
+  const [showDone, setShowDone] = useState(false);
+  const groupDone = tab === "all" && statFilter === "all" && !search.trim();
+  const openList = groupDone ? tabList.filter((it) => it.status !== "bajarildi") : tabList;
+  const doneList = groupDone ? tabList.filter((it) => it.status === "bajarildi") : [];
+  const doneOpen = showDone || openList.length === 0;
 
   const filterActive =
     catFilter !== "all" || statFilter !== "all" || mineOnly || search.trim().length > 0;
@@ -428,7 +439,27 @@ export default function FeedbackPage() {
               <EmptyState filterActive={filterActive} tab={tab} />
             </div>
           ) : (
-            <div className="space-y-3 bg-muted/25 p-3 md:p-4">{tabList.map(renderCard)}</div>
+            <div className="space-y-3 bg-muted/25 p-3 md:p-4">
+              {openList.map(renderCard)}
+              {doneList.length > 0 && (
+                <>
+                  {openList.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setShowDone((v) => !v)}
+                      aria-expanded={doneOpen}
+                      className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <ChevronDown
+                        className={cn("size-4 transition-transform", !doneOpen && "-rotate-90")}
+                      />
+                      {t("doneGroup", { count: doneList.length })}
+                    </button>
+                  )}
+                  {doneOpen && doneList.map(renderCard)}
+                </>
+              )}
+            </div>
           )}
         </div>
       </div>
