@@ -2,11 +2,11 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import { and, asc, eq, inArray, isNull, ne, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
-import { assignments, attendanceRecords, attendanceStatuses, behaviorEvents, behaviorSkills, classes, enrollments, grades, students } from "@/server/db/schema";
+import { assignments, attendanceRecords, attendanceStatuses, behaviorEvents, behaviorSkills, classes, enrollmentPeriods, enrollments, grades, students } from "@/server/db/schema";
 import { ForbiddenError, requireTeacher } from "@/server/session";
 import { assertTeachesClass, visibleClassIds } from "@/server/workspace";
 import { activeClassRoster, rosterOn } from "@/server/dal/class-roster";
-import { memberOnSql } from "@/server/db/membership";
+import { periodOnSql } from "@/server/db/membership";
 import { applyAttendanceBatch } from "@/server/dal/attendance";
 import { applyGradesBatch } from "@/server/dal/grades";
 import { applyBehaviorBatch, getBehaviorPayload } from "@/server/dal/behavior";
@@ -420,13 +420,18 @@ export async function getMobileSync(date: string): Promise<MobileSync> {
   const [rosterRows, statuses, records, totals, columnRows] = await Promise.all([
     classIds.length
       ? db
-          .select({ classId: enrollments.classId, id: students.id, name: students.name, status: students.status, joinedAt: enrollments.startedAt, leftAt: enrollments.endedAt })
+          .select({ classId: enrollments.classId, id: students.id, name: students.name, status: students.status, joinedAt: enrollmentPeriods.startedOn, leftAt: enrollmentPeriods.endedOn })
           .from(enrollments)
           .innerJoin(students, eq(students.id, enrollments.studentId))
+          .innerJoin(
+            enrollmentPeriods,
+            and(eq(enrollmentPeriods.classId, enrollments.classId), eq(enrollmentPeriods.studentId, enrollments.studentId))
+          )
           // Faqat BUGUN (`date`) sinfda boʻlganlar — ilova roʻyxatni bugungi
           // varaq sifatida koʻrsatadi va `leftAt` ni hali oʻqimaydi: yaqinda
           // ketgan bola bu yerda boʻlsa, unga qoʻyilgan belgi rad etilardi.
-          .where(and(inArray(enrollments.classId, classIds), memberOnSql(date)))
+          // `joinedAt`/`leftAt` — bugunni qamragan DAVRniki.
+          .where(and(inArray(enrollments.classId, classIds), periodOnSql(date)))
       : Promise.resolve([]),
     activeStatuses(tid),
     classIds.length

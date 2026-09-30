@@ -126,13 +126,18 @@ export async function getActivationOverview(): Promise<ActivationOverview> {
       GROUP BY ct.teacher_id
     ),
     /* Faqat BUGUN aʼzo boʻlganlar — boshqa sinfga ketgan bola sanalmaydi.
-       Shart server/db/membership.ts dagi memberOnSql bilan aynan bir xil. */
+       Shart server/db/membership.ts dagi memberOnSql bilan aynan bir xil
+       (haqiqat manbai — enrollment_periods). */
     stu AS (
       SELECT ct.teacher_id, COUNT(DISTINCT e.student_id)::int AS student_count
       FROM class_teachers ct
       JOIN enrollments e ON e.class_id = ct.class_id
-      WHERE (e.started_at IS NULL OR e.started_at <= ${today})
-        AND (e.ended_at IS NULL OR e.ended_at > ${today})
+      WHERE EXISTS (
+        SELECT 1 FROM enrollment_periods p
+         WHERE p.class_id = e.class_id AND p.student_id = e.student_id
+           AND (p.started_on IS NULL OR p.started_on::text <= ${today})
+           AND (p.ended_on IS NULL OR p.ended_on::text > ${today})
+      )
       GROUP BY ct.teacher_id
     )
     /* ⛔ FAOLLIK BU YERDA QAYTA TAʼRIFLANMAYDI — v_teacher_activity_summary.

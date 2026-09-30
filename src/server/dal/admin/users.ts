@@ -197,8 +197,11 @@ async function listTeacherTotals(ids: string[]): Promise<TeacherTotals[]> {
              JOIN enrollments e ON e.class_id = ct.class_id
              WHERE ct.teacher_id = t.id
                -- faqat bugun aʼzolar (server/db/membership.ts memberOnSql bilan bir xil)
-               AND (e.started_at IS NULL OR e.started_at <= ${todayTashkentKey()})
-               AND (e.ended_at IS NULL OR e.ended_at > ${todayTashkentKey()})) AS student_count
+               AND EXISTS (
+                 SELECT 1 FROM enrollment_periods p
+                  WHERE p.class_id = e.class_id AND p.student_id = e.student_id
+                    AND (p.started_on IS NULL OR p.started_on::text <= ${todayTashkentKey()})
+                    AND (p.ended_on IS NULL OR p.ended_on::text > ${todayTashkentKey()}))) AS student_count
         FROM teachers t
         WHERE t.id IN (${idList})
       `);

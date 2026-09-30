@@ -7,6 +7,7 @@ import {
   assignments,
   classTeachers,
   classes,
+  enrollmentPeriods,
   enrollments,
   grades,
   students,
@@ -17,6 +18,7 @@ import {
   type StudentRow,
   type TopicRow,
 } from "@/server/db/schema";
+import { reopenLatestPeriods } from "@/server/dal/enrollment-periods";
 import { onClassPresent } from "@/server/email/activation";
 import { requireTeacher } from "@/server/session";
 import {
@@ -184,6 +186,29 @@ export async function getGradesPayload(): Promise<Record<string, ClassData>> {
       db.select().from(grades).where(eq(grades.teacherId, tid)),
     ]);
 
+  /* Bola sinfga bir necha marta kirib-chiqqan boʻlsa — barcha davrlari
+     (`Student.periods`); bitta davrli bolaga `joinedAt`/`leftAt` yetadi.
+     Ketma-ket soʻrov: yuqoridagi `Promise.all` ga qoʻshilmaydi (pool). */
+  const periodRows = myClassIds.length
+    ? await db
+        .select({
+          classId: enrollmentPeriods.classId,
+          studentId: enrollmentPeriods.studentId,
+          from: enrollmentPeriods.startedOn,
+          to: enrollmentPeriods.endedOn,
+        })
+        .from(enrollmentPeriods)
+        .where(inArray(enrollmentPeriods.classId, myClassIds))
+        .orderBy(sql`${enrollmentPeriods.startedOn} ASC NULLS FIRST`)
+    : [];
+  const periodsByPair = new Map<string, { from: string | null; to: string | null }[]>();
+  for (const p of periodRows) {
+    const key = `${p.classId}|${p.studentId}`;
+    const list = periodsByPair.get(key) ?? [];
+    list.push({ from: p.from, to: p.to });
+    periodsByPair.set(key, list);
+  }
+
   const map: Record<string, ClassData> = {};
   for (const c of classRows) {
     map[c.id] = { info: rowToInfo(c), students: [], topics: [], assignments: [], grades: [] };
@@ -197,6 +222,10 @@ export async function getGradesPayload(): Promise<Record<string, ClassData>> {
       ...rowToStudent(r.student),
       ...(r.startedAt ? { joinedAt: r.startedAt } : {}),
       ...(r.endedAt ? { leftAt: r.endedAt } : {}),
+      ...(() => {
+        const periods = periodsByPair.get(`${r.classId}|${r.student.id}`);
+        return periods && periods.length > 1 ? { periods } : {};
+      })(),
     };
     /* ⛔ Chiqish sanasi bor HAR bola — kelajak sana boʻlsa ham —
        `formerStudents` ga. `students` ga tushgan bola uchun snapshot sync
@@ -386,9 +415,23 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
              Eskirgan mijoz ham xavf tugʻdirmaydi: `diffGradesMap`
              roster'ni faqat OʻZGARGAN sinf uchun yuboradi, yaʼni
              qayta ochilish uchun kimdir oʻsha roʻyxatni ataylab
-             tahrir qilishi kerak. */
-          set: { sortOrder: sql`excluded.sort_order`, endedAt: sql`NULL` },
+             tahrir qilishi kerak.
+
+             Endi haqiqat manbai — davr jadvali: quyida `reopenLatestPeriods`
+             oxirgi yopiq davrni ochadi va keshni (`ended_at`) yangilaydi. */
+          set: { sortOrder: sql`excluded.sort_order` },
         });
+
+      /* Yopilgan davr qayta ochiladi (`ended_on = NULL`) — yuqoridagi
+         izohdagi sabab bilan. Yangi bogʻlanishga birinchi davrni bazadagi
+         trigger ochadi; ochiq davri bor bolaga tegilmaydi. */
+      const byClass = new Map<string, string[]>();
+      for (const s of part) {
+        const list = byClass.get(s.classId) ?? [];
+        list.push(s.id);
+        byClass.set(s.classId, list);
+      }
+      for (const [classId, ids] of byClass) await reopenLatestPeriods(tx, classId, ids);
     });
   }
 

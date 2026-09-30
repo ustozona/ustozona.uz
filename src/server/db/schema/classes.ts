@@ -1,5 +1,5 @@
 import {
-  boolean, index, integer, jsonb, pgTable, primaryKey, text, timestamp,
+  boolean, date, foreignKey, index, integer, jsonb, pgTable, primaryKey, text, timestamp, uuid,
   type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 import { user } from "./auth";
@@ -223,7 +223,87 @@ export const enrollments = pgTable(
   ]
 );
 
+/* ────────────────────────────────────────────────────────────────────
+   AʼZOLIK DAVRLARI — «bola shu kuni shu guruhda edimi?» ning HAQIQAT MANBAI.
+   docs/sinf-azoligi-spec.md §4.
+
+   `enrollments` — BOGʻLANISH (kim qaysi guruh bilan bogʻlangan, jurnal
+   raqami); PK oʻzgarmaydi: LessonLab triggeri unga
+   `ON CONFLICT (class_id, student_id)` bilan yozadi. Bola bir guruhga
+   bir necha marta qaytishi mumkin — har stint alohida DAVR.
+
+   `enrollments.started_at/ended_at` — OXIRGI davrning nusxasi (kesh).
+   Uni DAL davr bilan BITTA tranzaksiyada yangilaydi; oʻqish esa davr
+   jadvalidan (`memberOnSql`).
+
+   ⚠️ Jadvalning `EXCLUDE USING gist` cheklovi (davrlar ustma-ust
+   tushmaydi) drizzle sxemasida ifodalanmaydi — u migratsiyada
+   (0049) qoʻlda yozilgan. Yangi davr yozishda buni eʼtiborga oling.
+   ──────────────────────────────────────────────────────────────────── */
+
+export const enrollmentPeriods = pgTable(
+  "enrollment_periods",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    classId: text("class_id").notNull(),
+    studentId: text("student_id").notNull(),
+    /** Guruhdagi birinchi kun, "YYYY-MM-DD". null = boshidan. */
+    startedOn: date("started_on", { mode: "string" }),
+    /** Guruhda BOʻLMAGAN birinchi kun (yarim-ochiq). null = hozir ham shu yerda. */
+    endedOn: date("ended_on", { mode: "string" }),
+    /** moved | left_school | no_show | year_end | removed */
+    exitReason: text("exit_reason"),
+    /** Koʻchirish hodisasi (`student_moves.id`) — koʻchirish boʻlsa. */
+    moveId: uuid("move_id").references((): AnyPgColumn => studentMoves.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    foreignKey({
+      columns: [t.classId, t.studentId],
+      foreignColumns: [enrollments.classId, enrollments.studentId],
+    })
+      .onDelete("cascade")
+      .onUpdate("cascade"),
+    index("enrollment_periods_student_idx").on(t.studentId),
+    index("enrollment_periods_class_idx").on(t.classId),
+  ]
+);
+
+/** Koʻchirish HODISASI: bitta buyruq — eski davrni yopadi, yangisini ochadi. */
+export const studentMoves = pgTable(
+  "student_moves",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    studentId: text("student_id")
+      .notNull()
+      .references(() => students.id, { onDelete: "cascade" }),
+    fromClassId: text("from_class_id")
+      .notNull()
+      .references(() => classes.id, { onDelete: "cascade" }),
+    toClassId: text("to_class_id")
+      .notNull()
+      .references(() => classes.id, { onDelete: "cascade" }),
+    /** Buyruq sanasi: eski davr shu kunda yopiladi, yangisi shu kunda boshlanadi. */
+    effectiveOn: date("effective_on", { mode: "string" }).notNull(),
+    /** Buyruq raqami — ixtiyoriy. */
+    orderNo: text("order_no"),
+    createdBy: text("created_by").references(() => user.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("student_moves_student_idx").on(t.studentId),
+    index("student_moves_from_idx").on(t.fromClassId),
+    index("student_moves_to_idx").on(t.toClassId),
+  ]
+);
+
 export type ClassRow = typeof classes.$inferSelect;
 export type StudentRow = typeof students.$inferSelect;
 export type ClassTeacherRow = typeof classTeachers.$inferSelect;
 export type EnrollmentRow = typeof enrollments.$inferSelect;
+export type EnrollmentPeriodRow = typeof enrollmentPeriods.$inferSelect;
+export type StudentMoveRow = typeof studentMoves.$inferSelect;
