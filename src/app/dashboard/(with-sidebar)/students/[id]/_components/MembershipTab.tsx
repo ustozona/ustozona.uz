@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { toast } from "sonner";
-import { History, Pencil } from "lucide-react";
+import { History, Pencil, TriangleAlert } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,7 @@ import {
   EXIT_REASON_LABEL,
   type CorrectMoveDateResult,
   type ExitReason,
+  type MembershipHistory,
   type MembershipHistoryMove,
   type MembershipHistoryPeriod,
 } from "@/lib/membership-history";
@@ -181,13 +182,13 @@ function CorrectDateDialog({
 }
 
 export default function MembershipTab({ studentId }: { studentId: string }) {
-  const [periods, setPeriods] = React.useState<MembershipHistoryPeriod[] | null>(null);
+  const [history, setHistory] = React.useState<MembershipHistory | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [correcting, setCorrecting] = React.useState<MembershipHistoryMove | null>(null);
 
   const load = React.useCallback(async () => {
     try {
-      setPeriods(unwrap(await getMembershipHistoryAction({ studentId })));
+      setHistory(unwrap(await getMembershipHistoryAction({ studentId })) as MembershipHistory);
       setError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Tarixni yuklab boʻlmadi");
@@ -195,7 +196,7 @@ export default function MembershipTab({ studentId }: { studentId: string }) {
   }, [studentId]);
 
   React.useEffect(() => {
-    setPeriods(null);
+    setHistory(null);
     void load();
   }, [load]);
 
@@ -209,18 +210,29 @@ export default function MembershipTab({ studentId }: { studentId: string }) {
       <PanelBody>
         {error ? (
           <TypographyMuted className="px-5 py-5 text-sm">{error}</TypographyMuted>
-        ) : periods === null ? (
+        ) : history === null ? (
           <TypographyMuted className="px-5 py-5 text-sm">Yuklanmoqda…</TypographyMuted>
-        ) : periods.length === 0 ? (
+        ) : history.periods.length === 0 ? (
           <TypographyMuted className="px-5 py-5 text-sm">
             Bu oʻquvchi hech qaysi sinfga yozilmagan.
           </TypographyMuted>
         ) : (
-          <ul className="divide-y divide-border">
-            {periods.map((p) => (
-              <PeriodRow key={p.id} period={p} onCorrect={setCorrecting} />
-            ))}
-          </ul>
+          <>
+            {history.parallelWarning && (
+              <div
+                role="alert"
+                className="flex items-start gap-2 border-b border-border bg-warning/10 px-5 py-3 text-caption text-foreground"
+              >
+                <TriangleAlert className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden />
+                <span>{history.parallelWarning}</span>
+              </div>
+            )}
+            <ul className="divide-y divide-border">
+              {history.periods.map((p: MembershipHistoryPeriod) => (
+                <PeriodRow key={p.id} period={p} onCorrect={setCorrecting} />
+              ))}
+            </ul>
+          </>
         )}
       </PanelBody>
       <CorrectDateDialog

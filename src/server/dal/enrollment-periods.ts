@@ -1,7 +1,9 @@
 import "server-only";
-import { and, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, ne, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
-import { enrollmentPeriods } from "@/server/db/schema";
+import { classes, enrollmentPeriods } from "@/server/db/schema";
+import { periodOnSql } from "@/server/db/membership";
+import { parallelKey } from "@/lib/parallel";
 import { ForbiddenError } from "@/server/session";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -158,6 +160,71 @@ export async function closeOpenPeriods(
 }
 
 /**
+ * Q3: bir sanada bolaning barcha darajali guruhlari BITTA parallelga
+ * tegishli (docs/sinf-azoligi-spec.md §3, `lib/parallel.ts`).
+ *
+ * `studentIds` ni `classId` ga `onDate` dan qoʻshishdan OLDIN chaqiriladi:
+ * bolaning shu sanada AʼZO boʻlgan boshqa darajali guruhlari nishonning
+ * paralleli bilan bir xilmi. Koʻchirishda eski guruh oldin yopilgan
+ * boʻladi, shuning uchun u hisobga kirmaydi — yopilmay qolgan boshqa
+ * fan guruhlari esa qoidani buzadi (parallel koʻchirish: spec §6.1).
+ *
+ * Darajasiz guruh (toʻgarak) va nishonning oʻzi qoidaga kirmaydi.
+ */
+async function assertSingleParallel(
+  tx: Tx,
+  classId: string,
+  studentIds: string[],
+  onDate: string
+): Promise<void> {
+  if (studentIds.length === 0) return;
+  const [target] = await tx
+    .select({
+      name: classes.name,
+      parentClassId: classes.parentClassId,
+      grade: classes.grade,
+      section: classes.section,
+    })
+    .from(classes)
+    .where(eq(classes.id, classId))
+    .limit(1);
+  const targetKey = target ? parallelKey(target) : null;
+  if (!target || targetKey === null) return;
+
+  for (const part of chunks(studentIds)) {
+    const others = await tx
+      .select({
+        studentId: enrollmentPeriods.studentId,
+        name: classes.name,
+        parentClassId: classes.parentClassId,
+        grade: classes.grade,
+        section: classes.section,
+      })
+      .from(enrollmentPeriods)
+      .innerJoin(classes, eq(classes.id, enrollmentPeriods.classId))
+      .where(
+        and(
+          inArray(enrollmentPeriods.studentId, part),
+          ne(enrollmentPeriods.classId, classId),
+          isNull(classes.archivedAt),
+          periodOnSql(onDate)
+        )
+      );
+    const bad = others.filter((o) => {
+      const key = parallelKey(o);
+      return key !== null && key !== targetKey;
+    });
+    if (bad.length > 0) {
+      const names = [...new Set(bad.map((b) => b.name))].join(", ");
+      throw new ForbiddenError(
+        `Bola shu sanada ${names} guruhida ham oʻqiydi — u boshqa parallelda, ${target.name} esa boshqa. ` +
+          `Bola bir vaqtda bitta parallelda boʻlishi kerak: avval oʻsha guruh(lar)dan ham chiqaring yoki koʻchiring`
+      );
+    }
+  }
+}
+
+/**
  * `startedOn` dan boshlab YANGI davr ochadi (bola shu sinfga keldi yoki
  * qaytdi). `enrollments` qatori yoʻq boʻlsa yaratiladi (birinchi davrni
  * trigger ochadi), bor boʻlsa — yangi davr qoʻshiladi. Ochiq davri
@@ -179,6 +246,20 @@ export async function openPeriods(
   const { classId, studentIds, startedOn, sortOrderOf, moveIdOf } = args;
   try {
     for (const part of chunks(studentIds)) {
+      // Q3: allaqachon shu sinfda (ochiq davri bor) boʻlmaganlar uchungina.
+      const openHere = await tx
+        .select({ studentId: enrollmentPeriods.studentId })
+        .from(enrollmentPeriods)
+        .where(
+          and(
+            eq(enrollmentPeriods.classId, classId),
+            inArray(enrollmentPeriods.studentId, part),
+            isNull(enrollmentPeriods.endedOn)
+          )
+        );
+      const alreadyHere = new Set(openHere.map((r) => r.studentId));
+      await assertSingleParallel(tx, classId, part.filter((id) => !alreadyHere.has(id)), startedOn);
+
       // Yangi bogʻlanish — trigger birinchi davrni `[startedOn, NULL)` bilan ochadi.
       const inserted = await tx.execute<{ student_id: string }>(sql`
         INSERT INTO enrollments (class_id, student_id, sort_order, started_at)
