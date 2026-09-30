@@ -8,6 +8,7 @@ import {
   Dialog, DialogContent, DialogFooter, DialogHeaderBar,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DateKeyPicker } from "@/components/ui/date-key-picker";
 import {
@@ -21,7 +22,6 @@ import { useLiveClasses, useLiveClassInfo } from "@/hooks/useLiveClasses";
 import { moveStudentsAction } from "@/server/actions/workspace";
 import { reloadGradesFromServer } from "@/components/sync/GradesServerSync";
 import { unwrap } from "@/lib/action-result";
-import { todayKey } from "@/lib/date-keys";
 
 /* ════════════════════════════════════════════════════════════════════
    OʻQUVCHINI BOSHQA SINFGA KOʻCHIRISH — yagona oyna.
@@ -65,7 +65,11 @@ export function MoveStudentsDialog({
   const classes = useLiveClasses();
   const fromInfo = useLiveClassInfo(fromClassId);
   const [toClassId, setToClassId] = React.useState<string>("");
-  const [date, setDate] = React.useState<string>(todayKey());
+  /* ⛔ Sana SUKUTSIZ: buyruq sanasi — yuridik voqea, «bugun» deb
+     taxmin qilinmaydi (spec §7). Ilgari bugungi kun oldindan qoʻyilardi
+     va koʻchgan sana odatda notoʻgʻri qolardi. */
+  const [date, setDate] = React.useState<string>("");
+  const [orderNo, setOrderNo] = React.useState<string>("");
   const [busy, setBusy] = React.useState(false);
 
   // Oyna har ochilganda tanlov tozalanadi — oldingi safargi maqsad sinf
@@ -73,7 +77,8 @@ export function MoveStudentsDialog({
   React.useEffect(() => {
     if (open) {
       setToClassId("");
-      setDate(todayKey());
+      setDate("");
+      setOrderNo("");
     }
   }, [open]);
 
@@ -97,7 +102,7 @@ export function MoveStudentsDialog({
   const many = students.length > 1;
 
   async function submit() {
-    if (!toClassId || students.length === 0) return;
+    if (!toClassId || !date || students.length === 0) return;
     setBusy(true);
     try {
       const res = unwrap(
@@ -106,6 +111,7 @@ export function MoveStudentsDialog({
           fromClassId,
           toClassId,
           date,
+          ...(orderNo.trim() ? { orderNo: orderNo.trim() } : {}),
         })
       );
       /* ⚠️ Store'ni qoʻlda tahrir qilmaymiz — serverdan qayta yuklaymiz.
@@ -182,20 +188,34 @@ export function MoveStudentsDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Koʻchish sanasi</Label>
+            <Label>Buyruq sanasi</Label>
             {/* Native <input type="date"> EMAS — brauzer taqvimi tizim
                 tokenlariga boʻysunmaydi va dark mode'da ajralib qoladi. */}
             <DateKeyPicker
               value={date}
               onChange={setDate}
-              ariaLabel="Koʻchish sanasi"
+              ariaLabel="Buyruq sanasi"
               className="w-full"
             />
             <p className="text-sm text-muted-foreground">
-              Eski sinfdagi baho va davomat oʻsha yerda saqlanib qoladi. Yangi sinfda
-              shu sanadan oldingi kunlarga davomat qoʻyib boʻlmaydi — sanani haqiqiy
-              koʻchgan kunga qoʻying.
+              Bola yangi sinfda shu kundan boshlab hisoblanadi, eski sinfda esa
+              undan oldingi kunga qadar. Baho va davomat eski sinfda saqlanib
+              qoladi. Sanani buyruqdagi haqiqiy kunga qoʻying.
             </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="move-order">
+              Buyruq raqami <span className="font-normal text-muted-foreground">(ixtiyoriy)</span>
+            </Label>
+            <Input
+              id="move-order"
+              value={orderNo}
+              onChange={(e) => setOrderNo(e.target.value)}
+              maxLength={50}
+              placeholder="Masalan, 45-son"
+              autoComplete="off"
+            />
           </div>
         </div>
 
@@ -203,7 +223,7 @@ export function MoveStudentsDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={busy}>
             Bekor qilish
           </Button>
-          <Button onClick={submit} disabled={busy || !toClassId || students.length === 0}>
+          <Button onClick={submit} disabled={busy || !toClassId || !date || students.length === 0}>
             {busy ? "Koʻchirilmoqda…" : "Koʻchirish"}
           </Button>
         </DialogFooter>

@@ -27,6 +27,7 @@ import { findDuplicateStudents, mergeStudents } from "@/server/dal/student-merge
 import { moveStudents } from "@/server/dal/student-move";
 import { listWorkspaceAudit } from "@/server/dal/workspace-audit";
 import { runAction } from "@/server/action-result";
+import { dateKeyToDate, dateToKey } from "@/lib/date-keys";
 
 /* ⛔ Bu faylda `export type { … }` YOZILMAYDI — `"use server"` modulida
    tip-reeksporti prodda runtime eksportga aylanadi va BARCHA server
@@ -244,7 +245,13 @@ const moveStudentsSchema = z.object({
   studentIds: z.array(z.string().min(1).max(200)).min(1).max(500),
   fromClassId: z.string().min(1).max(200),
   toClassId: z.string().min(1).max(200),
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Sana YYYY-MM-DD koʻrinishida boʻlishi kerak"),
+  date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Sana YYYY-MM-DD koʻrinishida boʻlishi kerak")
+    // «2026-02-31» kabi mavjud boʻlmagan kun shaklga oʻtadi, lekin sana emas.
+    .refine((v) => dateToKey(dateKeyToDate(v)) === v, "Bunday sana yoʻq"),
+  /** Buyruq raqami — ixtiyoriy. */
+  orderNo: z.string().trim().max(50).optional(),
 });
 
 export async function moveStudentsAction(input: unknown) {

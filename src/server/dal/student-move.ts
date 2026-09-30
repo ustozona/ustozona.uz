@@ -38,6 +38,8 @@ export type MoveStudentsInput = {
   /** Koʻchish sanasi "YYYY-MM-DD" — eski yozilish shu kunda yopiladi,
       yangisi shu kunda boshlanadi. */
   date: string;
+  /** Buyruq raqami — ixtiyoriy (`student_moves.order_no`). */
+  orderNo?: string | null;
 };
 
 export type MoveStudentsResult = {
@@ -115,6 +117,7 @@ function assertSameGrade(
 
 export async function moveStudents(input: MoveStudentsInput): Promise<MoveStudentsResult> {
   const { studentIds, fromClassId, toClassId, date } = input;
+  const orderNo = input.orderNo?.trim() || null;
 
   if (fromClassId === toClassId) {
     throw new ForbiddenError("Oʻquvchi allaqachon shu sinfda");
@@ -199,6 +202,7 @@ export async function moveStudents(input: MoveStudentsInput): Promise<MoveStuden
           fromClassId,
           toClassId,
           effectiveOn: date,
+          orderNo,
         }))
       )
       .returning({ id: studentMoves.id, studentId: studentMoves.studentId });
