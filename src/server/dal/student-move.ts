@@ -1,13 +1,18 @@
 import "server-only";
-import { and, eq, inArray, isNull } from "drizzle-orm";
+import { and, count, eq, gte, inArray, isNull, lt, or, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
-import { academicYears, classes, enrollments, studentMoves } from "@/server/db/schema";
-import { closeOpenPeriods, openPeriods } from "@/server/dal/enrollment-periods";
+import {
+  academicYears, attendanceRecords, classes, enrollmentPeriods, enrollments, studentMoves,
+} from "@/server/db/schema";
+import {
+  closeOpenPeriods, openPeriods, periodError, syncEnrollmentCache,
+} from "@/server/dal/enrollment-periods";
 import { ForbiddenError } from "@/server/session";
 import {
-  requireWorkspace, taughtClassIds, type WorkspaceContext,
+  assertCanTouchStudent, requireWorkspace, taughtClassIds, type WorkspaceContext,
 } from "@/server/workspace";
 import { gradeForYear } from "@/lib/class-naming";
+import type { CorrectMoveDateResult, MembershipHistoryPeriod } from "@/lib/membership-history";
 
 /* ════════════════════════════════════════════════════════════════════
    OʻQUVCHINI BOSHQA SINFGA KOʻCHIRISH.
@@ -60,7 +65,7 @@ export type MoveStudentsResult = {
  * ⛔ Baho/davomat YOZISHga bu kenglik TARQALMAYDI — koʻchirish faqat
  * `enrollments` ga tegadi, oʻquvchining yozuvlariga emas.
  */
-async function movableClassIds(ctx: WorkspaceContext): Promise<string[]> {
+export async function movableClassIds(ctx: WorkspaceContext): Promise<string[]> {
   if (ctx.role === "admin") {
     const rows = await db
       .select({ id: classes.id })
@@ -232,4 +237,158 @@ export async function moveStudents(input: MoveStudentsInput): Promise<MoveStuden
   });
 
   return { moved: openRows.length };
+}
+
+/**
+ * Bolaning barcha aʼzolik davrlari (profil tarixi) — yangisi tepada.
+ * Koʻchirish hodisasidan kelgan davrga hodisa maʼlumoti biriktiriladi.
+ *
+ * Faqat shu ish maydonidagi sinflar; koʻrish huquqi — roʻyxat darajasida
+ * (`assertCanTouchStudent(…, "roster")`).
+ */
+export async function membershipOf(studentId: string): Promise<MembershipHistoryPeriod[]> {
+  const ctx = await assertCanTouchStudent(studentId, "roster");
+
+  const rows = await db
+    .select({
+      id: enrollmentPeriods.id,
+      classId: enrollmentPeriods.classId,
+      className: classes.name,
+      from: enrollmentPeriods.startedOn,
+      to: enrollmentPeriods.endedOn,
+      exitReason: enrollmentPeriods.exitReason,
+      moveId: enrollmentPeriods.moveId,
+    })
+    .from(enrollmentPeriods)
+    .innerJoin(classes, eq(classes.id, enrollmentPeriods.classId))
+    .where(and(eq(enrollmentPeriods.studentId, studentId), eq(classes.workspaceId, ctx.workspaceId)));
+
+  const moves = await db
+    .select()
+    .from(studentMoves)
+    .where(and(eq(studentMoves.studentId, studentId), eq(studentMoves.workspaceId, ctx.workspaceId)));
+  const moveById = new Map(moves.map((m) => [m.id, m]));
+
+  const nameIds = [...new Set(moves.flatMap((m) => [m.fromClassId, m.toClassId]))];
+  const names = new Map<string, string>();
+  if (nameIds.length > 0) {
+    const cls = await db
+      .select({ id: classes.id, name: classes.name })
+      .from(classes)
+      .where(inArray(classes.id, nameIds));
+    for (const c of cls) names.set(c.id, c.name);
+  }
+
+  const movable = new Set(await movableClassIds(ctx));
+
+  const out: MembershipHistoryPeriod[] = rows.map((r) => {
+    const m = r.moveId ? moveById.get(r.moveId) : undefined;
+    return {
+      id: r.id,
+      classId: r.classId,
+      className: r.className,
+      from: r.from,
+      to: r.to,
+      exitReason: r.exitReason,
+      move: m
+        ? {
+            id: m.id,
+            effectiveOn: m.effectiveOn,
+            orderNo: m.orderNo,
+            direction: m.fromClassId === r.classId ? "out" : "in",
+            otherClassName:
+              names.get(m.fromClassId === r.classId ? m.toClassId : m.fromClassId) ?? "Boshqa sinf",
+            canCorrect: movable.has(m.fromClassId) && movable.has(m.toClassId),
+          }
+        : null,
+    };
+  });
+
+  // Yangisi tepada; boshlanishi yoʻq (boshidan) davr — eng pastda.
+  out.sort((a, b) => (b.from ?? "").localeCompare(a.from ?? ""));
+  return out;
+}
+
+/**
+ * Koʻchirish sanasini tuzatadi — hodisa boʻyicha IKKALA tomon birga:
+ * eski sinfda davr `effectiveOn` da yopiladi, yangisida `effectiveOn` dan
+ * boshlanadi. Shu tufayli ikki sinf orasida «hech kimniki emas» kunlar
+ * yoki ikkalasiga ham tegishli kunlar paydo boʻlmaydi (spec §4.3).
+ *
+ * ⚠️ Oraliqdan chiqib qolgan davomat yozuvlari OʻCHIRILMAYDI — faqat soni
+ * qaytariladi (interfeys ogohlantiradi).
+ *
+ * Ruxsat koʻchirish bilan bir xil: ikkala sinfni boshqara oladigan.
+ */
+export async function correctMoveDate(
+  moveId: string,
+  date: string
+): Promise<CorrectMoveDateResult> {
+  const ctx = await requireWorkspace();
+  const [move] = await db
+    .select()
+    .from(studentMoves)
+    .where(and(eq(studentMoves.id, moveId), eq(studentMoves.workspaceId, ctx.workspaceId)))
+    .limit(1);
+  if (!move) throw new ForbiddenError("Koʻchirish topilmadi");
+
+  const allowed = new Set(await movableClassIds(ctx));
+  if (!allowed.has(move.fromClassId) || !allowed.has(move.toClassId)) {
+    throw new ForbiddenError("Bu sinflardan biri sizga biriktirilmagan");
+  }
+  if (move.effectiveOn === date) return { outsideAttendance: 0 };
+
+  await db.transaction(async (tx) => {
+    try {
+      const closed = await tx
+        .update(enrollmentPeriods)
+        .set({ endedOn: date })
+        .where(
+          and(
+            eq(enrollmentPeriods.moveId, moveId),
+            eq(enrollmentPeriods.classId, move.fromClassId),
+            eq(enrollmentPeriods.studentId, move.studentId)
+          )
+        )
+        .returning({ id: enrollmentPeriods.id });
+      const opened = await tx
+        .update(enrollmentPeriods)
+        .set({ startedOn: date })
+        .where(
+          and(
+            eq(enrollmentPeriods.moveId, moveId),
+            eq(enrollmentPeriods.classId, move.toClassId),
+            eq(enrollmentPeriods.studentId, move.studentId)
+          )
+        )
+        .returning({ id: enrollmentPeriods.id });
+      if (closed.length === 0 || opened.length === 0) {
+        throw new ForbiddenError("Bu koʻchirishning davrlari topilmadi — sanani tuzatib boʻlmaydi");
+      }
+      await tx
+        .update(studentMoves)
+        .set({ effectiveOn: date, updatedAt: sql`now()` })
+        .where(eq(studentMoves.id, moveId));
+    } catch (e) {
+      throw periodError(e);
+    }
+    await syncEnrollmentCache(tx, move.fromClassId, [move.studentId]);
+    await syncEnrollmentCache(tx, move.toClassId, [move.studentId]);
+  });
+
+  // Yangi oraliqdan tashqarida qolgan yozuvlar: eski sinfda `date` va undan
+  // keyin, yangisida `date` dan oldin.
+  const [row] = await db
+    .select({ n: count() })
+    .from(attendanceRecords)
+    .where(
+      and(
+        eq(attendanceRecords.studentId, move.studentId),
+        or(
+          and(eq(attendanceRecords.classId, move.fromClassId), gte(attendanceRecords.date, date)),
+          and(eq(attendanceRecords.classId, move.toClassId), lt(attendanceRecords.date, date))
+        )
+      )
+    );
+  return { outsideAttendance: Number(row?.n ?? 0) };
 }

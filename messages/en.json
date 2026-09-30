@@ -1027,7 +1027,9 @@
     "tabNotes": "Notes",
     "tabNotesSub": "Observations and reminders",
     "tabBehavior": "Behavior",
-    "tabBehaviorSub": "Points and rewards"
+    "tabBehaviorSub": "Points and rewards",
+    "tabMembership": "Enrollment",
+    "tabMembershipSub": "Class history"
   },
   "OverviewTab": {
     "overallGrade": "Overall grade",

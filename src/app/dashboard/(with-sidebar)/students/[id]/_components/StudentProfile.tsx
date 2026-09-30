@@ -59,12 +59,13 @@ import AssignmentsTab from "./AssignmentsTab";
 import NotesTab, { type Note } from "./NotesTab";
 import type { Visibility } from "@/store/useStudentNotesStore";
 import BehaviorTab from "./BehaviorTab";
+import MembershipTab from "./MembershipTab";
 import type { NewStudentInput } from "../../_components/CreateStudentModal";
 import { toast } from "sonner";
 import {
   ChevronsUpDown, ChevronLeft, ChevronRight, ArrowLeft, Check,
   Phone, MessageCircle, Pen, BarChart3, ClipboardList,
-  StickyNote, Cake, Mars, Venus, Award, CalendarDays,
+  StickyNote, Cake, Mars, Venus, Award, CalendarDays, History,
 } from "lucide-react";
 
 type Gender = "male" | "female";
@@ -81,7 +82,7 @@ function fromISO(s: string): Date | undefined {
   return new Date(y, m - 1, d);
 }
 
-type TabId = "overview" | "assignments" | "notes" | "behavior";
+type TabId = "overview" | "assignments" | "notes" | "behavior" | "membership";
 
 const UZ_MONTHS = [
   "yanvar", "fevral", "mart", "aprel", "may", "iyun",
@@ -101,7 +102,7 @@ const EMPTY_RECORDS: AttendanceRecord[] = [];
 const ARROW_KEY_WIDGETS =
   "[role=listbox], [role=menu], [role=menubar], [role=radiogroup], [role=grid], [role=slider], [role=dialog], [role=alertdialog]";
 
-const TAB_IDS: TabId[] = ["overview", "assignments", "notes", "behavior"];
+const TAB_IDS: TabId[] = ["overview", "assignments", "notes", "behavior", "membership"];
 function normalizeTab(t?: string): TabId {
   return TAB_IDS.includes(t as TabId) ? (t as TabId) : "overview";
 }
@@ -430,6 +431,7 @@ export default function StudentProfile({
     { id: "assignments", label: t("tabAssignments"), sub: t("tabAssignmentsSub"), icon: ClipboardList, count: profile.assignments.length },
     { id: "notes", label: t("tabNotes"), sub: t("tabNotesSub"), icon: StickyNote, count: notes.length },
     { id: "behavior", label: t("tabBehavior"), sub: t("tabBehaviorSub"), icon: Award },
+    { id: "membership", label: t("tabMembership"), sub: t("tabMembershipSub"), icon: History },
   ];
 
   return (
@@ -808,6 +810,9 @@ export default function StudentProfile({
                 <TabsContent value="overview"><OverviewTab profile={profile} /></TabsContent>
                 <TabsContent value="behavior">
                   <BehaviorTab classId={location.classId} studentId={studentId} />
+                </TabsContent>
+                <TabsContent value="membership">
+                  <MembershipTab studentId={studentId} />
                 </TabsContent>
               </div>
             </ScrollArea>

@@ -1027,7 +1027,9 @@
     "tabNotes": "Ескертпелер",
     "tabNotesSub": "Бақылаулар және жазбалар",
     "tabBehavior": "Мінез-құлық",
-    "tabBehaviorSub": "Ұпайлар және ынталандыру"
+    "tabBehaviorSub": "Ұпайлар және ынталандыру",
+    "tabMembership": "Мүшелік",
+    "tabMembershipSub": "Сыныптар тарихы"
   },
   "OverviewTab": {
     "overallGrade": "Жалпы баға",

@@ -212,8 +212,16 @@ qaytarish — yangi davr (tarix saqlanadi); bolalarni birlashtirish umumiy
 sinflarda davrlarni birlashma oraligʻiga keltiradi. Mijozga bola 2+
 davrli boʻlsagina `Student.periods` boradi (`isMemberOn` ularni hisobga
 oladi). Prod uchun qoʻlda SQL: `drizzle/PROD-0049-azolik-davrlari.sql`.
-`rosterDuring` / `membershipOf` — PR-3 (profil tarixi) bilan: hozir
-chaqiruvchisi yoʻq.
+`rosterDuring` — hozircha chaqiruvchisi yoʻq, yozilmagan.
+
+**PR-3 da bajarilgan (koʻchirish dialogi va profil tarixi):** dialogda
+«Buyruq sanasi» majburiy va sukutsiz, «Buyruq raqami» ixtiyoriy
+(`student_moves.order_no`). Profilda «Aʼzolik» tabi — `membershipOf`
+(`dal/student-move.ts`): har davr sinf, oraliq, chiqish sababi va
+koʻchirish hodisasi bilan. «Sanani tuzatish» — `correctMoveDate`: hodisa
+boʻyicha ikkala sinfdagi davrni birga oʻzgartiradi, kesh yangilanadi;
+oraliqdan chiqib qolgan davomat yozuvlari OʻCHIRILMAYDI, faqat soni
+ogohlantirish sifatida chiqadi. Qolgan: parallel almashishi (§6.1).
 
 ## 6. Yozish amallari
 

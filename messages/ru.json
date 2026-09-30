@@ -1027,7 +1027,9 @@
     "tabNotes": "Заметки",
     "tabNotesSub": "Наблюдения и напоминания",
     "tabBehavior": "Поведение",
-    "tabBehaviorSub": "Баллы и поощрения"
+    "tabBehaviorSub": "Баллы и поощрения",
+    "tabMembership": "Членство",
+    "tabMembershipSub": "История классов"
   },
   "OverviewTab": {
     "overallGrade": "Общая оценка",

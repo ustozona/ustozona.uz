@@ -1027,7 +1027,9 @@
     "tabNotes": "Qaydlar",
     "tabNotesSub": "Gúzetiwler hám eskertiwler",
     "tabBehavior": "Minez-qulıq",
-    "tabBehaviorSub": "Ballar hám xoshametlew"
+    "tabBehaviorSub": "Ballar hám xoshametlew",
+    "tabMembership": "Aǵzalıq",
+    "tabMembershipSub": "Klasslar tariyxı"
   },
   "OverviewTab": {
     "overallGrade": "Ulıwma baha",
