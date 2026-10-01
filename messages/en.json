@@ -4134,6 +4134,18 @@
     "soon": "Coming soon"
   },
   "LaunchHub": {
+    "preflightTitle": "Check before class",
+    "preflightOpen": "Check before class",
+    "preflightMaterials": "Material sequence",
+    "preflightSlide": "Slide",
+    "preflightQuestion": "Question",
+    "preflightCompatibility": "Delivery methods",
+    "preflightReady": "Available",
+    "preflightReview": "Review content",
+    "preflightOptions": "Paper, QR cards and remotes show only options A–D. Edit questions with more than four options.",
+    "preflightAnswers": "Some multiple-choice questions may not match these methods. Review their answer structure before class.",
+    "preflightPartial": "Paper, QR cards and remotes use {mcq} multiple-choice questions. Another {count} graded questions are not automatically checked by these methods.",
+    "preflightChooseMode": "Choose a method",
     "dialogTitle": "How do we run it in class?",
     "runInClass": "Run in class",
     "runInClassHint": "Now, with the class — on phones, as a game, on paper or with clickers",
