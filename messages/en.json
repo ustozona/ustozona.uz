@@ -2102,6 +2102,9 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "doska-bugun-reja": {
+        "title": "The “Today” widget reads your lesson plan: the topic next to each lesson, steps from the plan’s headings automatically"
+      },
       "doska-bugun": {
         "title": "Board “Today”: your lessons from the timetable automatically, or a checklist of lesson steps"
       },
@@ -5719,7 +5722,8 @@
       "noLessons": "No lessons today",
       "holiday": "No lessons today: {name}",
       "stepsTitle": "Lesson steps",
-      "stepsEmpty": "Type the steps in settings",
+      "stepsEmpty": "Type the steps — or, if your lesson plan has headings, they appear here automatically",
+      "stepsAuto": "Leave empty to use the headings of the current lesson plan.",
       "view": "View",
       "viewLessons": "Lessons",
       "viewSteps": "Steps",

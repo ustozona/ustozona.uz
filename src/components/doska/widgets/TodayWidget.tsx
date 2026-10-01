@@ -33,7 +33,10 @@ function readToday(state: DoskaWidget["state"]) {
   const view: TodayView = state.view === "steps" ? "steps" : "lessons";
   const steps = typeof state.steps === "string" ? state.steps : "";
   const done = Array.isArray(state.done) ? state.done.map(Number).filter(Number.isInteger) : [];
-  return { view, steps, done };
+  // Belgilar qaysi roʻyxatga tegishli: "manual" yoki "<sana>:<dars boshi>".
+  // Eski yozuvlarda yoʻq — qoʻlda yozilgan roʻyxat deb olinadi.
+  const doneKey = typeof state.doneKey === "string" ? state.doneKey : "manual";
+  return { view, steps, done, doneKey };
 }
 
 type TodayLoad = { lessons: TodayLesson[]; holiday: string | null };
@@ -75,8 +78,8 @@ export function TodayWidget({ widget }: { widget: DoskaWidget }) {
   return view === "steps" ? <StepsView widget={widget} /> : <LessonsView />;
 }
 
-function LessonsView() {
-  const t = useTranslations("Doska.today");
+/** Joriy vaqt va bugungi darslar (`undefined` — yuklanmoqda, `null` — jadval yoʻq). */
+function useTodayLoad() {
   const now = useNowMin();
   const [load, setLoad] = React.useState<TodayLoad | null | undefined>(undefined);
   const day = now?.day ?? null;
@@ -89,6 +92,12 @@ function LessonsView() {
       alive = false;
     };
   }, [day]);
+  return { now, load };
+}
+
+function LessonsView() {
+  const t = useTranslations("Doska.today");
+  const { now, load } = useTodayLoad();
 
   const lessons = load?.lessons ?? [];
   const message =
@@ -126,7 +135,8 @@ function LessonsView() {
                 )}
               >
                 <span className="font-mono tabular-nums">{fmtMin(l.startMin)}</span>
-                <span className="truncate">{l.className}</span>
+                <span className="shrink-0">{l.className}</span>
+                {l.title && <span className="min-w-0 truncate opacity-75">{l.title}</span>}
               </li>
             );
           })}
@@ -139,16 +149,28 @@ function LessonsView() {
 function StepsView({ widget }: { widget: DoskaWidget }) {
   const patch = useDoskaStore((s) => s.patchWidgetState);
   const t = useTranslations("Doska.today");
-  const { steps, done } = readToday(widget.state);
-  const items = parseEntries(steps);
+  const { steps, done: savedDone, doneKey } = readToday(widget.state);
+  const { now, load } = useTodayLoad();
+  const manual = parseEntries(steps);
+
+  // Qoʻlda yozilmagan boʻlsa — hozirgi (yoki keyingi) darsning rejasidagi
+  // sarlavhalar. Belgilar shu darsga bogʻlanadi: keyingi dars boshlanganda
+  // eski belgilar uning bosqichlariga oʻtib qolmasin.
+  const lesson =
+    manual.length === 0 && now && load
+      ? (load.lessons.find((l) => l.steps?.length && now.min < l.endMin) ?? null)
+      : null;
+  const items = manual.length > 0 ? manual : (lesson?.steps ?? []);
+  const key = manual.length > 0 ? "manual" : lesson && now ? `${now.day}:${lesson.startMin}` : "";
+  const done = doneKey === key ? savedDone : [];
 
   const toggle = (i: number) =>
-    patch(widget.id, { done: done.includes(i) ? done.filter((x) => x !== i) : [...done, i] });
+    patch(widget.id, { doneKey: key, done: done.includes(i) ? done.filter((x) => x !== i) : [...done, i] });
 
   return (
     <div className="doska-card flex size-full flex-col gap-[2cqw] p-[4cqw]" data-card="slate">
       <h3 className="leading-tight font-semibold" style={{ fontSize: "clamp(0.85rem, 6cqw, 2.25rem)" }}>
-        {t("stepsTitle")}
+        {lesson?.title ?? t("stepsTitle")}
       </h3>
       {items.length === 0 ? (
         <p className="grid flex-1 place-items-center text-center leading-snug opacity-75" style={{ fontSize: "clamp(0.8rem, 4.5cqw, 1.6rem)" }}>
@@ -219,8 +241,9 @@ export function TodaySettings({ widget }: { widget: DoskaWidget }) {
             aria-label={t("steps")}
             className="resize-none select-text"
             // Matn oʻzgarsa qator raqamlari siljiydi — eski belgilar boshqa bosqichga tushmasin.
-            onChange={(e) => patch(widget.id, { steps: e.target.value, done: [] })}
+            onChange={(e) => patch(widget.id, { steps: e.target.value, done: [], doneKey: "manual" })}
           />
+          <p className="text-muted-foreground text-xs leading-snug">{t("stepsAuto")}</p>
           {done.length > 0 && (
             <button type="button" className="text-primary self-start text-sm" onClick={() => patch(widget.id, { done: [] })}>
               {t("uncheckAll")}

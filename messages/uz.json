@@ -2102,6 +2102,9 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "doska-bugun-reja": {
+        "title": "«Bugun» vidjeti dars rejangizni koʻradi: darslar yonida mavzu, bosqichlar esa reja sarlavhalaridan avtomatik"
+      },
       "doska-bugun": {
         "title": "Doskada «Bugun»: bugungi darslaringiz jadvaldan avtomatik yoki dars bosqichlari belgilanadigan roʻyxat"
       },
@@ -5597,7 +5600,8 @@
       "noLessons": "Bugun darsingiz yoʻq",
       "holiday": "Bugun dars yoʻq: {name}",
       "stepsTitle": "Dars bosqichlari",
-      "stepsEmpty": "Sozlamada bosqichlarni yozing",
+      "stepsEmpty": "Bosqichlarni yozing — yoki dars rejasida sarlavhalar boʻlsa, ular bu yerda oʻzi chiqadi",
+      "stepsAuto": "Boʻsh qoldirilsa — hozirgi dars rejasidagi sarlavhalar.",
       "view": "Koʻrinish",
       "viewLessons": "Darslar",
       "viewSteps": "Bosqichlar",

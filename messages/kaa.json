@@ -2102,6 +2102,9 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "doska-bugun-reja": {
+        "title": "«Búgin» vidjeti sabaq jobańızdı kóredi: sabaqlar janında tema, basqıshlar bolsa joba sarlawhalarınan avtomat"
+      },
       "doska-bugun": {
         "title": "Doskada «Búgin»: búgingi sabaqlarıńız kesteden avtomat yamasa sabaq basqıshları belgilenetuǵın dizim"
       },
@@ -5720,7 +5723,8 @@
       "noLessons": "Búgin sabaǵıńız joq",
       "holiday": "Búgin sabaq joq: {name}",
       "stepsTitle": "Sabaq basqıshları",
-      "stepsEmpty": "Sazlawda basqıshlardı jazıń",
+      "stepsEmpty": "Basqıshlardı jazıń — yamasa sabaq jobasında sarlawhalar bolsa, olar bul jerde ózi shıǵadı",
+      "stepsAuto": "Bos qaldırılsa — házirgi sabaq jobasındaǵı sarlawhalar.",
       "view": "Kórinis",
       "viewLessons": "Sabaqlar",
       "viewSteps": "Basqıshlar",
