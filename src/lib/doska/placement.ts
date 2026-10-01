@@ -8,7 +8,8 @@
    vidjetga tegmaydigan birinchi joy olinadi.
 
    Pastki qism (boshqaruv paneli) bandga hisoblanadi — vidjet panel
-   ostiga tushmasin. Joy topilmasa — eski zinapoya joylashuvi.
+   ostiga tushmasin. Panel chap yoki oʻng relsada boʻlsa, oʻsha chet ham
+   band (`dock`). Joy topilmasa — eski zinapoya joylashuvi.
    ════════════════════════════════════════════════════════════════════ */
 
 export type Rect = { x: number; y: number; w: number; h: number };
@@ -20,6 +21,8 @@ const GAP = 16;
 const STEP = 40;
 /** Pastki boshqaruv paneli egallaydigan balandlik. */
 const BOTTOM_RESERVED = 120;
+/** Yon relsa (panel chap/oʻngda) egallaydigan kenglik. */
+const SIDE_RESERVED = 112;
 
 function overlaps(a: Rect, b: Rect): boolean {
   return (
@@ -39,14 +42,16 @@ export function findFreeSpot(
   size: { w: number; h: number },
   others: readonly Rect[],
   canvas: { w: number; h: number } | null,
+  dock: "bottom" | "left" | "right" = "bottom",
 ): { x: number; y: number } {
   const fallback = { x: 80 + others.length * 28, y: 80 + others.length * 28 };
   if (!canvas) return fallback;
 
-  const maxX = canvas.w - MARGIN - size.w;
+  const minX = MARGIN + (dock === "left" ? SIDE_RESERVED : 0);
+  const maxX = canvas.w - MARGIN - (dock === "right" ? SIDE_RESERVED : 0) - size.w;
   const maxY = canvas.h - BOTTOM_RESERVED - size.h;
   for (let y = MARGIN; y <= maxY; y += STEP) {
-    for (let x = MARGIN; x <= maxX; x += STEP) {
+    for (let x = minX; x <= maxX; x += STEP) {
       const spot = { x, y, w: size.w, h: size.h };
       if (!others.some((o) => overlaps(spot, o))) return { x, y };
     }

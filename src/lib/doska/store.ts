@@ -8,6 +8,7 @@ import { widgetMeta } from "./registry";
 import { visibleInk } from "./ink";
 import { DEFAULT_BACKGROUND_ID } from "./backgrounds";
 import { findFreeSpot } from "./placement";
+import { useDoskaPrefs } from "./prefs";
 
 /* ════════════════════════════════════════════════════════════════════
    DOSKA STORE — mehmon rejimi (localStorage).
@@ -602,6 +603,7 @@ export const useDoskaStore = create<DoskaState>()(
               meta.defaultSize,
               screen?.widgets ?? [],
               typeof window === "undefined" ? null : { w: window.innerWidth, h: window.innerHeight },
+              useDoskaPrefs.getState().dock,
             );
 
           const widget: DoskaWidget = {
