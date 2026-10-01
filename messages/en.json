@@ -2102,6 +2102,9 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "doska-guruhlar": {
+        "title": "Board “Groups”: split a list into random groups in one tap — by number of groups or people per group"
+      },
       "doska-oxirgi-sozlama": {
         "title": "The board remembers your last settings: a new timer, wheel or dice starts with the time and mode you chose"
       },
@@ -5250,7 +5253,8 @@
       "wheel": "Wheel",
       "dice": "Dice",
       "qr": "QR code",
-      "sticker": "Sticker"
+      "sticker": "Sticker",
+      "groups": "Groups"
     },
     "toolbar": {
       "duplicate": "{widget} — duplicate",
@@ -5400,7 +5404,8 @@
         "wheel": "Pick a random name",
         "dice": "Dice, number, letter or coin",
         "qr": "A link or text to scan with a phone",
-        "sticker": "Praise, sign, arrow"
+        "sticker": "Praise, sign, arrow",
+        "groups": "Split into random groups"
       }
     },
     "appearance": {
@@ -5537,6 +5542,24 @@
       "caption": "Caption (optional)",
       "captionPlaceholder": "For example: Homework",
       "aria": "QR code: {text}"
+    },
+    "groups": {
+      "make": "Make groups",
+      "shuffle": "Shuffle again",
+      "groupName": "Group {n}",
+      "summaryCount": "{n} groups",
+      "summarySize": "{n} per group",
+      "by": "Split by",
+      "byCount": "Number of groups",
+      "bySize": "People per group",
+      "groupsCount": "Number of groups",
+      "perGroup": "People per group",
+      "names": "Names",
+      "namesCount": "Names · {count}",
+      "namesHint": "One name per line",
+      "samplesHint": "List is empty — sample names are used",
+      "less": "Fewer",
+      "more": "More"
     },
     "sticker": {
       "groups": {

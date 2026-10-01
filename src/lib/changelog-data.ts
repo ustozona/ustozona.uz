@@ -36,6 +36,13 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "doska-guruhlar",
+    date: "2026-10-01",
+    type: "yangi",
+    title: "Doskada «Guruhlar»: roʻyxatni bir bosishda tasodifiy guruhlarga boʻling — guruhlar soni yoki guruhdagi odam soni boʻyicha",
+    href: "/doska",
+  },
+  {
     id: "doska-oxirgi-sozlama",
     date: "2026-10-01",
     type: "yangi",

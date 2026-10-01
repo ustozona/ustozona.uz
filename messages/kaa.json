@@ -2102,6 +2102,9 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "doska-guruhlar": {
+        "title": "Doskada «Toparlar»: dizimdi bir basıwda tosınnan toparlarǵa bóliń — toparlar sanı yamasa topardaǵı adam sanı boyınsha"
+      },
       "doska-oxirgi-sozlama": {
         "title": "Doska sońǵı sazlawdı yadta saqlaydı: jańa taymer, dóńgelek hám zar siz tańlaǵan waqıt hám rejim menen shıǵadı"
       },
@@ -5251,7 +5254,8 @@
       "wheel": "Dóńgelek",
       "dice": "Zar",
       "qr": "QR kod",
-      "sticker": "Stiker"
+      "sticker": "Stiker",
+      "groups": "Toparlar"
     },
     "toolbar": {
       "duplicate": "{widget} — nusqa alıw",
@@ -5401,7 +5405,8 @@
         "wheel": "Tosınnan at tańlaw",
         "dice": "Zar, san, hárip yamasa teńge",
         "qr": "Siltew yamasa tekst — telefon menen skanerlenedi",
-        "sticker": "Maqtaw, belgi, strelka"
+        "sticker": "Maqtaw, belgi, strelka",
+        "groups": "Tosınnan toparlarǵa bóliw"
       }
     },
     "appearance": {
@@ -5538,6 +5543,24 @@
       "caption": "Jazıw (qálewge qaray)",
       "captionPlaceholder": "Mısalı: Úy jumısı",
       "aria": "QR kod: {text}"
+    },
+    "groups": {
+      "make": "Toparlarǵa bóliw",
+      "shuffle": "Qayta aralastırıw",
+      "groupName": "{n}-topar",
+      "summaryCount": "{n} topar",
+      "summarySize": "Toparda {n} adamnan",
+      "by": "Qalay bóliw",
+      "byCount": "Toparlar sanı",
+      "bySize": "Topardaǵı adam",
+      "groupsCount": "Toparlar sanı",
+      "perGroup": "Toparda neshe adam",
+      "names": "Atlar",
+      "namesCount": "Atlar · {count}",
+      "namesHint": "Hár qatarǵa bir at",
+      "samplesHint": "Dizim bos — úlgi atlar qollanıladı",
+      "less": "Azıraq",
+      "more": "Kóbirek"
     },
     "sticker": {
       "groups": {

@@ -32,7 +32,8 @@ export type WidgetLabelKey =
   | "wheel"
   | "dice"
   | "qr"
-  | "sticker";
+  | "sticker"
+  | "groups";
 
 /**
  * «Hammasi» oynasidagi toifa (docs/doska-ux-tadqiqot.md §3 «Topish»).
@@ -278,6 +279,19 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
     initialState: { emoji: "⭐" },
     openSettingsOnAdd: true,
   },
+  "groups.v1": {
+    kind: "groups.v1",
+    category: "class",
+    labelKey: "groups",
+    // Qoʻshnilari «Gʻildirak» (teal) va «Zar» (lime) — binafsha ikkalasidan uzoq.
+    tint: "violet",
+    // Keng: 4–6 guruh ustun boʻlib yonma-yon, ismlar uzoqdan oʻqilsin.
+    defaultSize: { w: 640, h: 420 },
+    minSize: { w: 300, h: 220 },
+    initialState: { text: "", by: "count", n: 4, groups: [] },
+    openSettingsOnAdd: true,
+    remember: ["by", "n"],
+  },
 };
 
 /**
@@ -299,6 +313,7 @@ export const TOOL_ORDER: WidgetKind[] = [
   // mazmun vositalaridan (matn, eslatma, taqdimot) oldin.
   "wheel.v1",
   "dice.v1",
+  "groups.v1",
   "text.v1",
   "sticky-note.v1",
   "sticker.v1",
