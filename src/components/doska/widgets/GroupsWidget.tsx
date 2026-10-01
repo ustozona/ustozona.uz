@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 
 import { SegmentedToggle } from "@/components/ui/segmented-toggle";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 import { useDoskaStore } from "@/lib/doska/store";
 import type { DoskaWidget } from "@/lib/doska/types";
 import { parseEntries } from "@/lib/doska/wheel";
@@ -74,8 +75,27 @@ export function GroupsWidget({ widget }: { widget: DoskaWidget }) {
   const t = useTranslations("Doska.groups");
   const tWheel = useTranslations("Doska.wheel");
   const { text, by, n, groups } = readGroups(widget.state);
+  /**
+   * Koʻchirish — sudrash emas, IKKI TEGINISH: ismga tegiladi (tanlanadi),
+   * keyin boshqa guruhga. Sensorli doskada ism ustida sudrash vidjetni
+   * surib yuborardi; ikki teginish sichqonchada ham, barmoqda ham bir xil.
+   */
+  const [picked, setPicked] = React.useState<{ g: number; i: number } | null>(null);
+
+  const moveTo = (target: number) => {
+    if (!picked || picked.g === target) {
+      setPicked(null);
+      return;
+    }
+    const next = groups.map((g) => [...g]);
+    const [name] = next[picked.g].splice(picked.i, 1);
+    if (name !== undefined) next[target].push(name);
+    patch(widget.id, { groups: next });
+    setPicked(null);
+  };
 
   const make = () => {
+    setPicked(null);
     const typed = parseEntries(text);
     const names = typed.length > 0 ? typed : (tWheel.raw("sampleNames") as string[]);
     patch(widget.id, { groups: makeGroups(names, by, n) });
@@ -108,21 +128,46 @@ export function GroupsWidget({ widget }: { widget: DoskaWidget }) {
         style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
       >
         {groups.map((members, i) => (
-          <section key={i} className="flex min-h-0 flex-col gap-[0.8cqw] overflow-hidden rounded-[0.75rem] bg-current/10 p-[2cqw]">
+          <section
+            key={i}
+            data-doska-no-drag=""
+            onClick={() => picked && moveTo(i)}
+            className={cn(
+              "flex min-h-0 flex-col gap-[0.8cqw] overflow-hidden rounded-[0.75rem] bg-current/10 p-[2cqw]",
+              picked && picked.g !== i && "outline-primary/60 cursor-pointer outline-2 outline-dashed",
+            )}
+          >
             <h3 className="leading-tight font-semibold" style={{ fontSize: `clamp(0.75rem, ${9 / cols}cqw, 2rem)` }}>
               {t("groupName", { n: i + 1 })}
             </h3>
             <ul className="min-h-0 overflow-hidden leading-snug" style={{ fontSize: `clamp(0.7rem, ${8 / cols}cqw, 1.75rem)` }}>
               {members.map((name, j) => (
-                <li key={j} className="truncate">
-                  {name}
+                <li key={j}>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPicked(picked?.g === i && picked.i === j ? null : { g: i, i: j });
+                    }}
+                    className={cn(
+                      "w-full truncate rounded-[0.4rem] px-[0.6cqw] text-left",
+                      picked?.g === i && picked.i === j && "bg-primary text-primary-foreground",
+                    )}
+                  >
+                    {name}
+                  </button>
                 </li>
               ))}
             </ul>
           </section>
         ))}
       </div>
-      <div className="flex justify-center">
+      <div className="flex items-center justify-center gap-[2cqw]">
+        {picked && (
+          <span className="opacity-75" style={{ fontSize: "clamp(0.75rem, 3cqw, 1.2rem)" }}>
+            {t("moveHint")}
+          </span>
+        )}
         <WidgetButton
           tone="primary"
           onClick={make}

@@ -5573,6 +5573,7 @@
     "groups": {
       "make": "Make groups",
       "shuffle": "Shuffle again",
+      "moveHint": "Which group? Tap a group",
       "groupName": "Group {n}",
       "summaryCount": "{n} groups",
       "summarySize": "{n} per group",

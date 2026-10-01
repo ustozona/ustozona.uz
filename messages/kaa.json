@@ -5574,6 +5574,7 @@
     "groups": {
       "make": "Toparlarǵa bóliw",
       "shuffle": "Qayta aralastırıw",
+      "moveHint": "Qaysı toparǵa? Toparǵa tiyiń",
       "groupName": "{n}-topar",
       "summaryCount": "{n} topar",
       "summarySize": "Toparda {n} adamnan",

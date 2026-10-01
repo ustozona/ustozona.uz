@@ -5574,6 +5574,7 @@
     "groups": {
       "make": "Топторго бөлүү",
       "shuffle": "Кайра аралаштыруу",
+      "moveHint": "Кайсы топко? Топко тийиңиз",
       "groupName": "{n}-топ",
       "summaryCount": "{n} топ",
       "summarySize": "Топто {n} кишиден",

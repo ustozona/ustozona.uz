@@ -5451,6 +5451,7 @@
     "groups": {
       "make": "Guruhlarga ajratish",
       "shuffle": "Qayta aralashtirish",
+      "moveHint": "Qaysi guruhga? Guruhga teging",
       "groupName": "{n}-guruh",
       "summaryCount": "{n} ta guruh",
       "summarySize": "Guruhda {n} tadan",
