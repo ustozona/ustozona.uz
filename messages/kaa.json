@@ -2102,6 +2102,9 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "doska-ekran-tartibi": {
+        "title": "Doska: ekrannan nusqa alıń hám ekranlar tártibin menyudan ózgertiń"
+      },
       "doska-barcha-ekranlarda": {
         "title": "Doska: vidjetti «Barlıq ekranlarda» etiń — taymer, saat hám keste ekran almasqanda da ornında qaladı"
       },
@@ -5319,6 +5322,9 @@
       "curtain": "Ekrandı jabıw",
       "bell": "Qońıraw qaǵıw",
       "newScreen": "Jańa ekran",
+      "duplicateScreen": "Ekrannan nusqa alıw",
+      "moveScreenEarlier": "Ekrandı aldınǵa jıljıtıw",
+      "moveScreenLater": "Ekrandı artqa jıljıtıw",
       "connectClass": "Klas dizimin jalǵaw",
       "clearScreen": "Ekrandı tazalaw",
       "removeScreen": "Usı ekrandı óshiriw",

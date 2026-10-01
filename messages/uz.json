@@ -2102,6 +2102,9 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "doska-ekran-tartibi": {
+        "title": "Doska: ekrandan nusxa oling va ekranlar tartibini menyudan oʻzgartiring"
+      },
       "doska-barcha-ekranlarda": {
         "title": "Doska: vidjetni «Barcha ekranlarda» qiling — taymer, soat va jadval ekran almashganda ham joyida qoladi"
       },
@@ -5196,6 +5199,9 @@
       "curtain": "Ekranni yopish",
       "bell": "Qoʻngʻiroq chalish",
       "newScreen": "Yangi ekran",
+      "duplicateScreen": "Ekrandan nusxa olish",
+      "moveScreenEarlier": "Ekranni oldinga surish",
+      "moveScreenLater": "Ekranni orqaga surish",
       "connectClass": "Sinf roʻyxatini ulash",
       "clearScreen": "Ekranni tozalash",
       "removeScreen": "Shu ekranni oʻchirish",

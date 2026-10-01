@@ -24,6 +24,8 @@ import {
   IconArrowRight,
   IconImageDownload,
   IconKeyboard,
+  IconCopy,
+  IconArrowLeft,
 } from "./icons";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -69,6 +71,9 @@ export function DoskaMenu({ onShowShortcuts }: { onShowShortcuts: () => void }) 
   const clearScreen = useDoskaStore((s) => s.clearScreen);
   const removeScreen = useDoskaStore((s) => s.removeScreen);
   const addScreen = useDoskaStore((s) => s.addScreen);
+  const duplicateScreen = useDoskaStore((s) => s.duplicateScreen);
+  const moveScreen = useDoskaStore((s) => s.moveScreen);
+  const screenIndex = useDoskaStore((s) => s.deck.screens.findIndex((x) => x.id === s.activeScreenId));
   const setCurtain = useDoskaStore((s) => s.setCurtain);
   // Qulflangan vidjeti bor ekran oʻchirilmaydi (store: `removeScreen`) —
   // band yashirilmaydi, sababi bilan nofaol koʻrsatiladi.
@@ -172,6 +177,21 @@ export function DoskaMenu({ onShowShortcuts }: { onShowShortcuts: () => void }) 
             <MenuItem Icon={IconAdd} onClick={run(addScreen)}>
               {tm("newScreen")}
             </MenuItem>
+            <MenuItem Icon={IconCopy} onClick={run(duplicateScreen)}>
+              {tm("duplicateScreen")}
+            </MenuItem>
+            {/* Tartib — dars bosqichlari ketma-ketligi (R399). Menyu ochiq
+                qoladi: oʻqituvchi ekranni bir necha qadam sura oladi. */}
+            {screenCount > 1 && (
+              <>
+                <MenuItem Icon={IconArrowLeft} disabled={screenIndex <= 0} onClick={() => moveScreen(-1)}>
+                  {tm("moveScreenEarlier")}
+                </MenuItem>
+                <MenuItem Icon={IconArrowRight} disabled={screenIndex >= screenCount - 1} onClick={() => moveScreen(1)}>
+                  {tm("moveScreenLater")}
+                </MenuItem>
+              </>
+            )}
             <MenuItem
               Icon={IconImageDownload}
               disabled={exporting === "busy"}

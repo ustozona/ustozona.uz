@@ -2102,6 +2102,9 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "doska-ekran-tartibi": {
+        "title": "Doska: duplicate a screen and reorder screens from the menu"
+      },
       "doska-barcha-ekranlarda": {
         "title": "Doska: set a widget to “On all screens” — the timer, clock or schedule stays put when you switch screens"
       },
@@ -5318,6 +5321,9 @@
       "curtain": "Cover the screen",
       "bell": "Ring the bell",
       "newScreen": "New screen",
+      "duplicateScreen": "Duplicate screen",
+      "moveScreenEarlier": "Move screen earlier",
+      "moveScreenLater": "Move screen later",
       "connectClass": "Connect class list",
       "clearScreen": "Clear screen",
       "removeScreen": "Delete this screen",

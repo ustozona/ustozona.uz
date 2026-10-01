@@ -368,6 +368,15 @@ type DoskaState = {
   renameDeck: (title: string) => void;
   removeScreen: (id: string) => void;
   addScreen: () => void;
+  /**
+   * Joriy ekranning nusxasi — darhol keyingi oʻringa (R399). Dars
+   * bosqichlari koʻpincha bir-biriga oʻxshaydi: fon, jadval va taymer
+   * qoladi, faqat topshiriq oʻzgaradi. «Barcha ekranlarda» vidjetlar
+   * nusxaga kirmaydi — ular baribir koʻchib yuradi.
+   */
+  duplicateScreen: () => void;
+  /** Joriy ekranni oldinga (-1) yoki orqaga (+1) suradi. */
+  moveScreen: (offset: number) => void;
   setActiveScreen: (id: string) => void;
   clearScreen: () => void;
 
@@ -828,6 +837,61 @@ export const useDoskaStore = create<DoskaState>()(
               editingId: null,
               settingsId: null,
               spotlightId: null,
+            };
+          }),
+
+        duplicateScreen: () =>
+          set((s) => {
+            const index = s.deck.screens.findIndex((x) => x.id === s.activeScreenId);
+            const source = s.deck.screens[index];
+            if (!source) return s;
+            // Vidjet `id` lari yangilanadi, bogʻlangan yozuv ham yangi `id` ga
+            // ulanadi — aks holda ikki ekran bitta vidjetga ishora qilardi.
+            const ids = new Map<string, string>();
+            const widgets = source.widgets
+              .filter((w) => !w.pinned)
+              .map((w) => {
+                const id = newId();
+                ids.set(w.id, id);
+                return { ...w, id, state: structuredClone(w.state) };
+              });
+            const ink = (source.ink ?? [])
+              .filter((x) => !x.anchor || ids.has(x.anchor.widgetId))
+              .map((x) => ({
+                ...x,
+                id: newId(),
+                ...(x.anchor ? { anchor: { ...x.anchor, widgetId: ids.get(x.anchor.widgetId)! } } : {}),
+              }));
+            const copy: DoskaScreen = { ...source, id: newId(), widgets, ink };
+            const screens = [...s.deck.screens];
+            screens.splice(index + 1, 0, copy);
+            return {
+              ...pushHistory(s),
+              notice: null,
+              deck: gatherPinned(
+                { ...s.deck, screens: screens.map((x, i) => ({ ...x, ordinal: i })), updatedAt: new Date().toISOString() },
+                copy.id,
+              ),
+              activeScreenId: copy.id,
+              selectedId: null,
+              editingId: null,
+              settingsId: null,
+              spotlightId: null,
+            };
+          }),
+
+        moveScreen: (offset) =>
+          set((s) => {
+            const index = s.deck.screens.findIndex((x) => x.id === s.activeScreenId);
+            const target = index + offset;
+            if (index < 0 || target < 0 || target >= s.deck.screens.length) return s;
+            const screens = [...s.deck.screens];
+            const [moved] = screens.splice(index, 1);
+            screens.splice(target, 0, moved);
+            return {
+              ...pushHistory(s),
+              notice: null,
+              deck: { ...s.deck, screens: screens.map((x, i) => ({ ...x, ordinal: i })), updatedAt: new Date().toISOString() },
             };
           }),
 
