@@ -964,7 +964,7 @@ oqimda):**
 - ✅ R413 shovqin qurildi (`noise.v1`: Web Audio, chegara, silliqlash, sanoq, qoʻngʻiroq);
 - ✅ R414 hisob taxtasi qurildi (`score.v1`, 2–6 jamoa);
 - ✅ veb-kamera qurildi (`camera.v1`: kadrni toʻxtatish, kamera almashtirish, koʻzgu); qoldi: video, embed, havola;
-- R420 fonlar: ✅ nota chizigʻi, kuz/bahor/qish qurildi; qoldi: bayram (oʻquv kalendari bilan), oʻz rasmi;
+- R420 fonlar: ✅ nota chizigʻi, kuz/bahor/qish qurildi; bayram fonlari (sana boʻyicha «Bugunga mos») qurildi; qoldi: oʻz rasmi;
 - ✅ R417 matn: rang (qalam palitrasi) va qalinlik qurildi; qolgani keyin.
 
 ### 2.6. Rad etilganlar

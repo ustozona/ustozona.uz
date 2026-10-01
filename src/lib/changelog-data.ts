@@ -36,6 +36,13 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "doska-bayram-fonlari",
+    date: "2026-10-01",
+    type: "yangi",
+    title: "Doskada bayram fonlari: Oʻqituvchilar kuni, Navroʻz, Mustaqillik va boshqalar — fon tanlashda «Bugunga mos» qatori",
+    href: "/doska",
+  },
+  {
     id: "doska-gildirak-davomat",
     date: "2026-10-01",
     type: "yangi",

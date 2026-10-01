@@ -2102,6 +2102,9 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "doska-bayram-fonlari": {
+        "title": "Doskada bayram fonlari: Oʻqituvchilar kuni, Navroʻz, Mustaqillik va boshqalar — fon tanlashda «Bugunga mos» qatori"
+      },
       "doska-gildirak-davomat": {
         "title": "Doska gʻildiragi bugun kelmaganlarni oʻzi chiqarib tashlaydi — davomatdan, ulangan sinfda"
       },
@@ -5200,6 +5203,7 @@
     "bar": {
       "clear": "Tozalash",
       "background": "Fon",
+      "backgroundToday": "Bugunga mos",
       "home": "Ustozona bosh sahifasi",
       "fullscreen": "Toʻliq ekran",
       "showControls": "Boshqaruvni koʻrsatish",
@@ -5385,6 +5389,11 @@
       "autumn": "Kuz",
       "spring": "Bahor",
       "winter": "Qish",
+      "ustozlar-kuni": "Oʻqituvchilar kuni",
+      "yangi-yil": "Qishki bayram",
+      "bahor-bayrami": "8-mart",
+      "navruz": "Navroʻz",
+      "mustaqillik": "Mustaqillik",
       "dusk": "Kechki tus",
       "shakllar": "Rangli shakllar"
     },

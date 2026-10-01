@@ -2102,6 +2102,9 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "doska-bayram-fonlari": {
+        "title": "Holiday board backgrounds: Teachers' Day, Navruz, Independence and more — with a “Fits today” row in the picker"
+      },
       "doska-gildirak-davomat": {
         "title": "The board wheel leaves out students absent today on its own — from attendance of the connected class"
       },
@@ -5322,6 +5325,7 @@
     "bar": {
       "clear": "Clear",
       "background": "Backdrop",
+      "backgroundToday": "Fits today",
       "home": "Ustozona home",
       "fullscreen": "Full screen",
       "showControls": "Show controls",
@@ -5507,6 +5511,11 @@
       "autumn": "Autumn",
       "spring": "Spring",
       "winter": "Winter",
+      "ustozlar-kuni": "Teachers' Day",
+      "yangi-yil": "Winter holiday",
+      "bahor-bayrami": "March 8",
+      "navruz": "Navruz",
+      "mustaqillik": "Independence",
       "dusk": "Dusk",
       "shakllar": "Colorful shapes"
     },
