@@ -81,6 +81,7 @@ export default function SetBuilderOverlay({
      `setId: undefined` yuborib IKKITA bir xil toʻplam yaratardi (roʻyxatda
      bir xil nomli ikki qator — kuzatilgan alomat). */
   const setIdRef = useRef(setId);
+  const loadedVersionRef = useRef<{ updatedAt: string; activityIds: string[] } | null>(null);
   const [title, setTitle] = useState(() => (setId ? "" : initialTitle ?? ""));
   const [stageTheme, setStageTheme] = useState("violet");
   const [stageFont, setStageFont] = useState<StageFontId>(stageFontOf(null).id);
@@ -123,6 +124,10 @@ export default function SetBuilderOverlay({
         return;
       }
       const loaded: DraftQuestion[] = draft.questions.map((q) => ({ ...q, key: crypto.randomUUID() }));
+      loadedVersionRef.current = {
+        updatedAt: new Date(draft.set.updatedAt).toISOString(),
+        activityIds: draft.set.items.map((item) => item.activityId),
+      };
       const config = draft.set.config as { stageTheme?: string; stageFont?: string; stageStyle?: string };
       setTitle(draft.set.title);
       setStageTheme(config.stageTheme ?? "violet");
@@ -193,6 +198,7 @@ export default function SetBuilderOverlay({
 
   function copyUsedSet() {
     setIdRef.current = undefined;
+    loadedVersionRef.current = null;
     const copied = questions.map((q) => ({
       ...q,
       key: crypto.randomUUID(),
@@ -424,6 +430,10 @@ export default function SetBuilderOverlay({
       const questionKeys = questions.map((q) => q.key);
       const result = await saveSetDraftResultAction({
         setId: setIdRef.current,
+        ...(setIdRef.current && loadedVersionRef.current ? {
+          expectedUpdatedAt: loadedVersionRef.current.updatedAt,
+          expectedActivityIds: loadedVersionRef.current.activityIds,
+        } : {}),
         classId,
         title: cleanTitle,
         purpose: "summative",
@@ -437,10 +447,15 @@ export default function SetBuilderOverlay({
           setHasSessions(true);
           throw new Error(t("usedSetHint"));
         }
+        if (result.reason === "stale") throw new Error(ta("sequenceStale"));
         throw new Error(result.reason === "invalid" ? result.message : t("errSaveFailed"));
       }
       const draft = result.draft;
       setIdRef.current = draft.set.id;
+      loadedVersionRef.current = {
+        updatedAt: new Date(draft.set.updatedAt).toISOString(),
+        activityIds: draft.set.items.map((item) => item.activityId),
+      };
       // Savollar server javobini kutayotganda koʻchirilishi/import qilinishi
       // mumkin. Pozitsiya emas, barqaror key orqali activityId bogʻlanadi.
       const idByKey = new Map(questionKeys.map((key, index) => [key, draft.questions[index]?.activityId]));
