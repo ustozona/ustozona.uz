@@ -2102,6 +2102,9 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "doska-qr": {
+        "title": "Doskada «QR kod»: siltew yamasa teksti ekranǵa shıǵarıń — oqıwshılar telefon menen skanerleydi"
+      },
       "doska-bosh-joy": {
         "title": "Doska: jańa qural basqalardıń ústine emes, ekrandaǵı bos orınǵa túsedi"
       },
@@ -5231,7 +5234,8 @@
       "shape": "Figura",
       "presentation": "Slaydlar",
       "wheel": "Dóńgelek",
-      "dice": "Zar"
+      "dice": "Zar",
+      "qr": "QR kod"
     },
     "toolbar": {
       "duplicate": "{widget} — nusqa alıw",
@@ -5376,7 +5380,8 @@
         "shape": "Geometriyalıq figuralar",
         "presentation": "Sorawlar hám juwaplar",
         "wheel": "Tosınnan at tańlaw",
-        "dice": "Zar, san, hárip yamasa teńge"
+        "dice": "Zar, san, hárip yamasa teńge",
+        "qr": "Siltew yamasa tekst — telefon menen skanerlenedi"
       }
     },
     "appearance": {
@@ -5500,6 +5505,14 @@
       "to": "Shekem",
       "less": "Azıraq",
       "more": "Kóbirek"
+    },
+    "qr": {
+      "empty": "Siltew yamasa tekst kirgiziń — oqıwshılar telefon menen skanerleydi",
+      "enter": "Siltew kirgiziw",
+      "text": "Siltew yamasa tekst",
+      "caption": "Jazıw (qálewge qaray)",
+      "captionPlaceholder": "Mısalı: Úy jumısı",
+      "aria": "QR kod: {text}"
     },
     "ink": {
       "toolbar": "Qoljazba ásbapları",

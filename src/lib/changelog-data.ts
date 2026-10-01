@@ -36,6 +36,13 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "doska-qr",
+    date: "2026-10-01",
+    type: "yangi",
+    title: "Doskada «QR kod»: havola yoki matnni ekranga chiqaring — oʻquvchilar telefon bilan skanerlaydi",
+    href: "/doska",
+  },
+  {
     id: "doska-bosh-joy",
     date: "2026-10-01",
     type: "yaxshilandi",

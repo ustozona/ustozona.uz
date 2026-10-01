@@ -681,6 +681,28 @@ export function IconDice({ className }: IconProps) {
   );
 }
 
+/** QR — oʻzimiz chizdik: uch burchak kvadrati (massa) va markazdagi nuqtalar (detal). */
+export function IconQr({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={cn("doska-icon", className)} aria-hidden="true">
+      <g>
+        <g opacity=".5">
+          <rect x="3" y="3" width="7.5" height="7.5" rx="2" />
+          <rect x="13.5" y="3" width="7.5" height="7.5" rx="2" />
+          <rect x="3" y="13.5" width="7.5" height="7.5" rx="2" />
+        </g>
+        <rect x="5.5" y="5.5" width="2.5" height="2.5" rx=".6" />
+        <rect x="16" y="5.5" width="2.5" height="2.5" rx=".6" />
+        <rect x="5.5" y="16" width="2.5" height="2.5" rx=".6" />
+        <rect x="13.5" y="13.5" width="3" height="3" rx=".7" />
+        <rect x="18" y="18" width="3" height="3" rx=".7" />
+        <rect x="18" y="13.5" width="3" height="3" rx=".7" opacity=".5" />
+        <rect x="13.5" y="18" width="3" height="3" rx=".7" opacity=".5" />
+      </g>
+    </svg>
+  );
+}
+
 /**
  * Klaviatura yorliqlari — oʻzimiz chizdik: korpus (massa) va tugmalar
  * (detal), Solar oʻlchamlarida — tashqi chegara 20×14, radius 3.5
@@ -797,6 +819,7 @@ export const DOSKA_ICONS: { name: string; source: string; Icon: React.ComponentT
   { name: "IconPin", source: "solar:pin", Icon: IconPin },
   { name: "IconPalette", source: "solar:palette-round", Icon: IconPalette },
   { name: "IconDice", source: "oʻzimiz:zar", Icon: IconDice },
+  { name: "IconQr", source: "oʻzimiz:qr", Icon: IconQr },
   { name: "IconKeyboard", source: "oʻzimiz:klaviatura", Icon: IconKeyboard },
   { name: "IconDockBottom", source: "oʻzimiz:panel-past", Icon: IconDockBottom },
   { name: "IconDockLeft", source: "oʻzimiz:panel-chap", Icon: IconDockLeft },

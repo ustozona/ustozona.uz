@@ -4,6 +4,7 @@ import type { DoskaWidget, WidgetKind } from "@/lib/doska/types";
 import {
   IconClock,
   IconDice,
+  IconQr,
   IconPresentation,
   IconShape,
   IconStickyNote,
@@ -14,6 +15,7 @@ import {
 } from "../icons";
 import { ClockSettings, ClockWidget } from "./ClockWidget";
 import { DiceSettings, DiceWidget } from "./DiceWidget";
+import { QrSettings, QrWidget } from "./QrWidget";
 import { PresentationWidget } from "./PresentationWidget";
 import { ShapeSettings, ShapeWidget } from "./ShapeWidget";
 import { StickyNoteWidget } from "./StickyNoteWidget";
@@ -62,6 +64,7 @@ export const WIDGET_COMPONENTS: Record<WidgetKind, ComponentType<WidgetProps>> =
   "presentation.v1": PresentationWidget,
   "wheel.v1": WheelWidget,
   "dice.v1": DiceWidget,
+  "qr.v1": QrWidget,
 };
 
 export const WIDGET_ICONS: Record<
@@ -77,6 +80,7 @@ export const WIDGET_ICONS: Record<
   "presentation.v1": IconPresentation,
   "wheel.v1": IconWheel,
   "dice.v1": IconDice,
+  "qr.v1": IconQr,
 };
 
 /**
@@ -92,6 +96,7 @@ export const WIDGET_SETTINGS: Partial<Record<WidgetKind, ComponentType<WidgetPro
   "traffic-light.v1": TrafficLightSettings,
   "shape.v1": ShapeSettings,
   "dice.v1": DiceSettings,
+  "qr.v1": QrSettings,
 };
 
 /**

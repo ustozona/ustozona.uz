@@ -2102,6 +2102,9 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "doska-qr": {
+        "title": "Doskada «QR kod»: havola yoki matnni ekranga chiqaring — oʻquvchilar telefon bilan skanerlaydi"
+      },
       "doska-bosh-joy": {
         "title": "Doska: yangi vosita boshqalarining ustiga emas, ekrandagi boʻsh joyga tushadi"
       },
@@ -5108,7 +5111,8 @@
       "shape": "Shakl",
       "presentation": "Taqdimot",
       "wheel": "Gʻildirak",
-      "dice": "Zar"
+      "dice": "Zar",
+      "qr": "QR kod"
     },
     "toolbar": {
       "duplicate": "{widget} — nusxalash",
@@ -5253,7 +5257,8 @@
         "shape": "Geometrik figuralar",
         "presentation": "Savollar va javoblar",
         "wheel": "Tasodifiy ism tanlash",
-        "dice": "Zar, son, harf yoki tanga"
+        "dice": "Zar, son, harf yoki tanga",
+        "qr": "Havola yoki matn — telefon bilan skanerlanadi"
       }
     },
     "appearance": {
@@ -5377,6 +5382,14 @@
       "to": "Gacha",
       "less": "Kamroq",
       "more": "Koʻproq"
+    },
+    "qr": {
+      "empty": "Havola yoki matn kiriting — oʻquvchilar telefon bilan skanerlaydi",
+      "enter": "Havola kiritish",
+      "text": "Havola yoki matn",
+      "caption": "Yozuv (ixtiyoriy)",
+      "captionPlaceholder": "Masalan: Uy vazifasi",
+      "aria": "QR kod: {text}"
     },
     "ink": {
       "toolbar": "Qoʻlyozma asboblari",

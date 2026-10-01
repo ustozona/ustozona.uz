@@ -2102,6 +2102,9 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "doska-qr": {
+        "title": "“QR code” in Doska: put a link or text on screen — students scan it with their phones"
+      },
       "doska-bosh-joy": {
         "title": "Doska: a new tool lands in free space instead of on top of the others"
       },
@@ -5230,7 +5233,8 @@
       "shape": "Shape",
       "presentation": "Slides",
       "wheel": "Wheel",
-      "dice": "Dice"
+      "dice": "Dice",
+      "qr": "QR code"
     },
     "toolbar": {
       "duplicate": "{widget} — duplicate",
@@ -5375,7 +5379,8 @@
         "shape": "Geometric shapes",
         "presentation": "Questions and answers",
         "wheel": "Pick a random name",
-        "dice": "Dice, number, letter or coin"
+        "dice": "Dice, number, letter or coin",
+        "qr": "A link or text to scan with a phone"
       }
     },
     "appearance": {
@@ -5499,6 +5504,14 @@
       "to": "To",
       "less": "Fewer",
       "more": "More"
+    },
+    "qr": {
+      "empty": "Enter a link or text — students scan it with a phone",
+      "enter": "Enter a link",
+      "text": "Link or text",
+      "caption": "Caption (optional)",
+      "captionPlaceholder": "For example: Homework",
+      "aria": "QR code: {text}"
     },
     "ink": {
       "toolbar": "Ink tools",

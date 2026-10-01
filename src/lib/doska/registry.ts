@@ -30,7 +30,8 @@ export type WidgetLabelKey =
   | "shape"
   | "presentation"
   | "wheel"
-  | "dice";
+  | "dice"
+  | "qr";
 
 /**
  * «Hammasi» oynasidagi toifa (docs/doska-ux-tadqiqot.md §3 «Topish»).
@@ -237,6 +238,19 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
     minSize: { w: 180, h: 160 },
     initialState: { mode: "dice", count: 1, min: 1, max: 30, values: [] },
   },
+  "qr.v1": {
+    kind: "qr.v1",
+    category: "media",
+    labelKey: "qr",
+    // Qoʻshnisi «Taqdimot» (toʻq sariq) — binafsha-qizil undan aniq ajraladi,
+    // «Fon» (binafsha) esa panelning narigi chetida.
+    tint: "fuchsia",
+    // Kvadratga yaqin: kod kvadrat, ostida qisqa yozuv sigʻadi.
+    defaultSize: { w: 320, h: 360 },
+    minSize: { w: 180, h: 200 },
+    initialState: { text: "", caption: "" },
+    openSettingsOnAdd: true,
+  },
 };
 
 /**
@@ -262,6 +276,7 @@ export const TOOL_ORDER: WidgetKind[] = [
   "sticky-note.v1",
   "shape.v1",
   "presentation.v1",
+  "qr.v1",
 ];
 
 export function widgetMeta(kind: WidgetKind): WidgetMeta {
