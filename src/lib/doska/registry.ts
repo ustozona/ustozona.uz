@@ -150,7 +150,7 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
     initialState: { durationSec: 300, remainingSec: 300, running: false, view: "both", sound: true },
     openSettingsOnAdd: true,
     // `remainingSec` alohida eslanmaydi — u `durationSec` dan olinadi (store).
-    remember: ["durationSec", "view", "repeat", "warn", "tabTitle", "sound"],
+    remember: ["mode", "durationSec", "view", "repeat", "warn", "tabTitle", "sound"],
   },
   "traffic-light.v1": {
     kind: "traffic-light.v1",

@@ -2102,6 +2102,9 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "doska-sekundomer": {
+        "title": "Taymerde sekundomer rejimi: waqıttı alǵa sanań, 5 ke shekem aralıq belgileń"
+      },
       "doska-matn-rang": {
         "title": "Doskada tekst reńi hám qalıńlıǵı: siya, qızıl, kók, jasıl, qızǵılt sarı, fiolet"
       },
@@ -5332,6 +5335,10 @@
       "instant": "Ózgeris dárhal qollanıladı · Esc — jabıw"
     },
     "timer": {
+      "mode": "Rejim",
+      "modeCountdown": "Keri sanaw",
+      "modeStopwatch": "Sekundomer",
+      "lap": "Aralıq",
       "start": "Baslaw",
       "pause": "Toqtatıw",
       "reset": "Basınan",

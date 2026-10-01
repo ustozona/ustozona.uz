@@ -580,7 +580,7 @@ Voqealarni oʻqituvchi qoʻlda kiritadi.
 **Bizda:** ikkalasi ham yoʻq.
 
 **Olamiz:**
-- sekundomer — A (taymerning rejimi sifatida, R141 dagi «bitta
+- ✅ sekundomer qurildi (taymer `mode: "stopwatch"`, 5 tagacha oraliq) — A (taymerning rejimi sifatida, R141 dagi «bitta
   primitiv» qarori);
 - voqea sanogʻi — **B**: bizda oʻquv kalendari bor — choraklar, taʼtil
   va bayramlar (`blocked-days`, `academic-calendar`). «Chorak oxirigacha

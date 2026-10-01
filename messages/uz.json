@@ -2102,6 +2102,9 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "doska-sekundomer": {
+        "title": "Taymerda sekundomer rejimi: vaqtni oldinga sanang, 5 tagacha oraliq belgilang"
+      },
       "doska-matn-rang": {
         "title": "Doskada matn rangi va qalinligi: siyoh, qizil, koʻk, yashil, toʻq sariq, binafsha"
       },
@@ -5209,6 +5212,10 @@
       "instant": "Oʻzgarish darhol qoʻllanadi · Esc — yopish"
     },
     "timer": {
+      "mode": "Rejim",
+      "modeCountdown": "Orqaga sanash",
+      "modeStopwatch": "Sekundomer",
+      "lap": "Oraliq",
       "start": "Boshlash",
       "pause": "Toʻxtatish",
       "reset": "Qaytadan",

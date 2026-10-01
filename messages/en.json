@@ -2102,6 +2102,9 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "doska-sekundomer": {
+        "title": "Stopwatch mode in the timer: count up and mark up to 5 laps"
+      },
       "doska-matn-rang": {
         "title": "Board text color and bold: ink, red, blue, green, orange, violet"
       },
@@ -5331,6 +5334,10 @@
       "instant": "Changes apply right away · Esc to close"
     },
     "timer": {
+      "mode": "Mode",
+      "modeCountdown": "Countdown",
+      "modeStopwatch": "Stopwatch",
+      "lap": "Lap",
       "start": "Start",
       "pause": "Pause",
       "reset": "Reset",

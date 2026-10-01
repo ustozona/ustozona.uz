@@ -112,7 +112,15 @@ function format(sec: number): string {
   return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 }
 
+/**
+ * Rejim: orqaga sanash yoki SEKUNDOMER (docs/doska-referens-koriklari.md
+ * R407 — «bitta primitiv»: alohida vidjet emas, taymerning rejimi).
+ */
 export function TimerWidget({ widget }: { widget: DoskaWidget }) {
+  return widget.state.mode === "stopwatch" ? <StopwatchView widget={widget} /> : <CountdownView widget={widget} />;
+}
+
+function CountdownView({ widget }: { widget: DoskaWidget }) {
   const patch = useDoskaStore((s) => s.patchWidgetState);
   const selected = useIsSelected(widget.id);
   const t = useTranslations("Doska.timer");
@@ -338,8 +346,39 @@ export function TimerSettings({ widget }: { widget: DoskaWidget }) {
     { value: "both", label: t("viewBoth") },
   ];
 
+  const stopwatch = widget.state.mode === "stopwatch";
+  const modeToggle = (
+    <SettingsSection label={t("mode")}>
+      <SegmentedToggle
+        aria-label={t("mode")}
+        value={stopwatch ? "stopwatch" : "countdown"}
+        options={[
+          { value: "countdown", label: t("modeCountdown") },
+          { value: "stopwatch", label: t("modeStopwatch") },
+        ]}
+        // Rejim almashsa ikkalasi ham toʻxtaydi — ishlab turgan sanoq
+        // koʻrinmay qolib, fonda ovoz chalmasin.
+        onValueChange={(mode) =>
+          patch(widget.id, {
+            mode,
+            running: false,
+            endsAt: null,
+            remainingSec: durationSec,
+            round: 0,
+            swStartedAt: null,
+            swElapsedMs: 0,
+            laps: [],
+          })
+        }
+      />
+    </SettingsSection>
+  );
+
+  if (stopwatch) return modeToggle;
+
   return (
     <>
+      {modeToggle}
       <SettingsSection label={t("time")}>
         <SettingsChoices
           ariaLabel={t("time")}
@@ -392,5 +431,82 @@ export function TimerSettings({ widget }: { widget: DoskaWidget }) {
         />
       </SettingsSection>
     </>
+  );
+}
+
+/* ── Sekundomer ───────────────────────────────────────────────────────
+   Taymer kabi storeʼga har soniya YOZMAYDI: boshlangan payt
+   (`swStartedAt`) va toʻxtaganda yigʻilgan vaqt (`swElapsedMs`) yoziladi,
+   koʻrinadigan vaqt shu ikkisidan hisoblanadi. Oraliqlar (`laps`) —
+   «birinchi guruh tugatdi» kabi belgilar, eng koʻpi bilan 5 tasi. */
+
+const MAX_LAPS = 5;
+
+function formatMs(ms: number): string {
+  const total = Math.floor(ms / 1000);
+  const h = Math.floor(total / 3600);
+  const mm = String(Math.floor((total % 3600) / 60)).padStart(2, "0");
+  const ss = String(total % 60).padStart(2, "0");
+  return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
+}
+
+function StopwatchView({ widget }: { widget: DoskaWidget }) {
+  const patch = useDoskaStore((s) => s.patchWidgetState);
+  const t = useTranslations("Doska.timer");
+  const startedAt = typeof widget.state.swStartedAt === "number" ? widget.state.swStartedAt : null;
+  const elapsed = Math.max(0, Number(widget.state.swElapsedMs) || 0);
+  const laps = Array.isArray(widget.state.laps) ? widget.state.laps.map(Number).filter(Number.isFinite) : [];
+  const running = startedAt !== null;
+  const [now, setNow] = React.useState(() => Date.now());
+
+  React.useEffect(() => {
+    if (!running) return;
+    const id = setInterval(() => setNow(Date.now()), 250);
+    return () => clearInterval(id);
+  }, [running]);
+
+  const shown = running ? elapsed + Math.max(0, now - startedAt) : elapsed;
+
+  const toggle = () => {
+    const at = Date.now();
+    setNow(at);
+    if (running) patch(widget.id, { swStartedAt: null, swElapsedMs: elapsed + (at - startedAt) });
+    else patch(widget.id, { swStartedAt: at });
+  };
+
+  return (
+    <div className="doska-card flex size-full flex-col items-center justify-center gap-[3cqw] p-[4cqw]" data-card="amber">
+      <Digits text={formatMs(shown)} style={{ fontSize: "clamp(1.75rem, 20cqw, 12rem)" }} />
+
+      {laps.length > 0 && (
+        <ol className="flex flex-wrap justify-center gap-x-[3cqw] font-mono opacity-80" style={{ fontSize: "clamp(0.7rem, 3.5cqw, 1.25rem)" }}>
+          {laps.map((ms, i) => (
+            <li key={i}>
+              {i + 1}. {formatMs(ms)}
+            </li>
+          ))}
+        </ol>
+      )}
+
+      <div className="flex gap-[2cqw]" style={{ fontSize: "clamp(0.8rem, 4cqw, 1.5rem)" }}>
+        <WidgetButton tone="primary" shape="round" label={running ? t("pause") : t("start")} onClick={toggle}>
+          {running ? <IconPause /> : <IconPlay />}
+        </WidgetButton>
+        {running && laps.length < MAX_LAPS && (
+          <WidgetButton onClick={() => patch(widget.id, { laps: [...laps, shown] })} className="px-[4cqw] py-[1.5cqw]">
+            {t("lap")}
+          </WidgetButton>
+        )}
+        {!running && shown > 0 && (
+          <WidgetButton
+            shape="round"
+            label={t("reset")}
+            onClick={() => patch(widget.id, { swStartedAt: null, swElapsedMs: 0, laps: [] })}
+          >
+            <IconRestart />
+          </WidgetButton>
+        )}
+      </div>
+    </div>
   );
 }

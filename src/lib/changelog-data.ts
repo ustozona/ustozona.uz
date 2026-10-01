@@ -36,6 +36,13 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "doska-sekundomer",
+    date: "2026-10-01",
+    type: "yangi",
+    title: "Taymerda sekundomer rejimi: vaqtni oldinga sanang, 5 tagacha oraliq belgilang",
+    href: "/doska",
+  },
+  {
     id: "doska-matn-rang",
     date: "2026-10-01",
     type: "yangi",
