@@ -5718,6 +5718,7 @@
       "loading": "Keste júklenbekte…",
       "noTimetable": "Sabaq kestesi tabılmadı — esapqa kiriń yamasa «Basqıshlar» kórinisin tańlań",
       "noLessons": "Búgin sabaǵıńız joq",
+      "holiday": "Búgin sabaq joq: {name}",
       "stepsTitle": "Sabaq basqıshları",
       "stepsEmpty": "Sazlawda basqıshlardı jazıń",
       "view": "Kórinis",

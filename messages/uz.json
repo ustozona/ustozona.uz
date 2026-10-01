@@ -5595,6 +5595,7 @@
       "loading": "Jadval yuklanmoqda…",
       "noTimetable": "Dars jadvali topilmadi — hisobga kiring yoki «Bosqichlar» koʻrinishini tanlang",
       "noLessons": "Bugun darsingiz yoʻq",
+      "holiday": "Bugun dars yoʻq: {name}",
       "stepsTitle": "Dars bosqichlari",
       "stepsEmpty": "Sozlamada bosqichlarni yozing",
       "view": "Koʻrinish",

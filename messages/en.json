@@ -5717,6 +5717,7 @@
       "loading": "Loading timetable…",
       "noTimetable": "No timetable found — sign in or choose the “Steps” view",
       "noLessons": "No lessons today",
+      "holiday": "No lessons today: {name}",
       "stepsTitle": "Lesson steps",
       "stepsEmpty": "Type the steps in settings",
       "view": "View",

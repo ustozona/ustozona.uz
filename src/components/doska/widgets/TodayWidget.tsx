@@ -36,12 +36,16 @@ function readToday(state: DoskaWidget["state"]) {
   return { view, steps, done };
 }
 
-let lessonsPromise: { day: string; promise: Promise<TodayLesson[] | null> } | null = null;
+type TodayLoad = { lessons: TodayLesson[]; holiday: string | null };
 
-function loadLessons(day: string): Promise<TodayLesson[] | null> {
+let lessonsPromise: { day: string; promise: Promise<TodayLoad | null> } | null = null;
+
+function loadLessons(day: string): Promise<TodayLoad | null> {
   if (lessonsPromise?.day !== day) {
     const promise = doskaTodayAction({ today: day })
-      .then((res) => (res.ok && res.data.status === "ok" ? res.data.lessons : null))
+      .then((res) =>
+        res.ok && res.data.status === "ok" ? { lessons: res.data.lessons, holiday: res.data.holiday ?? null } : null,
+      )
       .catch(() => {
         lessonsPromise = null;
         return null;
@@ -74,20 +78,29 @@ export function TodayWidget({ widget }: { widget: DoskaWidget }) {
 function LessonsView() {
   const t = useTranslations("Doska.today");
   const now = useNowMin();
-  const [lessons, setLessons] = React.useState<TodayLesson[] | null | undefined>(undefined);
+  const [load, setLoad] = React.useState<TodayLoad | null | undefined>(undefined);
   const day = now?.day ?? null;
 
   React.useEffect(() => {
     if (!day) return;
     let alive = true;
-    void loadLessons(day).then((l) => alive && setLessons(l));
+    void loadLessons(day).then((l) => alive && setLoad(l));
     return () => {
       alive = false;
     };
   }, [day]);
 
+  const lessons = load?.lessons ?? [];
   const message =
-    lessons === undefined ? t("loading") : lessons === null ? t("noTimetable") : lessons.length === 0 ? t("noLessons") : null;
+    load === undefined
+      ? t("loading")
+      : load === null
+        ? t("noTimetable")
+        : load.holiday
+          ? t("holiday", { name: load.holiday })
+          : lessons.length === 0
+            ? t("noLessons")
+            : null;
 
   return (
     <div className="doska-card flex size-full flex-col gap-[2cqw] p-[4cqw]" data-card="slate">
@@ -100,7 +113,7 @@ function LessonsView() {
         </p>
       ) : (
         <ol translate="no" className="flex min-h-0 flex-1 flex-col gap-[1cqw] overflow-hidden" style={{ fontSize: "clamp(0.8rem, 5cqw, 2rem)" }}>
-          {lessons!.map((l, i) => {
+          {lessons.map((l, i) => {
             const current = now !== null && now.min >= l.startMin && now.min < l.endMin;
             const past = now !== null && now.min >= l.endMin;
             return (

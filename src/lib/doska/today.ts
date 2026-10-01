@@ -6,7 +6,13 @@
 /** Bugungi bitta dars — kun boshidan daqiqalarda, sinf nomi bilan. */
 export type TodayLesson = { startMin: number; endMin: number; className: string };
 
-export type DoskaTodayResult = { status: "ok"; lessons: TodayLesson[] } | { status: "none" };
+/**
+ * `holiday` — bugun taʼtil yoki bayram (oʻquv kalendaridan): darslar
+ * boʻsh, vidjet uning nomini koʻrsatadi.
+ */
+export type DoskaTodayResult =
+  | { status: "ok"; lessons: TodayLesson[]; holiday?: string }
+  | { status: "none" };
 
 export function fmtMin(min: number): string {
   return `${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
