@@ -2102,6 +2102,9 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "doska-hisob": {
+        "title": "Doskada «Hisob»: 2–6 jamoa, katta raqam va +/− — viktorina va guruh ishida ochko sanash"
+      },
       "doska-ovoz": {
         "title": "Doskada «Ovoz berish»: oʻquvchilar doskaga chiqib smaylik, «ha/yoʻq» yoki A–E ni bosadi — telefonsiz chiqish chiptasi"
       },
@@ -5136,7 +5139,8 @@
       "qr": "QR kod",
       "sticker": "Stiker",
       "groups": "Guruhlar",
-      "poll": "Ovoz berish"
+      "poll": "Ovoz berish",
+      "score": "Hisob"
     },
     "toolbar": {
       "duplicate": "{widget} — nusxalash",
@@ -5288,7 +5292,8 @@
         "qr": "Havola yoki matn — telefon bilan skanerlanadi",
         "sticker": "Maqtov, belgi, strelka",
         "groups": "Tasodifiy guruhlarga boʻlish",
-        "poll": "Doskaga chiqib bosish: smaylik, ha/yoʻq"
+        "poll": "Doskaga chiqib bosish: smaylik, ha/yoʻq",
+        "score": "Jamoalar ochkosi"
       }
     },
     "appearance": {
@@ -5460,6 +5465,16 @@
       "question": "Savol (ixtiyoriy)",
       "questionPlaceholder": "Bugungi dars qanday boʻldi?",
       "hideResults": "Natijani yashirish",
+      "less": "Kamroq",
+      "more": "Koʻproq"
+    },
+    "score": {
+      "teamName": "{n}-jamoa",
+      "plus": "{name}: +1",
+      "minus": "{name}: −1",
+      "teams": "Jamoalar soni",
+      "names": "Jamoa nomlari",
+      "reset": "Ochkolarni nolga tushirish",
       "less": "Kamroq",
       "more": "Koʻproq"
     },

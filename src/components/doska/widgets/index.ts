@@ -15,11 +15,13 @@ import {
   IconWheel,
   IconUsers,
   IconPoll,
+  IconScore,
 } from "../icons";
 import { ClockSettings, ClockWidget } from "./ClockWidget";
 import { DiceSettings, DiceWidget } from "./DiceWidget";
 import { GroupsSettings, GroupsWidget } from "./GroupsWidget";
 import { PollSettings, PollWidget } from "./PollWidget";
+import { ScoreSettings, ScoreWidget } from "./ScoreWidget";
 import { QrSettings, QrWidget } from "./QrWidget";
 import { StickerSettings, StickerWidget } from "./StickerWidget";
 import { PresentationWidget } from "./PresentationWidget";
@@ -74,6 +76,7 @@ export const WIDGET_COMPONENTS: Record<WidgetKind, ComponentType<WidgetProps>> =
   "sticker.v1": StickerWidget,
   "groups.v1": GroupsWidget,
   "poll.v1": PollWidget,
+  "score.v1": ScoreWidget,
 };
 
 export const WIDGET_ICONS: Record<
@@ -93,6 +96,7 @@ export const WIDGET_ICONS: Record<
   "sticker.v1": IconSticker,
   "groups.v1": IconUsers,
   "poll.v1": IconPoll,
+  "score.v1": IconScore,
 };
 
 /**
@@ -112,6 +116,7 @@ export const WIDGET_SETTINGS: Partial<Record<WidgetKind, ComponentType<WidgetPro
   "sticker.v1": StickerSettings,
   "groups.v1": GroupsSettings,
   "poll.v1": PollSettings,
+  "score.v1": ScoreSettings,
 };
 
 /**

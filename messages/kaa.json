@@ -2102,6 +2102,9 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "doska-hisob": {
+        "title": "Doskada «Esap»: 2–6 komanda, úlken san hám +/− — viktorina hám topar jumısında ochko sanaw"
+      },
       "doska-ovoz": {
         "title": "Doskada «Dawıs beriw»: oqıwshılar doskaǵa shıǵıp smaylik, «awa/yaq» yamasa A–E ni basadı — telefonsız shıǵıw bileti"
       },
@@ -5259,7 +5262,8 @@
       "qr": "QR kod",
       "sticker": "Stiker",
       "groups": "Toparlar",
-      "poll": "Dawıs beriw"
+      "poll": "Dawıs beriw",
+      "score": "Esap"
     },
     "toolbar": {
       "duplicate": "{widget} — nusqa alıw",
@@ -5411,7 +5415,8 @@
         "qr": "Siltew yamasa tekst — telefon menen skanerlenedi",
         "sticker": "Maqtaw, belgi, strelka",
         "groups": "Tosınnan toparlarǵa bóliw",
-        "poll": "Doskaǵa shıǵıp basıw: smaylik, awa/yaq"
+        "poll": "Doskaǵa shıǵıp basıw: smaylik, awa/yaq",
+        "score": "Komandalar ochkosı"
       }
     },
     "appearance": {
@@ -5583,6 +5588,16 @@
       "question": "Soraw (qálewge qaray)",
       "questionPlaceholder": "Búgingi sabaq qalay ótti?",
       "hideResults": "Nátiyjeni jasırıw",
+      "less": "Azıraq",
+      "more": "Kóbirek"
+    },
+    "score": {
+      "teamName": "{n}-komanda",
+      "plus": "{name}: +1",
+      "minus": "{name}: −1",
+      "teams": "Komandalar sanı",
+      "names": "Komanda atları",
+      "reset": "Ochkolardı nolge túsiriw",
       "less": "Azıraq",
       "more": "Kóbirek"
     },

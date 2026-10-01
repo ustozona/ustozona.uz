@@ -34,7 +34,8 @@ export type WidgetLabelKey =
   | "qr"
   | "sticker"
   | "groups"
-  | "poll";
+  | "poll"
+  | "score";
 
 /**
  * «Hammasi» oynasidagi toifa (docs/doska-ux-tadqiqot.md §3 «Topish»).
@@ -305,6 +306,17 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
     initialState: { type: "smiley", count: 3, votes: [], hidden: false, question: "" },
     remember: ["type", "count", "hidden"],
   },
+  "score.v1": {
+    kind: "score.v1",
+    category: "class",
+    labelKey: "score",
+    // Qoʻshnisi «Ovoz berish» (zumrad) — qizgʻish undan aniq ajraladi.
+    tint: "rose",
+    // Keng: 2–3 jamoa yonma-yon, katta son uzoqdan oʻqilsin.
+    defaultSize: { w: 520, h: 300 },
+    minSize: { w: 260, h: 180 },
+    initialState: { teams: [{ name: "", score: 0 }, { name: "", score: 0 }] },
+  },
 };
 
 /**
@@ -328,6 +340,7 @@ export const TOOL_ORDER: WidgetKind[] = [
   "dice.v1",
   "groups.v1",
   "poll.v1",
+  "score.v1",
   "text.v1",
   "sticky-note.v1",
   "sticker.v1",

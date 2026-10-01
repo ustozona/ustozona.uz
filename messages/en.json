@@ -2102,6 +2102,9 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "doska-hisob": {
+        "title": "Board “Score”: 2–6 teams, big numbers and +/− — keep points in quizzes and group work"
+      },
       "doska-ovoz": {
         "title": "Board “Poll”: students come up and tap a smiley, yes/no or A–E — an exit ticket without phones"
       },
@@ -5258,7 +5261,8 @@
       "qr": "QR code",
       "sticker": "Sticker",
       "groups": "Groups",
-      "poll": "Poll"
+      "poll": "Poll",
+      "score": "Score"
     },
     "toolbar": {
       "duplicate": "{widget} — duplicate",
@@ -5410,7 +5414,8 @@
         "qr": "A link or text to scan with a phone",
         "sticker": "Praise, sign, arrow",
         "groups": "Split into random groups",
-        "poll": "Tap on the board: smiley, yes/no"
+        "poll": "Tap on the board: smiley, yes/no",
+        "score": "Team points"
       }
     },
     "appearance": {
@@ -5582,6 +5587,16 @@
       "question": "Question (optional)",
       "questionPlaceholder": "How was today’s lesson?",
       "hideResults": "Hide results",
+      "less": "Fewer",
+      "more": "More"
+    },
+    "score": {
+      "teamName": "Team {n}",
+      "plus": "{name}: +1",
+      "minus": "{name}: −1",
+      "teams": "Number of teams",
+      "names": "Team names",
+      "reset": "Reset scores",
       "less": "Fewer",
       "more": "More"
     },
