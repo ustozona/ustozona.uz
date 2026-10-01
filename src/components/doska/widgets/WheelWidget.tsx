@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { SegmentedToggle } from "@/components/ui/segmented-toggle";
+import { SettingsCards } from "../SettingsFields";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useDoskaStore } from "@/lib/doska/store";
@@ -549,9 +550,19 @@ function WheelList({
     { value: "long", label: t("speedLong") },
   ];
 
-  const views: { value: WheelView; label: string }[] = [
-    { value: "wheel", label: t("viewWheel") },
-    { value: "name", label: t("viewName") },
+  // Namunalar — koʻrinishning kichik nusxasi (R435).
+  const views: { value: WheelView; label: string; preview: React.ReactNode }[] = [
+    {
+      value: "wheel",
+      label: t("viewWheel"),
+      preview: (
+        <svg viewBox="0 0 20 20" className="size-7">
+          <circle cx="10" cy="10" r="8.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
+          <path d="M10 1.5v17M1.5 10h17M4 4l12 12M16 4L4 16" stroke="currentColor" strokeOpacity=".45" strokeWidth="1" />
+        </svg>
+      ),
+    },
+    { value: "name", label: t("viewName"), preview: <span className="text-sm font-semibold">Aziz</span> },
   ];
   // Tayyor roʻyxatlar — matn maydoniga yoziladi, keyin tahrirlanadi.
   const presets: { id: string; label: string; text: string }[] = [
@@ -614,13 +625,7 @@ function WheelList({
             </p>
           </div>
 
-          <SegmentedToggle
-            variant="pill"
-            aria-label={t("view")}
-            value={state.view}
-            options={views}
-            onValueChange={(view) => patch({ view })}
-          />
+          <SettingsCards ariaLabel={t("view")} value={state.view} options={views} onChange={(view) => patch({ view })} />
 
           {roster ? (
             <RosterNames
