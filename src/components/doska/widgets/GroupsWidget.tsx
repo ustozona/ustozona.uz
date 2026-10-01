@@ -226,6 +226,14 @@ export function GroupsWidget({ widget }: { widget: DoskaWidget }) {
 
 /* ── Sozlama kartasi ─────────────────────────────────────────────── */
 
+/** Natija soʻz bilan (R435): «4 ta guruh, har birida 6–7 tadan». */
+function resultHint(t: ReturnType<typeof useTranslations>, total: number, by: string, n: number): string {
+  const groups = Math.max(1, Math.min(total, by === "count" ? n : Math.ceil(total / n)));
+  const min = Math.floor(total / groups);
+  const max = Math.ceil(total / groups);
+  return min === max ? t("resultEven", { groups, size: min }) : t("resultRange", { groups, min, max });
+}
+
 export function GroupsSettings({ widget }: { widget: DoskaWidget }) {
   const patch = useDoskaStore((s) => s.patchWidgetState);
   const t = useTranslations("Doska.groups");
@@ -260,6 +268,7 @@ export function GroupsSettings({ widget }: { widget: DoskaWidget }) {
           onMinus={() => patch(widget.id, { n: n - 1, groups: [] })}
           onPlus={() => patch(widget.id, { n: n + 1, groups: [] })}
         />
+        {!roster && <p className="text-muted-foreground text-xs leading-snug">{resultHint(t, count || samples.length, by, n)}</p>}
       </SettingsSection>
 
       {roster ? (

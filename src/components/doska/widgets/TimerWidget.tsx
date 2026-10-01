@@ -8,7 +8,7 @@ import { SegmentedToggle } from "@/components/ui/segmented-toggle";
 import { useDoskaStore, useIsSelected } from "@/lib/doska/store";
 import type { DoskaWidget } from "@/lib/doska/types";
 import { IconPause, IconPlay, IconRestart } from "../icons";
-import { SettingsChoices, SettingsSection, SettingsStepper, SettingsSwitch } from "../SettingsFields";
+import { SettingsCards, SettingsChoices, SettingsSection, SettingsStepper, SettingsSwitch } from "../SettingsFields";
 import { playTimerEnd, unlockDoskaSound } from "../sounds";
 import { Digits } from "./Digits";
 import { WidgetButton } from "./WidgetButton";
@@ -349,11 +349,14 @@ export function TimerSettings({ widget }: { widget: DoskaWidget }) {
   const stepDown = durationSec <= 120 ? 30 : 60;
   const stepUp = durationSec < 120 ? 30 : 60;
 
-  const views: { value: TimerView; label: string }[] = [
-    { value: "auto", label: t("viewAuto") },
-    { value: "digits", label: t("viewDigits") },
-    { value: "disk", label: t("viewDisk") },
-    { value: "both", label: t("viewBoth") },
+  // Namunalar — haqiqiy koʻrinishning kichik nusxasi (R435).
+  const ring = <svg viewBox="0 0 20 20" className="size-6"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" strokeOpacity=".25" strokeWidth="3" /><path d="M10 2a8 8 0 0 1 8 8" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" /></svg>;
+  const digits = <span className="font-mono text-xs font-semibold tabular-nums">05:00</span>;
+  const views: { value: TimerView; label: string; preview: React.ReactNode }[] = [
+    { value: "auto", label: t("viewAuto"), preview: <span className="text-sm font-semibold">A</span> },
+    { value: "digits", label: t("viewDigits"), preview: digits },
+    { value: "disk", label: t("viewDisk"), preview: ring },
+    { value: "both", label: t("viewBoth"), preview: <span className="flex items-center gap-1">{ring}{digits}</span> },
   ];
 
   const stopwatch = widget.state.mode === "stopwatch";
@@ -408,12 +411,7 @@ export function TimerSettings({ widget }: { widget: DoskaWidget }) {
       </SettingsSection>
 
       <SettingsSection label={t("view")}>
-        <SegmentedToggle
-          aria-label={t("view")}
-          value={view}
-          options={views}
-          onValueChange={(v) => patch(widget.id, { view: v })}
-        />
+        <SettingsCards ariaLabel={t("view")} value={view} options={views} onChange={(v) => patch(widget.id, { view: v })} />
       </SettingsSection>
 
       <SettingsSection label={t("repeat")}>

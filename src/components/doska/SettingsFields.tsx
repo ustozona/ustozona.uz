@@ -85,6 +85,62 @@ export function SettingsChoices<T extends string | number>({
   );
 }
 
+/**
+ * Rasmli kartalar (R435): har variantda natijaning kichik namunasi va
+ * nomi. Tur yoki koʻrinish soʻz bilan emas, koʻrinishi bilan tanlanadi —
+ * «Smaylik» deyishdan 🙂😐🙁 ni koʻrsatish tezroq tushuniladi.
+ */
+export function SettingsCards<T extends string>({
+  value,
+  options,
+  onChange,
+  ariaLabel,
+}: {
+  value: T;
+  options: { value: T; label: string; preview: React.ReactNode }[];
+  onChange: (value: T) => void;
+  ariaLabel: string;
+}) {
+  return (
+    <div
+      role="group"
+      aria-label={ariaLabel}
+      className="grid gap-1.5"
+      style={{ gridTemplateColumns: `repeat(${Math.min(options.length, 4)}, minmax(0, 1fr))` }}
+    >
+      {options.map((opt) => {
+        const on = opt.value === value;
+        return (
+          <button
+            key={opt.value}
+            type="button"
+            aria-pressed={on}
+            onClick={() => onChange(opt.value)}
+            className={cn(
+              "flex min-h-11 flex-col items-stretch gap-1 rounded-md border p-1 text-xs font-medium transition-colors",
+              "focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none",
+              on ? "border-primary ring-primary ring-1" : "hover:bg-muted",
+            )}
+          >
+            <span
+              aria-hidden="true"
+              className={cn(
+                "grid h-12 place-items-center overflow-hidden rounded-sm",
+                on ? "bg-primary/10 text-primary" : "bg-muted text-foreground",
+              )}
+            >
+              {opt.preview}
+            </span>
+            <span className={cn("truncate leading-tight", on ? "text-primary" : "text-muted-foreground")}>
+              {opt.label}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 /** − qiymat + — qadamli oʻzgartirish (masalan ±1 daqiqa). */
 export function SettingsStepper({
   value,

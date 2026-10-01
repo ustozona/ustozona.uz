@@ -13,6 +13,8 @@ import { fmtMin, type TodayLesson } from "@/lib/doska/today";
 import { todayKey } from "@/lib/date-keys";
 import { doskaTodayAction } from "@/server/actions/doska-today";
 import { SettingsSection } from "../SettingsFields";
+import { IconToday } from "../icons";
+import { WidgetEmpty } from "./WidgetEmpty";
 
 /* ════════════════════════════════════════════════════════════════════
    BUGUN — kun jadvali yoki dars bosqichlari (docs/doska-referens-koriklari.md R409).
@@ -148,6 +150,7 @@ function LessonsView() {
 
 function StepsView({ widget }: { widget: DoskaWidget }) {
   const patch = useDoskaStore((s) => s.patchWidgetState);
+  const toggleSettings = useDoskaStore((s) => s.toggleSettings);
   const t = useTranslations("Doska.today");
   const { steps, done: savedDone, doneKey } = readToday(widget.state);
   const { now, load } = useTodayLoad();
@@ -163,6 +166,12 @@ function StepsView({ widget }: { widget: DoskaWidget }) {
   const items = manual.length > 0 ? manual : (lesson?.steps ?? []);
   const key = manual.length > 0 ? "manual" : lesson && now ? `${now.day}:${lesson.startMin}` : "";
   const done = doneKey === key ? savedDone : [];
+
+  if (items.length === 0 && (manual.length > 0 || load !== undefined)) {
+    return (
+      <WidgetEmpty Icon={IconToday} text={t("stepsEmpty")} action={t("stepsWrite")} onAction={() => toggleSettings(widget.id)} />
+    );
+  }
 
   const toggle = (i: number) =>
     patch(widget.id, { doneKey: key, done: done.includes(i) ? done.filter((x) => x !== i) : [...done, i] });
