@@ -28,7 +28,9 @@ import {
   type WheelSpeed,
   type WheelState,
   type WheelStudent,
+  type WheelView,
 } from "@/lib/doska/wheel";
+import { UZ_LETTERS } from "./DiceWidget";
 import { wheelAccessAction, wheelRosterAction } from "@/server/actions/doska-wheel";
 import { SpinWheel, type SpinRequest } from "@/components/stage/SpinWheel";
 import { playSpinTick, playSpinWinner, unlockSpinSound } from "@/components/stage/spin-sound";
@@ -234,6 +236,65 @@ export function WheelWidget({ widget }: { widget: DoskaWidget }) {
           : t("loading")
       : null;
 
+  const counter = state.mode === "once" && entries.length > 0 && (
+    <span
+      className="absolute bottom-[2.5cqw] left-[2.5cqw] rounded-full bg-current/10 px-[2.5cqw] py-[0.8cqw] font-mono leading-none font-medium"
+      style={{ fontSize: "clamp(0.7rem, 3.4cqw, 1.15rem)" }}
+    >
+      <span aria-hidden="true">{t("counter", { asked, total: entries.length })}</span>
+      <span className="sr-only">{t("counterLabel", { asked, total: entries.length })}</span>
+    </span>
+  );
+
+  if (state.view === "name") {
+    return (
+      <NameView
+        spin={spin}
+        labelOf={labelOf}
+        winner={winnerLabel}
+        hint={rosterHint ?? (canSpin ? t("hint") : null)}
+        canSpin={canSpin}
+        spinLabel={t("spin")}
+        onSpin={startSpin}
+        onTick={state.sound ? playSpinTick : undefined}
+        onSpinEnd={onSpinEnd}
+        counter={counter}
+      >
+        {winner && !spin && (
+          <div className="flex flex-wrap justify-center gap-[2cqw]">
+            {pool.length > 0 && (
+              <WidgetButton tone="primary" onClick={startSpin} className="px-[5cqw] py-[1.8cqw]" style={RESULT_BUTTON}>
+                {t("again")}
+              </WidgetButton>
+            )}
+            {state.mode === "once" && (
+              <WidgetButton
+                onClick={() => {
+                  patch({ picked: withoutLast(state.picked, winner) });
+                  setWinner(null);
+                }}
+                className="px-[5cqw] py-[1.8cqw]"
+                style={RESULT_BUTTON}
+              >
+                {t("later")}
+              </WidgetButton>
+            )}
+          </div>
+        )}
+        {roundDone && idle && (
+          <div className="flex flex-col items-center gap-[2cqw]">
+            <p className="leading-tight font-semibold" style={{ fontSize: "clamp(1rem, 6cqw, 2.5rem)" }}>
+              {t("roundDone")}
+            </p>
+            <WidgetButton tone="primary" onClick={newRound} className="px-[5cqw] py-[1.8cqw]" style={RESULT_BUTTON}>
+              {t("newRound")}
+            </WidgetButton>
+          </div>
+        )}
+      </NameView>
+    );
+  }
+
   return (
     // Karta — reyestrdagi `tint: "teal"`; koʻrinishi uslubdan (`.doska-card`).
     <div className="doska-card relative size-full p-[5cqw]" data-card="teal">
@@ -272,15 +333,7 @@ export function WheelWidget({ widget }: { widget: DoskaWidget }) {
         />
       </button>
 
-      {state.mode === "once" && entries.length > 0 && (
-        <span
-          className="absolute bottom-[2.5cqw] left-[2.5cqw] rounded-full bg-current/10 px-[2.5cqw] py-[0.8cqw] font-mono leading-none font-medium"
-          style={{ fontSize: "clamp(0.7rem, 3.4cqw, 1.15rem)" }}
-        >
-          <span aria-hidden="true">{t("counter", { asked, total: entries.length })}</span>
-          <span className="sr-only">{t("counterLabel", { asked, total: entries.length })}</span>
-        </span>
-      )}
+      {counter}
 
       {/* Ekran oʻquvchi uchun gʻolib — doimiy jonli hudud. Kartochka ichida
           boʻlsa u paydo boʻlish bilan birga oʻqilmasdi: jonli hudud faqat
@@ -488,6 +541,16 @@ function WheelList({
     { value: "long", label: t("speedLong") },
   ];
 
+  const views: { value: WheelView; label: string }[] = [
+    { value: "wheel", label: t("viewWheel") },
+    { value: "name", label: t("viewName") },
+  ];
+  // Tayyor roʻyxatlar — matn maydoniga yoziladi, keyin tahrirlanadi.
+  const presets: { id: string; label: string; text: string }[] = [
+    { id: "numbers", label: "1–30", text: Array.from({ length: 30 }, (_, i) => String(i + 1)).join("\n") },
+    { id: "letters", label: t("presetLetters"), text: UZ_LETTERS.join("\n") },
+  ];
+
   const roster = state.roster;
   const asked = state.mode === "once" ? pickedInList(entries, state.picked) : [];
   const count = roster
@@ -543,6 +606,14 @@ function WheelList({
             </p>
           </div>
 
+          <SegmentedToggle
+            variant="pill"
+            aria-label={t("view")}
+            value={state.view}
+            options={views}
+            onValueChange={(view) => patch({ view })}
+          />
+
           {roster ? (
             <RosterNames
               roster={roster}
@@ -596,6 +667,23 @@ function WheelList({
                   // aks holda oʻqituvchi yozganini belgilay olmaydi.
                   className="min-h-24 flex-1 resize-none select-text"
                 />
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-muted-foreground text-xs">{t("presets")}</span>
+                  {presets.map((p) => (
+                    <Button
+                      key={p.id}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        onSourceChange();
+                        patch({ text: p.text, picked: [] });
+                      }}
+                    >
+                      {p.label}
+                    </Button>
+                  ))}
+                </div>
                 {overflowWarning || (
                   <p className="text-muted-foreground text-xs leading-snug">
                     {usingSamples ? t("samplesHint") : t("listHint")}
@@ -842,6 +930,104 @@ function RosterNames({
  * Gʻildirak ustidagi natija: parda + oq kartochka. Pardaga bosilsa yopiladi
  * (`onDismiss` berilgan boʻlsa) — oʻqituvchi dars ritmini buzmasin.
  */
+/* ── «Ism» koʻrinishi ──────────────────────────────────────────────────
+   Gʻildirak oʻrniga bitta katta ism. Tanlash xuddi gʻildirakdagidek:
+   gʻolib BOSHIDA tanlangan (`spin.winner`), bu yerda faqat ekrandagi
+   ismlar sekinlashib almashadi va oxirida gʻolibda toʻxtaydi. */
+
+/** Ism koʻrinishi gʻildirakdan qisqaroq — ismlar almashinuvi uzoq zerikarli. */
+const NAME_SPIN_SHARE = 0.5;
+
+function NameView({
+  spin,
+  labelOf,
+  winner,
+  hint,
+  canSpin,
+  spinLabel,
+  onSpin,
+  onTick,
+  onSpinEnd,
+  counter,
+  children,
+}: {
+  spin: ActiveSpin | null;
+  labelOf: (key: string) => string;
+  winner: string | null;
+  hint: string | null;
+  canSpin: boolean;
+  spinLabel: string;
+  onSpin: () => void;
+  onTick?: () => void;
+  onSpinEnd: (id: number) => void;
+  counter: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  const [flash, setFlash] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (!spin) return;
+    const total = spin.durationMs * NAME_SPIN_SHARE;
+    let elapsed = 0;
+    let i = randomIndex(spin.entries.length);
+    let timer: ReturnType<typeof setTimeout>;
+    // Qadam oraligʻi 50 ms dan ~300 ms gacha oʻsadi — sekinlashish.
+    const step = () => {
+      const delay = 50 + 250 * (elapsed / total) ** 2;
+      elapsed += delay;
+      if (elapsed >= total) {
+        setFlash(null);
+        onSpinEnd(spin.id);
+        return;
+      }
+      i = (i + 1 + randomIndex(Math.max(1, spin.entries.length - 1))) % spin.entries.length;
+      setFlash(labelOf(spin.entries[i]));
+      onTick?.();
+      timer = setTimeout(step, delay);
+    };
+    timer = setTimeout(step, 0);
+    return () => clearTimeout(timer);
+  }, [spin, labelOf, onTick, onSpinEnd]);
+
+  const shown = spin ? flash : winner;
+
+  return (
+    <div className="doska-card relative flex size-full flex-col items-center justify-center gap-[3cqw] p-[5cqw]" data-card="teal">
+      <button
+        type="button"
+        // Asosiy amal — birinchi teginishda ishlaydi (gʻildirakdagi kabi).
+        data-doska-no-drag=""
+        onClick={canSpin ? onSpin : undefined}
+        aria-label={spinLabel}
+        aria-disabled={!canSpin}
+        translate="no"
+        className={cn(
+          "focus-visible:ring-ring/50 grid min-h-0 w-full flex-1 place-items-center rounded-[var(--doska-card-radius)] outline-none focus-visible:ring-4",
+          canSpin ? "cursor-pointer" : "cursor-default",
+        )}
+      >
+        {shown ? (
+          <span
+            className={cn("line-clamp-2 leading-tight font-semibold break-words", spin && "opacity-80")}
+            style={{ fontSize: "clamp(1.5rem, 14cqw, 9rem)" }}
+          >
+            {shown}
+          </span>
+        ) : (
+          <span className="opacity-60" style={{ fontSize: "clamp(1rem, 6cqw, 2.5rem)" }}>
+            {hint ?? "?"}
+          </span>
+        )}
+      </button>
+      <p className="sr-only" aria-live="polite">
+        {spin ? "" : (winner ?? "")}
+      </p>
+      {children}
+      {counter}
+    </div>
+  );
+}
+
 function ResultOverlay({
   children,
   onDismiss,

@@ -2102,6 +2102,9 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "doska-ism-korinishi": {
+        "title": "Random name now also shows one big name — readable from the back row; preset lists: 1–30 and the alphabet"
+      },
       "doska-stiker": {
         "title": "“Sticker” in Doska: stars, praise, arrows, subject icons — large and sharp on a projector"
       },
@@ -5464,6 +5467,11 @@
       "speedShort": "Fast",
       "speedMedium": "Medium",
       "speedLong": "Slow",
+      "view": "View",
+      "viewWheel": "Wheel",
+      "viewName": "Name",
+      "presets": "Presets:",
+      "presetLetters": "Alphabet",
       "sampleNames": [
         "Ali",
         "Emma",

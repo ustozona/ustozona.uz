@@ -36,6 +36,13 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "doska-ism-korinishi",
+    date: "2026-10-01",
+    type: "yangi",
+    title: "Tasodifiy ism endi bitta katta ism koʻrinishida ham — orqa partadan oʻqiladi; tayyor roʻyxatlar: 1–30 va alifbo",
+    href: "/doska",
+  },
+  {
     id: "doska-stiker",
     date: "2026-10-01",
     type: "yangi",

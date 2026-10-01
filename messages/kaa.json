@@ -2102,6 +2102,9 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "doska-ism-korinishi": {
+        "title": "Tosınnan at endi bir úlken at kórinisinde de — arttaǵı partadan oqıladı; tayar dizimler: 1–30 hám álipbe"
+      },
       "doska-stiker": {
         "title": "Doskada «Stiker»: juldızsha, maqtaw, strelka, pán belgileri — úlken hám proektorda anıq"
       },
@@ -5465,6 +5468,11 @@
       "speedShort": "Tez",
       "speedMedium": "Orta",
       "speedLong": "Áste",
+      "view": "Kórinis",
+      "viewWheel": "Dóńgelek",
+      "viewName": "Atı",
+      "presets": "Tayar:",
+      "presetLetters": "Álipbe",
       "sampleNames": [
         "Aygúl",
         "Baxtiyar",

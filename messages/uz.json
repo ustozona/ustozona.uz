@@ -2102,6 +2102,9 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "doska-ism-korinishi": {
+        "title": "Tasodifiy ism endi bitta katta ism koʻrinishida ham — orqa partadan oʻqiladi; tayyor roʻyxatlar: 1–30 va alifbo"
+      },
       "doska-stiker": {
         "title": "Doskada «Stiker»: yulduzcha, «barakalla», strelka, fan belgilari — katta va proyektorda tiniq"
       },
@@ -5342,6 +5345,11 @@
       "speedShort": "Tez",
       "speedMedium": "Oʻrta",
       "speedLong": "Sekin",
+      "view": "Koʻrinish",
+      "viewWheel": "Gʻildirak",
+      "viewName": "Ism",
+      "presets": "Tayyor:",
+      "presetLetters": "Alifbo",
       "sampleNames": [
         "Aziza",
         "Bobur",
