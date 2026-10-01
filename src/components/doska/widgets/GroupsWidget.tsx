@@ -10,11 +10,10 @@ import { useDoskaStore } from "@/lib/doska/store";
 import type { DoskaWidget } from "@/lib/doska/types";
 import { parseEntries } from "@/lib/doska/wheel";
 import { randomIndex } from "@/lib/spin-wheel";
-import { todayKey } from "@/lib/date-keys";
-import { doskaAbsentAction } from "@/server/actions/doska-absent";
 import { Button } from "@/components/ui/button";
 import { SettingsSection, SettingsStepper } from "../SettingsFields";
 import { ConnectClass, useRosterStudents, useWheelAccess } from "./WheelWidget";
+import { useAbsentToday } from "./useAbsentToday";
 import { WidgetButton } from "./WidgetButton";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -76,40 +75,6 @@ export function makeGroups(names: readonly string[], by: GroupsBy, n: number): s
   return groups;
 }
 
-/* ── Bugun yoʻqlar: sinf + kun uchun bir marta ─────────────────────── */
-
-const absentCache = new Map<string, Promise<string[]>>();
-
-function loadAbsent(classId: string, day: string): Promise<string[]> {
-  const key = `${classId}:${day}`;
-  let p = absentCache.get(key);
-  if (!p) {
-    p = doskaAbsentAction({ classId, today: day })
-      .then((res) => (res.ok ? res.data : []))
-      .catch(() => {
-        absentCache.delete(key);
-        return [];
-      });
-    absentCache.set(key, p);
-  }
-  return p;
-}
-
-/** `null` — hali yuklanmagan. */
-function useAbsent(classId: string | null): string[] | null {
-  const [state, setState] = React.useState<{ key: string; ids: string[] } | null>(null);
-  React.useEffect(() => {
-    if (!classId) return;
-    const day = todayKey();
-    let alive = true;
-    void loadAbsent(classId, day).then((ids) => alive && setState({ key: classId, ids }));
-    return () => {
-      alive = false;
-    };
-  }, [classId]);
-  return classId && state?.key === classId ? state.ids : null;
-}
-
 /** Guruhlar soniga qarab ustunlar — kataklar iloji boricha kvadratga yaqin. */
 function columnsFor(count: number): number {
   if (count <= 3) return count;
@@ -124,7 +89,7 @@ export function GroupsWidget({ widget }: { widget: DoskaWidget }) {
   const tWheel = useTranslations("Doska.wheel");
   const { text, by, n, groups: saved, roster } = readGroups(widget.state);
   const rosterLoad = useRosterStudents(roster?.classId ?? null);
-  const absent = useAbsent(roster?.classId ?? null);
+  const absent = useAbsentToday(roster?.classId ?? null);
   const students = rosterLoad?.status === "ok" ? rosterLoad.students : null;
   const labels = React.useMemo(() => (students ? new Map(students.map((s) => [s.id, s.name])) : null), [students]);
   // Ulangan sinfda kalit — ID; roʻyxatda endi yoʻq (chiqib ketgan) bola koʻrinmaydi.

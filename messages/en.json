@@ -2102,6 +2102,9 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "doska-gildirak-davomat": {
+        "title": "The board wheel leaves out students absent today on its own — from attendance of the connected class"
+      },
       "doska-guruhlar-sinf": {
         "title": "Connect a class roster to “Groups” (Pro): students absent today are left out automatically from attendance"
       },

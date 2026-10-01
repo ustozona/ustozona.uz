@@ -37,6 +37,7 @@ import { playSpinTick, playSpinWinner, unlockSpinSound } from "@/components/stag
 import { ClassList } from "../ClassList";
 import { IconArrowLeft, IconClose, IconUsers } from "../icons";
 import { ProBadge } from "../ProBadge";
+import { useAbsentToday } from "./useAbsentToday";
 import { WidgetButton } from "./WidgetButton";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -113,6 +114,9 @@ export function WheelWidget({ widget }: { widget: DoskaWidget }) {
   const typed = React.useMemo(() => parseEntries(state.text), [state.text]);
   const roster = state.roster;
   const rosterLoad = useRosterStudents(roster?.classId ?? null);
+  // Bugun davomatda «Kelmadi»/«Sababli» — gʻildirakka chiqmaydi (qoʻlda
+  // belgilangan `excluded` bilan birga). Yuklanguncha qoʻlda belgilangani.
+  const absentToday = useAbsentToday(roster?.classId ?? null);
   const students = rosterLoad?.status === "ok" ? rosterLoad.students : null;
 
   // Manba tartibi: ulangan sinf → qoʻlda yozilgan roʻyxat → namuna ismlar.
@@ -121,11 +125,11 @@ export function WheelWidget({ widget }: { widget: DoskaWidget }) {
   const allKeys = React.useMemo(() => {
     if (roster) {
       if (!students) return NO_KEYS; // yuklanmoqda / yopiq — gʻildirak boʻsh
-      const out = new Set(roster.excluded);
+      const out = new Set([...roster.excluded, ...(absentToday ?? [])]);
       return students.filter((s) => !out.has(s.id)).map((s) => s.id);
     }
     return usingSamples ? samples : typed;
-  }, [roster, students, usingSamples, samples, typed]);
+  }, [roster, students, usingSamples, samples, typed, absentToday]);
   const entries = React.useMemo(() => allKeys.slice(0, WHEEL_MAX_ENTRIES), [allKeys]);
   const overflow = allKeys.length > WHEEL_MAX_ENTRIES;
   const pool = React.useMemo(
@@ -846,7 +850,8 @@ export function ConnectClass({
 /**
  * Ulangan sinf: ismlar — tugma. Bosilgan bola bugun yoʻq deb belgilanadi va
  * gʻildirakka chiqmaydi (R296: «bittasini vaqtincha oʻchirib qoʻyish»).
- * Davomatdan avtomatik olish — keyingi bosqich (v2).
+ * Davomatda bugun «Kelmadi»/«Sababli» belgilanganlar esa avtomatik chiqmaydi
+ * (`useAbsentToday`), bu roʻyxatda ular alohida belgilanmaydi.
  */
 function RosterNames({
   roster,
