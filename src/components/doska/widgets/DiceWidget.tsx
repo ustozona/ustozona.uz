@@ -3,10 +3,9 @@
 import * as React from "react";
 import { useTranslations } from "next-intl";
 
-import { SegmentedToggle } from "@/components/ui/segmented-toggle";
 import { useDoskaStore } from "@/lib/doska/store";
 import type { DoskaWidget } from "@/lib/doska/types";
-import { SettingsSection, SettingsStepper } from "../SettingsFields";
+import { SettingsCards, SettingsSection, SettingsStepper } from "../SettingsFields";
 import { Digits } from "./Digits";
 import { WidgetButton } from "./WidgetButton";
 
@@ -166,23 +165,19 @@ export function DiceSettings({ widget }: { widget: DoskaWidget }) {
   const t = useTranslations("Doska.dice");
   const { mode, count, min, max } = readDice(widget.state);
 
-  const modes: { value: DiceMode; label: string }[] = [
-    { value: "dice", label: t("modeDice") },
-    { value: "number", label: t("modeNumber") },
-    { value: "letter", label: t("modeLetter") },
-    { value: "coin", label: t("modeCoin") },
+  // Namunalar — natijaning kichik nusxasi (R435).
+  const modes: { value: DiceMode; label: string; preview: React.ReactNode }[] = [
+    { value: "dice", label: t("modeDice"), preview: <span className="text-xl leading-none">⚄</span> },
+    { value: "number", label: t("modeNumber"), preview: <span className="font-mono text-sm font-semibold">17</span> },
+    { value: "letter", label: t("modeLetter"), preview: <span className="text-sm font-semibold">Oʻ</span> },
+    { value: "coin", label: t("modeCoin"), preview: <span className="grid size-6 place-items-center rounded-full border-2 border-current text-xs font-semibold">1</span> },
   ];
 
   // Rejim yoki oraliq oʻzgarsa eski natija oʻchadi — u endi boshqa narsa.
   return (
     <>
       <SettingsSection label={t("mode")}>
-        <SegmentedToggle
-          aria-label={t("mode")}
-          value={mode}
-          options={modes}
-          onValueChange={(v) => patch(widget.id, { mode: v, values: [] })}
-        />
+        <SettingsCards ariaLabel={t("mode")} value={mode} options={modes} onChange={(v) => patch(widget.id, { mode: v, values: [] })} />
       </SettingsSection>
 
       {mode === "dice" && (

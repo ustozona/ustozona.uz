@@ -251,8 +251,10 @@ function CountdownView({ widget }: { widget: DoskaWidget }) {
         </span>
       </div>
 
-      {/* Ikkilamchi tugmalar — faqat tanlanganda (A7). Asosiy amal pastda. */}
-      {selected && (
+      {/* Ikkilamchi tugmalar — faqat tanlanganda (A7) va joy boʻlsa (R433):
+          kichik taymerda ular raqam ustiga tushadi. Davomiylik baribir
+          sozlama kartasida oʻzgaradi. Asosiy amal pastda — doim koʻrinadi. */}
+      {selected && widget.w >= 300 && widget.h >= 200 && (
         <div className="absolute top-[3cqw] right-[3cqw] flex gap-[1.5cqw]">
           {!fresh && !finished && (
             <WidgetButton
