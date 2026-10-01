@@ -150,7 +150,7 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
     minSize: { w: 260, h: 180 },
     // `view` va `sound` — 2-bosqichda qoʻshildi; eski taymerlarda yoʻq,
     // komponent ularni standart qiymat bilan oʻqiydi (TimerWidget).
-    initialState: { durationSec: 300, remainingSec: 300, running: false, view: "both", sound: true },
+    initialState: { durationSec: 300, remainingSec: 300, running: false, view: "auto", sound: true },
     openSettingsOnAdd: true,
     // `remainingSec` alohida eslanmaydi — u `durationSec` dan olinadi (store).
     remember: ["mode", "durationSec", "view", "repeat", "warn", "tabTitle", "sound"],

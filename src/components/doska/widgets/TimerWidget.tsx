@@ -67,7 +67,7 @@ import { WidgetButton } from "./WidgetButton";
    allaqachon tugagan taymer jim «Vaqt tugadi» holatida turadi.
    ════════════════════════════════════════════════════════════════════ */
 
-export type TimerView = "digits" | "disk" | "both";
+export type TimerView = "auto" | "digits" | "disk" | "both";
 
 /** Tayyor variantlar (daqiqa). Darsdagi eng koʻp ishlatiladigan oraliqlar. */
 const PRESET_MINUTES = [1, 3, 5, 10, 15];
@@ -81,10 +81,18 @@ const MAX_REPEAT = 9;
 const WARN_SHARE = 0.1;
 const WARN_MIN_SEC = 10;
 
+/**
+ * «Avto» (R433): koʻrinish vidjet shaklidan. Keng yoki tor vidjetda disk
+ * raqamni siqib qoʻyadi — faqat raqam; qolganida ikkalasi.
+ */
+function autoView(widget: DoskaWidget): "digits" | "both" {
+  return widget.w / widget.h >= 1.9 || widget.w < 300 ? "digits" : "both";
+}
+
 function readTimer(state: DoskaWidget["state"]) {
   const durationSec = Number(state.durationSec ?? 300);
   const view: TimerView =
-    state.view === "digits" || state.view === "disk" ? state.view : "both";
+    state.view === "digits" || state.view === "disk" || state.view === "auto" ? state.view : "both";
   return {
     durationSec,
     remainingSec: Number(state.remainingSec ?? durationSec),
@@ -190,8 +198,9 @@ function CountdownView({ widget }: { widget: DoskaWidget }) {
   };
 
   const fraction = durationSec > 0 ? Math.min(1, Math.max(0, remainingSec) / durationSec) : 0;
-  const showDisk = view !== "digits";
-  const showDigits = view !== "disk";
+  const shown = view === "auto" ? autoView(widget) : view;
+  const showDisk = shown !== "digits";
+  const showDigits = shown !== "disk";
 
   const primaryLabel = finished ? t("reset") : running ? t("pause") : t("start");
 
@@ -341,6 +350,7 @@ export function TimerSettings({ widget }: { widget: DoskaWidget }) {
   const stepUp = durationSec < 120 ? 30 : 60;
 
   const views: { value: TimerView; label: string }[] = [
+    { value: "auto", label: t("viewAuto") },
     { value: "digits", label: t("viewDigits") },
     { value: "disk", label: t("viewDisk") },
     { value: "both", label: t("viewBoth") },
