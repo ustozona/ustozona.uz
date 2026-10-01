@@ -580,7 +580,7 @@ Voqealarni oʻqituvchi qoʻlda kiritadi.
 **Bizda:** ikkalasi ham yoʻq.
 
 **Olamiz:**
-- sekundomer — A (taymerning rejimi sifatida, R141 dagi «bitta
+- ✅ sekundomer qurildi (taymer `mode: "stopwatch"`, 5 tagacha oraliq) — A (taymerning rejimi sifatida, R141 dagi «bitta
   primitiv» qarori);
 - voqea sanogʻi — **B**: bizda oʻquv kalendari bor — choraklar, taʼtil
   va bayramlar (`blocked-days`, `academic-calendar`). «Chorak oxirigacha
@@ -946,10 +946,10 @@ bilan toʻlov, onboarding qoʻllanmalari.
 
 **B — maʼlumot ustunligi (kirgan oʻqituvchi; Gʻildirak v2 bilan bir
 oqimda):**
-- R409 bugungi dars;
+- ✅ R409 «Bugun» qurildi (`today.v1`: jadvaldan bugungi darslar `doskaTodayAction`, yoki qoʻlda dars bosqichlari belgilash bilan); qoldi: bosqichlarni dars rejasidan olish;
 - R411 guruh tuzuvchi — ✅ 1-qadam qurildi (`groups.v1`: qoʻlda roʻyxat, son yoki hajm boʻyicha); qoldi: sinf roʻyxati, yoʻqlar, cheklovlar, sudrash;
-- R407 voqea sanogʻi;
-- R408 budilnik ← qoʻngʻiroq;
+- ✅ R407 voqea sanogʻi qurildi (`countdown.v1`: faol yil kalendari — taʼtil, chorak oxiri, yil oxiri; mehmonga oʻz voqeasi; «faqat dars kunlari»);
+- ✅ R408 soatda qoʻngʻiroq jadvali qurildi (`doskaBellsAction`: bugungi jadval versiyasining `bellConfig`; dars/tanaffus, ogohlantirish, qoʻngʻiroq);
 - ✅ R412 doskada ovoz berish qurildi (`poll.v1`: smaylik, ha/yoʻq, A–E);
 - R384/R418 rasm va nusxalab joylash (saqlash joyi hal boʻlgach).
 
@@ -961,11 +961,11 @@ oqimda):**
 - «Yaqinda oʻchirilganlar».
 
 **D — keyinroq:**
-- R413 shovqin;
+- ✅ R413 shovqin qurildi (`noise.v1`: Web Audio, chegara, silliqlash, sanoq, qoʻngʻiroq);
 - ✅ R414 hisob taxtasi qurildi (`score.v1`, 2–6 jamoa);
-- veb-kamera, video, embed, havola;
-- R420 bayram fonlari;
-- R417 matn formatlash.
+- ✅ veb-kamera qurildi (`camera.v1`: kadrni toʻxtatish, kamera almashtirish, koʻzgu); qoldi: video, embed, havola;
+- R420 fonlar: ✅ nota chizigʻi, kuz/bahor/qish qurildi; qoldi: bayram (oʻquv kalendari bilan), oʻz rasmi;
+- ✅ R417 matn: rang (qalam palitrasi) va qalinlik qurildi; qolgani keyin.
 
 ### 2.6. Rad etilganlar
 

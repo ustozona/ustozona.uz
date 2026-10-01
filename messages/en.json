@@ -2102,6 +2102,30 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "doska-bugun": {
+        "title": "Board “Today”: your lessons from the timetable automatically, or a checklist of lesson steps"
+      },
+      "doska-soat-qongiroq": {
+        "title": "Bell schedule on the board clock: “Period 3 · 12 min left”, a warning in the last minutes and an optional bell"
+      },
+      "doska-voqea-sanogi": {
+        "title": "Board “Countdown”: “12 days until autumn break” — events come from your school calendar, no typing"
+      },
+      "doska-sekundomer": {
+        "title": "Stopwatch mode in the timer: count up and mark up to 5 laps"
+      },
+      "doska-matn-rang": {
+        "title": "Board text color and bold: ink, red, blue, green, orange, violet"
+      },
+      "doska-fonlar-mavsum": {
+        "title": "New board backgrounds: music staff (music lessons), autumn, spring and winter"
+      },
+      "doska-kamera": {
+        "title": "Board “Camera”: show a notebook, book or experiment to the whole class — freeze the frame and write over it"
+      },
+      "doska-shovqin": {
+        "title": "Board “Noise”: see the class volume through the microphone — the bar turns red over the limit, with an optional bell"
+      },
       "doska-hisob": {
         "title": "Board “Score”: 2–6 teams, big numbers and +/− — keep points in quizzes and group work"
       },
@@ -5262,7 +5286,11 @@
       "sticker": "Sticker",
       "groups": "Groups",
       "poll": "Poll",
-      "score": "Score"
+      "score": "Score",
+      "noise": "Noise",
+      "camera": "Camera",
+      "countdown": "Countdown",
+      "today": "Today"
     },
     "toolbar": {
       "duplicate": "{widget} — duplicate",
@@ -5317,6 +5345,10 @@
       "instant": "Changes apply right away · Esc to close"
     },
     "timer": {
+      "mode": "Mode",
+      "modeCountdown": "Countdown",
+      "modeStopwatch": "Stopwatch",
+      "lap": "Lap",
       "start": "Start",
       "pause": "Pause",
       "reset": "Reset",
@@ -5348,7 +5380,16 @@
     },
     "clock": {
       "view": "Display",
-      "showSeconds": "Show seconds"
+      "showSeconds": "Show seconds",
+      "bells": "Bell schedule",
+      "bellsOn": "Show lesson and break",
+      "bellsHint": "Taken from the bell times of your timetable (when signed in).",
+      "warnMin": "Warning (minutes before end)",
+      "bellSound": "Bell when the lesson ends",
+      "lessonLeft": "Period {n} · {min} min left",
+      "breakLeft": "Break · {min} min",
+      "less": "Fewer",
+      "more": "More"
     },
     "shapeSettings": {
       "shape": "Shape",
@@ -5415,7 +5456,11 @@
         "sticker": "Praise, sign, arrow",
         "groups": "Split into random groups",
         "poll": "Tap on the board: smiley, yes/no",
-        "score": "Team points"
+        "score": "Team points",
+        "noise": "Class volume via microphone",
+        "camera": "Notebooks and experiments on screen",
+        "countdown": "Days until the break",
+        "today": "Today’s lessons or lesson steps"
       }
     },
     "appearance": {
@@ -5449,6 +5494,10 @@
       "dot-paper": "Dot paper",
       "notebook": "Notebook page",
       "husnixat": "Handwriting practice",
+      "music-staff": "Music staff",
+      "autumn": "Autumn",
+      "spring": "Spring",
+      "winter": "Winter",
       "dusk": "Dusk",
       "shakllar": "Colorful shapes"
     },
@@ -5556,6 +5605,7 @@
     "groups": {
       "make": "Make groups",
       "shuffle": "Shuffle again",
+      "moveHint": "Which group? Tap a group",
       "groupName": "Group {n}",
       "summaryCount": "{n} groups",
       "summarySize": "{n} per group",
@@ -5599,6 +5649,83 @@
       "reset": "Reset scores",
       "less": "Fewer",
       "more": "More"
+    },
+    "noise": {
+      "hint": "Press “Start” to turn on the microphone",
+      "ok": "Good",
+      "tooLoud": "Quieter!",
+      "denied": "Microphone access was denied",
+      "unsupported": "No microphone in this browser",
+      "overs": "Over the limit: {count}",
+      "start": "Start",
+      "stop": "Stop",
+      "limit": "Limit",
+      "smooth": "Smoothing",
+      "smoothLive": "Live",
+      "smoothMedium": "Medium",
+      "smoothSmooth": "Smooth",
+      "sound": "Bell when over",
+      "resetOvers": "Reset counter ({count})",
+      "less": "Lower",
+      "more": "Higher"
+    },
+    "camera": {
+      "hint": "Show a notebook, book or experiment to the whole class",
+      "start": "Turn on camera",
+      "freeze": "Freeze",
+      "resume": "Resume",
+      "switch": "Other camera",
+      "stop": "Turn off",
+      "denied": "Camera access was denied",
+      "unsupported": "No camera in this browser",
+      "mirror": "Mirror",
+      "frozenAlt": "Frozen frame"
+    },
+    "textStyle": {
+      "color": "Color",
+      "bold": "Bold",
+      "colors": {
+        "auto": "Ink / chalk",
+        "red": "Red",
+        "blue": "Blue",
+        "green": "Green",
+        "orange": "Orange",
+        "violet": "Violet"
+      }
+    },
+    "countdown": {
+      "until": "Until {name}",
+      "today": "Today!",
+      "days": "{count} days",
+      "schoolDays": "{count} school days",
+      "quarterEnd": "End of {name}",
+      "yearEnd": "End of school year",
+      "loading": "Loading calendar…",
+      "empty": "Pick an event or type your own",
+      "choose": "Pick event",
+      "fromCalendar": "From school calendar",
+      "noCalendar": "No school calendar — sign in or set the school year in Settings. For now, type your own event.",
+      "custom": "Your event",
+      "customName": "Event name",
+      "customDate": "Event date",
+      "customPlaceholder": "e.g. Olympiad",
+      "customDefault": "Event",
+      "schoolOnly": "School days only"
+    },
+    "today": {
+      "title": "Today’s lessons",
+      "loading": "Loading timetable…",
+      "noTimetable": "No timetable found — sign in or choose the “Steps” view",
+      "noLessons": "No lessons today",
+      "stepsTitle": "Lesson steps",
+      "stepsEmpty": "Type the steps in settings",
+      "view": "View",
+      "viewLessons": "Lessons",
+      "viewSteps": "Steps",
+      "lessonsHint": "Taken from your timetable automatically; the current lesson is highlighted.",
+      "steps": "Steps (one per line)",
+      "stepsPlaceholder": "Greeting\nHomework\nNew topic\nPractice\nWrap-up",
+      "uncheckAll": "Clear checks"
     },
     "sticker": {
       "groups": {

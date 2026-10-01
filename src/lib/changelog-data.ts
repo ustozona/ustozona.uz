@@ -36,6 +36,62 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "doska-bugun",
+    date: "2026-10-01",
+    type: "yangi",
+    title: "Doskada «Bugun»: bugungi darslaringiz jadvaldan avtomatik yoki dars bosqichlari belgilanadigan roʻyxat",
+    href: "/doska",
+  },
+  {
+    id: "doska-soat-qongiroq",
+    date: "2026-10-01",
+    type: "yangi",
+    title: "Doskadagi soatda qoʻngʻiroq jadvali: «3-soat · tugashiga 12 daq», oxirgi daqiqalarda ogohlantirish va ixtiyoriy qoʻngʻiroq",
+    href: "/doska",
+  },
+  {
+    id: "doska-voqea-sanogi",
+    date: "2026-10-01",
+    type: "yangi",
+    title: "Doskada «Voqea sanogʻi»: «Kuzgi taʼtilgacha 12 kun» — voqealar oʻquv kalendaringizdan, qoʻlda kiritmasdan",
+    href: "/doska",
+  },
+  {
+    id: "doska-sekundomer",
+    date: "2026-10-01",
+    type: "yangi",
+    title: "Taymerda sekundomer rejimi: vaqtni oldinga sanang, 5 tagacha oraliq belgilang",
+    href: "/doska",
+  },
+  {
+    id: "doska-matn-rang",
+    date: "2026-10-01",
+    type: "yangi",
+    title: "Doskada matn rangi va qalinligi: siyoh, qizil, koʻk, yashil, toʻq sariq, binafsha",
+    href: "/doska",
+  },
+  {
+    id: "doska-fonlar-mavsum",
+    date: "2026-10-01",
+    type: "yangi",
+    title: "Doskada yangi fonlar: nota chizigʻi (musiqa darsi), kuz, bahor va qish",
+    href: "/doska",
+  },
+  {
+    id: "doska-kamera",
+    date: "2026-10-01",
+    type: "yangi",
+    title: "Doskada «Kamera»: daftar, kitob yoki tajribani butun sinfga koʻrsating — kadrni toʻxtatib, ustidan yozish mumkin",
+    href: "/doska",
+  },
+  {
+    id: "doska-shovqin",
+    date: "2026-10-01",
+    type: "yangi",
+    title: "Doskada «Shovqin»: sinf ovozini mikrofon orqali koʻring — chegaradan oshsa ustun qizaradi, xohlasangiz qoʻngʻiroq chaladi",
+    href: "/doska",
+  },
+  {
     id: "doska-hisob",
     date: "2026-10-01",
     type: "yangi",

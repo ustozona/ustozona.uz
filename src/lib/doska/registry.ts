@@ -35,7 +35,11 @@ export type WidgetLabelKey =
   | "sticker"
   | "groups"
   | "poll"
-  | "score";
+  | "score"
+  | "noise"
+  | "camera"
+  | "countdown"
+  | "today";
 
 /**
  * «Hammasi» oynasidagi toifa (docs/doska-ux-tadqiqot.md §3 «Topish»).
@@ -135,6 +139,7 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
     defaultSize: { w: 320, h: 160 },
     minSize: { w: 200, h: 110 },
     initialState: { showSeconds: true },
+    remember: ["showSeconds", "bells", "warnMin", "bellSound"],
   },
   "timer.v1": {
     kind: "timer.v1",
@@ -148,7 +153,7 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
     initialState: { durationSec: 300, remainingSec: 300, running: false, view: "both", sound: true },
     openSettingsOnAdd: true,
     // `remainingSec` alohida eslanmaydi — u `durationSec` dan olinadi (store).
-    remember: ["durationSec", "view", "repeat", "warn", "tabTitle", "sound"],
+    remember: ["mode", "durationSec", "view", "repeat", "warn", "tabTitle", "sound"],
   },
   "traffic-light.v1": {
     kind: "traffic-light.v1",
@@ -174,6 +179,7 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
     defaultSize: { w: 460, h: 180 },
     minSize: { w: 160, h: 72 },
     initialState: { text: "" },
+    remember: ["color", "bold"],
     editable: true,
   },
   "sticky-note.v1": {
@@ -285,8 +291,9 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
     kind: "groups.v1",
     category: "class",
     labelKey: "groups",
-    // Qoʻshnilari «Gʻildirak» (teal) va «Zar» (lime) — binafsha ikkalasidan uzoq.
-    tint: "violet",
+    // Qoʻshnilari «Gʻildirak» (teal) va «Zar» (lime) — siyohrang ikkalasidan
+    // uzoq. `violet` EMAS — u «Fon» tugmasida band.
+    tint: "purple",
     // Keng: 4–6 guruh ustun boʻlib yonma-yon, ismlar uzoqdan oʻqilsin.
     defaultSize: { w: 640, h: 420 },
     minSize: { w: 300, h: 220 },
@@ -317,6 +324,56 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
     minSize: { w: 260, h: 180 },
     initialState: { teams: [{ name: "", score: 0 }, { name: "", score: 0 }] },
   },
+  "noise.v1": {
+    kind: "noise.v1",
+    category: "class",
+    labelKey: "noise",
+    // Svetofor (qizil) bilan bir maʼno — lekin qizil band; moviy-koʻk.
+    tint: "sky",
+    // Tik: ustun pastdan yuqoriga toʻladi.
+    defaultSize: { w: 300, h: 380 },
+    minSize: { w: 180, h: 220 },
+    initialState: { limit: 60, smooth: "medium", sound: false, overs: 0 },
+    remember: ["limit", "smooth", "sound"],
+  },
+  "camera.v1": {
+    kind: "camera.v1",
+    category: "media",
+    labelKey: "camera",
+    // Qoʻshnisi «QR kod» (binafsha-qizil) — yashil undan aniq ajraladi.
+    // `indigo` EMAS — u «Matn» da band.
+    tint: "green",
+    // 16:9 — kamera kadri.
+    defaultSize: { w: 640, h: 360 },
+    minSize: { w: 240, h: 160 },
+    initialState: { mirror: false },
+    remember: ["mirror"],
+  },
+  "countdown.v1": {
+    kind: "countdown.v1",
+    category: "time",
+    labelKey: "countdown",
+    // 17 rang tugadi — takror boʻladi, lekin panelning NARIGI chetidagi
+    // «QR kod» bilan: qoʻshnilari «Soat» (koʻk) va «Taymer» (sariq).
+    tint: "fuchsia",
+    defaultSize: { w: 360, h: 260 },
+    minSize: { w: 200, h: 160 },
+    // Boʻsh — kalendarning eng yaqin voqeasi koʻrinadi.
+    initialState: { eventId: null, name: "", date: "", schoolOnly: false },
+    remember: ["schoolOnly"],
+  },
+  "today.v1": {
+    kind: "today.v1",
+    category: "time",
+    labelKey: "today",
+    // Rang takrorlanadi («Shovqin» bilan) — lekin u boshqa guruhda.
+    tint: "sky",
+    // Tik: 6–7 dars qatori ustma-ust sigʻadi.
+    defaultSize: { w: 340, h: 420 },
+    minSize: { w: 220, h: 200 },
+    initialState: { view: "lessons", steps: "", done: [] },
+    remember: ["view"],
+  },
 };
 
 /**
@@ -333,6 +390,8 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
 export const TOOL_ORDER: WidgetKind[] = [
   "clock.v1",
   "timer.v1",
+  "countdown.v1",
+  "today.v1",
   "traffic-light.v1",
   // Sinfni boshqarish vositalari yonida (soat, taymer, svetofor) —
   // mazmun vositalaridan (matn, eslatma, taqdimot) oldin.
@@ -341,12 +400,14 @@ export const TOOL_ORDER: WidgetKind[] = [
   "groups.v1",
   "poll.v1",
   "score.v1",
+  "noise.v1",
   "text.v1",
   "sticky-note.v1",
   "sticker.v1",
   "shape.v1",
   "presentation.v1",
   "qr.v1",
+  "camera.v1",
 ];
 
 export function widgetMeta(kind: WidgetKind): WidgetMeta {

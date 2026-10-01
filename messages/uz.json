@@ -2102,6 +2102,30 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "doska-bugun": {
+        "title": "Doskada «Bugun»: bugungi darslaringiz jadvaldan avtomatik yoki dars bosqichlari belgilanadigan roʻyxat"
+      },
+      "doska-soat-qongiroq": {
+        "title": "Doskadagi soatda qoʻngʻiroq jadvali: «3-soat · tugashiga 12 daq», oxirgi daqiqalarda ogohlantirish va ixtiyoriy qoʻngʻiroq"
+      },
+      "doska-voqea-sanogi": {
+        "title": "Doskada «Voqea sanogʻi»: «Kuzgi taʼtilgacha 12 kun» — voqealar oʻquv kalendaringizdan, qoʻlda kiritmasdan"
+      },
+      "doska-sekundomer": {
+        "title": "Taymerda sekundomer rejimi: vaqtni oldinga sanang, 5 tagacha oraliq belgilang"
+      },
+      "doska-matn-rang": {
+        "title": "Doskada matn rangi va qalinligi: siyoh, qizil, koʻk, yashil, toʻq sariq, binafsha"
+      },
+      "doska-fonlar-mavsum": {
+        "title": "Doskada yangi fonlar: nota chizigʻi (musiqa darsi), kuz, bahor va qish"
+      },
+      "doska-kamera": {
+        "title": "Doskada «Kamera»: daftar, kitob yoki tajribani butun sinfga koʻrsating — kadrni toʻxtatib, ustidan yozish mumkin"
+      },
+      "doska-shovqin": {
+        "title": "Doskada «Shovqin»: sinf ovozini mikrofon orqali koʻring — chegaradan oshsa ustun qizaradi, xohlasangiz qoʻngʻiroq chaladi"
+      },
       "doska-hisob": {
         "title": "Doskada «Hisob»: 2–6 jamoa, katta raqam va +/− — viktorina va guruh ishida ochko sanash"
       },
@@ -5140,7 +5164,11 @@
       "sticker": "Stiker",
       "groups": "Guruhlar",
       "poll": "Ovoz berish",
-      "score": "Hisob"
+      "score": "Hisob",
+      "noise": "Shovqin",
+      "camera": "Kamera",
+      "countdown": "Voqea sanogʻi",
+      "today": "Bugun"
     },
     "toolbar": {
       "duplicate": "{widget} — nusxalash",
@@ -5195,6 +5223,10 @@
       "instant": "Oʻzgarish darhol qoʻllanadi · Esc — yopish"
     },
     "timer": {
+      "mode": "Rejim",
+      "modeCountdown": "Orqaga sanash",
+      "modeStopwatch": "Sekundomer",
+      "lap": "Oraliq",
       "start": "Boshlash",
       "pause": "Toʻxtatish",
       "reset": "Qaytadan",
@@ -5226,7 +5258,16 @@
     },
     "clock": {
       "view": "Koʻrinish",
-      "showSeconds": "Soniyalarni koʻrsatish"
+      "showSeconds": "Soniyalarni koʻrsatish",
+      "bells": "Qoʻngʻiroq jadvali",
+      "bellsOn": "Dars va tanaffusni koʻrsatish",
+      "bellsHint": "Dars jadvalingizdagi qoʻngʻiroq vaqtlaridan olinadi (hisobga kirgan boʻlsangiz).",
+      "warnMin": "Ogohlantirish (daqiqa oldin)",
+      "bellSound": "Dars tugaganda qoʻngʻiroq",
+      "lessonLeft": "{n}-soat · tugashiga {min} daq",
+      "breakLeft": "Tanaffus · {min} daq",
+      "less": "Kamroq",
+      "more": "Koʻproq"
     },
     "shapeSettings": {
       "shape": "Shakl",
@@ -5293,7 +5334,11 @@
         "sticker": "Maqtov, belgi, strelka",
         "groups": "Tasodifiy guruhlarga boʻlish",
         "poll": "Doskaga chiqib bosish: smaylik, ha/yoʻq",
-        "score": "Jamoalar ochkosi"
+        "score": "Jamoalar ochkosi",
+        "noise": "Sinf ovozi mikrofon orqali",
+        "camera": "Daftar va tajribani ekranga",
+        "countdown": "Taʼtilgacha necha kun",
+        "today": "Bugungi darslar yoki dars bosqichlari"
       }
     },
     "appearance": {
@@ -5327,6 +5372,10 @@
       "dot-paper": "Nuqtali qogʻoz",
       "notebook": "Daftar varagʻi",
       "husnixat": "Husnixat mashqi",
+      "music-staff": "Nota chizigʻi",
+      "autumn": "Kuz",
+      "spring": "Bahor",
+      "winter": "Qish",
       "dusk": "Kechki tus",
       "shakllar": "Rangli shakllar"
     },
@@ -5434,6 +5483,7 @@
     "groups": {
       "make": "Guruhlarga ajratish",
       "shuffle": "Qayta aralashtirish",
+      "moveHint": "Qaysi guruhga? Guruhga teging",
       "groupName": "{n}-guruh",
       "summaryCount": "{n} ta guruh",
       "summarySize": "Guruhda {n} tadan",
@@ -5477,6 +5527,83 @@
       "reset": "Ochkolarni nolga tushirish",
       "less": "Kamroq",
       "more": "Koʻproq"
+    },
+    "noise": {
+      "hint": "Mikrofonni yoqish uchun «Boshlash»",
+      "ok": "Yaxshi",
+      "tooLoud": "Jimroq!",
+      "denied": "Mikrofonga ruxsat berilmadi",
+      "unsupported": "Bu brauzerda mikrofon yoʻq",
+      "overs": "Chegaradan oshdi: {count}",
+      "start": "Boshlash",
+      "stop": "Toʻxtatish",
+      "limit": "Chegara",
+      "smooth": "Silliqlash",
+      "smoothLive": "Jonli",
+      "smoothMedium": "Oʻrtacha",
+      "smoothSmooth": "Silliq",
+      "sound": "Oshganda qoʻngʻiroq",
+      "resetOvers": "Sanoqni nolga tushirish ({count})",
+      "less": "Kamroq",
+      "more": "Koʻproq"
+    },
+    "camera": {
+      "hint": "Daftar, kitob yoki tajribani butun sinfga koʻrsating",
+      "start": "Kamerani yoqish",
+      "freeze": "Toʻxtatish",
+      "resume": "Davom etish",
+      "switch": "Boshqa kamera",
+      "stop": "Oʻchirish",
+      "denied": "Kameraga ruxsat berilmadi",
+      "unsupported": "Bu brauzerda kamera yoʻq",
+      "mirror": "Koʻzgu (oʻngni chapga)",
+      "frozenAlt": "Toʻxtatilgan kadr"
+    },
+    "textStyle": {
+      "color": "Rang",
+      "bold": "Qalin",
+      "colors": {
+        "auto": "Siyoh / boʻr",
+        "red": "Qizil",
+        "blue": "Koʻk",
+        "green": "Yashil",
+        "orange": "Toʻq sariq",
+        "violet": "Binafsha"
+      }
+    },
+    "countdown": {
+      "until": "{name}gacha",
+      "today": "Bugun!",
+      "days": "{count} kun",
+      "schoolDays": "{count} dars kuni",
+      "quarterEnd": "{name} oxiri",
+      "yearEnd": "Oʻquv yili oxiri",
+      "loading": "Kalendar yuklanmoqda…",
+      "empty": "Voqea tanlang yoki oʻzingiz yozing",
+      "choose": "Voqea tanlash",
+      "fromCalendar": "Oʻquv kalendaridan",
+      "noCalendar": "Oʻquv kalendari yoʻq — hisobga kiring yoki Sozlamalarda oʻquv yilini belgilang. Hozircha oʻz voqeangizni yozing.",
+      "custom": "Oʻz voqeangiz",
+      "customName": "Voqea nomi",
+      "customDate": "Voqea sanasi",
+      "customPlaceholder": "Masalan: Olimpiada",
+      "customDefault": "Voqea",
+      "schoolOnly": "Faqat dars kunlari"
+    },
+    "today": {
+      "title": "Bugungi darslar",
+      "loading": "Jadval yuklanmoqda…",
+      "noTimetable": "Dars jadvali topilmadi — hisobga kiring yoki «Bosqichlar» koʻrinishini tanlang",
+      "noLessons": "Bugun darsingiz yoʻq",
+      "stepsTitle": "Dars bosqichlari",
+      "stepsEmpty": "Sozlamada bosqichlarni yozing",
+      "view": "Koʻrinish",
+      "viewLessons": "Darslar",
+      "viewSteps": "Bosqichlar",
+      "lessonsHint": "Dars jadvalingizdan avtomatik olinadi; hozirgi dars ajratiladi.",
+      "steps": "Bosqichlar (har qatorga bittasi)",
+      "stepsPlaceholder": "Salomlashish\nUy vazifasi\nYangi mavzu\nMashq\nYakun",
+      "uncheckAll": "Belgilarni olib tashlash"
     },
     "sticker": {
       "groups": {

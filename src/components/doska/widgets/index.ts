@@ -16,18 +16,26 @@ import {
   IconUsers,
   IconPoll,
   IconScore,
+  IconNoise,
+  IconCamera,
+  IconCountdown,
+  IconToday,
 } from "../icons";
 import { ClockSettings, ClockWidget } from "./ClockWidget";
 import { DiceSettings, DiceWidget } from "./DiceWidget";
 import { GroupsSettings, GroupsWidget } from "./GroupsWidget";
 import { PollSettings, PollWidget } from "./PollWidget";
 import { ScoreSettings, ScoreWidget } from "./ScoreWidget";
+import { NoiseSettings, NoiseWidget } from "./NoiseWidget";
+import { CameraSettings, CameraWidget } from "./CameraWidget";
+import { CountdownSettings, CountdownWidget } from "./CountdownWidget";
+import { TodaySettings, TodayWidget } from "./TodayWidget";
 import { QrSettings, QrWidget } from "./QrWidget";
 import { StickerSettings, StickerWidget } from "./StickerWidget";
 import { PresentationWidget } from "./PresentationWidget";
 import { ShapeSettings, ShapeWidget } from "./ShapeWidget";
 import { StickyNoteWidget } from "./StickyNoteWidget";
-import { TextWidget } from "./TextWidget";
+import { TextSettings, TextWidget } from "./TextWidget";
 import { TimerSettings, TimerWidget } from "./TimerWidget";
 import { TrafficLightSettings, TrafficLightWidget } from "./TrafficLightWidget";
 import { WheelWidget } from "./WheelWidget";
@@ -77,6 +85,10 @@ export const WIDGET_COMPONENTS: Record<WidgetKind, ComponentType<WidgetProps>> =
   "groups.v1": GroupsWidget,
   "poll.v1": PollWidget,
   "score.v1": ScoreWidget,
+  "noise.v1": NoiseWidget,
+  "camera.v1": CameraWidget,
+  "countdown.v1": CountdownWidget,
+  "today.v1": TodayWidget,
 };
 
 export const WIDGET_ICONS: Record<
@@ -97,6 +109,10 @@ export const WIDGET_ICONS: Record<
   "groups.v1": IconUsers,
   "poll.v1": IconPoll,
   "score.v1": IconScore,
+  "noise.v1": IconNoise,
+  "camera.v1": IconCamera,
+  "countdown.v1": IconCountdown,
+  "today.v1": IconToday,
 };
 
 /**
@@ -109,6 +125,7 @@ export const WIDGET_ICONS: Record<
 export const WIDGET_SETTINGS: Partial<Record<WidgetKind, ComponentType<WidgetProps>>> = {
   "clock.v1": ClockSettings,
   "timer.v1": TimerSettings,
+  "text.v1": TextSettings,
   "traffic-light.v1": TrafficLightSettings,
   "shape.v1": ShapeSettings,
   "dice.v1": DiceSettings,
@@ -117,6 +134,10 @@ export const WIDGET_SETTINGS: Partial<Record<WidgetKind, ComponentType<WidgetPro
   "groups.v1": GroupsSettings,
   "poll.v1": PollSettings,
   "score.v1": ScoreSettings,
+  "noise.v1": NoiseSettings,
+  "camera.v1": CameraSettings,
+  "countdown.v1": CountdownSettings,
+  "today.v1": TodaySettings,
 };
 
 /**
