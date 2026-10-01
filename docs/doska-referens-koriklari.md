@@ -1,10 +1,10 @@
 # Doska — referens koʻriklari (boshqa doskalardan nima olamiz)
 
-> **Holat (2026-10-01):** 2 ta referens koʻrildi, kod YOʻQ. Foydalanuvchi
+> **Holat (2026-10-01):** 3 ta referens koʻrildi. Foydalanuvchi
 > keyingi referenslarni ham beradi — har biri shu hujjatga alohida
 > boʻlim boʻlib qoʻshiladi, raqamlar davom etadi.
 >
-> Referens topilmalari **R380–R442** (oldingilari
+> Referens topilmalari **R380–R454** (oldingilari
 > [doska-tezlik-tadqiqot.md](./doska-tezlik-tadqiqot.md) da, R372–R379).
 > Mahsulot nomlari yozilmaydi (AGENTS.md) — referens oʻz xususiyati
 > bilan tasvirlanadi.
@@ -14,6 +14,9 @@
 >   Manba kodi oʻqilmagan.
 > - 2-referens: brauzerda toʻliq koʻrildi (sayt, yordam markazi, ilova
 >   mehmon rejimida, ilova kodidagi interfeys matnlari) — §2.1.
+> - 3-referens: oʻsha xizmatning «kundalik ekran» shablonlari —
+>   foydalanuvchi bergan skrinshot va DOM, ustiga beshta shablon ilovada
+>   ochib koʻrildi — §3.1.
 >
 > Ikkalasi ham hozirgi Doska kodi bilan solishtiriladi. DOMda
 > koʻrinmagan, mahsulotning maʼlum xususiyatidan olingan narsa alohida
@@ -56,6 +59,18 @@ Batafsil tartib — §2.5. Bu yerda faqat qaror boʻyicha guruhlangan.
 | **Tasdiq — bizda yaxshiroq** | R394 mehmon ishi saqlanadi · R395 toʻliq oʻzbekcha interfeys · R403 qaytarish koʻrinib turadi · R404 siyoh kanvasda (qalam asboblari kuchliroq) |
 | **RAD** | R404 har chiziq alohida SVG · R421 vidjetga oʻz rang mavzusi (hozircha) · §2.6 |
 | **UX/UI koʻrigi (R428–R442)** | Yangi vidjetlar uchun 7 ta majburiy qoida — §2.9. Olinadiganlar: R433 koʻrinish shaklga qarab («Avto»), R429 faol nusxa nuqtasi, R435 rasmli kartalar va jonli oldindan koʻrish. Bizda yaxshiroq: R431 birinchi teginishda amal, R439 taymer tugashi, R440 matn ramkaga moslashadi |
+
+### 0.3. Referens 3 (kundalik ekran shablonlari — dizayn)
+
+Batafsil — §3. Tartib — §3.4.
+
+| Qaror | Topilmalar |
+|---|---|
+| **✅ Qurildi (§3.6)** | R447 «Karta» vidjeti (sarlavha + yozuv, bitta obyekt — R444) · R445 «Sana»: kun nomi oʻzi yangilanadi · R452 shablonda joy ulushi · R454 «Kun rejasi» shabloni · R446 hozirgi darsda vaqt chizigʻi · R448 «yumshoq sahna» CSS fonlari |
+| **Keyin** | R449 stikerni burish · R450 qoʻlyozma shrift (glif tekshiruvidan keyin) |
+| **Olinmaydi** | R448 fotosurat katalogi va yarim shaffof kartalar · R451 shablon palitrasi vidjetlarga · ularning har qanday fayli (R453) |
+| **Qoida** | R453 — «1:1 emas» tekshiruvi: joylashuv, rang, shrift, tasvir, matn — beshalasi oʻzimizniki |
+| **Qaror qilindi (§3.5)** | «Karta» alohida vidjet; fon faqat CSS; nomi «Sana» |
 
 ---
 
@@ -1258,9 +1273,309 @@ AZERTY, raqam, «!», «?», nomli tugmalar, «ʻ».
 
 ---
 
-## 3. Keyingi referenslar
+## 3. Referens 3 — kundalik ekran shablonlari (dizayn)
+
+2026-10-01, foydalanuvchi soʻrovi: «Doska dizayni uchun shundan olishimiz
+kerak. Lekin 1:1 boʻlmasin, mualliflik huquqi buzilmasin». Berilgani —
+2-referensdagi xizmatning bitta tayyor ekrani (skrinshot + DOM):
+«Dushanba» sarlavhasi, daftar ustidagi kun jadvali, taymer, «Dars
+maqsadi», «Eslatmalar», «Kerakli narsalar», «Tugatdingmi?» kartalari,
+fotosurat fon.
+
+Bu safar savol vidjet emas, **ekranning kompozitsiyasi va bezagi**: bitta
+ekran qanday qilib «tayyor, chiroyli kun paneli» boʻladi.
+
+### 3.1. Nima koʻrildi
+
+- **Kutubxonadagi «Kundalik ekranlar» toifasi** — 30 ta shablon roʻyxati.
+  Kartadagi rasm muqova, ekranning oʻzi emas — shuning uchun beshtasi
+  ilovada mehmon rejimida ochildi:
+
+  | | Shablon | Muallif | Ekran |
+  |---|---|---|---|
+  | A | Kun tartibi — **foydalanuvchi bergan ekran** | oʻqituvchi | 5 (Du–Ju) |
+  | B | Haftalik kun tartibi | oʻqituvchi | 5 (Du–Ju) |
+  | C | Oddiy boshlanish | oʻqituvchi | 2 |
+  | D | Sinf kun tartibi | xizmatning oʻzi | 1 |
+  | E | Ertalabki kun tartibi | xizmatning oʻzi | 1 |
+
+- **DOM:** A va B dagi obyektlar turi va soni, shriftlar, rasm manbalari.
+- **Toifadan tashqarida:** oʻqituvchilar doʻkonlaridagi «kundalik
+  slaydlar» (Slides/PowerPoint/Canva shablonlari) — boʻlimlari bir xil:
+  maqsad, kun tartibi, kerakli narsalar, eslatma, uyga vazifa,
+  «tugatganlar uchun».
+
+Hech qanday fayl (rasm, stiker, ikonka, shrift) yuklab olinmadi va
+loyihaga qoʻshilmadi.
+
+### 3.2. Bizda allaqachon bor
+
+| Referensda | Doskada |
+|---|---|
+| Kun jadvali vidjeti (qoʻlda yoziladi) | «Bugun» — dars jadvalidan **avtomatik**, hozirgi dars ajratiladi, oʻtgani xira; «Bosqichlar» — belgilanadigan roʻyxat |
+| Taymer (halqa + raqam) | Taymer, «Avto» koʻrinish |
+| Soat, kalendar | Soat (+ qoʻngʻiroq jadvali) |
+| Kun savoli, kayfiyat soʻrovi | Soʻrovnoma (smaylik turi bilan) |
+| Shovqin oʻlchagich | Bor |
+| Stikerlar | Emoji stikeri (60 ta, 6 toʻplam) |
+| Fon toifalari | 13 ta CSS fon, bayram va mavsum («Bugunga mos») |
+| Tayyor ekranlar | 4 ta statik shablon (`lib/doska/templates.ts`) |
+
+### 3.3. Topilmalar
+
+#### R443 — «Kundalik ekran» qanday gʻishtlardan iborat
+
+Besh shablonda (A–E) qaysi boʻlim borligi:
+
+| Boʻlim | A | B | C | D | E | Jami |
+|---|---|---|---|---|---|---|
+| Kun jadvali (ikonka + nom; vaqt yoki belgi) | ✓ | ✓ | ✓ | ✓ | ✓ | **5/5** |
+| Kun nomi / sana | ✓ | ✓ | ✓ | ✓ | — | **4/5** |
+| Dars maqsadi | ✓ | ✓ | ✓ | ✓ | — | **4/5** |
+| Fotosurat yoki video fon | ✓ | — | ✓ | ✓ | ✓ | **4/5** |
+| Bezak stikerlar | ✓ | ✓ | — | ✓ | — | 3/5 |
+| Eslatma / eʼlonlar | ✓ | ✓ | — | — | ✓ | 3/5 |
+| Qoʻlyozma shrift (yoziladigan joyda) | ✓ | — | ✓ | — | ✓ | 3/5 |
+| Taymer | ✓ | ✓ | — | — | — | 2/5 |
+| Kerakli narsalar | ✓ | ✓ | — | — | — | 2/5 |
+| «Hozir bajar» / isinish mashqi | — | ✓ | ✓ | — | — | 2/5 |
+| Kun savoli | — | — | — | ✓ | ✓ | 2/5 |
+| «Tugatdingmi? Keyingi ish» | ✓ | — | — | — | — | 1/5 |
+| Soat, shovqin, video, kayfiyat | — | — | — | ✓ | ✓ | 1–2/5 |
+
+**Xulosa:** toifaning yadrosi — **kun jadvali + kun nomi + dars
+maqsadi**, atrofida 2–3 ta sarlavhali matn kartasi. Qolgani ixtiyoriy.
+Doʻkonlardagi «kundalik slaydlar» ham aynan shu boʻlimlardan tuzilgan.
+
+#### R444 — Karta uchta obyektdan yigʻilgan (ularning kamchiligi)
+
+Ularda «sarlavhali karta» degan vidjet **yoʻq**. Har karta qoʻlda
+yigʻilgan:
+
+- **A:** rangli toʻrtburchak (shakl) + qalin sarlavha (matn) + oq yozuv
+  maydoni (matn). Uchalasi «guruh» qilingan — ekranda 5 ta guruh.
+- **B:** bir ekranda **13 ta matn bloki**, 4 ta rasm, 3 ta stiker,
+  taymer va jadval. «Eslatmalar» kartasi — rangli fonli matn bloki
+  ustida sarlavha bloki, uning ostida oq fonli matn bloki.
+
+Natija: ekranda 20+ obyekt; bittasi siljisa karta «buziladi»; oʻlchamni
+oʻzgartirish uchun uchta obyektni alohida choʻzish kerak. Shuning uchun
+ularda guruhlash funksiyasi bor.
+
+**Olamiz — lekin boshqacha:** bizda karta **bitta vidjet** boʻladi
+(sarlavha + yozuv maydoni). Guruhlash kerak boʻlmaydi, choʻzilganda ichi
+oʻzi moslashadi.
+
+#### R445 — Kun nomi rasm qilib qoʻyilgan → 5 ta ekran
+
+A va B da «Monday» — **rasm** (stiker yoki yuklangan rasm). Shuning
+uchun shablon 5 ta ekrandan iborat (Dushanba…Juma), oʻqituvchi har kuni
+kerakli ekranga oʻtadi. D va C da esa kalendar vidjeti kun va sanani
+oʻzi koʻrsatadi.
+
+**Olamiz — maʼlumot ustunligi bilan:** bizda kun nomi va sana **oʻzi
+yangilanadi** — bitta ekran har kuni toʻgʻri kunni koʻrsatadi. Ustiga
+oʻquv kalendaridan bayram yoki taʼtil nomi qoʻshiladi («Bugun —
+Oʻqituvchilar kuni»; maʼlumot `lib/doska/today.ts` da allaqachon bor).
+Koʻrinishi — katta displey yozuv, uslub shriftida.
+
+#### R446 — Kun jadvali: vaqt chizigʻi va ikonka
+
+- B, D, E: har qatorda boshlanish va tugash vaqti, orasida **toʻlib
+  boruvchi chiziq**; oʻtgan faoliyatda ✓.
+- A: vaqt yoʻq, oʻngda katta belgilash katagi.
+- Hammasida har qatorga rasmli ikonka (kitob, matematika, uy, tushlik…)
+  qoʻlda tanlanadi.
+
+**Bizda:** «Bugun» darslarni jadvaldan oʻzi oladi, hozirgisi ajratiladi.
+**Olamiz:** hozirgi darsda **qolgan vaqt chizigʻi** (kichik ish). Ikonka
+— fan katalogidan avtomatik (`subject-catalog-id-storage`), qoʻlda
+tanlash yoʻq. Ularning ikonka toʻplami olinmaydi.
+
+#### R447 — Sarlavhali karta: ikki koʻrinish
+
+- **Toʻla:** rangli ramka, ichida qalin sarlavha va oq yozuv maydoni
+  (A: «Dars maqsadi», «Eslatmalar»; B: hammasi).
+- **Chiziqli:** qoramtir chiziq, yarim shaffof oq ichki, sarlavha va
+  ostida stiker (A: «Kerakli narsalar», «Tugatdingmi?»).
+- Yozuv maydonida kulrang placeholder («Matn kiriting…»).
+
+**Olamiz:** yangi **«Karta»** vidjeti (R444): sarlavha + yozuv, tusi
+sinf palitrasidan (`class-colors.ts`) tanlanadi, matn ramkaga
+moslashadi (`useFitText`). Koʻrinishi uslub tokenidan — Sokin, Oʻyinchoq,
+Doska har biri oʻz kartasini chizadi (Q1).
+
+#### R448 — Fotosurat fon va «muzli» kartalar
+
+A, C, D, E — yuklangan fotosurat yoki video fon (stol, oʻsimlik,
+yomgʻir, barg), avval xira kichik nusxa, keyin toʻliq rasm. Kartalar
+yarim shaffof («muzli shisha»).
+
+**Kamchilik:** C, D, E da yarim shaffof karta ustidagi och matn rasm
+ustida yuviladi — proyektorda oʻqilishi qiyin (E dagi qoʻlyozma
+eʼlonlar ayniqsa).
+
+**Xulosa:** fotosurat katalogi **olinmaydi** — fonlar CSS boʻlib qoladi
+(`backgrounds.ts` boshidagi qaror: deploy yuki va proyektor
+tiniqligi). Fotosurat kerak boʻlsa — oʻqituvchining oʻz rasmi (R384 +
+R420, saqlash joyi qarori kutilmoqda). Oʻrniga 2–3 ta **«yumshoq sahna»**
+CSS foni qoʻshish mumkin (iliq stol, koʻkalam — xiralashgan rang
+dogʻlari), proyektor sinovidan oʻtkaziladi. Yarim shaffof karta
+qilinmaydi.
+
+#### R449 — Bezak stikerlar karta chetiga qoʻyiladi
+
+A va B da qalam, daftar, olma, globus kabi rasmli stikerlar karta
+chetiga chiqib, qiya burilib turadi (−6°, 67°, koʻzgu aks). Ekranga
+«qoʻlda yasalgan» issiqlik beradi.
+
+**Bizda:** emoji stikeri, burish yoʻq. **Olamiz (keyin):** stikerni
+burish (R430 dagi burish tutqichi bilan birga). Rasmli stiker toʻplami —
+faqat oʻzimizniki yoki litsenziyasi aniq manbadan; ularniki olinmaydi.
+`public/illustrations` dagi chizmalarni stiker qilishdan oldin
+litsenziyasi tekshiriladi.
+
+#### R450 — Tipografika
+
+- Sarlavhalar — yumaloq geometrik shrift, qalin.
+- Yoziladigan joy — **qoʻlyozma shrift** («oʻqituvchi qoʻli» hissi).
+- Kun nomi — katta, qalin, rangli harflar (B da har harf boshqa rangda).
+
+**Bizda:** har uslubning oʻz shrifti (Onest / Nunito / Rubik).
+**Xulosa:** sarlavha va kun nomi uslub shriftida qoladi. Qoʻlyozma
+shrift **hozircha yoʻq**: (1) oʻqishni endi oʻrganayotgan bola uchun
+proyektorda bosma harf tiniqroq; (2) shriftda `ʻ` (U+02BB) va kirill
+harflari boʻlishi shart — har nomzod alohida tekshiriladi. Keyin
+kartaga ixtiyoriy «qoʻlyozma» tanlovi boʻlib qoʻshilishi mumkin.
+
+#### R451 — Har shablonning oʻz palitrasi
+
+A — marjon + toʻq koʻk + pastel; B — pastel kamalak; D — toʻq yashil.
+Taymer halqasi ham shablon rangida. Ularda bu vidjet rang mavzusi bilan
+qilinadi (R421).
+
+**Bizda:** vidjet tusi — turining belgisi (taymer doim sariq), koʻrinish
+— oʻqituvchi tanlagan uslub (Q1). **Xulosa:** shablon vidjetlar rangini
+oʻzgartirmaydi. Shablon faqat **kartalar tusini** (R447) va fonni
+tanlaydi. Oq qogʻozli kartalar koʻrinishiga eng yaqini — «Doska»
+uslubi (qogʻoz + magnit); u allaqachon bor.
+
+#### R452 — Shablon joylashuvi qoʻlda chizilgan
+
+Ularda har obyekt aniq joyda turadi: chap ustun — jadval, oʻrtada —
+sarlavha va taymer, oʻngda — kartalar. Bizning shablonlar esa vidjetlarni
+boʻsh joyga **avtomatik** qoʻyadi (`findFreeSpot`) — tartibli
+kompozitsiya chiqmaydi.
+
+**Olamiz:** shablon vidjetiga ixtiyoriy joy — **ekranning ulushi**
+(`x, y, w, h` 0…1 oraligʻida). Ekran ochilganda joriy oyna oʻlchamiga
+koʻpaytiriladi. Bu R397 dagi mantiqiy 16:9 maydonga birinchi qadam va
+uni kutmaydi: saqlanishi hozirgidek pikselda qoladi.
+
+#### R453 — Mualliflik huquqi: nima olinadi, nima olinmaydi
+
+Umumiy amaliyot: **gʻoya, janr, funksiya va umumiy joylashuv**
+himoyalanmaydi; **aniq ijod mahsuli** — rasm, ikonka, stiker, foto,
+shrift fayli, matn — himoyalanadi. Ustiga A va B ni oʻqituvchilar
+yaratgan: rasmlar ularning shaxsiy yuklagan fayllari.
+
+| Olinadi (gʻoya) | Olinmaydi (ijod mahsuli) |
+|---|---|
+| «Kundalik ekran» janri va boʻlimlar toʻplami (R443) | Hech bir fayl: kun nomi stikerlari, daftar/planshet rasmlari, stikerlar, jadval ikonkalari, fotolar |
+| Sarlavhali karta tushunchasi (R447) | Ularning shriftlari (ayniqsa litsenziyali qoʻlyozma shrift) |
+| Kun nomi koʻrinib turishi (R445) | Aniq matnlar («What's going on today», «Done? Here's what's next…») |
+| Jadvalda vaqt chizigʻi (R446) | Biror shablonning aniq joylashuvi va rang birikmasi |
+| Bezak stikerni burish (R449) | Mahsulot nomi — kodda, commitda, hujjatda |
+
+**«1:1 emas» tekshiruvi** — har yangi shablon chiqishidan oldin:
+
+1. Joylashuv — oʻzimizniki (R454), ularning biror ekranini takrorlamaydi.
+2. Rang — faqat bizning tokenlar va sinf palitrasi.
+3. Shrift — faqat bizning uslub shriftlari.
+4. Tasvir — faqat emoji yoki oʻzimizning SVG; tashqaridan fayl yoʻq.
+5. Matn — oʻzbek maktabi tilida, oʻzimiz yozamiz («Dars maqsadi», «Uyga
+   vazifa», «Kerakli narsalar», «Tugatgan boʻlsang»).
+
+Bu yuridik xulosa emas — muhandislik qoidasi: shubhali joyda olinmaydi.
+
+#### R454 — Bizning shablon: «Kun rejasi» (taklif)
+
+Ularnikidan farqi — **bitta ekran, har kuni oʻzi yangilanadi** (R445),
+jadval dars jadvalidan oʻzi toʻladi (R446). Joylashuv — tepada keng
+sarlavha qatori, ostida teng uch ustun (ularda — markaziy sarlavha va
+markaziy ustun):
+
+```
+┌──────────────────────────────────────────┬───────────┐
+│ Payshanba, 1-oktyabr                      │  Taymer   │
+│ Oʻqituvchilar kuni                        │   05:00   │
+├──────────────┬───────────────┬────────────┴───────────┤
+│ Bugun        │ Dars maqsadi  │ Uyga vazifa             │
+│ 08:00 7-A ▬▬ │               │                         │
+│ 08:50 8-B    ├───────────────┼─────────────────────────┤
+│ 09:40 5-V    │ Kerakli       │ Tugatgan boʻlsang       │
+│ …            │ narsalar      │                         │
+└──────────────┴───────────────┴─────────────────────────┘
+```
+
+Fon — CSS (iliq «yumshoq sahna» yoki bayram foni), uslub — oʻqituvchi
+tanlagani. «Uyga vazifa» keyin topshiriqlardan avtomatik toʻlishi mumkin
+(alohida qaror).
+
+### 3.4. Tavsiya etilgan tartib
+
+| # | Ish | Topilma | Hajm | Holat |
+|---|---|---|---|---|
+| 1 | «Karta» vidjeti: sarlavha + yozuv, tus tanlovi, uch uslubda | R444, R447 | oʻrta | ✅ §3.6 |
+| 2 | «Sana» vidjeti: kun nomi, sana, bayram nomi — oʻzi yangilanadi | R445 | kichik | ✅ §3.6 |
+| 3 | Shablonda joy ulushi (`x, y, w, h` 0…1) | R452 | kichik | ✅ §3.6 |
+| 4 | «Kun rejasi» shabloni (1–3 ustiga) | R454 | kichik | ✅ §3.6 |
+| 5 | «Bugun»: hozirgi darsda qolgan vaqt chizigʻi | R446 | kichik | ✅ §3.6 |
+| 6 | 3 ta «yumshoq sahna» CSS foni + proyektor sinovi | R448 | kichik | ✅ §3.6 |
+| 7 | Stikerni burish | R449 | oʻrta | keyin |
+| — | Qoʻlyozma shrift, fotosurat katalogi, shablon palitrasi | R448, R450, R451 | olinmaydi / keyin | — |
+
+### 3.5. Qarorlar (foydalanuvchi, 2026-10-01)
+
+1. **«Karta» — alohida vidjet** (`card.v1`), «Eslatma»ning koʻrinishi emas.
+2. **Fon — faqat CSS «yumshoq sahna»**; fotosurat katalogi yoʻq.
+3. **Nomi «Sana»** (`date.v1`).
+
+### 3.6. Qurilgani (2026-10-01)
+
+Branch: `maxdum/doska-kun-rejasi`. §3.4 dagi 1–6-bandlar.
+
+| Joy | Nima |
+|---|---|
+| `widgets/CardWidget.tsx` | «Karta»: sarlavha (`preset` kaliti yoki oʻz `title`) + yozuv varagʻi (`EditableText`). Sozlama: 6 ta tayyor sarlavha, oʻz sarlavhasi, 5 tus. Qoʻyilganda sozlama ochiladi va varaq yozishga tayyor |
+| `widgets/DateWidget.tsx` | «Sana»: kun nomi, sana, bayram nomi; keng vidjetda bir qatorda; `useFitText` bilan qutiga sigʻadi. Sozlama: sana, yil, bayram |
+| `lib/doska/date-label.ts` | Kun va sana 7 tilda: `uz` — `localization.ts`, qolgani `Intl`; brauzer tilni bilmasa (qoraqalpoq) — oʻzbekcha lotin |
+| `widgets/useTodayLoad.ts` | «Bugun» va «Sana» uchun bitta server soʻrovi (modul keshi) |
+| `widgets/TodayWidget.tsx` | Hozirgi darsda oʻtgan vaqt chizigʻi (R446) |
+| `widgets/useFitText.ts` | Har qanday element; eni ham tekshiriladi (bir qatorli matn) |
+| `lib/doska/placement.ts` | `usableArea` (boʻsh joy qidiruvi bilan umumiy chegara), `rectInArea` (ulush → piksel, eng kichik oʻlcham saqlanadi) |
+| `lib/doska/templates.ts` + `store.ts` | Shablon vidjetida `at`; «Kun rejasi» shabloni (R454 joylashuvi) |
+| `lib/doska/backgrounds.ts` | `soft-warm`, `soft-green`, `soft-sky` |
+| `styles/doska.css` | `--doska-card-body-*`, `--doska-card-rule-width`; `.doska-card-title`, `.doska-card-body` |
+| `scripts/doska-projector-check.mjs` | Karta yozuvi va yumshoq fonlar ustidagi siyoh — 46 juftlik yashil |
+| `icons.tsx` | `IconCard`, `IconDate` (oʻzimiz chizdik) |
+| `messages/*.json`, `changelog-data.ts` | 7 tilda matn; bitta changelog yozuvi `doska-kun-rejasi` |
+
+Tekshiruv: «Kun rejasi» joylashuvi 1920×1080, 1366×768, 1280×720 da
+maydon ichida; 1280×720 da taymer eng kichik balandligi (180 px) tufayli
+pastki qatorga 7 px kiradi. Sana 7 tilda «M10» siz chiqadi.
+
+**«1:1 emas» tekshiruvi (R453):** joylashuv — tepada keng sarlavha
+qatori va teng uch ustun (referensda markaziy sarlavha va markaziy
+ustun); rang — uslub tuslari; shrift — uslub shriftlari; tasvir — faqat
+oʻzimiz chizgan ikonalar, stiker va rasm yoʻq; matn — oʻzbekcha,
+oʻzimiz yozdik. Hech qanday tashqi fayl yoʻq.
+
+---
+
+## 4. Keyingi referenslar
 
 Har yangi referens shu yerga «Referens N» boʻlimi boʻlib qoʻshiladi.
 Tuzilishi oldingilardek: nima koʻrildi → bizda bor → topilmalar →
-tartib. Keyingi raqam — **R443**. Xulosa jadvali (§0) ham har safar
+tartib. Keyingi raqam — **R455**. Xulosa jadvali (§0) ham har safar
 yangilanadi.
