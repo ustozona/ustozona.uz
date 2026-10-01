@@ -287,8 +287,9 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
     kind: "groups.v1",
     category: "class",
     labelKey: "groups",
-    // Qoʻshnilari «Gʻildirak» (teal) va «Zar» (lime) — binafsha ikkalasidan uzoq.
-    tint: "violet",
+    // Qoʻshnilari «Gʻildirak» (teal) va «Zar» (lime) — siyohrang ikkalasidan
+    // uzoq. `violet` EMAS — u «Fon» tugmasida band.
+    tint: "purple",
     // Keng: 4–6 guruh ustun boʻlib yonma-yon, ismlar uzoqdan oʻqilsin.
     defaultSize: { w: 640, h: 420 },
     minSize: { w: 300, h: 220 },
@@ -335,8 +336,9 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
     kind: "camera.v1",
     category: "media",
     labelKey: "camera",
-    // Qoʻshnisi «QR kod» (binafsha-qizil) — koʻk undan aniq ajraladi.
-    tint: "indigo",
+    // Qoʻshnisi «QR kod» (binafsha-qizil) — yashil undan aniq ajraladi.
+    // `indigo` EMAS — u «Matn» da band.
+    tint: "green",
     // 16:9 — kamera kadri.
     defaultSize: { w: 640, h: 360 },
     minSize: { w: 240, h: 160 },
