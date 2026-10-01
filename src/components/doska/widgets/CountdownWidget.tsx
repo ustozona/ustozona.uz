@@ -132,7 +132,7 @@ export function CountdownWidget({ widget }: { widget: DoskaWidget }) {
         {t("until", { name: event.name })}
       </p>
       {isToday ? (
-        <p className="leading-none font-bold" style={{ fontSize: "clamp(1.5rem, 16cqw, 9rem)" }}>
+        <p className="leading-none font-semibold" style={{ fontSize: "clamp(1.5rem, 16cqw, 9rem)" }}>
           {t("today")}
         </p>
       ) : (

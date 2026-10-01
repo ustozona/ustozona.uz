@@ -157,7 +157,7 @@ function StepsView({ widget }: { widget: DoskaWidget }) {
                   <span
                     aria-hidden="true"
                     className={cn(
-                      "grid size-[1.1em] shrink-0 place-items-center rounded-[0.25em] border-2 border-current text-[0.75em] leading-none",
+                      "grid size-[1.1em] shrink-0 place-items-center rounded-[0.25em] border-2 border-current leading-none",
                       checked && "bg-primary border-primary text-primary-foreground",
                     )}
                   >
