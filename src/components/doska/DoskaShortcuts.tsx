@@ -50,6 +50,7 @@ const GROUPS: readonly { id: string; rows: readonly Row[]; note?: string }[] = [
     rows: [
       { id: "settings", keys: [["S"]] },
       { id: "duplicate", keys: [["Mod", "D"]] },
+      { id: "copyPaste", keys: [["Mod", "C"], ["Mod", "V"]] },
       { id: "delete", keys: [["Delete"]] },
       { id: "move", keys: [["←", "↑", "→", "↓"]] },
       { id: "moveFar", keys: [["Shift", "←"]] },

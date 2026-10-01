@@ -36,6 +36,13 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "doska-ekranlar-nusxa",
+    date: "2026-10-01",
+    type: "yangi",
+    title: "Doskada vidjetni boshqa ekranga koʻchiring: Ctrl+C va Ctrl+V — masalan taymerni keyingi ekranga",
+    href: "/doska",
+  },
+  {
     id: "doska-chetga-qoyish",
     date: "2026-10-01",
     type: "yangi",

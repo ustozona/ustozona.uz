@@ -164,6 +164,13 @@ export function useDoskaShortcuts({
           // tanlangan boʻlsa; aks holda brauzer oʻz ishini qiladi.
           e.preventDefault();
           s.duplicateWidget(s.selectedId);
+        } else if (key === "c" && s.selectedId && !window.getSelection()?.toString()) {
+          // Belgilangan matn boʻlsa — brauzer oʻzi nusxalaydi.
+          e.preventDefault();
+          s.copyWidget(s.selectedId);
+        } else if (key === "v" && s.clipboard) {
+          e.preventDefault();
+          s.pasteWidget();
         }
         return;
       }

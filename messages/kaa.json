@@ -2102,6 +2102,9 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "doska-ekranlar-nusxa": {
+        "title": "Doskada vidjetti basqa ekranǵa kóshiriń: Ctrl+C hám Ctrl+V — mısalı taymerdi keyingi ekranǵa"
+      },
       "doska-chetga-qoyish": {
         "title": "Doskada vidjetti ekran shetine súrip jasırıń — shette túymesi qaladı, basılsa ornına qaytadı"
       },
@@ -5601,6 +5604,7 @@
         "back": "Artqa: saylawdı yamasa jazıwdı jabıw",
         "settings": "Sazlaw",
         "duplicate": "Nusqa alıw",
+        "copyPaste": "Basqa ekranǵa nusqa: alıw hám qoyıw",
         "delete": "Óshiriw",
         "move": "Jıljıtıw",
         "moveFar": "10 px ge jıljıtıw",

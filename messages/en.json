@@ -2102,6 +2102,9 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "doska-ekranlar-nusxa": {
+        "title": "Copy a board widget to another screen with Ctrl+C and Ctrl+V — e.g. carry the timer to the next screen"
+      },
       "doska-chetga-qoyish": {
         "title": "Drag a board widget to the screen edge to tuck it away — a tab stays there to bring it back"
       },
@@ -5600,6 +5603,7 @@
         "back": "Back: clear the selection or stop drawing",
         "settings": "Settings",
         "duplicate": "Duplicate",
+        "copyPaste": "Copy and paste to another screen",
         "delete": "Delete",
         "move": "Move",
         "moveFar": "Move by 10 px",

@@ -350,6 +350,14 @@ type DoskaState = {
    * yaʼni nusxalash uni bepul olib keladi.
    */
   duplicateWidget: (id: string) => void;
+  /**
+   * Ekranlar aro nusxa (R400): Ctrl+C vidjetni xotiraga oladi, Ctrl+V
+   * uni ochiq ekranga qoʻyadi — taymerni keyingi ekranga olib oʻtish.
+   * Xotira saqlanmaydi (`partialize`), faqat shu sahifa davomida.
+   */
+  copyWidget: (id: string) => void;
+  pasteWidget: () => void;
+  clipboard: DoskaWidget | null;
   moveWidget: (id: string, x: number, y: number) => void;
   resizeWidget: (id: string, w: number, h: number, x: number, y: number) => void;
   patchWidgetState: (id: string, patch: Record<string, unknown>) => void;
@@ -595,6 +603,7 @@ export const useDoskaStore = create<DoskaState>()(
         past: [],
         future: [],
         notice: null,
+        clipboard: null,
 
         addWidget: (kind, at, initial) => {
           const meta = widgetMeta(kind);
@@ -695,6 +704,45 @@ export const useDoskaStore = create<DoskaState>()(
             selectedId: copy.id,
             // Nusxa tahrirga OCHILMAYDI, asl vidjetdan farqli: matn
             // allaqachon yozilgan, oʻqituvchi esa nusxani koʻchirmoqchi.
+            editingId: null,
+            settingsId: null,
+          });
+        },
+
+        copyWidget: (id) => {
+          const { deck, activeScreenId } = get();
+          const source = deck.screens.find((s) => s.id === activeScreenId)?.widgets.find((w) => w.id === id);
+          if (source) set({ clipboard: structuredClone(source) });
+        },
+
+        pasteWidget: () => {
+          const { deck, activeScreenId, clipboard } = get();
+          if (!clipboard) return;
+          const screen = deck.screens.find((s) => s.id === activeScreenId);
+          const widgets = screen?.widgets ?? [];
+          const maxZ = widgets.reduce((m, w) => Math.max(m, w.z), 0);
+          // Boshqa ekranda — aynan oʻsha joyga (ekranlar bir xil tuzilgan
+          // boʻlsa vidjet «sakramaydi»); joy band boʻlsa — siljib.
+          const taken = widgets.some((w) => !w.parked && w.x === clipboard.x && w.y === clipboard.y);
+          const offset = taken ? DUPLICATE_OFFSET : 0;
+          const copy: DoskaWidget = {
+            ...clipboard,
+            id: newId(),
+            x: clipboard.x + offset,
+            y: clipboard.y + offset,
+            z: maxZ + 1,
+            state: structuredClone(clipboard.state),
+            locked: undefined,
+            pinned: undefined,
+            parked: undefined,
+          };
+          set({
+            ...pushHistory(get()),
+            notice: null,
+            deck: withActiveScreen(deck, activeScreenId, (ws) => [...ws, copy]),
+            // Keyingi Ctrl+V yana siljib tushsin — ustma-ust emas.
+            clipboard: { ...clipboard, x: copy.x, y: copy.y },
+            selectedId: copy.id,
             editingId: null,
             settingsId: null,
           });
