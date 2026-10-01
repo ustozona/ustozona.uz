@@ -16,6 +16,7 @@ import { InkBar } from "./InkBar";
 import { DoskaGuestNote } from "./DoskaGuestNote";
 import { DoskaMenu } from "./DoskaMenu";
 import { DoskaNotice } from "./DoskaNotice";
+import { DoskaShortcuts } from "./DoskaShortcuts";
 import { BarDivider, BarGroup, BarIconButton } from "./BarGroup";
 import { DockContext, dockLayout } from "./dock";
 import { useDoskaShortcuts } from "./useDoskaShortcuts";
@@ -88,6 +89,8 @@ export function DoskaShell() {
    * topolmaydi va ilova buzilgan deb oʻylaydi.
    */
   const [barHidden, setBarHidden] = React.useState(false);
+  /** Yorliqlar roʻyxati (`K`, menyu) — dars paytidagi holat, saqlanmaydi. */
+  const [shortcutsOpen, setShortcutsOpen] = React.useState(false);
 
   /** Qoʻshni ekranga oʻtish — `id` bosilgan paytda oʻqiladi. */
   const goTo = (offset: number) => {
@@ -112,6 +115,7 @@ export function DoskaShell() {
   }, []);
 
   useDoskaStyle();
+  useNoTranslate();
   useOpenSetFromUrl();
 
   const toggleFullscreen = () => {
@@ -122,6 +126,7 @@ export function DoskaShell() {
   useDoskaShortcuts({
     onToggleFullscreen: toggleFullscreen,
     onToggleControls: () => setBarHidden((h) => !h),
+    onToggleShortcuts: () => setShortcutsOpen((o) => !o),
   });
 
   const side = dock !== "bottom";
@@ -132,7 +137,9 @@ export function DoskaShell() {
     // chaqnab ketardi.
     <TooltipProvider delayDuration={300}>
       <DockContext.Provider value={dockLayout(dock)}>
-        <div className="doska-root fixed inset-0 overflow-hidden">
+        {/* `translate="no"` — serverdan kelgan HTML da ham (R381); menyu va
+            kartalar `body` ga chiqadi, ularni `useNoTranslate` yopadi. */}
+        <div className="doska-root fixed inset-0 overflow-hidden" translate="no">
           <DoskaCanvas />
 
           {/* Sozlama (uslub, panel joyi) oʻqilmaguncha boshqaruv chizilmaydi
@@ -169,10 +176,10 @@ export function DoskaShell() {
 
                   {!barHidden && (
                     <BarGroup layer="bar">
-                      <BarIconButton label={t("undo")} disabled={!canUndo} onClick={undo}>
+                      <BarIconButton label={t("undo")} shortcut={["Mod", "Z"]} disabled={!canUndo} onClick={undo}>
                         <IconUndo className="size-6" />
                       </BarIconButton>
-                      <BarIconButton label={t("redo")} disabled={!canRedo} onClick={redo}>
+                      <BarIconButton label={t("redo")} shortcut={["Mod", "Y"]} disabled={!canRedo} onClick={redo}>
                         <IconRedo className="size-6" />
                       </BarIconButton>
                     </BarGroup>
@@ -197,6 +204,7 @@ export function DoskaShell() {
                     <BarGroup layer="bar">
                       <BarIconButton
                         label={t("prevScreen")}
+                        shortcut={["←"]}
                         disabled={index <= 0}
                         onClick={() => goTo(-1)}
                       >
@@ -207,6 +215,7 @@ export function DoskaShell() {
 
                       <BarIconButton
                         label={t("nextScreen")}
+                        shortcut={["→"]}
                         disabled={index + 1 >= screenCount}
                         onClick={() => goTo(1)}
                       >
@@ -221,10 +230,10 @@ export function DoskaShell() {
                           hammasi butun doskaga tegishli amal. */}
                       <BarDivider />
 
-                      <BarIconButton label={t("fullscreen")} onClick={toggleFullscreen}>
+                      <BarIconButton label={t("fullscreen")} shortcut={["F"]} onClick={toggleFullscreen}>
                         <IconFullscreen className="size-6" />
                       </BarIconButton>
-                      <DoskaMenu />
+                      <DoskaMenu onShowShortcuts={() => setShortcutsOpen(true)} />
                     </BarGroup>
                   )}
                 </div>
@@ -232,6 +241,7 @@ export function DoskaShell() {
             </>
           )}
 
+          <DoskaShortcuts open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
           <DoskaCurtain />
         </div>
       </DockContext.Provider>
@@ -257,7 +267,7 @@ function DockToggle({ dock, hidden, onToggle }: { dock: DockSide; hidden: boolea
 
   return (
     <BarGroup layer="bar" className="shrink-0">
-      <BarIconButton label={hidden ? t("showControls") : t("hideControls")} onClick={onToggle}>
+      <BarIconButton label={hidden ? t("showControls") : t("hideControls")} shortcut={["B"]} onClick={onToggle}>
         <Icon className="size-6" />
       </BarIconButton>
     </BarGroup>
@@ -309,6 +319,31 @@ function useDoskaStyle() {
       delete html.dataset.doskaStyle;
     };
   }, [style, ready]);
+}
+
+/**
+ * Brauzer tarjimoni Doskaga tegmasin (docs/doska-referens-koriklari.md R381).
+ *
+ * Tarjimon matn tugunlarini oʻz elementlariga oʻraydi, React esa keyin
+ * ularni topolmay qulaydi — dars oʻrtasida doska oq ekranga aylanadi.
+ * Interfeys baribir 7 tilda, tarjima kerak emas. Oʻqituvchining oʻz
+ * yozuvi (matn, stiker) ham boshqa tilga oʻgirilib ketmasin.
+ *
+ * `<html>` da, `.doska-root` da emas: menyu, sozlama kartasi va tanlash
+ * oynalari `body` ga portal qilinadi. Serverdan kelgan HTML ni esa
+ * `.doska-root` dagi atribut va sahifa metasi (`google: notranslate`)
+ * yopadi — effekt ishlagunicha ham.
+ */
+function useNoTranslate() {
+  React.useEffect(() => {
+    const html = document.documentElement;
+    const previous = html.getAttribute("translate");
+    html.setAttribute("translate", "no");
+    return () => {
+      if (previous === null) html.removeAttribute("translate");
+      else html.setAttribute("translate", previous);
+    };
+  }, []);
 }
 
 /**

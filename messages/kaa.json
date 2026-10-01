@@ -2102,6 +2102,42 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "doska-oxirgi-sozlama": {
+        "title": "Doska sońǵı sazlawdı yadta saqlaydı: jańa taymer, dóńgelek hám zar siz tańlaǵan waqıt hám rejim menen shıǵadı"
+      },
+      "doska-ekranlar-nusxa": {
+        "title": "Doskada vidjetti basqa ekranǵa kóshiriń: Ctrl+C hám Ctrl+V — mısalı taymerdi keyingi ekranǵa"
+      },
+      "doska-chetga-qoyish": {
+        "title": "Doskada vidjetti ekran shetine súrip jasırıń — shette túymesi qaladı, basılsa ornına qaytadı"
+      },
+      "doska-ism-korinishi": {
+        "title": "Tosınnan at endi bir úlken at kórinisinde de — arttaǵı partadan oqıladı; tayar dizimler: 1–30 hám álipbe"
+      },
+      "doska-stiker": {
+        "title": "Doskada «Stiker»: juldızsha, maqtaw, strelka, pán belgileri — úlken hám proektorda anıq"
+      },
+      "doska-qr": {
+        "title": "Doskada «QR kod»: siltew yamasa teksti ekranǵa shıǵarıń — oqıwshılar telefon menen skanerleydi"
+      },
+      "doska-bosh-joy": {
+        "title": "Doska: jańa qural basqalardıń ústine emes, ekrandaǵı bos orınǵa túsedi"
+      },
+      "doska-zar": {
+        "title": "Doskada jańa «Zar» quralı: 1–3 zar, aralıqtan tosınnan san, ózbek álipbesinen hárip yamasa teńge"
+      },
+      "doska-taymer-takrorlash": {
+        "title": "Doska taymeri: toparlar almasıwı ushın qaytalanadı, sońǵı sekundlarda qızılǵa ótedi, qalǵan waqıt brauzer betinde kórinedi"
+      },
+      "doska-ekran-tartibi": {
+        "title": "Doska: ekrannan nusqa alıń hám ekranlar tártibin menyudan ózgertiń"
+      },
+      "doska-barcha-ekranlarda": {
+        "title": "Doska: vidjetti «Barlıq ekranlarda» etiń — taymer, saat hám keste ekran almasqanda da ornında qaladı"
+      },
+      "doska-yorliqlar": {
+        "title": "Doska: K túymesi barlıq tez túymelerdi kórsetedi — olar rus klaviaturasında da isleydi, pult ekranlardı almastıradı"
+      },
       "tezkor-yaratish": {
         "title": "«+ Jaratıw»: sabaqqa 1–2 minutta tayarlanıń — AI test, interaktiv sabaq, aqıl kartası",
         "body": "Tapsırma jaratıp atırǵanda búgingi sáne, waqıt hám is rejesindegi tema birden turadı — bir basıw menen AI test, interaktiv sabaq (túsindiriw slaydları hám arasında «túsindińizbe?» sorawları), prezentatsiya, aqıl kartası yamasa infografika tayarlaydı. Barlıǵın kórip shıǵıp redaktorlaysız, keyin sabaqta ótkeresiz yamasa úyge beresiz. Proektor bolmasa — qaǵaz, QR-kartalar yamasa pult penen ótkeriń, súwretlerdi basıp shıǵarıń.",
@@ -5212,7 +5248,10 @@
       "stickyNote": "Eslatpe",
       "shape": "Figura",
       "presentation": "Slaydlar",
-      "wheel": "Dóńgelek"
+      "wheel": "Dóńgelek",
+      "dice": "Zar",
+      "qr": "QR kod",
+      "sticker": "Stiker"
     },
     "toolbar": {
       "duplicate": "{widget} — nusqa alıw",
@@ -5226,7 +5265,11 @@
       "unlock": "{widget} — bosatıw",
       "unlockShort": "Bosatıw",
       "spotlight": "{widget} — ortaǵa shıǵarıw",
-      "spotlightShort": "Ortaǵa"
+      "spotlightShort": "Ortaǵa",
+      "pin": "{widget} — barlıq ekranlarda kórsetiw",
+      "pinShort": "Barlıq ekranlarda",
+      "unpin": "{widget} — tek usı ekranda qaldırıw",
+      "unpinShort": "Tek usı ekranda"
     },
     "bar": {
       "clear": "Tazalaw",
@@ -5277,7 +5320,13 @@
       "viewDisk": "Disk",
       "viewBoth": "Ekewi de",
       "whenDone": "Tawsılǵanda",
-      "sound": "Dawıs shıǵarıw"
+      "sound": "Dawıs shıǵarıw",
+      "round": "{n} / {total}",
+      "repeat": "Qaytalaw",
+      "repeatNone": "Joq",
+      "repeatTimes": "{n} ret",
+      "warn": "Sońǵı sekundlarda qızıl",
+      "tabTitle": "Qalǵan waqıt brauzer betinde"
     },
     "trafficLight": {
       "red": "Tınısh",
@@ -5295,6 +5344,9 @@
       "view": "Kóriniw",
       "labels": "Tóbelerdegi háripler (A, B, C)"
     },
+    "parked": {
+      "restore": "«{name}» — ornına qaytarıw"
+    },
     "spotlight": {
       "exit": "Kishireytiw"
     },
@@ -5309,6 +5361,9 @@
       "curtain": "Ekrandı jabıw",
       "bell": "Qońıraw qaǵıw",
       "newScreen": "Jańa ekran",
+      "duplicateScreen": "Ekrannan nusqa alıw",
+      "moveScreenEarlier": "Ekrandı aldınǵa jıljıtıw",
+      "moveScreenLater": "Ekrandı artqa jıljıtıw",
       "connectClass": "Klas dizimin jalǵaw",
       "clearScreen": "Ekrandı tazalaw",
       "removeScreen": "Usı ekrandı óshiriw",
@@ -5317,6 +5372,7 @@
       "promoBody": "Ekranlarıńız akkauntıńızda saqlanadı, klas dizimi jalǵanadı hám shaqırılǵan oqıwshı jurnalǵa túsedi.",
       "promoCta": "Múmkinshiliklerdi kóriw",
       "appearance": "Kóriniw",
+      "shortcuts": "Klaviatura jarlıqları",
       "saveImage": "Súwret etip saqlaw",
       "savingImage": "Tayarlanbaqta…",
       "saveImageFailed": "Súwret saqlanbadı — qaytadan urınıp kóriń"
@@ -5342,7 +5398,10 @@
         "stickyNote": "Reńli eslatpe qaǵaz",
         "shape": "Geometriyalıq figuralar",
         "presentation": "Sorawlar hám juwaplar",
-        "wheel": "Tosınnan at tańlaw"
+        "wheel": "Tosınnan at tańlaw",
+        "dice": "Zar, san, hárip yamasa teńge",
+        "qr": "Siltew yamasa tekst — telefon menen skanerlenedi",
+        "sticker": "Maqtaw, belgi, strelka"
       }
     },
     "appearance": {
@@ -5421,6 +5480,11 @@
       "speedShort": "Tez",
       "speedMedium": "Orta",
       "speedLong": "Áste",
+      "view": "Kórinis",
+      "viewWheel": "Dóńgelek",
+      "viewName": "Atı",
+      "presets": "Tayar:",
+      "presetLetters": "Álipbe",
       "sampleNames": [
         "Aygúl",
         "Baxtiyar",
@@ -5450,6 +5514,40 @@
       "rosterLocked": "Dizim jabıq",
       "rosterFailed": "Dizim júklenbedi",
       "retry": "Qaytadan urınıw"
+    },
+    "dice": {
+      "roll": "Taslaw",
+      "empty": "Ele taslanbadı",
+      "heads": "Gerb",
+      "tails": "San",
+      "mode": "Ne taslanadı",
+      "modeDice": "Zar",
+      "modeNumber": "San",
+      "modeLetter": "Hárip",
+      "modeCoin": "Teńge",
+      "count": "Zarlar sanı",
+      "from": "Baslap",
+      "to": "Shekem",
+      "less": "Azıraq",
+      "more": "Kóbirek"
+    },
+    "qr": {
+      "empty": "Siltew yamasa tekst kirgiziń — oqıwshılar telefon menen skanerleydi",
+      "enter": "Siltew kirgiziw",
+      "text": "Siltew yamasa tekst",
+      "caption": "Jazıw (qálewge qaray)",
+      "captionPlaceholder": "Mısalı: Úy jumısı",
+      "aria": "QR kod: {text}"
+    },
+    "sticker": {
+      "groups": {
+        "praise": "Maqtaw",
+        "marks": "Belgiler",
+        "arrows": "Baǵıt",
+        "subjects": "Pánler",
+        "feelings": "Kewil-kúy",
+        "seasons": "Máwsim hám bayram"
+      }
     },
     "ink": {
       "toolbar": "Qoljazba ásbapları",
@@ -5486,6 +5584,41 @@
       "rotate": "Burıw",
       "hideGuide": "Jabıw: {guide}",
       "deleteSelection": "Óshiriw"
+    },
+    "shortcuts": {
+      "title": "Klaviatura jarlıqları",
+      "description": "Noutbukta yamasa klaviaturalı doskada tezirek islew ushın. Hár ámeldiń ekranda túymesi de bar.",
+      "close": "Jabıw",
+      "groups": {
+        "general": "Ulıwma",
+        "widget": "Saylanǵan vidjet",
+        "ink": "Qálem hám marker"
+      },
+      "items": {
+        "shortcuts": "Usı dizim",
+        "undo": "Biykarlaw",
+        "redo": "Qaytadan orınlaw",
+        "screens": "Aldınǵı / keyingi ekran",
+        "remote": "Pult penen ekrandı almastırıw",
+        "fullscreen": "Tolıq ekran",
+        "controls": "Basqarıwdı jasırıw",
+        "curtain": "Ekrandı jabıw",
+        "bell": "Qońıraw qaǵıw",
+        "back": "Artqa: saylawdı yamasa jazıwdı jabıw",
+        "settings": "Sazlaw",
+        "duplicate": "Nusqa alıw",
+        "copyPaste": "Basqa ekranǵa nusqa: alıw hám qoyıw",
+        "delete": "Óshiriw",
+        "move": "Jıljıtıw",
+        "moveFar": "10 px ge jıljıtıw",
+        "pen": "Qálem",
+        "marker": "Marker",
+        "eraser": "Óshirgish",
+        "laser": "Lazer"
+      },
+      "notes": {
+        "inkNote": "Qayta basılsa — saylaw rejimine qaytadı."
+      }
     }
   },
   "GamesPage": {

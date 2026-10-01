@@ -4,6 +4,7 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { ShortcutKeys } from "./ShortcutKeys";
 
 /* ════════════════════════════════════════════════════════════════════
    SUZUVCHI BOSHQARUV GURUHI — Doskadagi har panelning idishi.
@@ -122,11 +123,22 @@ export const barIconButtonClass =
 
 export function BarIconButton({
   label,
+  shortcut,
   asChild = false,
   className,
   children,
   ...props
-}: React.ComponentProps<"button"> & { label: string; asChild?: boolean }) {
+}: React.ComponentProps<"button"> & {
+  label: string;
+  /**
+   * Klaviatura yorligʻi (`["Mod", "Z"]`) — tooltipʼda nom yonida.
+   * Noutbukdagi oʻqituvchi yorliqni shu yerdan oʻrganadi; sensorli
+   * doskada tooltip chiqmaydi, shuning uchun u yerda xalaqit bermaydi
+   * (docs/doska-referens-koriklari.md R383).
+   */
+  shortcut?: readonly string[];
+  asChild?: boolean;
+}) {
   const shell = cn(barIconButtonClass, className);
 
   const trigger =
@@ -144,7 +156,16 @@ export function BarIconButton({
   return (
     <Tooltip>
       <TooltipTrigger asChild>{trigger}</TooltipTrigger>
-      <TooltipContent sideOffset={6}>{label}</TooltipContent>
+      <TooltipContent sideOffset={6}>
+        {shortcut ? (
+          <span className="flex items-center gap-2">
+            {label}
+            <ShortcutKeys keys={shortcut} />
+          </span>
+        ) : (
+          label
+        )}
+      </TooltipContent>
     </Tooltip>
   );
 }

@@ -21,7 +21,10 @@ export type WidgetKind =
   | "sticky-note.v1"
   | "shape.v1"
   | "presentation.v1"
-  | "wheel.v1";
+  | "wheel.v1"
+  | "dice.v1"
+  | "qr.v1"
+  | "sticker.v1";
 
 /**
  * Vidjetning ekrandagi oʻrni va oʻz holati.
@@ -47,6 +50,20 @@ export type DoskaWidget = {
    * eski saqlangan ekranlarda yoʻq va `undefined` = qulflanmagan.
    */
   locked?: boolean;
+  /**
+   * Barcha ekranlarda — ekran almashganda vidjet yangi ekranga oʻzi
+   * koʻchadi (taymer, soat, jadval). Nusxa EMAS: aynan shu vidjet, shuning
+   * uchun ishlayotgan taymer toʻxtamaydi va ikki joyda sanamaydi
+   * (docs/doska-referens-koriklari.md R398). `undefined` = shu ekranda.
+   */
+  pinned?: boolean;
+  /**
+   * Chetga qoʻyilgan — ekran chetidan tashqariga sudralgan vidjet. U
+   * chizilmaydi, oʻsha chetda kichik tugmasi qoladi; bosilsa joyiga
+   * qaytadi. Oʻchirilmaydi — ekran tozalanadi, ish yoʻqolmaydi
+   * (docs/doska-referens-koriklari.md R401). `undefined` = ekranda.
+   */
+  parked?: "left" | "right";
   state: Record<string, unknown>;
 };
 

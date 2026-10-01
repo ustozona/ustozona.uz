@@ -14,10 +14,21 @@
    koʻrinadi. Parda hamma narsadan yuqori, tooltipdan ham.
    ════════════════════════════════════════════════════════════════════ */
 
+/** Chetga qoʻyilgan vidjetlar tugmalari — vidjetlar ustida, pardadan past. */
+export const Z_PARKED = "calc(var(--z-doska-top) + 5)";
 export const Z_SPOTLIGHT_SCRIM = "calc(var(--z-doska-top) + 10)";
 export const Z_SPOTLIGHT_WIDGET = "calc(var(--z-doska-top) + 11)";
 export const Z_SPOTLIGHT_EXIT = "calc(var(--z-doska-top) + 12)";
 export const Z_CURTAIN = "calc(var(--z-doska-tooltip) + 1000)";
+
+/**
+ * Yorliqlar roʻyxati (`K`) — butun boshqaruvdan va «Markazga» dan
+ * yuqori: uni oʻqituvchining oʻzi chaqiradi va u hamma narsani yopib
+ * turishi kerak. Tooltipdan past, pardadan past (parda ochiq paytda
+ * klaviatura baribir pardaniki).
+ */
+export const Z_SHORTCUTS_SCRIM = "calc(var(--z-doska-top) + 20)";
+export const Z_SHORTCUTS = "calc(var(--z-doska-top) + 21)";
 
 /**
  * Chizgʻich va transportir — siyoh USTIDA, shaffof plastik kabi: ostidagi

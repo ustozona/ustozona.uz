@@ -29,7 +29,10 @@ export type WidgetLabelKey =
   | "stickyNote"
   | "shape"
   | "presentation"
-  | "wheel";
+  | "wheel"
+  | "dice"
+  | "qr"
+  | "sticker";
 
 /**
  * «Hammasi» oynasidagi toifa (docs/doska-ux-tadqiqot.md §3 «Topish»).
@@ -108,6 +111,16 @@ export type WidgetMeta = {
    * yozuv ekranga tegishli.
    */
   inkPage?: (state: Record<string, unknown>) => string | null;
+  /**
+   * OXIRGI TANLOV — yangi vidjetga standart (R422). Shu kalitlar
+   * oʻzgarganda qiymati eslab qolinadi va keyingi shu turdagi vidjet
+   * shu bilan tugʻiladi: oʻqituvchi har darsda taymerni 5 daqiqadan
+   * 10 ga qayta burmaydi.
+   *
+   * Faqat SOZLAMA kalitlari — mazmun (matn, ismlar, natija) EMAS:
+   * kechagi roʻyxat yoki gʻolib yangi vidjetda chiqmasin.
+   */
+  remember?: readonly string[];
 };
 
 export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
@@ -131,6 +144,8 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
     // komponent ularni standart qiymat bilan oʻqiydi (TimerWidget).
     initialState: { durationSec: 300, remainingSec: 300, running: false, view: "both", sound: true },
     openSettingsOnAdd: true,
+    // `remainingSec` alohida eslanmaydi — u `durationSec` dan olinadi (store).
+    remember: ["durationSec", "view", "repeat", "warn", "tabTitle", "sound"],
   },
   "traffic-light.v1": {
     kind: "traffic-light.v1",
@@ -224,6 +239,44 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
       sound: true,
       speed: "medium",
     },
+    remember: ["mode", "sound", "speed", "view"],
+  },
+  "dice.v1": {
+    kind: "dice.v1",
+    category: "class",
+    labelKey: "dice",
+    // Qoʻshnisi «Gʻildirak» (teal) — sariq-yashil undan aniq farqlanadi.
+    tint: "lime",
+    // Uch zar yonma-yon sigʻadigan, son va harf uzoqdan oʻqiladigan.
+    defaultSize: { w: 360, h: 300 },
+    minSize: { w: 180, h: 160 },
+    initialState: { mode: "dice", count: 1, min: 1, max: 30, values: [] },
+    remember: ["mode", "count", "min", "max"],
+  },
+  "qr.v1": {
+    kind: "qr.v1",
+    category: "media",
+    labelKey: "qr",
+    // Qoʻshnisi «Taqdimot» (toʻq sariq) — binafsha-qizil undan aniq ajraladi,
+    // «Fon» (binafsha) esa panelning narigi chetida.
+    tint: "fuchsia",
+    // Kvadratga yaqin: kod kvadrat, ostida qisqa yozuv sigʻadi.
+    defaultSize: { w: 320, h: 360 },
+    minSize: { w: 180, h: 200 },
+    initialState: { text: "", caption: "" },
+    openSettingsOnAdd: true,
+  },
+  "sticker.v1": {
+    kind: "sticker.v1",
+    category: "writing",
+    labelKey: "sticker",
+    // Qoʻshnilari «Eslatma» (pushti) va «Shakl» (moviy) — sariq ikkalasidan uzoq.
+    tint: "yellow",
+    // Kvadrat — belgi qisqa tomonga sigʻadi.
+    defaultSize: { w: 200, h: 200 },
+    minSize: { w: 64, h: 64 },
+    initialState: { emoji: "⭐" },
+    openSettingsOnAdd: true,
   },
 };
 
@@ -245,10 +298,13 @@ export const TOOL_ORDER: WidgetKind[] = [
   // Sinfni boshqarish vositalari yonida (soat, taymer, svetofor) —
   // mazmun vositalaridan (matn, eslatma, taqdimot) oldin.
   "wheel.v1",
+  "dice.v1",
   "text.v1",
   "sticky-note.v1",
+  "sticker.v1",
   "shape.v1",
   "presentation.v1",
+  "qr.v1",
 ];
 
 export function widgetMeta(kind: WidgetKind): WidgetMeta {

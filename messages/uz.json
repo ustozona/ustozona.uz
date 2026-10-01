@@ -2102,6 +2102,42 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "doska-oxirgi-sozlama": {
+        "title": "Doska oxirgi sozlamani eslab qoladi: yangi taymer, gʻildirak va zar siz tanlagan vaqt va rejim bilan chiqadi"
+      },
+      "doska-ekranlar-nusxa": {
+        "title": "Doskada vidjetni boshqa ekranga koʻchiring: Ctrl+C va Ctrl+V — masalan taymerni keyingi ekranga"
+      },
+      "doska-chetga-qoyish": {
+        "title": "Doskada vidjetni ekran chetiga surib yashiring — chetda tugmasi qoladi, bosilsa joyiga qaytadi"
+      },
+      "doska-ism-korinishi": {
+        "title": "Tasodifiy ism endi bitta katta ism koʻrinishida ham — orqa partadan oʻqiladi; tayyor roʻyxatlar: 1–30 va alifbo"
+      },
+      "doska-stiker": {
+        "title": "Doskada «Stiker»: yulduzcha, «barakalla», strelka, fan belgilari — katta va proyektorda tiniq"
+      },
+      "doska-qr": {
+        "title": "Doskada «QR kod»: havola yoki matnni ekranga chiqaring — oʻquvchilar telefon bilan skanerlaydi"
+      },
+      "doska-bosh-joy": {
+        "title": "Doska: yangi vosita boshqalarining ustiga emas, ekrandagi boʻsh joyga tushadi"
+      },
+      "doska-zar": {
+        "title": "Doskada yangi «Zar» vositasi: 1–3 zar, oraliqdan tasodifiy son, oʻzbek alifbosidan harf yoki tanga"
+      },
+      "doska-taymer-takrorlash": {
+        "title": "Doska taymeri: guruhlar aylanishi uchun takrorlanadi, oxirgi soniyalarda qizilga oʻtadi, qolgan vaqt brauzer yorligʻida koʻrinadi"
+      },
+      "doska-ekran-tartibi": {
+        "title": "Doska: ekrandan nusxa oling va ekranlar tartibini menyudan oʻzgartiring"
+      },
+      "doska-barcha-ekranlarda": {
+        "title": "Doska: vidjetni «Barcha ekranlarda» qiling — taymer, soat va jadval ekran almashganda ham joyida qoladi"
+      },
+      "doska-yorliqlar": {
+        "title": "Doska: «K» tugmasi barcha tezkor tugmalarni koʻrsatadi, ular rus klaviaturasida ham ishlaydi, pult bilan ekran almashadi"
+      },
       "darslar-oqimi-vizual": {
         "title": "Darslar oqimini koʻring: zanjir, yillik yoʻl xaritasi va «sigʻmaydi» ogohlantirishi",
         "body": "Darslar roʻyxati chapida zanjir har darsning holatini koʻrsatadi, tartiblayotganda yangi sanalar darhol koʻrinadi. «Yoʻl xaritasi» koʻrinishida boʻlimlar yil boʻylab polosa boʻlib turadi — sudrab tartibini oʻzgartirasiz. Yil oxirigacha dars sigʻmasa, qaysilari va nimani qisqartirish mumkinligini koʻrasiz. Planner'da darsga kursorni olib borsangiz, oqimdagi oldingi va keyingi darsi ajraladi."
@@ -5089,7 +5125,10 @@
       "stickyNote": "Eslatma",
       "shape": "Shakl",
       "presentation": "Taqdimot",
-      "wheel": "Gʻildirak"
+      "wheel": "Gʻildirak",
+      "dice": "Zar",
+      "qr": "QR kod",
+      "sticker": "Stiker"
     },
     "toolbar": {
       "duplicate": "{widget} — nusxalash",
@@ -5103,7 +5142,11 @@
       "unlock": "{widget} — qulfni ochish",
       "unlockShort": "Qulfni ochish",
       "spotlight": "{widget} — markazga chiqarish",
-      "spotlightShort": "Markazga"
+      "spotlightShort": "Markazga",
+      "pin": "{widget} — barcha ekranlarda koʻrsatish",
+      "pinShort": "Barcha ekranlarda",
+      "unpin": "{widget} — faqat shu ekranda qoldirish",
+      "unpinShort": "Faqat shu ekranda"
     },
     "bar": {
       "clear": "Tozalash",
@@ -5154,7 +5197,13 @@
       "viewDisk": "Disk",
       "viewBoth": "Ikkalasi",
       "whenDone": "Tugaganda",
-      "sound": "Ovoz chalinsin"
+      "sound": "Ovoz chalinsin",
+      "round": "{n} / {total}",
+      "repeat": "Takrorlash",
+      "repeatNone": "Yoʻq",
+      "repeatTimes": "{n} marta",
+      "warn": "Oxirgi soniyalarda qizil",
+      "tabTitle": "Qolgan vaqt brauzer yorligʻida"
     },
     "trafficLight": {
       "red": "Jim",
@@ -5172,6 +5221,9 @@
       "view": "Koʻrinish",
       "labels": "Uchlarda harflar (A, B, C)"
     },
+    "parked": {
+      "restore": "«{name}» — joyiga qaytarish"
+    },
     "spotlight": {
       "exit": "Kichraytirish"
     },
@@ -5186,6 +5238,9 @@
       "curtain": "Ekranni yopish",
       "bell": "Qoʻngʻiroq chalish",
       "newScreen": "Yangi ekran",
+      "duplicateScreen": "Ekrandan nusxa olish",
+      "moveScreenEarlier": "Ekranni oldinga surish",
+      "moveScreenLater": "Ekranni orqaga surish",
       "connectClass": "Sinf roʻyxatini ulash",
       "clearScreen": "Ekranni tozalash",
       "removeScreen": "Shu ekranni oʻchirish",
@@ -5194,6 +5249,7 @@
       "promoBody": "Ekranlaringiz hisobingizda saqlanadi, sinf roʻyxatingiz ulanadi va soʻralgan oʻquvchi jurnalga tushadi.",
       "promoCta": "Imkoniyatlarni koʻrish",
       "appearance": "Koʻrinish",
+      "shortcuts": "Klaviatura yorliqlari",
       "saveImage": "Rasm qilib saqlash",
       "savingImage": "Tayyorlanmoqda…",
       "saveImageFailed": "Rasm chiqmadi — qayta urinib koʻring"
@@ -5219,7 +5275,10 @@
         "stickyNote": "Rangli eslatma qogʻoz",
         "shape": "Geometrik figuralar",
         "presentation": "Savollar va javoblar",
-        "wheel": "Tasodifiy ism tanlash"
+        "wheel": "Tasodifiy ism tanlash",
+        "dice": "Zar, son, harf yoki tanga",
+        "qr": "Havola yoki matn — telefon bilan skanerlanadi",
+        "sticker": "Maqtov, belgi, strelka"
       }
     },
     "appearance": {
@@ -5298,6 +5357,11 @@
       "speedShort": "Tez",
       "speedMedium": "Oʻrta",
       "speedLong": "Sekin",
+      "view": "Koʻrinish",
+      "viewWheel": "Gʻildirak",
+      "viewName": "Ism",
+      "presets": "Tayyor:",
+      "presetLetters": "Alifbo",
       "sampleNames": [
         "Aziza",
         "Bobur",
@@ -5327,6 +5391,40 @@
       "rosterLocked": "Roʻyxat yopiq",
       "rosterFailed": "Roʻyxat yuklanmadi",
       "retry": "Qayta urinish"
+    },
+    "dice": {
+      "roll": "Tashlash",
+      "empty": "Hali tashlanmadi",
+      "heads": "Gerb",
+      "tails": "Raqam",
+      "mode": "Nima tashlanadi",
+      "modeDice": "Zar",
+      "modeNumber": "Son",
+      "modeLetter": "Harf",
+      "modeCoin": "Tanga",
+      "count": "Zarlar soni",
+      "from": "Dan",
+      "to": "Gacha",
+      "less": "Kamroq",
+      "more": "Koʻproq"
+    },
+    "qr": {
+      "empty": "Havola yoki matn kiriting — oʻquvchilar telefon bilan skanerlaydi",
+      "enter": "Havola kiritish",
+      "text": "Havola yoki matn",
+      "caption": "Yozuv (ixtiyoriy)",
+      "captionPlaceholder": "Masalan: Uy vazifasi",
+      "aria": "QR kod: {text}"
+    },
+    "sticker": {
+      "groups": {
+        "praise": "Maqtov",
+        "marks": "Belgilar",
+        "arrows": "Yoʻnalish",
+        "subjects": "Fanlar",
+        "feelings": "Kayfiyat",
+        "seasons": "Fasl va bayram"
+      }
     },
     "ink": {
       "toolbar": "Qoʻlyozma asboblari",
@@ -5363,6 +5461,41 @@
       "rotate": "Burish",
       "hideGuide": "Yopish: {guide}",
       "deleteSelection": "Oʻchirish"
+    },
+    "shortcuts": {
+      "title": "Klaviatura yorliqlari",
+      "description": "Noutbuk yoki klaviaturali doskada tezroq ishlash uchun. Har amalning ekranda tugmasi ham bor.",
+      "close": "Yopish",
+      "groups": {
+        "general": "Umumiy",
+        "widget": "Tanlangan vidjet",
+        "ink": "Qalam va marker"
+      },
+      "items": {
+        "shortcuts": "Shu roʻyxat",
+        "undo": "Bekor qilish",
+        "redo": "Qaytadan bajarish",
+        "screens": "Oldingi / keyingi ekran",
+        "remote": "Pult bilan ekran almashtirish",
+        "fullscreen": "Toʻliq ekran",
+        "controls": "Boshqaruvni yashirish",
+        "curtain": "Ekranni yopish",
+        "bell": "Qoʻngʻiroq chalish",
+        "back": "Orqaga: tanlovni yoki yozishni yopish",
+        "settings": "Sozlash",
+        "duplicate": "Nusxa olish",
+        "copyPaste": "Boshqa ekranga nusxa: olish va qoʻyish",
+        "delete": "Oʻchirish",
+        "move": "Siljitish",
+        "moveFar": "10 px ga siljitish",
+        "pen": "Qalam",
+        "marker": "Marker",
+        "eraser": "Oʻchirgʻich",
+        "laser": "Lazer"
+      },
+      "notes": {
+        "inkNote": "Qayta bosilsa — tanlash rejimiga qaytadi."
+      }
     }
   },
   "LessonPlanWizard": {

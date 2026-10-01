@@ -21,6 +21,9 @@ import { hasSettings } from "./widgets";
                                       belgilangan yozuvni) oʻchirish
      Strelkalar (Shift — 10 px)       tanlangan vidjetni siljitish
      ← →  (tanlov yoʻq)               oldingi / keyingi ekran
+     PageUp · PageDown                oldingi / keyingi ekran — tanlov
+                                      boʻlsa ham (taqdimot pulti shu
+                                      tugmalarni yuboradi)
      S                                tanlangan vidjet sozlamasi
      P · M · E · L                    qalam · marker · oʻchirgʻich · lazer
                                       (qayta bosilsa — tanlashga qaytish)
@@ -30,6 +33,18 @@ import { hasSettings } from "./widgets";
                                       (shu tartibda)
      F · B                            toʻliq ekran · boshqaruvni yashirish
      1 · 2                            parda · qoʻngʻiroq
+     K · ?                            yorliqlar roʻyxati (DoskaShortcuts)
+
+   Roʻyxat oynasidagi qatorlar shu toʻplamni takrorlaydi — yorliq
+   qoʻshilsa yoki oʻzgarsa, `DoskaShortcuts.tsx` ham yangilanadi.
+
+   ⚠️ HARF TUGMANING JOYI BOʻYICHA HAM TANILADI (`shortcutKey`). Rus yoki
+   oʻzbek-kirill tartibida `e.key` kirill harf boʻladi: `P` — «з», Ctrl+Z
+   da esa «я». Faqat `e.key` ga qaralsa, bunday kompyuterda qalam ham,
+   bekor qilish ham ishlamaydi — Oʻzbekistonda koʻp kompyuterda rus
+   tartibi yoqiq turadi (docs/doska-referens-koriklari.md R380). Lotin
+   harfi kelsa esa `e.key` ning oʻzi olinadi: boshqa lotin tartibida
+   (AZERTY va h.k.) yorliq tugmaga yozilgan harfga mos qoladi.
 
    ⚠️ Oynada tinglanadi, kanvasda emas: menyu yoki boshqaruv tugmasi
    fokusda boʻlsa ham yorliq ishlashi kerak. Shuning uchun yozish
@@ -39,8 +54,9 @@ import { hasSettings } from "./widgets";
    ⚠️ Vidjet klaviaturani OʻZI boshqarishi mumkin: taqdimot strelka va
    Enter bilan slayd almashtiradi (pult ham shu tugmalarni yuboradi).
    Shuning uchun:
-     • fokus vidjet ICHIDA boʻlsa — STRELKALAR vidjetga qoldiriladi (Doska
-       ularni ekran almashtirish va siljitish uchun ishlatadi). Qolgan
+     • fokus vidjet ICHIDA boʻlsa — STRELKALAR va PageUp/PageDown vidjetga
+       qoldiriladi (Doska ularni ekran almashtirish va siljitish uchun
+       ishlatadi). Qolgan
        yorliqlar ishlayveradi: taymerning ▶ tugmasini bosgandan keyin
        fokus oʻsha tugmada qoladi, `1` esa baribir pardani tushirsin;
      • vidjet oʻzi toʻliq ekranda boʻlsa — Doska yorliqlari umuman jim
@@ -54,6 +70,36 @@ import { hasSettings } from "./widgets";
 
 /** Strelkalar ketma-ketligi shu oraliqda bitta harakat hisoblanadi (ms). */
 const NUDGE_BURST_MS = 800;
+
+/**
+ * Yorliq sifatida qaysi tugma bosildi.
+ *
+ * Nomli tugma (`Escape`, `ArrowLeft`, `PageDown`) oʻz nomida qaytadi.
+ * Harf va raqam — kichik harfda: lotin harfi `e.key` dan, lotin
+ * boʻlmagan harf (kirill) esa tugmaning joyidan (`KeyP` → `p`).
+ * Raqam va belgilar (`?`) `e.key` ning oʻzi: raqam tartibdan qatʼi nazar
+ * raqam boʻlib keladi, Shift+1 esa «!» boʻlib qoladi va parda tushmaydi.
+ */
+export function shortcutKey(e: Pick<KeyboardEvent, "key" | "code">): string {
+  const { key, code } = e;
+  if (key.length !== 1) return key;
+  if (/^[a-z]$/i.test(key)) return key.toLowerCase();
+  if (/^\p{L}$/u.test(key)) {
+    const match = /^Key([A-Z])$/.exec(code);
+    if (match) return match[1].toLowerCase();
+  }
+  return key;
+}
+
+/** Oldinga/orqaga shuncha ekran — chetda boʻlsa hech narsa qilmaydi. */
+function stepScreen(offset: number): boolean {
+  const s = useDoskaStore.getState();
+  const index = s.deck.screens.findIndex((x) => x.id === s.activeScreenId);
+  const next = s.deck.screens[index + offset];
+  if (!next) return false;
+  s.setActiveScreen(next.id);
+  return true;
+}
 
 function isTypingTarget(el: HTMLElement | null): boolean {
   if (!el) return false;
@@ -80,15 +126,17 @@ function widgetOwnsFullscreen(): boolean {
 export function useDoskaShortcuts({
   onToggleFullscreen,
   onToggleControls,
+  onToggleShortcuts,
 }: {
   onToggleFullscreen: () => void;
   onToggleControls: () => void;
+  onToggleShortcuts: () => void;
 }) {
   // Callbacklar ref orqali: effekt bir marta ulanadi, har renderda
   // listener olib tashlanib-qoʻyilmaydi.
-  const handlers = React.useRef({ onToggleFullscreen, onToggleControls });
+  const handlers = React.useRef({ onToggleFullscreen, onToggleControls, onToggleShortcuts });
   React.useLayoutEffect(() => {
-    handlers.current = { onToggleFullscreen, onToggleControls };
+    handlers.current = { onToggleFullscreen, onToggleControls, onToggleShortcuts };
   });
 
   React.useEffect(() => {
@@ -101,7 +149,7 @@ export function useDoskaShortcuts({
       if (widgetOwnsFullscreen()) return;
 
       const s = useDoskaStore.getState();
-      const key = e.key.toLowerCase();
+      const key = shortcutKey(e);
 
       if (e.ctrlKey || e.metaKey) {
         if (e.altKey) return;
@@ -116,17 +164,26 @@ export function useDoskaShortcuts({
           // tanlangan boʻlsa; aks holda brauzer oʻz ishini qiladi.
           e.preventDefault();
           s.duplicateWidget(s.selectedId);
+        } else if (key === "c" && s.selectedId && !window.getSelection()?.toString()) {
+          // Belgilangan matn boʻlsa — brauzer oʻzi nusxalaydi.
+          e.preventDefault();
+          s.copyWidget(s.selectedId);
+        } else if (key === "v" && s.clipboard) {
+          e.preventDefault();
+          s.pasteWidget();
         }
         return;
       }
       if (e.altKey) return;
-      // Strelkalar vidjet ichidagi fokusda vidjetniki (taqdimot slaydlari).
-      if (e.key.startsWith("Arrow") && isInsideWidget(target)) return;
+      // Strelka va pult tugmalari vidjet ichidagi fokusda vidjetniki
+      // (taqdimot slaydlari).
+      const paging = e.key.startsWith("Arrow") || e.key === "PageUp" || e.key === "PageDown";
+      if (paging && isInsideWidget(target)) return;
       if (e.repeat && !e.key.startsWith("Arrow")) return;
 
       const selected = s.selectedId && !s.editingId ? s.selectedId : null;
 
-      switch (e.key) {
+      switch (key) {
         case "Escape":
           // Eng ichki holatdan tashqariga: bitta bosish — bitta qadam.
           if (s.spotlightId) s.setSpotlight(null);
@@ -136,8 +193,7 @@ export function useDoskaShortcuts({
           else if (s.selectedId) s.select(null);
           return;
 
-        case "s":
-        case "S": {
+        case "s": {
           const w = selected && s.deck.screens
             .find((x) => x.id === s.activeScreenId)
             ?.widgets.find((x) => x.id === selected);
@@ -148,13 +204,9 @@ export function useDoskaShortcuts({
         }
 
         case "p":
-        case "P":
         case "m":
-        case "M":
         case "e":
-        case "E":
-        case "l":
-        case "L": {
+        case "l": {
           if (s.spotlightId) return;
           e.preventDefault();
           const next: InkMode =
@@ -214,22 +266,33 @@ export function useDoskaShortcuts({
 
           // Tanlov yoʻq — chap/oʻng ekranlar orasida yuradi.
           if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
-          const index = s.deck.screens.findIndex((x) => x.id === s.activeScreenId);
-          const next = s.deck.screens[index + (e.key === "ArrowRight" ? 1 : -1)];
-          if (!next) return;
-          e.preventDefault();
-          s.setActiveScreen(next.id);
+          if (stepScreen(e.key === "ArrowRight" ? 1 : -1)) e.preventDefault();
           return;
         }
 
+        // Pult: tanlangan vidjet boʻlsa ham ekran almashadi — bu
+        // tugmalarning vidjet uchun maʼnosi yoʻq, oʻqituvchi esa dars
+        // paytida vidjetni bosib qoʻygan boʻlishi mumkin.
+        case "PageUp":
+        case "PageDown":
+          if (s.spotlightId) return;
+          // Sahifa aylanmasin — chetdagi ekranda ham.
+          e.preventDefault();
+          stepScreen(e.key === "PageDown" ? 1 : -1);
+          return;
+
         case "f":
-        case "F":
           handlers.current.onToggleFullscreen();
           return;
 
         case "b":
-        case "B":
           handlers.current.onToggleControls();
+          return;
+
+        case "k":
+        case "?":
+          e.preventDefault();
+          handlers.current.onToggleShortcuts();
           return;
       }
     };

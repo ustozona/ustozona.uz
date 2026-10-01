@@ -23,6 +23,9 @@ import {
   IconPalette,
   IconArrowRight,
   IconImageDownload,
+  IconKeyboard,
+  IconCopy,
+  IconArrowLeft,
 } from "./icons";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -45,6 +48,9 @@ import {
    «Ekranni tozalash» va «Shu ekranni oʻchirish» tasdiq soʻramaydi —
    ikkalasi ham «Qaytarish» xabari bilan qaytariladi (store, DoskaNotice).
 
+   «Klaviatura yorliqlari» (`K`) roʻyxat oynasini ochadi — oyna
+   `DoskaShell` da turadi, chunki `K` menyu yopiq paytda ham ishlaydi.
+
    ⚠️ BIZNES MODELI (2026-08-21 qarori):
      • Mehmon — doska toʻliq ishlaydi, ekran shu brauzerda qoladi
      • Pullik — hisobga saqlash (istalgan qurilmadan), sinf roʻyxatini
@@ -56,7 +62,7 @@ import {
    holatda emas: oʻchirilgan tugma sababini tushuntirmaydi
    (docs/design-system.md modal qoidasi).
    ════════════════════════════════════════════════════════════════════ */
-export function DoskaMenu() {
+export function DoskaMenu({ onShowShortcuts }: { onShowShortcuts: () => void }) {
   // Butun `deck` ga emas: u har chiziqda va taymerning har soniyasida yangilanadi.
   const title = useDoskaStore((s) => s.deck.title);
   const screenCount = useDoskaStore((s) => s.deck.screens.length);
@@ -65,6 +71,9 @@ export function DoskaMenu() {
   const clearScreen = useDoskaStore((s) => s.clearScreen);
   const removeScreen = useDoskaStore((s) => s.removeScreen);
   const addScreen = useDoskaStore((s) => s.addScreen);
+  const duplicateScreen = useDoskaStore((s) => s.duplicateScreen);
+  const moveScreen = useDoskaStore((s) => s.moveScreen);
+  const screenIndex = useDoskaStore((s) => s.deck.screens.findIndex((x) => x.id === s.activeScreenId));
   const setCurtain = useDoskaStore((s) => s.setCurtain);
   // Qulflangan vidjeti bor ekran oʻchirilmaydi (store: `removeScreen`) —
   // band yashirilmaydi, sababi bilan nofaol koʻrsatiladi.
@@ -158,6 +167,9 @@ export function DoskaMenu() {
             <MenuItem Icon={IconPalette} next onClick={() => setView("appearance")}>
               {tm("appearance")}
             </MenuItem>
+            <MenuItem Icon={IconKeyboard} shortcut="K" onClick={run(onShowShortcuts)}>
+              {tm("shortcuts")}
+            </MenuItem>
           </div>
 
           {/* ── Amallar ── */}
@@ -165,6 +177,21 @@ export function DoskaMenu() {
             <MenuItem Icon={IconAdd} onClick={run(addScreen)}>
               {tm("newScreen")}
             </MenuItem>
+            <MenuItem Icon={IconCopy} onClick={run(duplicateScreen)}>
+              {tm("duplicateScreen")}
+            </MenuItem>
+            {/* Tartib — dars bosqichlari ketma-ketligi (R399). Menyu ochiq
+                qoladi: oʻqituvchi ekranni bir necha qadam sura oladi. */}
+            {screenCount > 1 && (
+              <>
+                <MenuItem Icon={IconArrowLeft} disabled={screenIndex <= 0} onClick={() => moveScreen(-1)}>
+                  {tm("moveScreenEarlier")}
+                </MenuItem>
+                <MenuItem Icon={IconArrowRight} disabled={screenIndex >= screenCount - 1} onClick={() => moveScreen(1)}>
+                  {tm("moveScreenLater")}
+                </MenuItem>
+              </>
+            )}
             <MenuItem
               Icon={IconImageDownload}
               disabled={exporting === "busy"}

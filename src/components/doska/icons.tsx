@@ -665,6 +665,80 @@ export function IconPalette({ className }: IconProps) {
   );
 }
 
+/** Zar — oʻzimiz chizdik: kub (massa) va beshta nuqta (detal). */
+export function IconDice({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={cn("doska-icon", className)} aria-hidden="true">
+      <g>
+        <rect x="3" y="3" width="18" height="18" rx="4.5" opacity=".5" />
+        <circle cx="8" cy="8" r="1.6" />
+        <circle cx="16" cy="8" r="1.6" />
+        <circle cx="12" cy="12" r="1.6" />
+        <circle cx="8" cy="16" r="1.6" />
+        <circle cx="16" cy="16" r="1.6" />
+      </g>
+    </svg>
+  );
+}
+
+/** QR — oʻzimiz chizdik: uch burchak kvadrati (massa) va markazdagi nuqtalar (detal). */
+export function IconQr({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={cn("doska-icon", className)} aria-hidden="true">
+      <g>
+        <g opacity=".5">
+          <rect x="3" y="3" width="7.5" height="7.5" rx="2" />
+          <rect x="13.5" y="3" width="7.5" height="7.5" rx="2" />
+          <rect x="3" y="13.5" width="7.5" height="7.5" rx="2" />
+        </g>
+        <rect x="5.5" y="5.5" width="2.5" height="2.5" rx=".6" />
+        <rect x="16" y="5.5" width="2.5" height="2.5" rx=".6" />
+        <rect x="5.5" y="16" width="2.5" height="2.5" rx=".6" />
+        <rect x="13.5" y="13.5" width="3" height="3" rx=".7" />
+        <rect x="18" y="18" width="3" height="3" rx=".7" />
+        <rect x="18" y="13.5" width="3" height="3" rx=".7" opacity=".5" />
+        <rect x="13.5" y="18" width="3" height="3" rx=".7" opacity=".5" />
+      </g>
+    </svg>
+  );
+}
+
+/** Stiker — oʻzimiz chizdik: doira (massa) va yulduz (detal). */
+export function IconSticker({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={cn("doska-icon", className)} aria-hidden="true">
+      <g>
+        <circle cx="12" cy="12" r="10" opacity=".5" />
+        <path d="M12 6.2l1.72 3.6 3.95.5-2.9 2.72.74 3.92L12 15.03l-3.51 1.91.74-3.92-2.9-2.72 3.95-.5z" />
+      </g>
+    </svg>
+  );
+}
+
+/**
+ * Klaviatura yorliqlari — oʻzimiz chizdik: korpus (massa) va tugmalar
+ * (detal), Solar oʻlchamlarida — tashqi chegara 20×14, radius 3.5
+ * (`DockGlyph` bilan bir xil).
+ */
+export function IconKeyboard({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={cn("doska-icon", className)} aria-hidden="true">
+      <g>
+        <rect x="2" y="5" width="20" height="14" rx="3.5" opacity=".5" />
+        <rect x="5.25" y="8" width="2" height="2" rx=".6" />
+        <rect x="8.75" y="8" width="2" height="2" rx=".6" />
+        <rect x="12.25" y="8" width="2" height="2" rx=".6" />
+        <rect x="15.75" y="8" width="3" height="2" rx=".6" />
+        <rect x="5.25" y="11.25" width="3" height="2" rx=".6" />
+        <rect x="9.75" y="11.25" width="2" height="2" rx=".6" />
+        <rect x="13.25" y="11.25" width="2" height="2" rx=".6" />
+        <rect x="16.75" y="11.25" width="2" height="2" rx=".6" />
+        <rect x="7.5" y="14.5" width="9" height="1.75" rx=".875" />
+      </g>
+    </svg>
+  );
+}
+
 /**
  * Panel joyi — oʻzimiz chizdik: ekran (massa) va undagi panel (detal).
  * Solarʼda «panel ekranning qaysi chetida» degan ikona yoʻq; uchala
@@ -756,6 +830,10 @@ export const DOSKA_ICONS: { name: string; source: string; Icon: React.ComponentT
   { name: "IconCatalog", source: "solar:widget", Icon: IconCatalog },
   { name: "IconPin", source: "solar:pin", Icon: IconPin },
   { name: "IconPalette", source: "solar:palette-round", Icon: IconPalette },
+  { name: "IconDice", source: "oʻzimiz:zar", Icon: IconDice },
+  { name: "IconQr", source: "oʻzimiz:qr", Icon: IconQr },
+  { name: "IconSticker", source: "oʻzimiz:stiker", Icon: IconSticker },
+  { name: "IconKeyboard", source: "oʻzimiz:klaviatura", Icon: IconKeyboard },
   { name: "IconDockBottom", source: "oʻzimiz:panel-past", Icon: IconDockBottom },
   { name: "IconDockLeft", source: "oʻzimiz:panel-chap", Icon: IconDockLeft },
   { name: "IconDockRight", source: "oʻzimiz:panel-oʻng", Icon: IconDockRight },

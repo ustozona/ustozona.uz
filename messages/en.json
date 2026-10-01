@@ -2102,6 +2102,42 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "doska-oxirgi-sozlama": {
+        "title": "The board remembers your last settings: a new timer, wheel or dice starts with the time and mode you chose"
+      },
+      "doska-ekranlar-nusxa": {
+        "title": "Copy a board widget to another screen with Ctrl+C and Ctrl+V — e.g. carry the timer to the next screen"
+      },
+      "doska-chetga-qoyish": {
+        "title": "Drag a board widget to the screen edge to tuck it away — a tab stays there to bring it back"
+      },
+      "doska-ism-korinishi": {
+        "title": "Random name now also shows one big name — readable from the back row; preset lists: 1–30 and the alphabet"
+      },
+      "doska-stiker": {
+        "title": "“Sticker” in Doska: stars, praise, arrows, subject icons — large and sharp on a projector"
+      },
+      "doska-qr": {
+        "title": "“QR code” in Doska: put a link or text on screen — students scan it with their phones"
+      },
+      "doska-bosh-joy": {
+        "title": "Doska: a new tool lands in free space instead of on top of the others"
+      },
+      "doska-zar": {
+        "title": "New “Dice” tool in Doska: 1–3 dice, a random number from a range, a letter of the Uzbek alphabet or a coin flip"
+      },
+      "doska-taymer-takrorlash": {
+        "title": "Doska timer: repeats for station rotations, turns red in the last seconds, shows the time left in the browser tab"
+      },
+      "doska-ekran-tartibi": {
+        "title": "Doska: duplicate a screen and reorder screens from the menu"
+      },
+      "doska-barcha-ekranlarda": {
+        "title": "Doska: set a widget to “On all screens” — the timer, clock or schedule stays put when you switch screens"
+      },
+      "doska-yorliqlar": {
+        "title": "Doska: press K to see every shortcut — they also work with a Russian keyboard, and a clicker switches screens"
+      },
       "tezkor-yaratish": {
         "title": "«+ Create»: get ready for a lesson in 1–2 minutes — AI test, interactive lesson, mind map",
         "body": "When you create an assignment, today’s date, the time and the topic from your work plan are already there — one click and AI prepares a test, an interactive lesson (explanation slides with “got it?” questions in between), a presentation, a mind map or an infographic. You review and edit everything, then run it in class or assign it as homework. No projector? Run it on paper, with QR cards or clickers, and print the pictures.",
@@ -5211,7 +5247,10 @@
       "stickyNote": "Note",
       "shape": "Shape",
       "presentation": "Slides",
-      "wheel": "Wheel"
+      "wheel": "Wheel",
+      "dice": "Dice",
+      "qr": "QR code",
+      "sticker": "Sticker"
     },
     "toolbar": {
       "duplicate": "{widget} — duplicate",
@@ -5225,7 +5264,11 @@
       "unlock": "{widget} — unlock",
       "unlockShort": "Unlock",
       "spotlight": "{widget} — spotlight",
-      "spotlightShort": "Spotlight"
+      "spotlightShort": "Spotlight",
+      "pin": "{widget} — show on all screens",
+      "pinShort": "On all screens",
+      "unpin": "{widget} — keep on this screen only",
+      "unpinShort": "This screen only"
     },
     "bar": {
       "clear": "Clear",
@@ -5276,7 +5319,13 @@
       "viewDisk": "Disk",
       "viewBoth": "Both",
       "whenDone": "When time is up",
-      "sound": "Play a sound"
+      "sound": "Play a sound",
+      "round": "{n} / {total}",
+      "repeat": "Repeat",
+      "repeatNone": "Off",
+      "repeatTimes": "{n} times",
+      "warn": "Red in the last seconds",
+      "tabTitle": "Time left in the browser tab"
     },
     "trafficLight": {
       "red": "Silent",
@@ -5294,6 +5343,9 @@
       "view": "Display",
       "labels": "Letters at the corners (A, B, C)"
     },
+    "parked": {
+      "restore": "“{name}” — bring back"
+    },
     "spotlight": {
       "exit": "Shrink"
     },
@@ -5308,6 +5360,9 @@
       "curtain": "Cover the screen",
       "bell": "Ring the bell",
       "newScreen": "New screen",
+      "duplicateScreen": "Duplicate screen",
+      "moveScreenEarlier": "Move screen earlier",
+      "moveScreenLater": "Move screen later",
       "connectClass": "Connect class list",
       "clearScreen": "Clear screen",
       "removeScreen": "Delete this screen",
@@ -5316,6 +5371,7 @@
       "promoBody": "Your screens are saved to your account, your class list connects, and the student you call on is recorded in the gradebook.",
       "promoCta": "See the features",
       "appearance": "Appearance",
+      "shortcuts": "Keyboard shortcuts",
       "saveImage": "Save as image",
       "savingImage": "Preparing…",
       "saveImageFailed": "Couldn't save the image — try again"
@@ -5341,7 +5397,10 @@
         "stickyNote": "Colored note",
         "shape": "Geometric shapes",
         "presentation": "Questions and answers",
-        "wheel": "Pick a random name"
+        "wheel": "Pick a random name",
+        "dice": "Dice, number, letter or coin",
+        "qr": "A link or text to scan with a phone",
+        "sticker": "Praise, sign, arrow"
       }
     },
     "appearance": {
@@ -5420,6 +5479,11 @@
       "speedShort": "Fast",
       "speedMedium": "Medium",
       "speedLong": "Slow",
+      "view": "View",
+      "viewWheel": "Wheel",
+      "viewName": "Name",
+      "presets": "Presets:",
+      "presetLetters": "Alphabet",
       "sampleNames": [
         "Ali",
         "Emma",
@@ -5449,6 +5513,40 @@
       "rosterLocked": "List locked",
       "rosterFailed": "List didn’t load",
       "retry": "Try again"
+    },
+    "dice": {
+      "roll": "Roll",
+      "empty": "Not rolled yet",
+      "heads": "Heads",
+      "tails": "Tails",
+      "mode": "What to roll",
+      "modeDice": "Dice",
+      "modeNumber": "Number",
+      "modeLetter": "Letter",
+      "modeCoin": "Coin",
+      "count": "Number of dice",
+      "from": "From",
+      "to": "To",
+      "less": "Fewer",
+      "more": "More"
+    },
+    "qr": {
+      "empty": "Enter a link or text — students scan it with a phone",
+      "enter": "Enter a link",
+      "text": "Link or text",
+      "caption": "Caption (optional)",
+      "captionPlaceholder": "For example: Homework",
+      "aria": "QR code: {text}"
+    },
+    "sticker": {
+      "groups": {
+        "praise": "Praise",
+        "marks": "Signs",
+        "arrows": "Directions",
+        "subjects": "Subjects",
+        "feelings": "Feelings",
+        "seasons": "Seasons and holidays"
+      }
     },
     "ink": {
       "toolbar": "Ink tools",
@@ -5485,6 +5583,41 @@
       "rotate": "Rotate",
       "hideGuide": "Hide: {guide}",
       "deleteSelection": "Delete"
+    },
+    "shortcuts": {
+      "title": "Keyboard shortcuts",
+      "description": "For working faster on a laptop or a board with a keyboard. Every action also has an on-screen button.",
+      "close": "Close",
+      "groups": {
+        "general": "General",
+        "widget": "Selected widget",
+        "ink": "Pen and marker"
+      },
+      "items": {
+        "shortcuts": "This list",
+        "undo": "Undo",
+        "redo": "Redo",
+        "screens": "Previous / next screen",
+        "remote": "Change screens with a clicker",
+        "fullscreen": "Full screen",
+        "controls": "Hide controls",
+        "curtain": "Cover the screen",
+        "bell": "Ring the bell",
+        "back": "Back: clear the selection or stop drawing",
+        "settings": "Settings",
+        "duplicate": "Duplicate",
+        "copyPaste": "Copy and paste to another screen",
+        "delete": "Delete",
+        "move": "Move",
+        "moveFar": "Move by 10 px",
+        "pen": "Pen",
+        "marker": "Marker",
+        "eraser": "Eraser",
+        "laser": "Laser"
+      },
+      "notes": {
+        "inkNote": "Press again to go back to selecting."
+      }
     }
   },
   "LessonPlanWizard": {

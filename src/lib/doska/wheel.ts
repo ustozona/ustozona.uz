@@ -20,6 +20,13 @@
 /** «Hamma bir martadan» — soʻralgan chiqadi; «Qaytarilsin» — qoladi. */
 export type WheelMode = "once" | "repeat";
 export type WheelSpeed = "short" | "medium" | "long";
+/**
+ * Koʻrinish: «gʻildirak» — boʻlaklar bilan aylanadi; «ism» — bitta katta
+ * ism, tanlashda ismlar tez almashadi. Uzun roʻyxatda (30+) boʻlaklar
+ * oʻqilmaydi — ism koʻrinishi orqa partadan ham oʻqiladi
+ * (docs/doska-referens-koriklari.md R410).
+ */
+export type WheelView = "wheel" | "name";
 
 /**
  * Jurnaldan ulangan sinf (v1.1, pullik — R296) — vidjet holatida
@@ -82,6 +89,7 @@ export type WheelState = {
   rotation: number;
   sound: boolean;
   speed: WheelSpeed;
+  view: WheelView;
 };
 
 /** Aylanish davomiyligi va aylanishlar soni. */
@@ -120,6 +128,7 @@ export function readWheelState(state: Record<string, unknown>): WheelState {
     rotation: typeof state.rotation === "number" && Number.isFinite(state.rotation) ? state.rotation : 0,
     sound: state.sound !== false,
     speed: speed === "short" || speed === "long" ? speed : "medium",
+    view: state.view === "name" ? "name" : "wheel",
   };
 }
 
