@@ -43,12 +43,13 @@ tavsifi — `docs/doska-referens-koriklari.md` (R-raqamlar).
 
 | Ish | Gʻoya | Boshlandi | Kim |
 |---|---|---|---|
-| R443–R454 kundalik ekran: «Karta» va «Sana» vidjetlari, shablonda joy ulushi, «Kun rejasi» shabloni, «Bugun»da vaqt chizigʻi, yumshoq fonlar | 2026-10-01, 3-referens | 2026-10-01, `maxdum/doska-kun-rejasi` | maxdum + Claude |
+| — | | | |
 
 ## 5. Tugadi
 
 | Ish | Gʻoya | Boshlandi | Tugadi | Kim |
 |---|---|---|---|---|
+| R443–R454 kundalik ekran: «Karta» va «Sana» vidjetlari, shablonda joy ulushi, «Kun rejasi» shabloni, «Bugun»da vaqt chizigʻi, yumshoq fonlar | 2026-10-01, 3-referens | 2026-10-01 | 2026-10-01, PR #286 | maxdum + Claude |
 | R433 kichik taymerda ikkilamchi tugmalar yashiriladi | 2026-10-01 | 2026-10-01 | 2026-10-01, PR #285 | maxdum + Claude |
 | R435 rasmli kartalar zar rejimi va gʻildirak koʻrinishida | 2026-10-01 | 2026-10-01 | 2026-10-01, PR #285 | maxdum + Claude |
 | docs/doska-ishlar.md — ishlar roʻyxati | 2026-10-01 | 2026-10-01 | 2026-10-01, PR #285 | maxdum + Claude |
