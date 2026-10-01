@@ -2102,6 +2102,9 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "doska-soat-qongiroq": {
+        "title": "Doskadagi soatda qoʻngʻiroq jadvali: «3-soat · tugashiga 12 daq», oxirgi daqiqalarda ogohlantirish va ixtiyoriy qoʻngʻiroq"
+      },
       "doska-voqea-sanogi": {
         "title": "Doskada «Voqea sanogʻi»: «Kuzgi taʼtilgacha 12 kun» — voqealar oʻquv kalendaringizdan, qoʻlda kiritmasdan"
       },
@@ -5251,7 +5254,16 @@
     },
     "clock": {
       "view": "Koʻrinish",
-      "showSeconds": "Soniyalarni koʻrsatish"
+      "showSeconds": "Soniyalarni koʻrsatish",
+      "bells": "Qoʻngʻiroq jadvali",
+      "bellsOn": "Dars va tanaffusni koʻrsatish",
+      "bellsHint": "Dars jadvalingizdagi qoʻngʻiroq vaqtlaridan olinadi (hisobga kirgan boʻlsangiz).",
+      "warnMin": "Ogohlantirish (daqiqa oldin)",
+      "bellSound": "Dars tugaganda qoʻngʻiroq",
+      "lessonLeft": "{n}-soat · tugashiga {min} daq",
+      "breakLeft": "Tanaffus · {min} daq",
+      "less": "Kamroq",
+      "more": "Koʻproq"
     },
     "shapeSettings": {
       "shape": "Shakl",

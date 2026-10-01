@@ -2102,6 +2102,9 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "doska-soat-qongiroq": {
+        "title": "Bell schedule on the board clock: “Period 3 · 12 min left”, a warning in the last minutes and an optional bell"
+      },
       "doska-voqea-sanogi": {
         "title": "Board “Countdown”: “12 days until autumn break” — events come from your school calendar, no typing"
       },
@@ -5373,7 +5376,16 @@
     },
     "clock": {
       "view": "Display",
-      "showSeconds": "Show seconds"
+      "showSeconds": "Show seconds",
+      "bells": "Bell schedule",
+      "bellsOn": "Show lesson and break",
+      "bellsHint": "Taken from the bell times of your timetable (when signed in).",
+      "warnMin": "Warning (minutes before end)",
+      "bellSound": "Bell when the lesson ends",
+      "lessonLeft": "Period {n} · {min} min left",
+      "breakLeft": "Break · {min} min",
+      "less": "Fewer",
+      "more": "More"
     },
     "shapeSettings": {
       "shape": "Shape",

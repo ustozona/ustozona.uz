@@ -949,7 +949,7 @@ oqimda):**
 - R409 bugungi dars;
 - R411 guruh tuzuvchi — ✅ 1-qadam qurildi (`groups.v1`: qoʻlda roʻyxat, son yoki hajm boʻyicha); qoldi: sinf roʻyxati, yoʻqlar, cheklovlar, sudrash;
 - ✅ R407 voqea sanogʻi qurildi (`countdown.v1`: faol yil kalendari — taʼtil, chorak oxiri, yil oxiri; mehmonga oʻz voqeasi; «faqat dars kunlari»);
-- R408 budilnik ← qoʻngʻiroq;
+- ✅ R408 soatda qoʻngʻiroq jadvali qurildi (`doskaBellsAction`: bugungi jadval versiyasining `bellConfig`; dars/tanaffus, ogohlantirish, qoʻngʻiroq);
 - ✅ R412 doskada ovoz berish qurildi (`poll.v1`: smaylik, ha/yoʻq, A–E);
 - R384/R418 rasm va nusxalab joylash (saqlash joyi hal boʻlgach).
 

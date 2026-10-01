@@ -2102,6 +2102,9 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "doska-soat-qongiroq": {
+        "title": "Doskadaǵı saatta qońıraw kestesi: «3-saat · tamamlanıwına 12 min», sońǵı minutlarda eskertiw hám qálewge qaray qońıraw"
+      },
       "doska-voqea-sanogi": {
         "title": "Doskada «Waqıya sanaǵı»: «Gúzgi dem alıwǵa 12 kún» — waqıyalar oqıw kalendarıńızdan, qolda kirgizbey"
       },
@@ -5374,7 +5377,16 @@
     },
     "clock": {
       "view": "Kóriniw",
-      "showSeconds": "Sekundlardı kórsetiw"
+      "showSeconds": "Sekundlardı kórsetiw",
+      "bells": "Qońıraw kestesi",
+      "bellsOn": "Sabaq hám tánepisti kórsetiw",
+      "bellsHint": "Sabaq kesteńizdegi qońıraw waqıtlarınan alınadı (esapqa kirgen bolsańız).",
+      "warnMin": "Eskertiw (minut aldın)",
+      "bellSound": "Sabaq tamamlanǵanda qońıraw",
+      "lessonLeft": "{n}-saat · tamamlanıwına {min} min",
+      "breakLeft": "Tánepis · {min} min",
+      "less": "Azıraq",
+      "more": "Kóbirek"
     },
     "shapeSettings": {
       "shape": "Figura",

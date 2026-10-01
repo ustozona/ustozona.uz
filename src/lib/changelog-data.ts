@@ -36,6 +36,13 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "doska-soat-qongiroq",
+    date: "2026-10-01",
+    type: "yangi",
+    title: "Doskadagi soatda qoʻngʻiroq jadvali: «3-soat · tugashiga 12 daq», oxirgi daqiqalarda ogohlantirish va ixtiyoriy qoʻngʻiroq",
+    href: "/doska",
+  },
+  {
     id: "doska-voqea-sanogi",
     date: "2026-10-01",
     type: "yangi",

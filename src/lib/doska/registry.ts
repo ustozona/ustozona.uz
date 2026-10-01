@@ -138,6 +138,7 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
     defaultSize: { w: 320, h: 160 },
     minSize: { w: 200, h: 110 },
     initialState: { showSeconds: true },
+    remember: ["showSeconds", "bells", "warnMin", "bellSound"],
   },
   "timer.v1": {
     kind: "timer.v1",
