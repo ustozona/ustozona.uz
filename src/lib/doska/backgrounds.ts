@@ -28,6 +28,12 @@ export type DoskaBackground = {
   style: CSSProperties;
   /** Doska teksturasi — yengil shovqin qatlami (faqat toʻq fonlarda). */
   grain?: boolean;
+  /**
+   * Mavsum yoki bayram oraligʻi — "OO-KK" koʻrinishida, ikkala chet
+   * kiradi (`from > to` boʻlsa yil oshib oʻtadi: dekabr → yanvar).
+   * Shu kunlarda fon tanlashda «Bugunga mos» qatorida chiqadi.
+   */
+  dates?: [string, string];
 };
 
 export const DOSKA_BACKGROUNDS: DoskaBackground[] = [
@@ -205,6 +211,7 @@ export const DOSKA_BACKGROUNDS: DoskaBackground[] = [
     /** Kuz — iliq toʻq tus (oktyabr, «Oʻqituvchilar kuni» oyi). */
     id: "autumn",
     tone: "dark",
+    dates: ["09-15", "11-30"],
     style: {
       background:
         "radial-gradient(120% 90% at 85% 0%, oklch(0.5 0.12 55 / 0.55), transparent 60%), linear-gradient(170deg, oklch(0.33 0.07 45), oklch(0.27 0.05 25))",
@@ -214,6 +221,7 @@ export const DOSKA_BACKGROUNDS: DoskaBackground[] = [
     /** Bahor — och, yashil-pushti (mart, Navroʻz). Matn qora siyohda oʻqiladi. */
     id: "spring",
     tone: "light",
+    dates: ["03-01", "05-31"],
     style: {
       background:
         "radial-gradient(90% 70% at 10% 0%, oklch(0.93 0.06 350 / 0.9), transparent 60%), linear-gradient(170deg, oklch(0.97 0.03 140), oklch(0.93 0.06 145))",
@@ -223,9 +231,64 @@ export const DOSKA_BACKGROUNDS: DoskaBackground[] = [
     /** Qish — sovuq toʻq koʻk (dekabr–fevral). */
     id: "winter",
     tone: "dark",
+    dates: ["12-01", "02-28"],
     style: {
       background:
         "radial-gradient(110% 80% at 50% 0%, oklch(0.55 0.08 230 / 0.5), transparent 65%), linear-gradient(175deg, oklch(0.32 0.06 245), oklch(0.24 0.04 260))",
+    },
+  },
+  /* ── Bayramlar — oʻquv yilidagi sanalar (R420). Rasm emas, CSS. ── */
+  {
+    /** 1-oktyabr — Oʻqituvchilar va murabbiylar kuni: iliq oltin. */
+    id: "ustozlar-kuni",
+    tone: "dark",
+    dates: ["09-28", "10-03"],
+    style: {
+      background:
+        "radial-gradient(70% 55% at 50% 0%, oklch(0.78 0.13 80 / 0.55), transparent 70%), radial-gradient(60% 50% at 0% 100%, oklch(0.55 0.15 35 / 0.45), transparent 70%), linear-gradient(175deg, oklch(0.32 0.06 50), oklch(0.24 0.04 30))",
+    },
+  },
+  {
+    /** Yangi yil — qishki taʼtil oraligʻi: qor uchqunlari. */
+    id: "yangi-yil",
+    tone: "dark",
+    dates: ["12-20", "01-07"],
+    style: {
+      backgroundColor: "oklch(0.25 0.06 255)",
+      backgroundImage: `url("data:image/svg+xml,${encodeURIComponent(
+        "<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><g fill='white'><circle cx='20' cy='30' r='2' opacity='.7'/><circle cx='90' cy='15' r='1.5' opacity='.5'/><circle cx='130' cy='70' r='2.5' opacity='.6'/><circle cx='55' cy='100' r='1.5' opacity='.5'/><circle cx='110' cy='135' r='2' opacity='.7'/><circle cx='15' cy='145' r='1.2' opacity='.4'/></g></svg>",
+      )}"), radial-gradient(90% 70% at 50% 0%, oklch(0.5 0.1 235 / 0.55), transparent 70%), linear-gradient(180deg, oklch(0.27 0.07 255), oklch(0.2 0.05 270))`,
+      backgroundSize: "160px 160px, 100% 100%, 100% 100%",
+    },
+  },
+  {
+    /** 8-mart — iliq pushti-qizil, och. */
+    id: "bahor-bayrami",
+    tone: "light",
+    dates: ["03-05", "03-09"],
+    style: {
+      background:
+        "radial-gradient(60% 50% at 100% 0%, oklch(0.88 0.08 10 / 0.9), transparent 70%), radial-gradient(50% 45% at 0% 100%, oklch(0.9 0.07 340 / 0.8), transparent 70%), linear-gradient(170deg, oklch(0.98 0.015 20), oklch(0.95 0.03 350))",
+    },
+  },
+  {
+    /** 21-mart — Navroʻz: yashil maysa, sariq quyosh. */
+    id: "navruz",
+    tone: "light",
+    dates: ["03-14", "03-25"],
+    style: {
+      background:
+        "radial-gradient(45% 40% at 85% 10%, oklch(0.93 0.12 95 / 0.95), transparent 70%), linear-gradient(180deg, oklch(0.97 0.03 120) 0%, oklch(0.95 0.05 135) 60%, oklch(0.86 0.11 140) 100%)",
+    },
+  },
+  {
+    /** 1-sentabr — Mustaqillik kuni va bilimlar kuni: bayroq ranglari. */
+    id: "mustaqillik",
+    tone: "light",
+    dates: ["08-29", "09-03"],
+    style: {
+      background:
+        "linear-gradient(180deg, oklch(0.62 0.11 230 / 0.35) 0%, transparent 22%, transparent 78%, oklch(0.6 0.15 150 / 0.35) 100%), linear-gradient(180deg, oklch(0.99 0.004 240), oklch(0.98 0.006 150))",
     },
   },
   {
@@ -457,6 +520,13 @@ export const DOSKA_BACKGROUNDS: DoskaBackground[] = [
 ];
 
 /** Standart fon — birinchi ochilganda shu koʻrinadi. */
+/** "OO-KK" — sana shu fonning oraligʻidami (yil oshib oʻtishi hisobga olinadi). */
+export function inSeason(bg: DoskaBackground, monthDay: string): boolean {
+  if (!bg.dates) return false;
+  const [from, to] = bg.dates;
+  return from <= to ? monthDay >= from && monthDay <= to : monthDay >= from || monthDay <= to;
+}
+
 export const DEFAULT_BACKGROUND_ID = "chalkboard-green";
 
 export function backgroundById(id: string | null | undefined): DoskaBackground {

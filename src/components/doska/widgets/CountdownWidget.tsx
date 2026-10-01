@@ -12,6 +12,8 @@ import { daysUntil, upcomingEvents, type CountdownEvent } from "@/lib/doska/coun
 import { todayKey } from "@/lib/date-keys";
 import { doskaCalendarAction } from "@/server/actions/doska-calendar";
 import { SettingsSection, SettingsSwitch } from "../SettingsFields";
+import { IconCountdown } from "../icons";
+import { WidgetEmpty } from "./WidgetEmpty";
 import { Digits } from "./Digits";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -104,22 +106,13 @@ export function CountdownWidget({ widget }: { widget: DoskaWidget }) {
 
   if (!event) {
     return (
-      <div className="doska-card flex size-full flex-col items-center justify-center gap-[3cqw] p-[5cqw] text-center" data-card="blue">
-        <p className="leading-snug opacity-80" style={{ fontSize: "clamp(0.8rem, 5cqw, 1.6rem)" }}>
-          {cal === undefined ? t("loading") : t("empty")}
-        </p>
-        {cal !== undefined && (
-          <button
-            type="button"
-            data-doska-no-drag=""
-            onClick={() => toggleSettings(widget.id)}
-            className="bg-primary text-primary-foreground min-h-11 rounded-full px-[6cqw] py-[2.5cqw] font-semibold"
-            style={{ fontSize: "clamp(0.85rem, 4.5cqw, 1.5rem)" }}
-          >
-            {t("choose")}
-          </button>
-        )}
-      </div>
+      <WidgetEmpty
+        Icon={IconCountdown}
+        card="blue"
+        text={cal === undefined ? t("loading") : t("empty")}
+        action={cal === undefined ? undefined : t("choose")}
+        onAction={() => toggleSettings(widget.id)}
+      />
     );
   }
 

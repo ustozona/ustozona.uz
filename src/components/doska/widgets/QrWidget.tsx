@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { useDoskaStore } from "@/lib/doska/store";
 import type { DoskaWidget } from "@/lib/doska/types";
 import { SettingsSection } from "../SettingsFields";
-import { WidgetButton } from "./WidgetButton";
+import { WidgetEmpty } from "./WidgetEmpty";
+import { IconQr } from "../icons";
 
 /* ════════════════════════════════════════════════════════════════════
    QR — havola yoki matn, oʻquvchi telefon bilan skanerlaydi
@@ -54,19 +55,7 @@ export function QrWidget({ widget }: { widget: DoskaWidget }) {
 
   if (!text.trim()) {
     return (
-      <div className="doska-card flex size-full flex-col items-center justify-center gap-[4cqw] p-[6cqw] text-center" data-card="slate">
-        <p className="leading-snug opacity-80" style={{ fontSize: "clamp(0.8rem, 6cqw, 1.75rem)" }}>
-          {t("empty")}
-        </p>
-        <WidgetButton
-          tone="primary"
-          onClick={() => toggleSettings(widget.id)}
-          className="min-h-11 px-[6cqw] py-[3cqw] font-semibold"
-          style={{ fontSize: "clamp(0.85rem, 5cqw, 1.5rem)" }}
-        >
-          {t("enter")}
-        </WidgetButton>
-      </div>
+      <WidgetEmpty Icon={IconQr} text={t("empty")} action={t("enter")} onAction={() => toggleSettings(widget.id)} />
     );
   }
 

@@ -39,7 +39,10 @@ export type WidgetLabelKey =
   | "noise"
   | "camera"
   | "countdown"
-  | "today";
+  | "today"
+  | "video"
+  | "link"
+  | "embed";
 
 /**
  * «Hammasi» oynasidagi toifa (docs/doska-ux-tadqiqot.md §3 «Topish»).
@@ -150,7 +153,7 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
     minSize: { w: 260, h: 180 },
     // `view` va `sound` — 2-bosqichda qoʻshildi; eski taymerlarda yoʻq,
     // komponent ularni standart qiymat bilan oʻqiydi (TimerWidget).
-    initialState: { durationSec: 300, remainingSec: 300, running: false, view: "both", sound: true },
+    initialState: { durationSec: 300, remainingSec: 300, running: false, view: "auto", sound: true },
     openSettingsOnAdd: true,
     // `remainingSec` alohida eslanmaydi — u `durationSec` dan olinadi (store).
     remember: ["mode", "durationSec", "view", "repeat", "warn", "tabTitle", "sound"],
@@ -374,6 +377,38 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
     initialState: { view: "lessons", steps: "", done: [] },
     remember: ["view"],
   },
+  "video.v1": {
+    kind: "video.v1",
+    category: "media",
+    labelKey: "video",
+    // Rang takrorlanadi («Svetofor» bilan) — u boshqa guruhda.
+    tint: "red",
+    // 16:9 kadr + sudrash qatori.
+    defaultSize: { w: 640, h: 396 },
+    minSize: { w: 280, h: 190 },
+    initialState: { url: "" },
+    openSettingsOnAdd: true,
+  },
+  "link.v1": {
+    kind: "link.v1",
+    category: "media",
+    labelKey: "link",
+    tint: "blue",
+    defaultSize: { w: 340, h: 240 },
+    minSize: { w: 200, h: 160 },
+    initialState: { url: "", caption: "" },
+    openSettingsOnAdd: true,
+  },
+  "embed.v1": {
+    kind: "embed.v1",
+    category: "media",
+    labelKey: "embed",
+    tint: "indigo",
+    defaultSize: { w: 720, h: 480 },
+    minSize: { w: 300, h: 220 },
+    initialState: { url: "" },
+    openSettingsOnAdd: true,
+  },
 };
 
 /**
@@ -407,6 +442,9 @@ export const TOOL_ORDER: WidgetKind[] = [
   "shape.v1",
   "presentation.v1",
   "qr.v1",
+  "link.v1",
+  "video.v1",
+  "embed.v1",
   "camera.v1",
 ];
 

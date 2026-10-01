@@ -1396,9 +1396,9 @@
     "classUnitsTip": "{count} ta boʻlim",
     "classLessonsTip": "{count} ta mavzu · {taught} tasi oʻtildi",
     "statusDraft": "Qoralama",
-    "unitDeletedToast": "«{unit}» oʻchirildi",
-    "undo": "Bekor qilish",
-    "selectAria": "Belgilash",
+    "unitDeletedToast": "«{unit}» oʻchirildi",
+    "undo": "Bekor qilish",
+    "selectAria": "Belgilash",
     "selectMenuItem": "Tanlash",
     "reorderMenuItem": "Tartibni oʻzgartirish",
     "reorderHint": "Sudrang yoki ↑ ↓ bosing",
@@ -2102,6 +2102,15 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "doska-tayyor-ekranlar": {
+        "title": "Doska menyusida «Tayyor ekranlar»: dars boshi, guruh ishi, savol-javob va dars yakuni bir bosishda"
+      },
+      "doska-video-havola-sayt": {
+        "title": "Doskada «Video», «Havola» va «Sayt» vidjetlari — video, sahifa yoki havolani ekranga chiqarish"
+      },
+      "doska-bayram-fonlari": {
+        "title": "Doskada bayram fonlari: Oʻqituvchilar kuni, Navroʻz, Mustaqillik va boshqalar — fon tanlashda «Bugunga mos» qatori"
+      },
       "doska-gildirak-davomat": {
         "title": "Doska gʻildiragi bugun kelmaganlarni oʻzi chiqarib tashlaydi — davomatdan, ulangan sinfda"
       },
@@ -5177,7 +5186,10 @@
       "noise": "Shovqin",
       "camera": "Kamera",
       "countdown": "Voqea sanogʻi",
-      "today": "Bugun"
+      "today": "Bugun",
+      "video": "Video",
+      "link": "Havola",
+      "embed": "Sayt"
     },
     "toolbar": {
       "duplicate": "{widget} — nusxalash",
@@ -5200,6 +5212,7 @@
     "bar": {
       "clear": "Tozalash",
       "background": "Fon",
+      "backgroundToday": "Bugunga mos",
       "home": "Ustozona bosh sahifasi",
       "fullscreen": "Toʻliq ekran",
       "showControls": "Boshqaruvni koʻrsatish",
@@ -5246,6 +5259,7 @@
       "less": "Kamroq",
       "more": "Koʻproq",
       "view": "Koʻrinish",
+      "viewAuto": "Avto",
       "viewDigits": "Raqam",
       "viewDisk": "Disk",
       "viewBoth": "Ikkalasi",
@@ -5299,6 +5313,7 @@
       "localOnly": "{n} ta ekran · faqat shu brauzerda",
       "curtain": "Ekranni yopish",
       "bell": "Qoʻngʻiroq chalish",
+      "templates": "Tayyor ekranlar",
       "newScreen": "Yangi ekran",
       "duplicateScreen": "Ekrandan nusxa olish",
       "moveScreenEarlier": "Ekranni oldinga surish",
@@ -5347,7 +5362,33 @@
         "noise": "Sinf ovozi mikrofon orqali",
         "camera": "Daftar va tajribani ekranga",
         "countdown": "Taʼtilgacha necha kun",
-        "today": "Bugungi darslar yoki dars bosqichlari"
+        "today": "Bugungi darslar yoki dars bosqichlari",
+        "video": "Video havola yoki fayl doskada",
+        "link": "Sahifani yangi varaqda ochish",
+        "embed": "Sahifa doska ichida"
+      }
+    },
+    "templates": {
+      "title": "Tayyor ekranlar",
+      "back": "Orqaga",
+      "hint": "Yangi ekran ochiladi — joriy ekran oʻzgarmaydi.",
+      "items": {
+        "lesson-start": {
+          "name": "Dars boshi",
+          "desc": "Bugungi darslar, 5 daqiqa taymer, svetofor"
+        },
+        "group-work": {
+          "name": "Guruh ishi",
+          "desc": "Guruhlar, 10 daqiqa taymer, svetofor"
+        },
+        "quiz": {
+          "name": "Savol-javob",
+          "desc": "Gʻildirak, 1 daqiqa taymer, hisob taxtasi"
+        },
+        "exit-ticket": {
+          "name": "Dars yakuni",
+          "desc": "Kayfiyat soʻrovi va 3 daqiqa taymer"
+        }
       }
     },
     "appearance": {
@@ -5385,6 +5426,11 @@
       "autumn": "Kuz",
       "spring": "Bahor",
       "winter": "Qish",
+      "ustozlar-kuni": "Oʻqituvchilar kuni",
+      "yangi-yil": "Qishki bayram",
+      "bahor-bayrami": "8-mart",
+      "navruz": "Navroʻz",
+      "mustaqillik": "Mustaqillik",
       "dusk": "Kechki tus",
       "shakllar": "Rangli shakllar"
     },
@@ -5483,6 +5529,23 @@
       "less": "Kamroq",
       "more": "Koʻproq"
     },
+    "web": {
+      "enter": "Havola kiritish",
+      "url": "Manzil",
+      "invalid": "Manzil notoʻgʻri — https:// bilan boshlanadigan havola kiriting",
+      "open": "Ochish",
+      "openShort": "Yangi varaqda",
+      "caption": "Yozuv (ixtiyoriy)",
+      "captionPlaceholder": "Masalan: Uy vazifasi",
+      "videoEmpty": "Video havolasini kiriting",
+      "videoUnsupported": "Bu havoladan video ochilmadi — videoxosting havolasi yoki .mp4 fayl kerak",
+      "videoTitle": "Video",
+      "videoHint": "Videoxosting havolasi yoki .mp4 / .webm fayl manzili.",
+      "linkEmpty": "Havola kiriting — u yangi varaqda ochiladi",
+      "linkHint": "Bosilganda sahifa yangi varaqda ochiladi, doska joyida qoladi.",
+      "embedEmpty": "Sayt manzilini kiriting — sahifa doska ichida ochiladi",
+      "embedHint": "Ayrim saytlar oʻzini boshqa sahifada koʻrsatishni taqiqlaydi — unda oyna boʻsh qoladi. «Yangi varaqda» tugmasi baribir ishlaydi."
+    },
     "qr": {
       "empty": "Havola yoki matn kiriting — oʻquvchilar telefon bilan skanerlaydi",
       "enter": "Havola kiritish",
@@ -5501,6 +5564,8 @@
       "absentToday": "Bugun yoʻq: {count}",
       "groupName": "{n}-guruh",
       "summaryCount": "{n} ta guruh",
+      "resultEven": "{groups} ta guruh, har birida {size} tadan",
+      "resultRange": "{groups} ta guruh, har birida {min}–{max} tadan",
       "summarySize": "Guruhda {n} tadan",
       "by": "Qanday boʻlish",
       "byCount": "Guruhlar soni",
@@ -5612,6 +5677,7 @@
       "noLessons": "Bugun darsingiz yoʻq",
       "holiday": "Bugun dars yoʻq: {name}",
       "stepsTitle": "Dars bosqichlari",
+      "stepsWrite": "Bosqichlarni yozish",
       "stepsEmpty": "Bosqichlarni yozing — yoki dars rejasida sarlavhalar boʻlsa, ular bu yerda oʻzi chiqadi",
       "stepsAuto": "Boʻsh qoldirilsa — hozirgi dars rejasidagi sarlavhalar.",
       "view": "Koʻrinish",

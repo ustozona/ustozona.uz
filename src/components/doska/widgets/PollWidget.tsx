@@ -5,10 +5,9 @@ import { useTranslations } from "next-intl";
 
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-import { SegmentedToggle } from "@/components/ui/segmented-toggle";
 import { useDoskaStore } from "@/lib/doska/store";
 import type { DoskaWidget } from "@/lib/doska/types";
-import { SettingsSection, SettingsStepper, SettingsSwitch } from "../SettingsFields";
+import { SettingsCards, SettingsSection, SettingsStepper, SettingsSwitch } from "../SettingsFields";
 import { WidgetButton } from "./WidgetButton";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -132,15 +131,15 @@ export function PollSettings({ widget }: { widget: DoskaWidget }) {
   return (
     <>
       <SettingsSection label={t("type")}>
-        <SegmentedToggle
-          aria-label={t("type")}
+        <SettingsCards
+          ariaLabel={t("type")}
           value={type}
           options={[
-            { value: "smiley", label: t("typeSmiley") },
-            { value: "yesno", label: t("typeYesNo") },
-            { value: "choice", label: t("typeChoice") },
+            { value: "smiley", label: t("typeSmiley"), preview: <span className="text-lg tracking-tight">🙂😐🙁</span> },
+            { value: "yesno", label: t("typeYesNo"), preview: <span className="text-base font-semibold">✓ ✗</span> },
+            { value: "choice", label: t("typeChoice"), preview: <span className="font-mono text-sm font-semibold">A B C</span> },
           ]}
-          onValueChange={(v) => patch(widget.id, { type: v, votes: [] })}
+          onChange={(v) => patch(widget.id, { type: v, votes: [] })}
         />
       </SettingsSection>
 

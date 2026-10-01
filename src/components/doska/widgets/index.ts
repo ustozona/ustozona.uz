@@ -20,6 +20,9 @@ import {
   IconCamera,
   IconCountdown,
   IconToday,
+  IconVideo,
+  IconLink,
+  IconEmbed,
 } from "../icons";
 import { ClockSettings, ClockWidget } from "./ClockWidget";
 import { DiceSettings, DiceWidget } from "./DiceWidget";
@@ -30,6 +33,7 @@ import { NoiseSettings, NoiseWidget } from "./NoiseWidget";
 import { CameraSettings, CameraWidget } from "./CameraWidget";
 import { CountdownSettings, CountdownWidget } from "./CountdownWidget";
 import { TodaySettings, TodayWidget } from "./TodayWidget";
+import { EmbedSettings, EmbedWidget, LinkSettings, LinkWidget, VideoSettings, VideoWidget } from "./WebWidgets";
 import { QrSettings, QrWidget } from "./QrWidget";
 import { StickerSettings, StickerWidget } from "./StickerWidget";
 import { PresentationWidget } from "./PresentationWidget";
@@ -89,6 +93,9 @@ export const WIDGET_COMPONENTS: Record<WidgetKind, ComponentType<WidgetProps>> =
   "camera.v1": CameraWidget,
   "countdown.v1": CountdownWidget,
   "today.v1": TodayWidget,
+  "video.v1": VideoWidget,
+  "link.v1": LinkWidget,
+  "embed.v1": EmbedWidget,
 };
 
 export const WIDGET_ICONS: Record<
@@ -113,6 +120,9 @@ export const WIDGET_ICONS: Record<
   "camera.v1": IconCamera,
   "countdown.v1": IconCountdown,
   "today.v1": IconToday,
+  "video.v1": IconVideo,
+  "link.v1": IconLink,
+  "embed.v1": IconEmbed,
 };
 
 /**
@@ -138,6 +148,9 @@ export const WIDGET_SETTINGS: Partial<Record<WidgetKind, ComponentType<WidgetPro
   "camera.v1": CameraSettings,
   "countdown.v1": CountdownSettings,
   "today.v1": TodaySettings,
+  "video.v1": VideoSettings,
+  "link.v1": LinkSettings,
+  "embed.v1": EmbedSettings,
 };
 
 /**

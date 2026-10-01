@@ -1396,9 +1396,9 @@
     "classUnitsTip": "{count} bólim",
     "classLessonsTip": "{count} tema · {taught} ótildi",
     "statusDraft": "Qaralama",
-    "unitDeletedToast": "«{unit}» óshirildi",
-    "undo": "Biykar etiw",
-    "selectAria": "Belgilew",
+    "unitDeletedToast": "«{unit}» óshirildi",
+    "undo": "Biykar etiw",
+    "selectAria": "Belgilew",
     "selectMenuItem": "Tańlaw",
     "reorderMenuItem": "Tártipti ózgertiw",
     "reorderHint": "Súyreń yamasa ↑ ↓ basıń",
@@ -2102,6 +2102,15 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "doska-tayyor-ekranlar": {
+        "title": "Doska menyuinde «Tayın ekranlar»: sabaq bası, topar jumısı, soraw-juwap hám sabaq juwmaǵı bir basıwda"
+      },
+      "doska-video-havola-sayt": {
+        "title": "Doskada «Video», «Siltelme» hám «Sayt» vidjetleri — video, bet yamasa siltelmeni ekranǵa shıǵarıw"
+      },
+      "doska-bayram-fonlari": {
+        "title": "Doskada bayram fonları: Muǵallimler kúni, Nawrız, Ǵárezsizlik hám basqalar — fon tańlawda «Búginge say» qatarı"
+      },
       "doska-gildirak-davomat": {
         "title": "Doska dóńgelegi búgin kelmegenlerdi ózi shıǵarıp taslaydı — jalǵanǵan klasstıń qatnasıǵınan"
       },
@@ -5300,7 +5309,10 @@
       "noise": "Shawqım",
       "camera": "Kamera",
       "countdown": "Waqıya sanaǵı",
-      "today": "Búgin"
+      "today": "Búgin",
+      "video": "Video",
+      "link": "Siltelme",
+      "embed": "Sayt"
     },
     "toolbar": {
       "duplicate": "{widget} — nusqa alıw",
@@ -5323,6 +5335,7 @@
     "bar": {
       "clear": "Tazalaw",
       "background": "Fon",
+      "backgroundToday": "Búginge say",
       "home": "Ustozona bas beti",
       "fullscreen": "Tolıq ekran",
       "showControls": "Basqarıwdı kórsetiw",
@@ -5369,6 +5382,7 @@
       "less": "Azıraq",
       "more": "Kóbirek",
       "view": "Kóriniw",
+      "viewAuto": "Avto",
       "viewDigits": "San",
       "viewDisk": "Disk",
       "viewBoth": "Ekewi de",
@@ -5422,6 +5436,7 @@
       "localOnly": "{n} ekran · tek usı brauzerde",
       "curtain": "Ekrandı jabıw",
       "bell": "Qońıraw qaǵıw",
+      "templates": "Tayın ekranlar",
       "newScreen": "Jańa ekran",
       "duplicateScreen": "Ekrannan nusqa alıw",
       "moveScreenEarlier": "Ekrandı aldınǵa jıljıtıw",
@@ -5470,7 +5485,33 @@
         "noise": "Klass dawısı mikrofon arqalı",
         "camera": "Dápter hám tájiriybeni ekranǵa",
         "countdown": "Dem alıwǵa neshe kún",
-        "today": "Búgingi sabaqlar yamasa sabaq basqıshları"
+        "today": "Búgingi sabaqlar yamasa sabaq basqıshları",
+        "video": "Video siltelme yamasa fayl doskada",
+        "link": "Betti jańa betshede ashıw",
+        "embed": "Bet doska ishinde"
+      }
+    },
+    "templates": {
+      "title": "Tayın ekranlar",
+      "back": "Artqa",
+      "hint": "Jańa ekran ashıladı — házirgi ekran ózgermeydi.",
+      "items": {
+        "lesson-start": {
+          "name": "Sabaq bası",
+          "desc": "Búgingi sabaqlar, 5 minut taymer, svetofor"
+        },
+        "group-work": {
+          "name": "Topar jumısı",
+          "desc": "Toparlar, 10 minut taymer, svetofor"
+        },
+        "quiz": {
+          "name": "Soraw-juwap",
+          "desc": "Dóńgelek, 1 minut taymer, esap taxtası"
+        },
+        "exit-ticket": {
+          "name": "Sabaq juwmaǵı",
+          "desc": "Kewil-kúy sorawı hám 3 minut taymer"
+        }
       }
     },
     "appearance": {
@@ -5508,6 +5549,11 @@
       "autumn": "Gúz",
       "spring": "Báhár",
       "winter": "Qıs",
+      "ustozlar-kuni": "Muǵallimler kúni",
+      "yangi-yil": "Qısqı bayram",
+      "bahor-bayrami": "8-mart",
+      "navruz": "Nawrız",
+      "mustaqillik": "Ǵárezsizlik",
       "dusk": "Keshki reń",
       "shakllar": "Reńli figuralar"
     },
@@ -5606,6 +5652,23 @@
       "less": "Azıraq",
       "more": "Kóbirek"
     },
+    "web": {
+      "enter": "Siltelme kirgiziw",
+      "url": "Mánzil",
+      "invalid": "Mánzil qáte — https:// penen baslanatuǵın siltelme kirgiziń",
+      "open": "Ashıw",
+      "openShort": "Jańa betshede",
+      "caption": "Jazıw (qálewge qaray)",
+      "captionPlaceholder": "Mısalı: Úy tapsırması",
+      "videoEmpty": "Video siltelmesin kirgiziń",
+      "videoUnsupported": "Bul siltelmeden video ashılmadı — videoxosting siltelmesi yamasa .mp4 fayl kerek",
+      "videoTitle": "Video",
+      "videoHint": "Videoxosting siltelmesi yamasa .mp4 / .webm fayl mánzili.",
+      "linkEmpty": "Siltelme kirgiziń — ol jańa betshede ashıladı",
+      "linkHint": "Basılǵanda bet jańa betshede ashıladı, doska ornında qaladı.",
+      "embedEmpty": "Sayt mánzilin kirgiziń — bet doska ishinde ashıladı",
+      "embedHint": "Ayırım saytlar ózin basqa bette kórsetiwge ruqsat bermeydi — onda ayna bos qaladı. «Jańa betshede» túymesi bárqulla isleydi."
+    },
     "qr": {
       "empty": "Siltew yamasa tekst kirgiziń — oqıwshılar telefon menen skanerleydi",
       "enter": "Siltew kirgiziw",
@@ -5624,6 +5687,8 @@
       "absentToday": "Búgin joq: {count}",
       "groupName": "{n}-topar",
       "summaryCount": "{n} topar",
+      "resultEven": "{groups} topar, hár birinde {size}",
+      "resultRange": "{groups} topar, hár birinde {min}–{max}",
       "summarySize": "Toparda {n} adamnan",
       "by": "Qalay bóliw",
       "byCount": "Toparlar sanı",
@@ -5735,6 +5800,7 @@
       "noLessons": "Búgin sabaǵıńız joq",
       "holiday": "Búgin sabaq joq: {name}",
       "stepsTitle": "Sabaq basqıshları",
+      "stepsWrite": "Basqıshlardı jazıw",
       "stepsEmpty": "Basqıshlardı jazıń — yamasa sabaq jobasında sarlawhalar bolsa, olar bul jerde ózi shıǵadı",
       "stepsAuto": "Bos qaldırılsa — házirgi sabaq jobasındaǵı sarlawhalar.",
       "view": "Kórinis",

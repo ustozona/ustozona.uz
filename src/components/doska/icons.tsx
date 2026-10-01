@@ -785,6 +785,44 @@ export function IconCountdown({ className }: IconProps) {
   );
 }
 
+/** Video — ekran (massa) ichida oʻynatish uchburchagi (detal). */
+export function IconVideo({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={cn("doska-icon", className)} aria-hidden="true">
+      <g>
+        <rect x="2" y="4" width="20" height="16" rx="4" opacity=".5" />
+        <path d="M10 8.6v6.8a.8.8 0 0 0 1.2.7l5.6-3.4a.8.8 0 0 0 0-1.4l-5.6-3.4a.8.8 0 0 0-1.2.7z" />
+      </g>
+    </svg>
+  );
+}
+
+/** Havola — ikki zanjir halqasi: biri xira (massa), biri toʻq (detal). */
+export function IconLink({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={cn("doska-icon", className)} aria-hidden="true">
+      <g fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+        <path d="M10.5 13.5a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1" opacity=".5" />
+        <path d="M13.5 10.5a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1" />
+      </g>
+    </svg>
+  );
+}
+
+/** Sayt — brauzer oynasi (massa), tepada manzil qatori (detal). */
+export function IconEmbed({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={cn("doska-icon", className)} aria-hidden="true">
+      <g>
+        <rect x="2" y="3" width="20" height="18" rx="4" opacity=".5" />
+        <rect x="2" y="3" width="20" height="5" rx="2.5" />
+        <rect x="6" y="11.5" width="12" height="1.8" rx=".9" />
+        <rect x="6" y="15.5" width="8" height="1.8" rx=".9" />
+      </g>
+    </svg>
+  );
+}
+
 /** Bugun — varaq (massa) ustida belgilangan roʻyxat (detal). */
 export function IconToday({ className }: IconProps) {
   return (
@@ -926,6 +964,9 @@ export const DOSKA_ICONS: { name: string; source: string; Icon: React.ComponentT
   { name: "IconCamera", source: "oʻzimiz:kamera", Icon: IconCamera },
   { name: "IconCountdown", source: "oʻzimiz:voqea-sanogʻi", Icon: IconCountdown },
   { name: "IconToday", source: "oʻzimiz:bugun", Icon: IconToday },
+  { name: "IconVideo", source: "oʻzimiz:video", Icon: IconVideo },
+  { name: "IconLink", source: "oʻzimiz:havola", Icon: IconLink },
+  { name: "IconEmbed", source: "oʻzimiz:sayt", Icon: IconEmbed },
   { name: "IconKeyboard", source: "oʻzimiz:klaviatura", Icon: IconKeyboard },
   { name: "IconDockBottom", source: "oʻzimiz:panel-past", Icon: IconDockBottom },
   { name: "IconDockLeft", source: "oʻzimiz:panel-chap", Icon: IconDockLeft },

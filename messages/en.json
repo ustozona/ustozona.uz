@@ -1396,9 +1396,9 @@
     "classUnitsTip": "{count} units",
     "classLessonsTip": "{count} topics · {taught} taught",
     "statusDraft": "Draft",
-    "unitDeletedToast": "\"{unit}\" was deleted",
-    "undo": "Undo",
-    "selectAria": "Select",
+    "unitDeletedToast": "\"{unit}\" was deleted",
+    "undo": "Undo",
+    "selectAria": "Select",
     "selectMenuItem": "Select",
     "reorderMenuItem": "Reorder",
     "reorderHint": "Drag or press ↑ ↓",
@@ -2102,6 +2102,15 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "doska-tayyor-ekranlar": {
+        "title": "Ready screens in the board menu: lesson start, group work, quiz and wrap-up in one tap"
+      },
+      "doska-video-havola-sayt": {
+        "title": "Video, Link and Website widgets on the board — put a video, page or link on screen"
+      },
+      "doska-bayram-fonlari": {
+        "title": "Holiday board backgrounds: Teachers' Day, Navruz, Independence and more — with a “Fits today” row in the picker"
+      },
       "doska-gildirak-davomat": {
         "title": "The board wheel leaves out students absent today on its own — from attendance of the connected class"
       },
@@ -5299,7 +5308,10 @@
       "noise": "Noise",
       "camera": "Camera",
       "countdown": "Countdown",
-      "today": "Today"
+      "today": "Today",
+      "video": "Video",
+      "link": "Link",
+      "embed": "Website"
     },
     "toolbar": {
       "duplicate": "{widget} — duplicate",
@@ -5322,6 +5334,7 @@
     "bar": {
       "clear": "Clear",
       "background": "Backdrop",
+      "backgroundToday": "Fits today",
       "home": "Ustozona home",
       "fullscreen": "Full screen",
       "showControls": "Show controls",
@@ -5368,6 +5381,7 @@
       "less": "Less",
       "more": "More",
       "view": "Display",
+      "viewAuto": "Auto",
       "viewDigits": "Digits",
       "viewDisk": "Disk",
       "viewBoth": "Both",
@@ -5421,6 +5435,7 @@
       "localOnly": "{n, plural, one {# screen} other {# screens}} · this browser only",
       "curtain": "Cover the screen",
       "bell": "Ring the bell",
+      "templates": "Ready screens",
       "newScreen": "New screen",
       "duplicateScreen": "Duplicate screen",
       "moveScreenEarlier": "Move screen earlier",
@@ -5469,7 +5484,33 @@
         "noise": "Class volume via microphone",
         "camera": "Notebooks and experiments on screen",
         "countdown": "Days until the break",
-        "today": "Today’s lessons or lesson steps"
+        "today": "Today’s lessons or lesson steps",
+        "video": "Video link or file on the board",
+        "link": "Open a page in a new tab",
+        "embed": "A page inside the board"
+      }
+    },
+    "templates": {
+      "title": "Ready screens",
+      "back": "Back",
+      "hint": "Opens a new screen — the current one stays as is.",
+      "items": {
+        "lesson-start": {
+          "name": "Lesson start",
+          "desc": "Today's lessons, 5-minute timer, traffic light"
+        },
+        "group-work": {
+          "name": "Group work",
+          "desc": "Groups, 10-minute timer, traffic light"
+        },
+        "quiz": {
+          "name": "Quiz",
+          "desc": "Wheel, 1-minute timer, scoreboard"
+        },
+        "exit-ticket": {
+          "name": "Lesson wrap-up",
+          "desc": "Mood poll and 3-minute timer"
+        }
       }
     },
     "appearance": {
@@ -5507,6 +5548,11 @@
       "autumn": "Autumn",
       "spring": "Spring",
       "winter": "Winter",
+      "ustozlar-kuni": "Teachers' Day",
+      "yangi-yil": "Winter holiday",
+      "bahor-bayrami": "March 8",
+      "navruz": "Navruz",
+      "mustaqillik": "Independence",
       "dusk": "Dusk",
       "shakllar": "Colorful shapes"
     },
@@ -5605,6 +5651,23 @@
       "less": "Fewer",
       "more": "More"
     },
+    "web": {
+      "enter": "Enter link",
+      "url": "Address",
+      "invalid": "Invalid address — enter a link starting with https://",
+      "open": "Open",
+      "openShort": "New tab",
+      "caption": "Caption (optional)",
+      "captionPlaceholder": "e.g. Homework",
+      "videoEmpty": "Enter a video link",
+      "videoUnsupported": "Could not open a video from this link — use a video-hosting link or an .mp4 file",
+      "videoTitle": "Video",
+      "videoHint": "A video-hosting link or an .mp4 / .webm file address.",
+      "linkEmpty": "Enter a link — it opens in a new tab",
+      "linkHint": "Tapping opens the page in a new tab; the board stays put.",
+      "embedEmpty": "Enter a website address — the page opens inside the board",
+      "embedHint": "Some sites refuse to be shown inside other pages — the frame stays blank then. The “New tab” button always works."
+    },
     "qr": {
       "empty": "Enter a link or text — students scan it with a phone",
       "enter": "Enter a link",
@@ -5623,6 +5686,8 @@
       "absentToday": "Absent today: {count}",
       "groupName": "Group {n}",
       "summaryCount": "{n} groups",
+      "resultEven": "{groups} groups of {size}",
+      "resultRange": "{groups} groups of {min}–{max}",
       "summarySize": "{n} per group",
       "by": "Split by",
       "byCount": "Number of groups",
@@ -5734,6 +5799,7 @@
       "noLessons": "No lessons today",
       "holiday": "No lessons today: {name}",
       "stepsTitle": "Lesson steps",
+      "stepsWrite": "Write steps",
       "stepsEmpty": "Type the steps — or, if your lesson plan has headings, they appear here automatically",
       "stepsAuto": "Leave empty to use the headings of the current lesson plan.",
       "view": "View",

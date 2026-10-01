@@ -955,7 +955,7 @@ oqimda):**
 
 **C — server bilan:**
 - ekranlarni saqlash (Pro);
-- R423 shablonlar (statik boshlanishi A ga olinishi mumkin);
+- R423 shablonlar — ✅ statik «Tayyor ekranlar» qurildi (`lib/doska/templates.ts`: dars boshi, guruh ishi, savol-javob, dars yakuni; yangi ekran, bitta qaytarish qadami); qoldi: oʻqituvchining oʻz shabloni (server bilan);
 - R424 ulashish;
 - R425 boshqaruv paneli;
 - «Yaqinda oʻchirilganlar».
@@ -963,8 +963,8 @@ oqimda):**
 **D — keyinroq:**
 - ✅ R413 shovqin qurildi (`noise.v1`: Web Audio, chegara, silliqlash, sanoq, qoʻngʻiroq);
 - ✅ R414 hisob taxtasi qurildi (`score.v1`, 2–6 jamoa);
-- ✅ veb-kamera qurildi (`camera.v1`: kadrni toʻxtatish, kamera almashtirish, koʻzgu); qoldi: video, embed, havola;
-- R420 fonlar: ✅ nota chizigʻi, kuz/bahor/qish qurildi; qoldi: bayram (oʻquv kalendari bilan), oʻz rasmi;
+- ✅ veb-kamera qurildi (`camera.v1`: kadrni toʻxtatish, kamera almashtirish, koʻzgu); ✅ video (`video.v1`: videoxosting kuzatuvsiz domen orqali yoki .mp4), havola (`link.v1`: yangi varaqda) va sayt (`embed.v1`: sandbox iframe + «yangi varaqda» zaxirasi) qurildi;
+- R420 fonlar: ✅ nota chizigʻi, kuz/bahor/qish qurildi; bayram fonlari (sana boʻyicha «Bugunga mos») qurildi; qoldi: oʻz rasmi;
 - ✅ R417 matn: rang (qalam palitrasi) va qalinlik qurildi; qolgani keyin.
 
 ### 2.6. Rad etilganlar
@@ -1034,6 +1034,8 @@ oʻqituvchi tanlaydi (UX Q1), ikonkalarimiz bir tusli ierarxik
 **Olamiz:** faol nusxa nuqtasi (R422 da ham qayd etilgan). Ustma-ust
 tushish — **olinmaydi**: yangi vidjet boʻsh joyga siljitib qoʻyilsin.
 
+**Holat:** ✅ boʻsh joyga qoʻyish qurilgan (`lib/doska/placement.ts`, `findFreeSpot`) — oddiy qoʻshishda ham, tayyor ekranlarda ham.
+
 #### R430 — Tanlov ramkasi va vidjet paneli
 
 - **Tutqichlar:** 4 burchakda. Matn va jadval kabi choʻziladigan
@@ -1090,6 +1092,8 @@ ikkalasi). **Olamiz:** sozlamaga «Avto» varianti qoʻshilsin va u
 standart boʻlsin — koʻrinish shakldan tanlanadi, qoʻlda tanlov ham
 qoladi. Kichik oʻlchamda ikkinchi darajali tugmalar yashirinadi.
 
+**Holat:** ✅ taymerda «Avto» qurildi va yangi taymerlarda standart (keng yoki tor — faqat raqam, qolganida disk + raqam). Soat va kalendar uchun hozircha kerak emas — ularda bitta koʻrinish.
+
 #### R434 — Proporsional masshtab
 
 Brauzer oynasi ikki marta toraytirildi (1518 → 755 px). Natija:
@@ -1126,6 +1130,8 @@ chegara qoʻyilishi kerak.
 
 **Olamiz (yangi vidjetlar uchun):** 1, 2, 4, 6 — sozlama kartamizga
 (UX Q2) mos, uni oʻzgartirmaydi.
+
+**Holat:** ✅ 1 — `WidgetEmpty` (QR, voqea sanogʻi, dars bosqichlari, video, havola, sayt); ✅ 2/5 — `SettingsCards` rasmli kartalar (soʻrovnoma turi, taymer koʻrinishi); ✅ 4 — sozlama oʻzgarishi vidjetda darhol koʻrinadi (Q2 dan beri); ✅ 6 — guruh sozlamasida «4 ta guruh, har birida 6–7 tadan».
 
 #### R436 — Oʻchirish xabari
 
