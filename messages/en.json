@@ -2102,6 +2102,9 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "doska-kamera": {
+        "title": "Board “Camera”: show a notebook, book or experiment to the whole class — freeze the frame and write over it"
+      },
       "doska-shovqin": {
         "title": "Board “Noise”: see the class volume through the microphone — the bar turns red over the limit, with an optional bell"
       },
@@ -5266,7 +5269,8 @@
       "groups": "Groups",
       "poll": "Poll",
       "score": "Score",
-      "noise": "Noise"
+      "noise": "Noise",
+      "camera": "Camera"
     },
     "toolbar": {
       "duplicate": "{widget} — duplicate",
@@ -5420,7 +5424,8 @@
         "groups": "Split into random groups",
         "poll": "Tap on the board: smiley, yes/no",
         "score": "Team points",
-        "noise": "Class volume via microphone"
+        "noise": "Class volume via microphone",
+        "camera": "Notebooks and experiments on screen"
       }
     },
     "appearance": {
@@ -5623,6 +5628,18 @@
       "resetOvers": "Reset counter ({count})",
       "less": "Lower",
       "more": "Higher"
+    },
+    "camera": {
+      "hint": "Show a notebook, book or experiment to the whole class",
+      "start": "Turn on camera",
+      "freeze": "Freeze",
+      "resume": "Resume",
+      "switch": "Other camera",
+      "stop": "Turn off",
+      "denied": "Camera access was denied",
+      "unsupported": "No camera in this browser",
+      "mirror": "Mirror",
+      "frozenAlt": "Frozen frame"
     },
     "sticker": {
       "groups": {

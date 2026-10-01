@@ -17,6 +17,7 @@ import {
   IconPoll,
   IconScore,
   IconNoise,
+  IconCamera,
 } from "../icons";
 import { ClockSettings, ClockWidget } from "./ClockWidget";
 import { DiceSettings, DiceWidget } from "./DiceWidget";
@@ -24,6 +25,7 @@ import { GroupsSettings, GroupsWidget } from "./GroupsWidget";
 import { PollSettings, PollWidget } from "./PollWidget";
 import { ScoreSettings, ScoreWidget } from "./ScoreWidget";
 import { NoiseSettings, NoiseWidget } from "./NoiseWidget";
+import { CameraSettings, CameraWidget } from "./CameraWidget";
 import { QrSettings, QrWidget } from "./QrWidget";
 import { StickerSettings, StickerWidget } from "./StickerWidget";
 import { PresentationWidget } from "./PresentationWidget";
@@ -80,6 +82,7 @@ export const WIDGET_COMPONENTS: Record<WidgetKind, ComponentType<WidgetProps>> =
   "poll.v1": PollWidget,
   "score.v1": ScoreWidget,
   "noise.v1": NoiseWidget,
+  "camera.v1": CameraWidget,
 };
 
 export const WIDGET_ICONS: Record<
@@ -101,6 +104,7 @@ export const WIDGET_ICONS: Record<
   "poll.v1": IconPoll,
   "score.v1": IconScore,
   "noise.v1": IconNoise,
+  "camera.v1": IconCamera,
 };
 
 /**
@@ -122,6 +126,7 @@ export const WIDGET_SETTINGS: Partial<Record<WidgetKind, ComponentType<WidgetPro
   "poll.v1": PollSettings,
   "score.v1": ScoreSettings,
   "noise.v1": NoiseSettings,
+  "camera.v1": CameraSettings,
 };
 
 /**

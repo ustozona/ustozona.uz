@@ -759,6 +759,18 @@ export function IconNoise({ className }: IconProps) {
   );
 }
 
+/** Kamera — korpus (massa) va obyektiv (detal). */
+export function IconCamera({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={cn("doska-icon", className)} aria-hidden="true">
+      <g>
+        <path d="M2 9.5A3.5 3.5 0 0 1 5.5 6h1.3l1.4-2h7.6l1.4 2h1.3A3.5 3.5 0 0 1 22 9.5v7a3.5 3.5 0 0 1-3.5 3.5h-13A3.5 3.5 0 0 1 2 16.5z" opacity=".5" />
+        <circle cx="12" cy="13" r="3.75" />
+      </g>
+    </svg>
+  );
+}
+
 /**
  * Klaviatura yorliqlari — oʻzimiz chizdik: korpus (massa) va tugmalar
  * (detal), Solar oʻlchamlarida — tashqi chegara 20×14, radius 3.5
@@ -880,6 +892,7 @@ export const DOSKA_ICONS: { name: string; source: string; Icon: React.ComponentT
   { name: "IconPoll", source: "oʻzimiz:ovoz", Icon: IconPoll },
   { name: "IconScore", source: "oʻzimiz:hisob", Icon: IconScore },
   { name: "IconNoise", source: "oʻzimiz:shovqin", Icon: IconNoise },
+  { name: "IconCamera", source: "oʻzimiz:kamera", Icon: IconCamera },
   { name: "IconKeyboard", source: "oʻzimiz:klaviatura", Icon: IconKeyboard },
   { name: "IconDockBottom", source: "oʻzimiz:panel-past", Icon: IconDockBottom },
   { name: "IconDockLeft", source: "oʻzimiz:panel-chap", Icon: IconDockLeft },

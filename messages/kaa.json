@@ -2102,6 +2102,9 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "doska-kamera": {
+        "title": "Doskada «Kamera»: dápter, kitap yamasa tájiriybeni pútkil klassqa kórsetiń — kadrdı toqtatıp, ústinen jazıw múmkin"
+      },
       "doska-shovqin": {
         "title": "Doskada «Shawqım»: klass dawısın mikrofon arqalı kóriń — shekten assa baǵana qızaradı, qáleseńiz qońıraw shalınadı"
       },
@@ -5267,7 +5270,8 @@
       "groups": "Toparlar",
       "poll": "Dawıs beriw",
       "score": "Esap",
-      "noise": "Shawqım"
+      "noise": "Shawqım",
+      "camera": "Kamera"
     },
     "toolbar": {
       "duplicate": "{widget} — nusqa alıw",
@@ -5421,7 +5425,8 @@
         "groups": "Tosınnan toparlarǵa bóliw",
         "poll": "Doskaǵa shıǵıp basıw: smaylik, awa/yaq",
         "score": "Komandalar ochkosı",
-        "noise": "Klass dawısı mikrofon arqalı"
+        "noise": "Klass dawısı mikrofon arqalı",
+        "camera": "Dápter hám tájiriybeni ekranǵa"
       }
     },
     "appearance": {
@@ -5624,6 +5629,18 @@
       "resetOvers": "Sanawdı nolge túsiriw ({count})",
       "less": "Azıraq",
       "more": "Kóbirek"
+    },
+    "camera": {
+      "hint": "Dápter, kitap yamasa tájiriybeni pútkil klassqa kórsetiń",
+      "start": "Kameranı qosıw",
+      "freeze": "Toqtatıw",
+      "resume": "Dawam etiw",
+      "switch": "Basqa kamera",
+      "stop": "Óshiriw",
+      "denied": "Kameraǵa ruqsat berilmedi",
+      "unsupported": "Bul brauzerde kamera joq",
+      "mirror": "Ayna",
+      "frozenAlt": "Toqtatılǵan kadr"
     },
     "sticker": {
       "groups": {

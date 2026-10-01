@@ -963,7 +963,7 @@ oqimda):**
 **D — keyinroq:**
 - ✅ R413 shovqin qurildi (`noise.v1`: Web Audio, chegara, silliqlash, sanoq, qoʻngʻiroq);
 - ✅ R414 hisob taxtasi qurildi (`score.v1`, 2–6 jamoa);
-- veb-kamera, video, embed, havola;
+- ✅ veb-kamera qurildi (`camera.v1`: kadrni toʻxtatish, kamera almashtirish, koʻzgu); qoldi: video, embed, havola;
 - R420 bayram fonlari;
 - R417 matn formatlash.
 

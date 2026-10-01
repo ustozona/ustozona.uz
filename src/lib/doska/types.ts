@@ -28,7 +28,8 @@ export type WidgetKind =
   | "groups.v1"
   | "poll.v1"
   | "score.v1"
-  | "noise.v1";
+  | "noise.v1"
+  | "camera.v1";
 
 /**
  * Vidjetning ekrandagi oʻrni va oʻz holati.

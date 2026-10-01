@@ -36,7 +36,8 @@ export type WidgetLabelKey =
   | "groups"
   | "poll"
   | "score"
-  | "noise";
+  | "noise"
+  | "camera";
 
 /**
  * «Hammasi» oynasidagi toifa (docs/doska-ux-tadqiqot.md §3 «Topish»).
@@ -330,6 +331,18 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
     initialState: { limit: 60, smooth: "medium", sound: false, overs: 0 },
     remember: ["limit", "smooth", "sound"],
   },
+  "camera.v1": {
+    kind: "camera.v1",
+    category: "media",
+    labelKey: "camera",
+    // Qoʻshnisi «QR kod» (binafsha-qizil) — koʻk undan aniq ajraladi.
+    tint: "indigo",
+    // 16:9 — kamera kadri.
+    defaultSize: { w: 640, h: 360 },
+    minSize: { w: 240, h: 160 },
+    initialState: { mirror: false },
+    remember: ["mirror"],
+  },
 };
 
 /**
@@ -361,6 +374,7 @@ export const TOOL_ORDER: WidgetKind[] = [
   "shape.v1",
   "presentation.v1",
   "qr.v1",
+  "camera.v1",
 ];
 
 export function widgetMeta(kind: WidgetKind): WidgetMeta {
