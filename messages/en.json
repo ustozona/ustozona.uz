@@ -2102,6 +2102,9 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "doska-stiker": {
+        "title": "“Sticker” in Doska: stars, praise, arrows, subject icons — large and sharp on a projector"
+      },
       "doska-qr": {
         "title": "“QR code” in Doska: put a link or text on screen — students scan it with their phones"
       },
@@ -5234,7 +5237,8 @@
       "presentation": "Slides",
       "wheel": "Wheel",
       "dice": "Dice",
-      "qr": "QR code"
+      "qr": "QR code",
+      "sticker": "Sticker"
     },
     "toolbar": {
       "duplicate": "{widget} — duplicate",
@@ -5380,7 +5384,8 @@
         "presentation": "Questions and answers",
         "wheel": "Pick a random name",
         "dice": "Dice, number, letter or coin",
-        "qr": "A link or text to scan with a phone"
+        "qr": "A link or text to scan with a phone",
+        "sticker": "Praise, sign, arrow"
       }
     },
     "appearance": {
@@ -5512,6 +5517,16 @@
       "caption": "Caption (optional)",
       "captionPlaceholder": "For example: Homework",
       "aria": "QR code: {text}"
+    },
+    "sticker": {
+      "groups": {
+        "praise": "Praise",
+        "marks": "Signs",
+        "arrows": "Directions",
+        "subjects": "Subjects",
+        "feelings": "Feelings",
+        "seasons": "Seasons and holidays"
+      }
     },
     "ink": {
       "toolbar": "Ink tools",

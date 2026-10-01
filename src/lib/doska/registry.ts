@@ -31,7 +31,8 @@ export type WidgetLabelKey =
   | "presentation"
   | "wheel"
   | "dice"
-  | "qr";
+  | "qr"
+  | "sticker";
 
 /**
  * «Hammasi» oynasidagi toifa (docs/doska-ux-tadqiqot.md §3 «Topish»).
@@ -251,6 +252,18 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
     initialState: { text: "", caption: "" },
     openSettingsOnAdd: true,
   },
+  "sticker.v1": {
+    kind: "sticker.v1",
+    category: "writing",
+    labelKey: "sticker",
+    // Qoʻshnilari «Eslatma» (pushti) va «Shakl» (moviy) — sariq ikkalasidan uzoq.
+    tint: "yellow",
+    // Kvadrat — belgi qisqa tomonga sigʻadi.
+    defaultSize: { w: 200, h: 200 },
+    minSize: { w: 64, h: 64 },
+    initialState: { emoji: "⭐" },
+    openSettingsOnAdd: true,
+  },
 };
 
 /**
@@ -274,6 +287,7 @@ export const TOOL_ORDER: WidgetKind[] = [
   "dice.v1",
   "text.v1",
   "sticky-note.v1",
+  "sticker.v1",
   "shape.v1",
   "presentation.v1",
   "qr.v1",

@@ -23,7 +23,8 @@ export type WidgetKind =
   | "presentation.v1"
   | "wheel.v1"
   | "dice.v1"
-  | "qr.v1";
+  | "qr.v1"
+  | "sticker.v1";
 
 /**
  * Vidjetning ekrandagi oʻrni va oʻz holati.

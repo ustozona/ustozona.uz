@@ -2102,6 +2102,9 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "doska-stiker": {
+        "title": "Doskada «Stiker»: yulduzcha, «barakalla», strelka, fan belgilari — katta va proyektorda tiniq"
+      },
       "doska-qr": {
         "title": "Doskada «QR kod»: havola yoki matnni ekranga chiqaring — oʻquvchilar telefon bilan skanerlaydi"
       },
@@ -5112,7 +5115,8 @@
       "presentation": "Taqdimot",
       "wheel": "Gʻildirak",
       "dice": "Zar",
-      "qr": "QR kod"
+      "qr": "QR kod",
+      "sticker": "Stiker"
     },
     "toolbar": {
       "duplicate": "{widget} — nusxalash",
@@ -5258,7 +5262,8 @@
         "presentation": "Savollar va javoblar",
         "wheel": "Tasodifiy ism tanlash",
         "dice": "Zar, son, harf yoki tanga",
-        "qr": "Havola yoki matn — telefon bilan skanerlanadi"
+        "qr": "Havola yoki matn — telefon bilan skanerlanadi",
+        "sticker": "Maqtov, belgi, strelka"
       }
     },
     "appearance": {
@@ -5390,6 +5395,16 @@
       "caption": "Yozuv (ixtiyoriy)",
       "captionPlaceholder": "Masalan: Uy vazifasi",
       "aria": "QR kod: {text}"
+    },
+    "sticker": {
+      "groups": {
+        "praise": "Maqtov",
+        "marks": "Belgilar",
+        "arrows": "Yoʻnalish",
+        "subjects": "Fanlar",
+        "feelings": "Kayfiyat",
+        "seasons": "Fasl va bayram"
+      }
     },
     "ink": {
       "toolbar": "Qoʻlyozma asboblari",

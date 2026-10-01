@@ -5,6 +5,7 @@ import {
   IconClock,
   IconDice,
   IconQr,
+  IconSticker,
   IconPresentation,
   IconShape,
   IconStickyNote,
@@ -16,6 +17,7 @@ import {
 import { ClockSettings, ClockWidget } from "./ClockWidget";
 import { DiceSettings, DiceWidget } from "./DiceWidget";
 import { QrSettings, QrWidget } from "./QrWidget";
+import { StickerSettings, StickerWidget } from "./StickerWidget";
 import { PresentationWidget } from "./PresentationWidget";
 import { ShapeSettings, ShapeWidget } from "./ShapeWidget";
 import { StickyNoteWidget } from "./StickyNoteWidget";
@@ -65,6 +67,7 @@ export const WIDGET_COMPONENTS: Record<WidgetKind, ComponentType<WidgetProps>> =
   "wheel.v1": WheelWidget,
   "dice.v1": DiceWidget,
   "qr.v1": QrWidget,
+  "sticker.v1": StickerWidget,
 };
 
 export const WIDGET_ICONS: Record<
@@ -81,6 +84,7 @@ export const WIDGET_ICONS: Record<
   "wheel.v1": IconWheel,
   "dice.v1": IconDice,
   "qr.v1": IconQr,
+  "sticker.v1": IconSticker,
 };
 
 /**
@@ -97,6 +101,7 @@ export const WIDGET_SETTINGS: Partial<Record<WidgetKind, ComponentType<WidgetPro
   "shape.v1": ShapeSettings,
   "dice.v1": DiceSettings,
   "qr.v1": QrSettings,
+  "sticker.v1": StickerSettings,
 };
 
 /**

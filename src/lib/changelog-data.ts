@@ -36,6 +36,13 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "doska-stiker",
+    date: "2026-10-01",
+    type: "yangi",
+    title: "Doskada «Stiker»: yulduzcha, «barakalla», strelka, fan belgilari — katta va proyektorda tiniq",
+    href: "/doska",
+  },
+  {
     id: "doska-qr",
     date: "2026-10-01",
     type: "yangi",

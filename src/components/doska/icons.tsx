@@ -703,6 +703,18 @@ export function IconQr({ className }: IconProps) {
   );
 }
 
+/** Stiker — oʻzimiz chizdik: doira (massa) va yulduz (detal). */
+export function IconSticker({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={cn("doska-icon", className)} aria-hidden="true">
+      <g>
+        <circle cx="12" cy="12" r="10" opacity=".5" />
+        <path d="M12 6.2l1.72 3.6 3.95.5-2.9 2.72.74 3.92L12 15.03l-3.51 1.91.74-3.92-2.9-2.72 3.95-.5z" />
+      </g>
+    </svg>
+  );
+}
+
 /**
  * Klaviatura yorliqlari — oʻzimiz chizdik: korpus (massa) va tugmalar
  * (detal), Solar oʻlchamlarida — tashqi chegara 20×14, radius 3.5
@@ -820,6 +832,7 @@ export const DOSKA_ICONS: { name: string; source: string; Icon: React.ComponentT
   { name: "IconPalette", source: "solar:palette-round", Icon: IconPalette },
   { name: "IconDice", source: "oʻzimiz:zar", Icon: IconDice },
   { name: "IconQr", source: "oʻzimiz:qr", Icon: IconQr },
+  { name: "IconSticker", source: "oʻzimiz:stiker", Icon: IconSticker },
   { name: "IconKeyboard", source: "oʻzimiz:klaviatura", Icon: IconKeyboard },
   { name: "IconDockBottom", source: "oʻzimiz:panel-past", Icon: IconDockBottom },
   { name: "IconDockLeft", source: "oʻzimiz:panel-chap", Icon: IconDockLeft },

@@ -2102,6 +2102,9 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "doska-stiker": {
+        "title": "Doskada «Stiker»: juldızsha, maqtaw, strelka, pán belgileri — úlken hám proektorda anıq"
+      },
       "doska-qr": {
         "title": "Doskada «QR kod»: siltew yamasa teksti ekranǵa shıǵarıń — oqıwshılar telefon menen skanerleydi"
       },
@@ -5235,7 +5238,8 @@
       "presentation": "Slaydlar",
       "wheel": "Dóńgelek",
       "dice": "Zar",
-      "qr": "QR kod"
+      "qr": "QR kod",
+      "sticker": "Stiker"
     },
     "toolbar": {
       "duplicate": "{widget} — nusqa alıw",
@@ -5381,7 +5385,8 @@
         "presentation": "Sorawlar hám juwaplar",
         "wheel": "Tosınnan at tańlaw",
         "dice": "Zar, san, hárip yamasa teńge",
-        "qr": "Siltew yamasa tekst — telefon menen skanerlenedi"
+        "qr": "Siltew yamasa tekst — telefon menen skanerlenedi",
+        "sticker": "Maqtaw, belgi, strelka"
       }
     },
     "appearance": {
@@ -5513,6 +5518,16 @@
       "caption": "Jazıw (qálewge qaray)",
       "captionPlaceholder": "Mısalı: Úy jumısı",
       "aria": "QR kod: {text}"
+    },
+    "sticker": {
+      "groups": {
+        "praise": "Maqtaw",
+        "marks": "Belgiler",
+        "arrows": "Baǵıt",
+        "subjects": "Pánler",
+        "feelings": "Kewil-kúy",
+        "seasons": "Máwsim hám bayram"
+      }
     },
     "ink": {
       "toolbar": "Qoljazba ásbapları",
