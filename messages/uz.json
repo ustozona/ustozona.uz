@@ -2102,6 +2102,9 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "doska-voqea-sanogi": {
+        "title": "Doskada «Voqea sanogʻi»: «Kuzgi taʼtilgacha 12 kun» — voqealar oʻquv kalendaringizdan, qoʻlda kiritmasdan"
+      },
       "doska-sekundomer": {
         "title": "Taymerda sekundomer rejimi: vaqtni oldinga sanang, 5 tagacha oraliq belgilang"
       },
@@ -5157,7 +5160,8 @@
       "poll": "Ovoz berish",
       "score": "Hisob",
       "noise": "Shovqin",
-      "camera": "Kamera"
+      "camera": "Kamera",
+      "countdown": "Voqea sanogʻi"
     },
     "toolbar": {
       "duplicate": "{widget} — nusxalash",
@@ -5316,7 +5320,8 @@
         "poll": "Doskaga chiqib bosish: smaylik, ha/yoʻq",
         "score": "Jamoalar ochkosi",
         "noise": "Sinf ovozi mikrofon orqali",
-        "camera": "Daftar va tajribani ekranga"
+        "camera": "Daftar va tajribani ekranga",
+        "countdown": "Taʼtilgacha necha kun"
       }
     },
     "appearance": {
@@ -5548,6 +5553,25 @@
         "orange": "Toʻq sariq",
         "violet": "Binafsha"
       }
+    },
+    "countdown": {
+      "until": "{name}gacha",
+      "today": "Bugun!",
+      "days": "{count} kun",
+      "schoolDays": "{count} dars kuni",
+      "quarterEnd": "{name} oxiri",
+      "yearEnd": "Oʻquv yili oxiri",
+      "loading": "Kalendar yuklanmoqda…",
+      "empty": "Voqea tanlang yoki oʻzingiz yozing",
+      "choose": "Voqea tanlash",
+      "fromCalendar": "Oʻquv kalendaridan",
+      "noCalendar": "Oʻquv kalendari yoʻq — hisobga kiring yoki Sozlamalarda oʻquv yilini belgilang. Hozircha oʻz voqeangizni yozing.",
+      "custom": "Oʻz voqeangiz",
+      "customName": "Voqea nomi",
+      "customDate": "Voqea sanasi",
+      "customPlaceholder": "Masalan: Olimpiada",
+      "customDefault": "Voqea",
+      "schoolOnly": "Faqat dars kunlari"
     },
     "sticker": {
       "groups": {

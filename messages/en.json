@@ -2102,6 +2102,9 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "doska-voqea-sanogi": {
+        "title": "Board “Countdown”: “12 days until autumn break” — events come from your school calendar, no typing"
+      },
       "doska-sekundomer": {
         "title": "Stopwatch mode in the timer: count up and mark up to 5 laps"
       },
@@ -5279,7 +5282,8 @@
       "poll": "Poll",
       "score": "Score",
       "noise": "Noise",
-      "camera": "Camera"
+      "camera": "Camera",
+      "countdown": "Countdown"
     },
     "toolbar": {
       "duplicate": "{widget} — duplicate",
@@ -5438,7 +5442,8 @@
         "poll": "Tap on the board: smiley, yes/no",
         "score": "Team points",
         "noise": "Class volume via microphone",
-        "camera": "Notebooks and experiments on screen"
+        "camera": "Notebooks and experiments on screen",
+        "countdown": "Days until the break"
       }
     },
     "appearance": {
@@ -5670,6 +5675,25 @@
         "orange": "Orange",
         "violet": "Violet"
       }
+    },
+    "countdown": {
+      "until": "Until {name}",
+      "today": "Today!",
+      "days": "{count} days",
+      "schoolDays": "{count} school days",
+      "quarterEnd": "End of {name}",
+      "yearEnd": "End of school year",
+      "loading": "Loading calendar…",
+      "empty": "Pick an event or type your own",
+      "choose": "Pick event",
+      "fromCalendar": "From school calendar",
+      "noCalendar": "No school calendar — sign in or set the school year in Settings. For now, type your own event.",
+      "custom": "Your event",
+      "customName": "Event name",
+      "customDate": "Event date",
+      "customPlaceholder": "e.g. Olympiad",
+      "customDefault": "Event",
+      "schoolOnly": "School days only"
     },
     "sticker": {
       "groups": {

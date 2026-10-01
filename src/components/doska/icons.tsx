@@ -771,6 +771,20 @@ export function IconCamera({ className }: IconProps) {
   );
 }
 
+/** Voqea sanogʻi — kalendar varagʻi (massa), halqalar va belgi (detal). */
+export function IconCountdown({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={cn("doska-icon", className)} aria-hidden="true">
+      <g>
+        <rect x="2.5" y="4" width="19" height="17.5" rx="4" opacity=".5" />
+        <rect x="6.75" y="2" width="1.8" height="4.5" rx=".9" />
+        <rect x="15.45" y="2" width="1.8" height="4.5" rx=".9" />
+        <path d="M12 9.5l1.4 2.84 3.1.45-2.25 2.2.53 3.1L12 16.63l-2.78 1.46.53-3.1-2.25-2.2 3.1-.45z" />
+      </g>
+    </svg>
+  );
+}
+
 /**
  * Klaviatura yorliqlari — oʻzimiz chizdik: korpus (massa) va tugmalar
  * (detal), Solar oʻlchamlarida — tashqi chegara 20×14, radius 3.5
@@ -893,6 +907,7 @@ export const DOSKA_ICONS: { name: string; source: string; Icon: React.ComponentT
   { name: "IconScore", source: "oʻzimiz:hisob", Icon: IconScore },
   { name: "IconNoise", source: "oʻzimiz:shovqin", Icon: IconNoise },
   { name: "IconCamera", source: "oʻzimiz:kamera", Icon: IconCamera },
+  { name: "IconCountdown", source: "oʻzimiz:voqea-sanogʻi", Icon: IconCountdown },
   { name: "IconKeyboard", source: "oʻzimiz:klaviatura", Icon: IconKeyboard },
   { name: "IconDockBottom", source: "oʻzimiz:panel-past", Icon: IconDockBottom },
   { name: "IconDockLeft", source: "oʻzimiz:panel-chap", Icon: IconDockLeft },

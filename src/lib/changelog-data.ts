@@ -36,6 +36,13 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "doska-voqea-sanogi",
+    date: "2026-10-01",
+    type: "yangi",
+    title: "Doskada «Voqea sanogʻi»: «Kuzgi taʼtilgacha 12 kun» — voqealar oʻquv kalendaringizdan, qoʻlda kiritmasdan",
+    href: "/doska",
+  },
+  {
     id: "doska-sekundomer",
     date: "2026-10-01",
     type: "yangi",

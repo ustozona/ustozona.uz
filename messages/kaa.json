@@ -2102,6 +2102,9 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "doska-voqea-sanogi": {
+        "title": "Doskada «Waqıya sanaǵı»: «Gúzgi dem alıwǵa 12 kún» — waqıyalar oqıw kalendarıńızdan, qolda kirgizbey"
+      },
       "doska-sekundomer": {
         "title": "Taymerde sekundomer rejimi: waqıttı alǵa sanań, 5 ke shekem aralıq belgileń"
       },
@@ -5280,7 +5283,8 @@
       "poll": "Dawıs beriw",
       "score": "Esap",
       "noise": "Shawqım",
-      "camera": "Kamera"
+      "camera": "Kamera",
+      "countdown": "Waqıya sanaǵı"
     },
     "toolbar": {
       "duplicate": "{widget} — nusqa alıw",
@@ -5439,7 +5443,8 @@
         "poll": "Doskaǵa shıǵıp basıw: smaylik, awa/yaq",
         "score": "Komandalar ochkosı",
         "noise": "Klass dawısı mikrofon arqalı",
-        "camera": "Dápter hám tájiriybeni ekranǵa"
+        "camera": "Dápter hám tájiriybeni ekranǵa",
+        "countdown": "Dem alıwǵa neshe kún"
       }
     },
     "appearance": {
@@ -5671,6 +5676,25 @@
         "orange": "Qızǵılt sarı",
         "violet": "Fiolet"
       }
+    },
+    "countdown": {
+      "until": "{name} ǵa shekem",
+      "today": "Búgin!",
+      "days": "{count} kún",
+      "schoolDays": "{count} sabaq kúni",
+      "quarterEnd": "{name} aqırı",
+      "yearEnd": "Oqıw jılı aqırı",
+      "loading": "Kalendar júklenbekte…",
+      "empty": "Waqıya tańlań yamasa ózińiz jazıń",
+      "choose": "Waqıya tańlaw",
+      "fromCalendar": "Oqıw kalendarınan",
+      "noCalendar": "Oqıw kalendarı joq — esapqa kiriń yamasa Sazlawlarda oqıw jılın belgileń. Házirshe óz waqıyańızdı jazıń.",
+      "custom": "Óz waqıyańız",
+      "customName": "Waqıya atı",
+      "customDate": "Waqıya sánesi",
+      "customPlaceholder": "Mısalı: Olimpiada",
+      "customDefault": "Waqıya",
+      "schoolOnly": "Tek sabaq kúnleri"
     },
     "sticker": {
       "groups": {

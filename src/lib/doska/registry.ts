@@ -37,7 +37,8 @@ export type WidgetLabelKey =
   | "poll"
   | "score"
   | "noise"
-  | "camera";
+  | "camera"
+  | "countdown";
 
 /**
  * «Hammasi» oynasidagi toifa (docs/doska-ux-tadqiqot.md §3 «Topish»).
@@ -346,6 +347,19 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
     initialState: { mirror: false },
     remember: ["mirror"],
   },
+  "countdown.v1": {
+    kind: "countdown.v1",
+    category: "time",
+    labelKey: "countdown",
+    // 17 rang tugadi — takror boʻladi, lekin panelning NARIGI chetidagi
+    // «QR kod» bilan: qoʻshnilari «Soat» (koʻk) va «Taymer» (sariq).
+    tint: "fuchsia",
+    defaultSize: { w: 360, h: 260 },
+    minSize: { w: 200, h: 160 },
+    // Boʻsh — kalendarning eng yaqin voqeasi koʻrinadi.
+    initialState: { eventId: null, name: "", date: "", schoolOnly: false },
+    remember: ["schoolOnly"],
+  },
 };
 
 /**
@@ -362,6 +376,7 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
 export const TOOL_ORDER: WidgetKind[] = [
   "clock.v1",
   "timer.v1",
+  "countdown.v1",
   "traffic-light.v1",
   // Sinfni boshqarish vositalari yonida (soat, taymer, svetofor) —
   // mazmun vositalaridan (matn, eslatma, taqdimot) oldin.
