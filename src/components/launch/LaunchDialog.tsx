@@ -112,6 +112,7 @@ function stepAfterSet(intent: LaunchIntent | null, presetMode?: LaunchMode): Ste
 export function LaunchDialog({
   classId: fixedClassId,
   preset,
+  sameTab = false,
   onClose,
   onStarted,
   onPult,
@@ -122,6 +123,7 @@ export function LaunchDialog({
   /** Sinf sahifada tanlangan boʻlsa — oʻsha. `null` — oynaning oʻzida tanlanadi. */
   classId: string | null;
   preset?: LaunchPreset;
+  sameTab?: boolean;
   onClose: () => void;
   /** Ish ochildi — natija ekranini ochish. */
   onStarted: (run: RunSummary) => void;
@@ -197,6 +199,11 @@ export function LaunchDialog({
     const q = new URLSearchParams({ setId, classId });
     if (live) q.set("live", "1");
     const url = `/doska?${q.toString()}`;
+    if (sameTab) {
+      onClose();
+      router.push(url);
+      return;
+    }
     const opened = window.open(url, "_blank");
     if (!opened) {
       // Yangi oyna bloklandi — shu oynada ochamiz (Doska toʻliq ekran).
