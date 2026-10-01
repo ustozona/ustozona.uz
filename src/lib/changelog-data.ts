@@ -36,6 +36,13 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "doska-taymer-takrorlash",
+    date: "2026-10-01",
+    type: "yaxshilandi",
+    title: "Doska taymeri: guruhlar aylanishi uchun takrorlanadi, oxirgi soniyalarda qizilga oʻtadi, qolgan vaqt brauzer yorligʻida koʻrinadi",
+    href: "/doska",
+  },
+  {
     id: "doska-ekran-tartibi",
     date: "2026-10-01",
     type: "yaxshilandi",

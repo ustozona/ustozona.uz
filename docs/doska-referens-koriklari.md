@@ -936,7 +936,7 @@ bilan toʻlov, onboarding qoʻllanmalari.
 2. ✅ R398 — barcha ekranlarda (pin). **Qurildi** (branch `maxdum/doska-pin`): `DoskaWidget.pinned`, `gatherPinned` — ekran almashganda, qoʻshilganda va oʻchirilganda vidjet (bogʻlangan yozuvi bilan) koʻrinayotgan ekranga koʻchadi, nusxa emas; tozalashda qoladi; nusxasi qadalmaydi; kontekst panelda «Barcha ekranlarda». Store testi 9/9.
 3. ✅ R399 — ekranni tartiblash va nusxa olish (**qurildi**, branch `maxdum/doska-ekranlar`: menyuda nusxa va oldinga/orqaga surish, store testi 7/7). Qoldi: R400 — ekranlar aro
    nusxa/joylash.
-4. R405 + R406 — taymer: takrorlash, qizil chegara, yorliqda vaqt,
+4. ✅ R405 — taymer: takrorlash (0–9), oxirgi soniyalar qizil (10% yoki 10 s), yorliqda vaqt — **qurildi**, branch `maxdum/doska-taymer`. R406 diskda sudrash QILINMADI: bizning disk «qolgan ulush», 60 daqiqalik siferblat emas — sudrash uchun alohida siferblat rejimi kerak. Avvalgi reja:
    diskda sudrash, sekundomer rejimi.
 5. R401 + R422 — chetga qoʻyish, faol nusxa nuqtasi, oxirgi tanlovni
    eslab qolish.

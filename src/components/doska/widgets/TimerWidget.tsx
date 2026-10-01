@@ -51,6 +51,16 @@ import { WidgetButton } from "./WidgetButton";
    tutilib qolardi. `remainingSec` endi faqat TOʻXTAGAN taymerning
    qolgan vaqti.
 
+   QOʻSHIMCHA (docs/doska-referens-koriklari.md R405):
+   • Takrorlash (`repeat`, 0–9) — stansiyalar boʻyicha aylanish: tugagach
+     taymer oʻzi qayta boshlanadi, har aylanishda ovoz chalinadi, pastda
+     «2 / 4» koʻrinadi. Qayta yuklashda tugagan taymer aylanishni davom
+     ettirmaydi — jim tugaydi (yuqoridagi qoida).
+   • Oxirgi soniyalar (`warn`, standart yoqiq) — qolgan vaqt 10% dan yoki
+     10 soniyadan kam boʻlsa disk va ramka «tugadi» rangiga oʻtadi.
+   • Brauzer yorligʻida qolgan vaqt (`tabTitle`, standart yoqiq) —
+     oʻqituvchi boshqa varaqqa oʻtsa ham vaqtni koʻradi.
+
    Tugash vaqtiga tayanilgani uchun taymer sahifa yangilanganda ham,
    boshqa ekran ochiq turganda ham real vaqtda sanaydi. Tugash ovozi
    esa faqat taymer koʻz oldida tugasa chalinadi: qaytib kelganda
@@ -65,6 +75,11 @@ const PRESET_MINUTES = [1, 3, 5, 10, 15];
 const MIN_SEC = 30;
 /** Eng uzun taymer (soniya) — 99:00, raqam ikki xonada qoladi. */
 const MAX_SEC = 99 * 60;
+/** Eng koʻp takrorlash. */
+const MAX_REPEAT = 9;
+/** Ogohlantirish oynasi: davomiylikning shu ulushi, lekin kamida 10 soniya. */
+const WARN_SHARE = 0.1;
+const WARN_MIN_SEC = 10;
 
 function readTimer(state: DoskaWidget["state"]) {
   const durationSec = Number(state.durationSec ?? 300);
@@ -78,6 +93,12 @@ function readTimer(state: DoskaWidget["state"]) {
     endsAt: typeof state.endsAt === "number" ? state.endsAt : null,
     view,
     sound: state.sound !== false,
+    /** Necha marta qayta boshlanadi (0 — yoʻq). */
+    repeat: Math.min(MAX_REPEAT, Math.max(0, Number(state.repeat ?? 0) || 0)),
+    /** Shu paytgacha tugagan aylanishlar. */
+    round: Math.max(0, Number(state.round ?? 0) || 0),
+    warn: state.warn !== false,
+    tabTitle: state.tabTitle !== false,
   };
 }
 
@@ -95,11 +116,14 @@ export function TimerWidget({ widget }: { widget: DoskaWidget }) {
   const patch = useDoskaStore((s) => s.patchWidgetState);
   const selected = useIsSelected(widget.id);
   const t = useTranslations("Doska.timer");
-  const { durationSec, remainingSec: storedSec, running, endsAt, view, sound } = readTimer(widget.state);
+  const { durationSec, remainingSec: storedSec, running, endsAt, view, sound, repeat, round, warn, tabTitle } =
+    readTimer(widget.state);
   const [now, setNow] = React.useState(() => Date.now());
   const remainingSec = running && endsAt !== null ? secondsUntil(endsAt, now) : storedSec;
   const finished = remainingSec <= 0;
   const fresh = !running && remainingSec === durationSec;
+  const warnSec = Math.max(WARN_MIN_SEC, Math.ceil(durationSec * WARN_SHARE));
+  const warning = warn && running && !finished && durationSec > warnSec && remainingSec <= warnSec;
 
   // `useLayoutEffect` — boshlanish yoki «+1» dan keyingi birinchi kadr
   // eski `now` bilan chizilmasin: soat boʻyalishdan OLDIN yangilanadi.
@@ -115,6 +139,13 @@ export function TimerWidget({ widget }: { widget: DoskaWidget }) {
     const tick = (watching: boolean) => {
       const at = Date.now();
       if (at >= endsAt) {
+        // Navbatdagi aylanish — faqat koʻz oldida tugaganda (qayta
+        // yuklashda tugagan taymer jim tugaydi, aylanish davom etmaydi).
+        if (watching && round < repeat) {
+          patch(widget.id, { round: round + 1, endsAt: at + durationSec * 1000 });
+          if (sound) playTimerEnd();
+          return;
+        }
         patch(widget.id, { running: false, remainingSec: 0, endsAt: null });
         // Birinchi tekshiruvda tugagan boʻlsa — taymer koʻz oldida emas,
         // qayta yuklash yoki boshqa ekranda tugagan: jim.
@@ -127,12 +158,14 @@ export function TimerWidget({ widget }: { widget: DoskaWidget }) {
     };
     tick(false);
     return () => clearTimeout(timer);
-  }, [running, endsAt, sound, storedSec, widget.id, patch]);
+  }, [running, endsAt, sound, storedSec, widget.id, patch, round, repeat, durationSec]);
+
+  useTabTitle(tabTitle && running, format(remainingSec));
 
   /** Asosiy tugma: tugagan — qaytadan tayyor; aks holda boshlash/toʻxtatish. */
   const onPrimary = () => {
     if (finished) {
-      patch(widget.id, { remainingSec: durationSec, running: false, endsAt: null });
+      patch(widget.id, { remainingSec: durationSec, running: false, endsAt: null, round: 0 });
       return;
     }
     if (running) {
@@ -157,7 +190,11 @@ export function TimerWidget({ widget }: { widget: DoskaWidget }) {
   return (
     // Tugaganda karta «done» tusiga oʻtadi (qizil + oq matn) — lekin
     // yolgʻiz rang emas, pastda «Vaqt tugadi» soʻzi ham chiqadi (R326).
-    <div className="doska-card relative size-full" data-card={finished ? "done" : "amber"}>
+    <div
+      className="doska-card relative size-full"
+      data-card={finished ? "done" : "amber"}
+      data-warn={warning ? "" : undefined}
+    >
       <div className="flex size-full flex-col items-center justify-center gap-[2.5cqw] p-[4cqw]">
         <span
           role="timer"
@@ -174,6 +211,11 @@ export function TimerWidget({ widget }: { widget: DoskaWidget }) {
         </span>
 
         <span className="flex items-center gap-[3cqw]">
+          {repeat > 0 && !finished && (
+            <span className="tabular-nums opacity-70" style={{ fontSize: "clamp(0.75rem, 5cqw, 2.5rem)" }}>
+              {t("round", { n: Math.min(round + 1, repeat + 1), total: repeat + 1 })}
+            </span>
+          )}
           {finished && (
             <span className="leading-tight font-semibold" style={{ fontSize: "clamp(0.9rem, 7cqw, 4rem)" }}>
               {t("finished")}
@@ -199,7 +241,7 @@ export function TimerWidget({ widget }: { widget: DoskaWidget }) {
             <WidgetButton
               shape="round"
               label={t("reset")}
-              onClick={() => patch(widget.id, { remainingSec: durationSec, running: false, endsAt: null })}
+              onClick={() => patch(widget.id, { remainingSec: durationSec, running: false, endsAt: null, round: 0 })}
             >
               <IconRestart />
             </WidgetButton>
@@ -225,6 +267,26 @@ export function TimerWidget({ widget }: { widget: DoskaWidget }) {
       )}
     </div>
   );
+}
+
+/**
+ * Ishlab turgan taymerning qolgan vaqti brauzer yorligʻida («04:32 — …»).
+ * Asl sarlavha taymer toʻxtaganda yoki vidjet olib tashlanganda tiklanadi.
+ */
+function useTabTitle(active: boolean, text: string) {
+  const base = React.useRef<string | null>(null);
+  React.useEffect(() => {
+    if (!active) return;
+    base.current ??= document.title;
+    document.title = `${text} — ${base.current}`;
+  }, [active, text]);
+  React.useEffect(() => {
+    if (!active) return;
+    return () => {
+      if (base.current !== null) document.title = base.current;
+      base.current = null;
+    };
+  }, [active]);
 }
 
 /**
@@ -260,11 +322,11 @@ function TimerDisk({ fraction, large }: { fraction: number; large: boolean }) {
 export function TimerSettings({ widget }: { widget: DoskaWidget }) {
   const patch = useDoskaStore((s) => s.patchWidgetState);
   const t = useTranslations("Doska.timer");
-  const { durationSec, view, sound } = readTimer(widget.state);
+  const { durationSec, view, sound, repeat, warn, tabTitle } = readTimer(widget.state);
 
   /** Vaqt tanlansa taymer toʻxtaydi va toʻliq vaqtga qaytadi. */
   const setDuration = (sec: number) =>
-    patch(widget.id, { durationSec: sec, remainingSec: sec, running: false, endsAt: null });
+    patch(widget.id, { durationSec: sec, remainingSec: sec, running: false, endsAt: null, round: 0 });
 
   // 2 daqiqagacha qadam 30 soniya — «30 soniya oʻylab koʻring» uchun.
   const stepDown = durationSec <= 120 ? 30 : 60;
@@ -305,7 +367,21 @@ export function TimerSettings({ widget }: { widget: DoskaWidget }) {
         />
       </SettingsSection>
 
+      <SettingsSection label={t("repeat")}>
+        <SettingsStepper
+          value={repeat === 0 ? t("repeatNone") : t("repeatTimes", { n: repeat })}
+          minusLabel={t("less")}
+          plusLabel={t("more")}
+          minusDisabled={repeat <= 0}
+          plusDisabled={repeat >= MAX_REPEAT}
+          onMinus={() => patch(widget.id, { repeat: repeat - 1, round: 0 })}
+          onPlus={() => patch(widget.id, { repeat: repeat + 1, round: 0 })}
+        />
+      </SettingsSection>
+
       <SettingsSection label={t("whenDone")}>
+        <SettingsSwitch label={t("warn")} checked={warn} onChange={(on) => patch(widget.id, { warn: on })} />
+        <SettingsSwitch label={t("tabTitle")} checked={tabTitle} onChange={(on) => patch(widget.id, { tabTitle: on })} />
         <SettingsSwitch
           label={t("sound")}
           checked={sound}

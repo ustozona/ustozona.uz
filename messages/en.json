@@ -2102,6 +2102,9 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "doska-taymer-takrorlash": {
+        "title": "Doska timer: repeats for station rotations, turns red in the last seconds, shows the time left in the browser tab"
+      },
       "doska-ekran-tartibi": {
         "title": "Doska: duplicate a screen and reorder screens from the menu"
       },
@@ -5289,7 +5292,13 @@
       "viewDisk": "Disk",
       "viewBoth": "Both",
       "whenDone": "When time is up",
-      "sound": "Play a sound"
+      "sound": "Play a sound",
+      "round": "{n} / {total}",
+      "repeat": "Repeat",
+      "repeatNone": "Off",
+      "repeatTimes": "{n} times",
+      "warn": "Red in the last seconds",
+      "tabTitle": "Time left in the browser tab"
     },
     "trafficLight": {
       "red": "Silent",

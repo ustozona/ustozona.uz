@@ -501,6 +501,17 @@ html[data-doska-style] {
   --card-accent: var(--doska-done-accent);
 }
 
+/* Oxirgi soniyalar — taymer tugashiga oz qoldi (R405). Kartaning tusi
+   oʻzgarmaydi (raqam kontrasti saqlanadi), «tugadi» rangi faqat disk
+   sektori va ichki chiziqqa tushadi. Rang yolgʻiz emas: tugaganda soʻz
+   ham chiqadi (R326). */
+.doska-card[data-warn] {
+  --card-accent: var(--doska-done-bg);
+  box-shadow:
+    inset 0 0 0 max(4px, 1.2cqw) var(--doska-done-bg),
+    var(--doska-card-shadow);
+}
+
 /* Magnit — faqat «Doska» uslubida (`--doska-card-magnet: block`).
    Vidjet ramkasi (`WidgetFrame`) `absolute`, karta uni toʻliq
    egallaydi — shuning uchun kartaga `position` kerak emas. */

@@ -2102,6 +2102,9 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "doska-taymer-takrorlash": {
+        "title": "Doska taymeri: guruhlar aylanishi uchun takrorlanadi, oxirgi soniyalarda qizilga oʻtadi, qolgan vaqt brauzer yorligʻida koʻrinadi"
+      },
       "doska-ekran-tartibi": {
         "title": "Doska: ekrandan nusxa oling va ekranlar tartibini menyudan oʻzgartiring"
       },
@@ -5167,7 +5170,13 @@
       "viewDisk": "Disk",
       "viewBoth": "Ikkalasi",
       "whenDone": "Tugaganda",
-      "sound": "Ovoz chalinsin"
+      "sound": "Ovoz chalinsin",
+      "round": "{n} / {total}",
+      "repeat": "Takrorlash",
+      "repeatNone": "Yoʻq",
+      "repeatTimes": "{n} marta",
+      "warn": "Oxirgi soniyalarda qizil",
+      "tabTitle": "Qolgan vaqt brauzer yorligʻida"
     },
     "trafficLight": {
       "red": "Jim",

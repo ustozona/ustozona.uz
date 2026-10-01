@@ -2102,6 +2102,9 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "doska-taymer-takrorlash": {
+        "title": "Doska taymeri: toparlar almasıwı ushın qaytalanadı, sońǵı sekundlarda qızılǵa ótedi, qalǵan waqıt brauzer betinde kórinedi"
+      },
       "doska-ekran-tartibi": {
         "title": "Doska: ekrannan nusqa alıń hám ekranlar tártibin menyudan ózgertiń"
       },
@@ -5290,7 +5293,13 @@
       "viewDisk": "Disk",
       "viewBoth": "Ekewi de",
       "whenDone": "Tawsılǵanda",
-      "sound": "Dawıs shıǵarıw"
+      "sound": "Dawıs shıǵarıw",
+      "round": "{n} / {total}",
+      "repeat": "Qaytalaw",
+      "repeatNone": "Joq",
+      "repeatTimes": "{n} ret",
+      "warn": "Sońǵı sekundlarda qızıl",
+      "tabTitle": "Qalǵan waqıt brauzer betinde"
     },
     "trafficLight": {
       "red": "Tınısh",
