@@ -61,12 +61,18 @@ type PrefsState = {
    * vosita tuzmagan oʻqituvchining paneliga oʻzi chiqadi.
    */
   tools: WidgetKind[] | null;
+  /**
+   * Har vidjet turi uchun oxirgi sozlama (`WidgetMeta.remember`, R422).
+   * Toʻplamga emas, oʻqituvchiga tegishli — shuning uchun shu yerda.
+   */
+  lastState: Partial<Record<WidgetKind, Record<string, unknown>>>;
   hydrated: boolean;
 
   setStyle: (style: DoskaStyle) => void;
   setDock: (dock: DockSide) => void;
   /** Vositani panelga qoʻshadi yoki olib tashlaydi. Chegaraga yetsa — rad. */
   togglePinned: (kind: WidgetKind) => void;
+  rememberState: (kind: WidgetKind, values: Record<string, unknown>) => void;
 };
 
 export const useDoskaPrefs = create<PrefsState>()(
@@ -75,10 +81,13 @@ export const useDoskaPrefs = create<PrefsState>()(
       style: DEFAULT_STYLE,
       dock: "bottom",
       tools: null,
+      lastState: {},
       hydrated: false,
 
       setStyle: (style) => set({ style }),
       setDock: (dock) => set({ dock }),
+      rememberState: (kind, values) =>
+        set((s) => ({ lastState: { ...s.lastState, [kind]: { ...s.lastState[kind], ...values } } })),
       togglePinned: (kind) => {
         const current = pinnedTools(get().tools);
         if (current.includes(kind)) {
@@ -96,7 +105,7 @@ export const useDoskaPrefs = create<PrefsState>()(
     {
       name: STORAGE_KEY,
       storage: createJSONStorage(() => localStorage),
-      partialize: (s) => ({ style: s.style, dock: s.dock, tools: s.tools }),
+      partialize: (s) => ({ style: s.style, dock: s.dock, tools: s.tools, lastState: s.lastState }),
       // Eski yoki buzilgan yozuv (masalan olib tashlangan uslub nomi)
       // standartga qaytadi — notanish qiymat bilan panel chizilmaydi.
       merge: (persisted, current) => {
@@ -108,6 +117,8 @@ export const useDoskaPrefs = create<PrefsState>()(
           tools: Array.isArray(p.tools)
             ? TOOL_ORDER.filter((k) => (p.tools as string[]).includes(k)).slice(0, MAX_PINNED_TOOLS)
             : null,
+          lastState:
+            p.lastState && typeof p.lastState === "object" && !Array.isArray(p.lastState) ? p.lastState : {},
         };
       },
       skipHydration: true,

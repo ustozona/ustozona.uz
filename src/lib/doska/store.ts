@@ -585,6 +585,20 @@ function restore(
   };
 }
 
+/**
+ * Oʻqituvchining oxirgi tanlovi shu tur uchun (R422). Faqat reyestrdagi
+ * `remember` kalitlari — eski yoki begona yozuv mazmunga aralashmasin.
+ */
+function rememberedState(kind: WidgetKind): Record<string, unknown> {
+  const keys = widgetMeta(kind).remember;
+  const saved = useDoskaPrefs.getState().lastState[kind];
+  if (!keys || !saved) return {};
+  const out = Object.fromEntries(Object.entries(saved).filter(([k]) => keys.includes(k)));
+  // Taymer: qolgan vaqt tanlangan davomiylikdan boshlanadi.
+  if (typeof out.durationSec === "number") out.remainingSec = out.durationSec;
+  return out;
+}
+
 export const useDoskaStore = create<DoskaState>()(
   persist(
     (set, get) => {
@@ -632,7 +646,7 @@ export const useDoskaStore = create<DoskaState>()(
             z: maxZ + 1,
             // Chuqur nusxa: holatda massiv bor (gʻildirakning `picked`i) va
             // reyestrdagi boshlangʻich qiymat hamma vidjetga umumiy.
-            state: { ...structuredClone(meta.initialState), ...initial },
+            state: { ...structuredClone(meta.initialState), ...rememberedState(kind), ...initial },
           };
 
           set({
@@ -762,14 +776,24 @@ export const useDoskaStore = create<DoskaState>()(
             ),
           })),
 
-        patchWidgetState: (id, patch) =>
+        patchWidgetState: (id, patch) => {
+          const s0 = get();
+          const kind = s0.deck.screens
+            .find((x) => x.id === s0.activeScreenId)
+            ?.widgets.find((w) => w.id === id)?.kind;
+          const keys = kind ? widgetMeta(kind).remember : undefined;
+          if (kind && keys) {
+            const picked = Object.fromEntries(Object.entries(patch).filter(([k]) => keys.includes(k)));
+            if (Object.keys(picked).length > 0) useDoskaPrefs.getState().rememberState(kind, picked);
+          }
           set((s) => ({
             deck: withActiveScreen(s.deck, s.activeScreenId, (ws) =>
               ws.map((w) =>
                 w.id === id ? { ...w, state: { ...w.state, ...patch } } : w,
               ),
             ),
-          })),
+          }));
+        },
 
         select: (id) =>
           set((s) => ({

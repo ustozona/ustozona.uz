@@ -938,7 +938,7 @@ bilan toʻlov, onboarding qoʻllanmalari.
    nusxa/joylash.
 4. ✅ R405 — taymer: takrorlash (0–9), oxirgi soniyalar qizil (10% yoki 10 s), yorliqda vaqt — **qurildi**, branch `maxdum/doska-taymer`. R406 diskda sudrash QILINMADI: bizning disk «qolgan ulush», 60 daqiqalik siferblat emas — sudrash uchun alohida siferblat rejimi kerak. Avvalgi reja:
    diskda sudrash, sekundomer rejimi.
-5. ✅ R401 chetga qoʻyish **qurildi** (`DoskaWidget.parked`, barmoq kanvas chetidan 16 px ichida qoʻyib yuborilsa; chetda tugma). Qoldi: R422 — chetga qoʻyish, faol nusxa nuqtasi, oxirgi tanlovni
+5. ✅ R401 chetga qoʻyish **qurildi** (`DoskaWidget.parked`, barmoq kanvas chetidan 16 px ichida qoʻyib yuborilsa; chetda tugma). ✅ R422 oxirgi tanlov **qurildi** (`WidgetMeta.remember`, prefs `lastState`: taymer, gʻildirak, zar); faol nusxa nuqtasi oldindan bor edi. Avval qolgan: R422 — chetga qoʻyish, faol nusxa nuqtasi, oxirgi tanlovni
    eslab qolish.
 6. ✅ R419 stikerlar (`sticker.v1`, 60 ta sinf belgisi, tizim emoji shrifti — sprite 64 px xira boʻlardi) **qurildi**. ✅ R418 QR (`qr.v1`) **qurildi**. ✅ R416 zar (oʻzbek alifbosi, son, tanga) **qurildi** — `dice.v1`. R415 ish belgilari QILINMADI: svetoforimiz (jim · pichirlab · gaplashamiz, belgi + soʻz) uni deyarli toʻliq qoplaydi. Yangi arzon vidjetlar: R415 ish belgilari, R416 zar (oʻzbek
    alifbosi), R419 stikerlar, R418 QR.
