@@ -363,6 +363,13 @@ type DoskaState = {
   toggleLock: (id: string) => void;
   /** «Barcha ekranlarda» — yoqish/oʻchirish, tarixga yoziladi. */
   togglePin: (id: string) => void;
+  /**
+   * Chetga qoʻyish (`side`) yoki qaytarish (`null`). Qoʻyishda vidjet
+   * `origin` ga — sudrash boshlangan joyga qaytadi: tugma bosilganda u
+   * oʻsha yerda paydo boʻladi. Qoʻyish sudrash ichida boʻladi va uning
+   * tarix qadamiga kiradi; qaytarish — alohida qadam.
+   */
+  parkWidget: (id: string, side: "left" | "right" | null, origin?: { x: number; y: number }) => void;
   setSpotlight: (id: string | null) => void;
   setCurtain: (on: boolean) => void;
 
@@ -601,7 +608,7 @@ export const useDoskaStore = create<DoskaState>()(
             at ??
             findFreeSpot(
               meta.defaultSize,
-              screen?.widgets ?? [],
+              (screen?.widgets ?? []).filter((w) => !w.parked),
               typeof window === "undefined" ? null : { w: window.innerWidth, h: window.innerHeight },
               useDoskaPrefs.getState().dock,
             );
@@ -769,6 +776,30 @@ export const useDoskaStore = create<DoskaState>()(
               notice: null,
               deck: withActiveScreen(s.deck, s.activeScreenId, (ws) =>
                 ws.map((w) => (w.id === id ? { ...w, pinned: w.pinned ? undefined : true } : w)),
+              ),
+            };
+          }),
+
+        parkWidget: (id, side, origin) =>
+          set((s) => {
+            const screen = s.deck.screens.find((x) => x.id === s.activeScreenId);
+            const widget = screen?.widgets.find((w) => w.id === id);
+            if (!widget || (widget.parked ?? null) === side) return s;
+            const z = Math.max(0, ...(screen?.widgets.map((w) => w.z) ?? [])) + 1;
+            return {
+              ...(side ? {} : pushHistory(s)),
+              notice: null,
+              selectedId: side ? null : id,
+              settingsId: side && s.settingsId === id ? null : s.settingsId,
+              editingId: side && s.editingId === id ? null : s.editingId,
+              deck: withActiveScreen(s.deck, s.activeScreenId, (ws) =>
+                ws.map((w) =>
+                  w.id !== id
+                    ? w
+                    : side
+                      ? { ...w, ...origin, parked: side }
+                      : { ...w, parked: undefined, z },
+                ),
               ),
             };
           }),

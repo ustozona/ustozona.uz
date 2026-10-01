@@ -2102,6 +2102,9 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "doska-chetga-qoyish": {
+        "title": "Doskada vidjetti ekran shetine súrip jasırıń — shette túymesi qaladı, basılsa ornına qaytadı"
+      },
       "doska-ism-korinishi": {
         "title": "Tosınnan at endi bir úlken at kórinisinde de — arttaǵı partadan oqıladı; tayar dizimler: 1–30 hám álipbe"
       },
@@ -5334,6 +5337,9 @@
       "shape": "Figura",
       "view": "Kóriniw",
       "labels": "Tóbelerdegi háripler (A, B, C)"
+    },
+    "parked": {
+      "restore": "«{name}» — ornına qaytarıw"
     },
     "spotlight": {
       "exit": "Kishireytiw"

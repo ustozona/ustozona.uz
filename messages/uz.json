@@ -2102,6 +2102,9 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "doska-chetga-qoyish": {
+        "title": "Doskada vidjetni ekran chetiga surib yashiring — chetda tugmasi qoladi, bosilsa joyiga qaytadi"
+      },
       "doska-ism-korinishi": {
         "title": "Tasodifiy ism endi bitta katta ism koʻrinishida ham — orqa partadan oʻqiladi; tayyor roʻyxatlar: 1–30 va alifbo"
       },
@@ -5211,6 +5214,9 @@
       "shape": "Shakl",
       "view": "Koʻrinish",
       "labels": "Uchlarda harflar (A, B, C)"
+    },
+    "parked": {
+      "restore": "«{name}» — joyiga qaytarish"
     },
     "spotlight": {
       "exit": "Kichraytirish"

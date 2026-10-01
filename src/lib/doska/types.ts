@@ -57,6 +57,13 @@ export type DoskaWidget = {
    * (docs/doska-referens-koriklari.md R398). `undefined` = shu ekranda.
    */
   pinned?: boolean;
+  /**
+   * Chetga qoʻyilgan — ekran chetidan tashqariga sudralgan vidjet. U
+   * chizilmaydi, oʻsha chetda kichik tugmasi qoladi; bosilsa joyiga
+   * qaytadi. Oʻchirilmaydi — ekran tozalanadi, ish yoʻqolmaydi
+   * (docs/doska-referens-koriklari.md R401). `undefined` = ekranda.
+   */
+  parked?: "left" | "right";
   state: Record<string, unknown>;
 };
 

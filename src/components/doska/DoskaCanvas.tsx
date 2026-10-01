@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { useActiveBackground, useActiveWidgets, useDoskaStore } from "@/lib/doska/store";
 import { backgroundById } from "@/lib/doska/backgrounds";
-import { Z_SPOTLIGHT_EXIT, Z_SPOTLIGHT_SCRIM } from "@/lib/doska/layers";
+import { Z_PARKED, Z_SPOTLIGHT_EXIT, Z_SPOTLIGHT_SCRIM } from "@/lib/doska/layers";
 import type { DoskaWidget } from "@/lib/doska/types";
 import { IconSpotlightExit } from "./icons";
 import { InkGuides } from "./InkGuides";
@@ -14,7 +14,8 @@ import { InkLayer } from "./InkLayer";
 import { useDoskaInteraction } from "./InteractionLayer";
 import { SelectionOverlay } from "./SelectionOverlay";
 import { WidgetFrame } from "./WidgetFrame";
-import { WIDGET_COMPONENTS } from "./widgets";
+import { WIDGET_COMPONENTS, WIDGET_ICONS } from "./widgets";
+import { widgetMeta } from "@/lib/doska/registry";
 
 /**
  * KANVAS — ekran maydoni.
@@ -58,9 +59,9 @@ export function DoskaCanvas() {
     >
       {hydrated && (
         <>
-          {widgets?.map((widget) => (
-            <WidgetSlot key={widget.id} widget={widget} />
-          ))}
+          {widgets?.map((widget) =>
+            widget.parked ? null : <WidgetSlot key={widget.id} widget={widget} />,
+          )}
 
           {/* Qoʻlyozma vidjetlar USTIDA — taqdimot va taymer ustiga ham
               yoziladi (R338); tanlov tutqichlari va panel esa undan yuqori. */}
@@ -73,6 +74,9 @@ export function DoskaCanvas() {
             <SelectionOverlay />
           </div>
           <SpotlightScrim />
+          <div className="contents" data-doska-no-export="">
+            <ParkedTabs widgets={widgets} />
+          </div>
         </>
       )}
     </div>
@@ -124,6 +128,57 @@ function SpotlightScrim() {
         <IconSpotlightExit className="size-5" />
         {t("exit")}
       </button>
+    </>
+  );
+}
+
+/**
+ * CHETGA QOʻYILGANLAR (R401) — har chetda vidjet belgisi bilan kichik
+ * tugmalar ustuni. Bosilsa vidjet oʻz joyiga qaytadi. Rasmga chiqmaydi.
+ */
+function ParkedTabs({ widgets }: { widgets: DoskaWidget[] | undefined }) {
+  const parkWidget = useDoskaStore((s) => s.parkWidget);
+  const t = useTranslations("Doska");
+  const parked = widgets?.filter((w) => w.parked) ?? [];
+  if (parked.length === 0) return null;
+
+  return (
+    <>
+      {(["left", "right"] as const).map((side) => {
+        const list = parked.filter((w) => w.parked === side);
+        if (list.length === 0) return null;
+        return (
+          <div
+            key={side}
+            data-doska-no-drag=""
+            className={cn(
+              "absolute top-1/4 flex flex-col gap-1.5",
+              side === "left" ? "left-0" : "right-0",
+            )}
+            style={{ zIndex: Z_PARKED }}
+          >
+            {list.map((w) => {
+              const Icon = WIDGET_ICONS[w.kind];
+              const label = t("parked.restore", { name: t(`widgets.${widgetMeta(w.kind).labelKey}`) });
+              return (
+                <button
+                  key={w.id}
+                  type="button"
+                  title={label}
+                  aria-label={label}
+                  onClick={() => parkWidget(w.id, null)}
+                  className={cn(
+                    "doska-bar grid size-12 place-items-center shadow-md transition-transform hover:scale-105",
+                    side === "left" ? "rounded-r-xl" : "rounded-l-xl",
+                  )}
+                >
+                  {Icon && <Icon className="size-6" />}
+                </button>
+              );
+            })}
+          </div>
+        );
+      })}
     </>
   );
 }

@@ -37,6 +37,9 @@ import {
    hook orqali EMAS: aks holda har sudrashda store yangilanib, effekt
    qayta ishga tushar va listenerlar sudrash oʻrtasida uzilib qolardi.
    ════════════════════════════════════════════════════════════════════ */
+
+/** Kanvas chetidan shu masofada qoʻyib yuborilgan vidjet chetga qoʻyiladi (px). */
+const PARK_EDGE = 16;
 export function useDoskaInteraction(rootRef: React.RefObject<HTMLElement | null>) {
   React.useEffect(() => {
     const root = rootRef.current;
@@ -218,6 +221,22 @@ export function useDoskaInteraction(rootRef: React.RefObject<HTMLElement | null>
        * toʻxtatiladi. `setTimeout` — `click` kelmasa (sensorli sudrash
        * uni umuman chiqarmaydi) keyingi oddiy bosish yutilib ketmasin.
        */
+      /**
+       * CHETGA QOʻYISH (R401) — barmoq ekranning chap yoki oʻng chetiga
+       * yetib qoʻyib yuborilsa, vidjet yashirinadi va chetda tugmasi
+       * qoladi. Chegara barmoq boʻyicha, vidjet boʻyicha emas: katta
+       * vidjetning yarmi chetdan chiqishi tasodifan boʻladi, barmoqni
+       * chetgacha olib borish esa — ataylab.
+       */
+      if (session.moved && session.mode === "move") {
+        const box = root.getBoundingClientRect();
+        const side =
+          e.clientX <= box.left + PARK_EDGE ? "left" : e.clientX >= box.right - PARK_EDGE ? "right" : null;
+        if (side) {
+          useDoskaStore.getState().parkWidget(session.widgetId, side, session.origin);
+        }
+      }
+
       if (session.moved) {
         const swallow = (ev: MouseEvent) => {
           ev.stopPropagation();

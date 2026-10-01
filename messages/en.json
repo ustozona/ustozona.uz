@@ -2102,6 +2102,9 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "doska-chetga-qoyish": {
+        "title": "Drag a board widget to the screen edge to tuck it away — a tab stays there to bring it back"
+      },
       "doska-ism-korinishi": {
         "title": "Random name now also shows one big name — readable from the back row; preset lists: 1–30 and the alphabet"
       },
@@ -5333,6 +5336,9 @@
       "shape": "Shape",
       "view": "Display",
       "labels": "Letters at the corners (A, B, C)"
+    },
+    "parked": {
+      "restore": "“{name}” — bring back"
     },
     "spotlight": {
       "exit": "Shrink"
