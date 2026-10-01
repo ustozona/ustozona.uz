@@ -2102,6 +2102,9 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "doska-matn-rang": {
+        "title": "Board text color and bold: ink, red, blue, green, orange, violet"
+      },
       "doska-fonlar-mavsum": {
         "title": "New board backgrounds: music staff (music lessons), autumn, spring and winter"
       },
@@ -5648,6 +5651,18 @@
       "unsupported": "No camera in this browser",
       "mirror": "Mirror",
       "frozenAlt": "Frozen frame"
+    },
+    "textStyle": {
+      "color": "Color",
+      "bold": "Bold",
+      "colors": {
+        "auto": "Ink / chalk",
+        "red": "Red",
+        "blue": "Blue",
+        "green": "Green",
+        "orange": "Orange",
+        "violet": "Violet"
+      }
     },
     "sticker": {
       "groups": {

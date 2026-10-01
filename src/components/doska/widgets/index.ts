@@ -31,7 +31,7 @@ import { StickerSettings, StickerWidget } from "./StickerWidget";
 import { PresentationWidget } from "./PresentationWidget";
 import { ShapeSettings, ShapeWidget } from "./ShapeWidget";
 import { StickyNoteWidget } from "./StickyNoteWidget";
-import { TextWidget } from "./TextWidget";
+import { TextSettings, TextWidget } from "./TextWidget";
 import { TimerSettings, TimerWidget } from "./TimerWidget";
 import { TrafficLightSettings, TrafficLightWidget } from "./TrafficLightWidget";
 import { WheelWidget } from "./WheelWidget";
@@ -117,6 +117,7 @@ export const WIDGET_ICONS: Record<
 export const WIDGET_SETTINGS: Partial<Record<WidgetKind, ComponentType<WidgetProps>>> = {
   "clock.v1": ClockSettings,
   "timer.v1": TimerSettings,
+  "text.v1": TextSettings,
   "traffic-light.v1": TrafficLightSettings,
   "shape.v1": ShapeSettings,
   "dice.v1": DiceSettings,

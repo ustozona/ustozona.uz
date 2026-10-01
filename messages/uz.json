@@ -2102,6 +2102,9 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "doska-matn-rang": {
+        "title": "Doskada matn rangi va qalinligi: siyoh, qizil, koʻk, yashil, toʻq sariq, binafsha"
+      },
       "doska-fonlar-mavsum": {
         "title": "Doskada yangi fonlar: nota chizigʻi (musiqa darsi), kuz, bahor va qish"
       },
@@ -5526,6 +5529,18 @@
       "unsupported": "Bu brauzerda kamera yoʻq",
       "mirror": "Koʻzgu (oʻngni chapga)",
       "frozenAlt": "Toʻxtatilgan kadr"
+    },
+    "textStyle": {
+      "color": "Rang",
+      "bold": "Qalin",
+      "colors": {
+        "auto": "Siyoh / boʻr",
+        "red": "Qizil",
+        "blue": "Koʻk",
+        "green": "Yashil",
+        "orange": "Toʻq sariq",
+        "violet": "Binafsha"
+      }
     },
     "sticker": {
       "groups": {

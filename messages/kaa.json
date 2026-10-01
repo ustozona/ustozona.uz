@@ -2102,6 +2102,9 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "doska-matn-rang": {
+        "title": "Doskada tekst reńi hám qalıńlıǵı: siya, qızıl, kók, jasıl, qızǵılt sarı, fiolet"
+      },
       "doska-fonlar-mavsum": {
         "title": "Doskada jańa fonlar: nota sızıǵı (muzıka sabaǵı), gúz, báhár hám qıs"
       },
@@ -5649,6 +5652,18 @@
       "unsupported": "Bul brauzerde kamera joq",
       "mirror": "Ayna",
       "frozenAlt": "Toqtatılǵan kadr"
+    },
+    "textStyle": {
+      "color": "Reń",
+      "bold": "Qalıń",
+      "colors": {
+        "auto": "Siya / bór",
+        "red": "Qızıl",
+        "blue": "Kók",
+        "green": "Jasıl",
+        "orange": "Qızǵılt sarı",
+        "violet": "Fiolet"
+      }
     },
     "sticker": {
       "groups": {

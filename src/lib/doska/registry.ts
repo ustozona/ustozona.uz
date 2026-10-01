@@ -176,6 +176,7 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
     defaultSize: { w: 460, h: 180 },
     minSize: { w: 160, h: 72 },
     initialState: { text: "" },
+    remember: ["color", "bold"],
     editable: true,
   },
   "sticky-note.v1": {
