@@ -18,6 +18,7 @@ import {
   deleteSet,
   getSet,
   getSetMeta,
+  hasSetGrades,
   hasSetSessions,
   listSets,
   listSetsWithPublishState,
@@ -272,7 +273,7 @@ export type SaveSetDraftValues = z.infer<typeof saveSetDraftSchema>;
 export type SetDraft = {
   set: ActivitySetRow;
   questions: DraftQuestionValues[];
-  /** Natijalari bor toʻplamni tahrirlash mumkin emas; nusxa kerak. */
+  /** Sessiya yoki jurnal bahosi bor toʻplamni tahrirlash mumkin emas. */
   hasSessions?: boolean;
 };
 
@@ -316,8 +317,11 @@ export async function reorderSetDraftAction(input: z.infer<typeof reorderSetSche
     }
     const itemsById = new Map(set.items.map((item) => [item.activityId, item]));
     const items = parsed.orderedActivityIds.map((id) => itemsById.get(id)!);
-    return { ok: true, set: await updateSet(set.id, { items: items as UpdateSetInput["items"] }) };
+    return { ok: true, set: await updateSet(set.id, { items: items as UpdateSetInput["items"] }, set.updatedAt) };
   } catch (error) {
+    if (error instanceof Error && error.message === "Toʻplam oʻzgargan, qayta yuklang") {
+      return { ok: false, reason: "stale" };
+    }
     if (error instanceof Error && error.message.startsWith("Bu test allaqachon oʻtkazilgan")) {
       return { ok: false, reason: "already_used" };
     }
@@ -344,6 +348,7 @@ export async function changeSetSequenceAction(input: z.infer<typeof sequenceChan
     }
     await assertSetEditable(set.id);
     const items = [...set.items];
+    let copiedActivityId: string | null = null;
     if (parsed.kind === "copy") {
       const source = await getActivity(parsed.activityId);
       if (!source) return { ok: false, reason: "invalid" };
@@ -354,12 +359,21 @@ export async function changeSetSequenceAction(input: z.infer<typeof sequenceChan
         config: source.config,
         items: source.items.map((item) => ({ content: item.content })),
       });
+      copiedActivityId = copy.id;
       items.splice(index + 1, 0, { ...items[index], activityId: copy.id });
     } else {
       items.splice(index, 1);
     }
-    return { ok: true, set: await updateSet(set.id, { items: items as UpdateSetInput["items"] }) };
+    try {
+      return { ok: true, set: await updateSet(set.id, { items: items as UpdateSetInput["items"] }, set.updatedAt) };
+    } catch (error) {
+      if (copiedActivityId) await deleteActivity(copiedActivityId);
+      throw error;
+    }
   } catch (error) {
+    if (error instanceof Error && error.message === "Toʻplam oʻzgargan, qayta yuklang") {
+      return { ok: false, reason: "stale" };
+    }
     if (error instanceof Error && error.message.startsWith("Bu test allaqachon oʻtkazilgan")) {
       return { ok: false, reason: "already_used" };
     }
@@ -536,7 +550,9 @@ export async function getSetDraftAction(setId: string): Promise<SetDraft | null>
     });
   }
 
-  return { set, questions, hasSessions: await hasSetSessions(set.id) };
+  // Jurnalga qoʻlda qoʻyilgan baho sessiyasiz ham boʻlishi mumkin.
+  // Muharrir ikkala holatda ham asl materialni qulflashi kerak.
+  return { set, questions, hasSessions: await hasSetSessions(set.id) || await hasSetGrades(set.id) };
 }
 
 /** Production Server Action xatolari yashiriladi. Oʻqituvchiga faqat

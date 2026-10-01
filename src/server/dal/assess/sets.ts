@@ -1,12 +1,13 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, isNotNull } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import {
   activities,
   activityItems,
   activitySets,
   assignments,
+  grades,
   quizSessions,
   type ActivitySetRow,
 } from "@/server/db/schema";
@@ -63,7 +64,7 @@ export type SetPublishState = {
   set: ActivitySetRow;
   /** Jurnalga koʻchirilgan boʻlsa — topshiriq id'si. */
   assignmentId: string | null;
-  /** Ishlatilgan toʻplamni tahrirlash/oʻchirish baho tarixiga zarar beradi. */
+  /** Sessiya yoki jurnal bahosi bor: mazmunni tahrirlash/oʻchirish xavfli. */
   hasSessions: boolean;
 };
 
@@ -104,8 +105,22 @@ export async function listSetsWithPublishState(classId?: string): Promise<SetPub
     .select({ id: quizSessions.id, setId: quizSessions.setId })
     .from(quizSessions)
     .where(and(eq(quizSessions.teacherId, teacher.id), inArray(quizSessions.setId, setIds)));
+  const gradedRows = await db
+    .select({ setId: assignments.setId })
+    .from(assignments)
+    .innerJoin(grades, eq(grades.assignmentId, assignments.id))
+    .where(and(
+      eq(assignments.teacherId, teacher.id),
+      eq(grades.teacherId, teacher.id),
+      inArray(assignments.setId, setIds),
+      isNotNull(grades.score),
+    ));
+  const usedSetIds = new Set([
+    ...sessionRows.map((row) => row.setId),
+    ...gradedRows.map((row) => row.setId),
+  ]);
   if (sessionRows.length === 0) {
-    return sets.map((set) => ({ set, assignmentId: assignmentBySet.get(set.id) ?? null, hasSessions: false }));
+    return sets.map((set) => ({ set, assignmentId: assignmentBySet.get(set.id) ?? null, hasSessions: usedSetIds.has(set.id) }));
   }
 
   const publishedRows = await db
@@ -133,7 +148,6 @@ export async function listSetsWithPublishState(classId?: string): Promise<SetPub
     }
   }
 
-  const usedSetIds = new Set(sessionRows.map((row) => row.setId));
   return sets.map((set) => ({ set, assignmentId: assignmentBySet.get(set.id) ?? null, hasSessions: usedSetIds.has(set.id) }));
 }
 
@@ -303,21 +317,46 @@ export async function hasSetSessions(id: string): Promise<boolean> {
   return Boolean(used);
 }
 
+/** Sessiyasiz, bevosita jurnalga yozilgan baho ham toʻplam mazmunini
+    oʻzgartirishga toʻsqinlik qiladi: aks holda eski xom ballning maʼnosi
+    oʻzgarishi mumkin. */
+export async function hasSetGrades(id: string): Promise<boolean> {
+  const teacher = await requireTeacher();
+  const [graded] = await db
+    .select({ id: grades.assignmentId })
+    .from(assignments)
+    .innerJoin(grades, eq(grades.assignmentId, assignments.id))
+    .where(and(
+      eq(assignments.setId, id),
+      eq(assignments.teacherId, teacher.id),
+      eq(grades.teacherId, teacher.id),
+      isNotNull(grades.score),
+    ))
+    .limit(1);
+  return Boolean(graded);
+}
+
 export async function assertSetEditable(id: string): Promise<void> {
-  if (await hasSetSessions(id)) {
+  if (await hasSetSessions(id) || await hasSetGrades(id)) {
     throw new Error("Bu test allaqachon oʻtkazilgan. Natijalarni saqlash uchun yangi test yarating.");
   }
 }
 
-export async function updateSet(id: string, patch: UpdateSetInput): Promise<ActivitySetRow> {
+export async function updateSet(id: string, patch: UpdateSetInput, expectedUpdatedAt?: Date): Promise<ActivitySetRow> {
   await assertSetEditable(id);
   const teacher = await requireTeacher();
   const [row] = await db
     .update(activitySets)
     .set({ ...patch, updatedAt: new Date() })
-    .where(and(eq(activitySets.id, id), eq(activitySets.teacherId, teacher.id)))
+    .where(and(
+      eq(activitySets.id, id),
+      eq(activitySets.teacherId, teacher.id),
+      ...(expectedUpdatedAt ? [eq(activitySets.updatedAt, expectedUpdatedAt)] : []),
+    ))
     .returning();
-  if (!row) throw new Error("Toʻplam topilmadi yoki sizga tegishli emas");
+  if (!row) throw new Error(expectedUpdatedAt
+    ? "Toʻplam oʻzgargan, qayta yuklang"
+    : "Toʻplam topilmadi yoki sizga tegishli emas");
   return row;
 }
 
