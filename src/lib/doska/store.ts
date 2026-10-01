@@ -968,10 +968,13 @@ export const useDoskaStore = create<DoskaState>()(
             screen.background = template.background;
             const canvas = typeof window === "undefined" ? null : { w: window.innerWidth, h: window.innerHeight };
             const dock = useDoskaPrefs.getState().dock;
+            // «Barcha ekranlarda» vidjetlar ham yangi ekranga koʻchadi (gatherPinned) —
+            // ularning joyi ham band hisoblanadi.
+            const pinned = s.deck.screens.flatMap((x) => x.widgets.filter((w) => w.pinned && !w.parked));
             // Har biri oldingilarini hisobga olib boʻsh joyga — ustma-ust emas.
             for (const [i, item] of template.widgets.entries()) {
               const meta = widgetMeta(item.kind);
-              const spot = findFreeSpot(meta.defaultSize, screen.widgets, canvas, dock);
+              const spot = findFreeSpot(meta.defaultSize, [...pinned, ...screen.widgets], canvas, dock);
               screen.widgets.push({
                 id: newId(),
                 kind: item.kind,

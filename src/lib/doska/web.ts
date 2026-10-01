@@ -25,6 +25,14 @@ export function displayHost(url: URL): string {
   return url.hostname.replace(/^www\./, "");
 }
 
+/** Boshlanish vaqti: `90`, `90s` yoki `1m30s` / `1h2m3s` → soniya. */
+function parseStart(raw: string): number {
+  if (/^\d+s?$/.test(raw)) return Number.parseInt(raw, 10);
+  const m = raw.match(/^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$/);
+  if (!m) return 0;
+  return Number(m[1] ?? 0) * 3600 + Number(m[2] ?? 0) * 60 + Number(m[3] ?? 0);
+}
+
 export type VideoSource =
   | { type: "iframe"; src: string }
   | { type: "file"; src: string };
@@ -45,7 +53,7 @@ export function videoSource(raw: string): VideoSource | null {
     yt = url.searchParams.get("v") ?? url.pathname.match(/^\/(?:embed|shorts|live)\/([^/?]+)/)?.[1] ?? null;
   }
   if (yt && /^[\w-]{6,20}$/.test(yt)) {
-    const start = Number.parseInt(url.searchParams.get("t") ?? url.searchParams.get("start") ?? "", 10);
+    const start = parseStart(url.searchParams.get("t") ?? url.searchParams.get("start") ?? "");
     const params = new URLSearchParams({ rel: "0", modestbranding: "1" });
     if (start > 0) params.set("start", String(start));
     return { type: "iframe", src: `https://www.youtube-nocookie.com/embed/${yt}?${params}` };
