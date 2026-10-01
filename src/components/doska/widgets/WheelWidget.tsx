@@ -209,6 +209,7 @@ export function WheelWidget({ widget }: { widget: DoskaWidget }) {
   if (listOpen) {
     return (
       <WheelList
+        absentToday={absentToday ?? NO_KEYS}
         state={state}
         typed={typed}
         entries={entries}
@@ -504,6 +505,7 @@ export function useWheelAccess(): WheelAccess | null {
    qatori — sudrash tutqichi; qolgan qismi `data-doska-no-drag`. */
 
 function WheelList({
+  absentToday,
   state,
   typed,
   entries,
@@ -516,6 +518,8 @@ function WheelList({
   onBack,
   onSourceChange,
 }: {
+  /** Bugun davomatda yoʻq — roʻyxatda alohida koʻrsatiladi. */
+  absentToday: string[];
   state: WheelState;
   /** Oʻqituvchi yozgan hamma ism — chegaradan oshgani ham. */
   typed: string[];
@@ -620,6 +624,7 @@ function WheelList({
 
           {roster ? (
             <RosterNames
+              absentToday={absentToday}
               roster={roster}
               load={rosterLoad}
               overflowWarning={overflowWarning}
@@ -854,12 +859,14 @@ export function ConnectClass({
  * (`useAbsentToday`), bu roʻyxatda ular alohida belgilanmaydi.
  */
 function RosterNames({
+  absentToday,
   roster,
   load,
   overflowWarning,
   onToggle,
   onDisconnect,
 }: {
+  absentToday: string[];
   roster: WheelRoster;
   load: (RosterLoad & { retry: () => void }) | null;
   overflowWarning: React.ReactNode;
@@ -902,6 +909,18 @@ function RosterNames({
         <>
           <div className="flex flex-wrap gap-1.5" translate="no">
             {load.students.map((s) => {
+              // Davomatda yoʻq — qoʻlda qaytarib boʻlmaydi: manba davomat.
+              if (absentToday.includes(s.id)) {
+                return (
+                  <span
+                    key={s.id}
+                    title={t("absentByAttendance")}
+                    className="bg-muted text-muted-foreground rounded-full px-3 py-0.5 text-xs line-through opacity-70"
+                  >
+                    {s.name}
+                  </span>
+                );
+              }
               const absent = roster.excluded.includes(s.id);
               return (
                 <button
@@ -924,6 +943,11 @@ function RosterNames({
           </div>
           {overflowWarning || (
             <p className="text-muted-foreground text-xs leading-snug">{t("absentHint")}</p>
+          )}
+          {absentToday.length > 0 && (
+            <p className="text-muted-foreground text-xs leading-snug">
+              {t("absentAttendance", { count: absentToday.length })}
+            </p>
           )}
         </>
       )}

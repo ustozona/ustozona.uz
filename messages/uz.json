@@ -5458,6 +5458,8 @@
       "fromClass": "{className} roʻyxati",
       "disconnect": "Uzish",
       "absentToggle": "{name} — bugun yoʻq",
+      "absentByAttendance": "Davomatda bugun yoʻq",
+      "absentAttendance": "Davomatda bugun yoʻq: {count} — ular gʻildirakka chiqmaydi",
       "absentHint": "Bugun yoʻq bolani bosing — u gʻildirakka chiqmaydi.",
       "suggestConnect": "Sinfingiz jurnalda boʻlsa, ismlarni qoʻlda yozish shart emas.",
       "rosterUnavailable": "Sinf roʻyxati faqat Pro tarifida, hisobingizga kirganingizda koʻrinadi.",

@@ -5580,6 +5580,8 @@
       "fromClass": "{className} list",
       "disconnect": "Disconnect",
       "absentToggle": "{name} — absent today",
+      "absentByAttendance": "Absent today in attendance",
+      "absentAttendance": "Absent today in attendance: {count} — left off the wheel",
       "absentHint": "Tap a student who is absent today — they won’t appear on the wheel.",
       "suggestConnect": "If your class is in the gradebook, you don’t need to type names by hand.",
       "rosterUnavailable": "The class list is available only on Pro, when you’re signed in.",
