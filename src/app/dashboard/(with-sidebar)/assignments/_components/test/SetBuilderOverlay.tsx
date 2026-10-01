@@ -46,6 +46,7 @@ export default function SetBuilderOverlay({
   firstShape = "mcq",
   initialQuestions,
   startWithBank = false,
+  initialIndex,
   onClose,
   onSaved,
 }: {
@@ -62,6 +63,8 @@ export default function SetBuilderOverlay({
   initialQuestions?: DraftQuestion[];
   /** Yangi topshiriq ichidagi «Bankdan savol olish» bosilganda darhol bankni ochadi. */
   startWithBank?: boolean;
+  /** Topshiriq ketma-ketligidan tanlangan materialni darhol ochish. */
+  initialIndex?: number;
   onClose: () => void;
   onSaved: (set: ActivitySetRow, copiedFromUsedSet?: boolean) => void;
 }) {
@@ -133,6 +136,7 @@ export default function SetBuilderOverlay({
         ? [...loaded, ...appended]
         : [newQuestion("mcq")]);
       if (appended[0]) setActiveKey(appended[0].key);
+      else if (initialIndex !== undefined && loaded[initialIndex]) setActiveKey(loaded[initialIndex].key);
       setLoading(false);
     }).catch(() => {
       if (!cancelled) {
@@ -147,7 +151,7 @@ export default function SetBuilderOverlay({
     // roʻyxatga qoʻshilsa esa til obyekti yangilanganda toʻplam qaytadan
     // yuklanib, oʻqituvchining tahrirlanmagan qoralamasi ustiga yozilardi.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setId]);
+  }, [setId, initialIndex]);
 
   // Faol savol har doim mavjud boʻlishi kerak — yuklangandan yoki
   // oʻchirishdan keyin roʻyxatning birinchisiga tushadi.

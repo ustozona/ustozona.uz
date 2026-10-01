@@ -234,11 +234,12 @@ export default function AssignmentEditorOverlay({
     /** Qoralamaning oʻz nomi — topshiriq sarlavhasi boʻsh boʻlsa ishlatiladi. */
     initialTitle?: string;
     startWithBank?: boolean;
+    initialIndex?: number;
   } | null>(null);
   /* Testni oʻquvchilarga berish — Topshiriqlar sahifasidagi bilan AYNAN
      bir oqim («Darsda oʻtkazish» / «Uyga berish» → natija ekrani →
      «Jurnalga»). Ilgari bu yerda alohida «Sessiya» modali ochilardi. */
-  const launchFlow = useLaunchFlow();
+  const launchFlow = useLaunchFlow({ sameTab: true });
 
   const isDraft = session.kind === "draft";
   const payload = session.kind === "draft" ? session.payload : null;
@@ -422,9 +423,9 @@ export default function AssignmentEditorOverlay({
   }
 
   /** Biriktirilgan testning savollarini tahrirlash. */
-  function handleEditAttachedTest() {
+  function handleEditAttachedTest(index?: number) {
     if (!attachedSetId) return;
-    setBuilder({ setId: attachedSetId });
+    setBuilder({ setId: attachedSetId, initialIndex: index });
   }
 
   /** «Darsda oʻtkazish» / «Uyga berish» — Topshiriqlar roʻyxatidagi
@@ -486,6 +487,7 @@ export default function AssignmentEditorOverlay({
     }
     return n;
   }, [isDraft, members, classDataMap]);
+  const scoreLocked = Boolean(attachedSetId && (gradedCount > 0 || setMeta?.id !== attachedSetId || setMeta.maxScore > 0));
 
   /** Tahrir boshlanishidagi surat — "Bekor qilish" shu holatga qaytaradi. */
   const maxScoreUndo = useRef<{
@@ -790,6 +792,9 @@ export default function AssignmentEditorOverlay({
             onEdit={handleEditAttachedTest}
             onBank={handlePickBankQuestions}
             onRun={handleRun}
+            onChanged={handleSetSaved}
+            hasGrades={gradedCount > 0}
+            editing={Boolean(builder)}
           />
           <Button variant="ghost" size="sm" className="self-start text-muted-foreground" onClick={handleDetachTest}>
             <X className="size-4" /> {t("detachTest")}
@@ -1004,6 +1009,14 @@ export default function AssignmentEditorOverlay({
                 closeLabel={t("close")}
               />
               <div className="flex flex-col gap-5 px-5 py-5 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:scrollbar-thin">
+                <div className="rounded-xl bg-muted/50 p-3 text-xs text-muted-foreground">
+                  <p className="mb-2 font-semibold text-foreground">{t("detailsOverviewTitle")}</p>
+                  <p>{t("detailsOverviewClasses", { count: selectedClasses.length })}</p>
+                  <p>{t("detailsOverviewDates", { count: selectedClasses.filter((c) => Boolean(dateOf(c.id))).length })}</p>
+                  <p>{attachedSetId && setMeta?.id === attachedSetId
+                    ? t("detailsOverviewItems", { count: setMeta.itemCount })
+                    : t("detailsOverviewManual")}</p>
+                </div>
                 {/* SINFLAR — koʻp tanlov (dars muharriridagi naqsh). */}
                 <div className="flex flex-col">
                   <h3 className="text-label mb-2">{t("classesLabel")}</h3>
@@ -1247,7 +1260,7 @@ export default function AssignmentEditorOverlay({
                           type="button"
                           className="shrink-0 text-muted-foreground/60 hover:text-foreground"
                         >
-                          {attachedSetId ? (
+                          {scoreLocked ? (
                             <Lock className="size-3.5" />
                           ) : (
                             <Info className="size-3.5" />
@@ -1255,14 +1268,14 @@ export default function AssignmentEditorOverlay({
                         </button>
                       </TooltipTrigger>
                       <TooltipContent side="top" className="max-w-56">
-                        {attachedSetId
+                        {scoreLocked
                           ? t("maxScoreLockedTooltip")
                           : t("maxScoreTooltip")}
                       </TooltipContent>
                     </Tooltip>
                   }
                 >
-                  {attachedSetId ? (
+                  {scoreLocked ? (
                     <span className="text-sm font-medium text-muted-foreground">
                       {current.maxScore}
                     </span>
@@ -1296,7 +1309,7 @@ export default function AssignmentEditorOverlay({
                 {/* Tez tanlash (R207) — oʻqituvchining oʻz jurnalidan olingan
                   maxrajlar. Qulflangan holatda koʻrsatilmaydi: bosilsa ham
                   ishlamaydigan tugma faqat chalgʻitardi. */}
-                {!attachedSetId && scoreSuggestions.length > 0 && (
+                {!scoreLocked && scoreSuggestions.length > 0 && (
                   <div className="-mt-3 flex flex-wrap items-center gap-1.5">
                     {scoreSuggestions.map((score) => (
                       <button
@@ -1358,6 +1371,7 @@ export default function AssignmentEditorOverlay({
             firstShape={builder.firstShape}
             initialQuestions={builder.initialQuestions}
             startWithBank={builder.startWithBank}
+            initialIndex={builder.initialIndex}
             initialTitle={
               builder.setId
                 ? undefined

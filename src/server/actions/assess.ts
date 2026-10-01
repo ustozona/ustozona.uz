@@ -18,11 +18,13 @@ import {
   deleteSet,
   getSet,
   getSetMeta,
+  hasSetGrades,
   hasSetSessions,
   listSets,
   listSetsWithPublishState,
   setSetArchived,
   updateSet,
+  type UpdateSetInput,
   type SetMeta,
   type SetPublishState,
 } from "@/server/dal/assess/sets";
@@ -250,6 +252,10 @@ export type DraftQuestionValues = z.infer<typeof draftQuestionSchema>;
 const saveSetDraftSchema = z.object({
   /** Boʻsh — yangi toʻplam yaratiladi. */
   setId: z.string().min(1).optional(),
+  /** Markazdagi tezkor amallar eski ochiq nusxa bilan boshqa tahrirni
+      bosib yubormasin. Builder bu maydonni yubormaydi. */
+  expectedActivityIds: z.array(z.string().min(1)).optional(),
+  expectedUpdatedAt: z.string().datetime().optional(),
   classId: z.string().min(1),
   title: z.string().min(1).max(200),
   purpose: z.enum(["formative", "summative"]),
@@ -267,9 +273,113 @@ export type SaveSetDraftValues = z.infer<typeof saveSetDraftSchema>;
 export type SetDraft = {
   set: ActivitySetRow;
   questions: DraftQuestionValues[];
-  /** Natijalari bor toʻplamni tahrirlash mumkin emas; nusxa kerak. */
+  /** Sessiya yoki jurnal bahosi bor toʻplamni tahrirlash mumkin emas. */
   hasSessions?: boolean;
 };
+
+const reorderSetSchema = z.object({
+  setId: z.string().min(1),
+  expectedUpdatedAt: z.string().datetime(),
+  expectedActivityIds: z.array(z.string().min(1)).min(1),
+  orderedActivityIds: z.array(z.string().min(1)).min(1),
+});
+
+const sequenceChangeSchema = z.object({
+  setId: z.string().min(1),
+  expectedUpdatedAt: z.string().datetime(),
+  expectedActivityIds: z.array(z.string().min(1)).min(1),
+  kind: z.enum(["copy", "remove"]),
+  activityId: z.string().min(1),
+});
+
+function unchangedSequence(set: ActivitySetRow, expectedUpdatedAt: string, expectedActivityIds: string[]) {
+  return set.updatedAt.toISOString() === expectedUpdatedAt &&
+    JSON.stringify(set.items.map((item) => item.activityId)) === JSON.stringify(expectedActivityIds);
+}
+
+/** Faqat toʻplamdagi tartibni yangilaydi; activities va javob elementlariga
+    tegmaydi. Mavjud sessiyalar yoki boshqa oynadagi tahrir toʻxtatiladi. */
+export async function reorderSetDraftAction(input: z.infer<typeof reorderSetSchema>): Promise<
+  | { ok: true; set: ActivitySetRow }
+  | { ok: false; reason: "already_used" | "stale" | "invalid" | "failed" }
+> {
+  try {
+    const parsed = reorderSetSchema.parse(input);
+    const set = await getSet(parsed.setId);
+    if (!set) return { ok: false, reason: "failed" };
+    const currentIds = set.items.map((item) => item.activityId);
+    if (!unchangedSequence(set, parsed.expectedUpdatedAt, parsed.expectedActivityIds)) {
+      return { ok: false, reason: "stale" };
+    }
+    if (currentIds.length !== parsed.orderedActivityIds.length ||
+      [...currentIds].sort().join("\0") !== [...parsed.orderedActivityIds].sort().join("\0")) {
+      return { ok: false, reason: "invalid" };
+    }
+    const itemsById = new Map(set.items.map((item) => [item.activityId, item]));
+    const items = parsed.orderedActivityIds.map((id) => itemsById.get(id)!);
+    return { ok: true, set: await updateSet(set.id, { items: items as UpdateSetInput["items"] }, set.updatedAt) };
+  } catch (error) {
+    if (error instanceof Error && error.message === "Toʻplam oʻzgargan, qayta yuklang") {
+      return { ok: false, reason: "stale" };
+    }
+    if (error instanceof Error && error.message.startsWith("Bu test allaqachon oʻtkazilgan")) {
+      return { ok: false, reason: "already_used" };
+    }
+    return { ok: false, reason: "failed" };
+  }
+}
+
+/** Nusxalash faqat bitta yangi faoliyat yozadi; olib tashlash esa bankdagi
+    savol va uni ishlatadigan boshqa toʻplamlarga tegmasdan bogʻlanishni uzadi. */
+export async function changeSetSequenceAction(input: z.infer<typeof sequenceChangeSchema>): Promise<
+  | { ok: true; set: ActivitySetRow }
+  | { ok: false; reason: "already_used" | "stale" | "invalid" | "failed" }
+> {
+  try {
+    const parsed = sequenceChangeSchema.parse(input);
+    const set = await getSet(parsed.setId);
+    if (!set) return { ok: false, reason: "failed" };
+    if (!unchangedSequence(set, parsed.expectedUpdatedAt, parsed.expectedActivityIds)) {
+      return { ok: false, reason: "stale" };
+    }
+    const index = set.items.findIndex((item) => item.activityId === parsed.activityId);
+    if (index < 0 || (parsed.kind === "remove" && set.items.length <= 1)) {
+      return { ok: false, reason: "invalid" };
+    }
+    await assertSetEditable(set.id);
+    const items = [...set.items];
+    let copiedActivityId: string | null = null;
+    if (parsed.kind === "copy") {
+      const source = await getActivity(parsed.activityId);
+      if (!source) return { ok: false, reason: "invalid" };
+      const copy = await createActivity({
+        shape: source.shape,
+        title: source.title,
+        grading: source.grading,
+        config: source.config,
+        items: source.items.map((item) => ({ content: item.content })),
+      });
+      copiedActivityId = copy.id;
+      items.splice(index + 1, 0, { ...items[index], activityId: copy.id });
+    } else {
+      items.splice(index, 1);
+    }
+    try {
+      return { ok: true, set: await updateSet(set.id, { items: items as UpdateSetInput["items"] }, set.updatedAt) };
+    } catch (error) {
+      if (copiedActivityId) await deleteActivity(copiedActivityId);
+      throw error;
+    }
+  } catch (error) {
+    if (error instanceof Error && error.message === "Toʻplam oʻzgargan, qayta yuklang") {
+      return { ok: false, reason: "stale" };
+    }
+    if (error instanceof Error && error.message.startsWith("Bu test allaqachon oʻtkazilgan")) {
+      return { ok: false, reason: "already_used" };
+    }
+    return { ok: false, reason: "failed" };
+  }
+}
 
 function validateDraftQuestion(q: DraftQuestionValues, index: number) {
   const label = `${index + 1}-savol`;
@@ -440,20 +550,25 @@ export async function getSetDraftAction(setId: string): Promise<SetDraft | null>
     });
   }
 
-  return { set, questions, hasSessions: await hasSetSessions(set.id) };
+  // Jurnalga qoʻlda qoʻyilgan baho sessiyasiz ham boʻlishi mumkin.
+  // Muharrir ikkala holatda ham asl materialni qulflashi kerak.
+  return { set, questions, hasSessions: await hasSetSessions(set.id) || await hasSetGrades(set.id) };
 }
 
 /** Production Server Action xatolari yashiriladi. Oʻqituvchiga faqat
     xavfsiz, oldindan maʼlum rad sabablarini qaytaramiz. */
 export async function saveSetDraftResultAction(input: SaveSetDraftValues): Promise<
   | { ok: true; draft: SetDraft }
-  | { ok: false; reason: "already_used" | "invalid" | "failed"; message?: string }
+  | { ok: false; reason: "already_used" | "stale" | "invalid" | "failed"; message?: string }
 > {
   try {
     return { ok: true, draft: await saveSetDraftAction(input) };
   } catch (error) {
     if (error instanceof Error && error.message.startsWith("Bu test allaqachon oʻtkazilgan")) {
       return { ok: false, reason: "already_used" };
+    }
+    if (error instanceof Error && error.message === "Toʻplam oʻzgargan, qayta yuklang") {
+      return { ok: false, reason: "stale" };
     }
     if (error instanceof Error && /^\d+-savol:/.test(error.message)) {
       return { ok: false, reason: "invalid", message: error.message };
@@ -472,6 +587,13 @@ export async function saveSetDraftAction(input: SaveSetDraftValues): Promise<Set
 
   const previous = parsed.setId ? await getSet(parsed.setId) : null;
   if (parsed.setId && !previous) throw new Error("Toʻplam topilmadi yoki sizga tegishli emas");
+  if (parsed.expectedActivityIds && previous &&
+    JSON.stringify(previous.items.map((item) => item.activityId)) !== JSON.stringify(parsed.expectedActivityIds)) {
+    throw new Error("Toʻplam oʻzgargan, qayta yuklang");
+  }
+  if (parsed.expectedUpdatedAt && previous?.updatedAt.toISOString() !== parsed.expectedUpdatedAt) {
+    throw new Error("Toʻplam oʻzgargan, qayta yuklang");
+  }
   // Savollarga tegishdan OLDIN tekshiramiz: aks holda birinchi update
   // javoblarni CASCADE bilan oʻchirib, keyingisi xato qaytarishi mumkin.
   if (previous) await assertSetEditable(previous.id);

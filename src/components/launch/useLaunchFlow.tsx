@@ -25,12 +25,15 @@ export function useLaunchFlow({
   onChanged,
   onOpenBank,
   onCreateNew,
+  sameTab = false,
 }: {
   onChanged?: () => void;
   /** «Qaysi test?» qadamida — bankdan olish. */
   onOpenBank?: () => void;
   /** «Qaysi test?» qadamida — yangi test tuzish. */
   onCreateNew?: () => void;
+  /** Muharrirdan darsga oʻtganda yangi brauzer oynasi ochilmaydi. */
+  sameTab?: boolean;
 } = {}) {
   const [launch, setLaunch] = useState<LaunchState>(null);
   const [runId, setRunId] = useState<string | null>(null);
@@ -47,6 +50,7 @@ export function useLaunchFlow({
         <LaunchDialog
           classId={launch.classId}
           preset={launch.preset}
+          sameTab={sameTab}
           onClose={() => setLaunch(null)}
           onStarted={(run: RunSummary) => {
             setLaunch(null);
