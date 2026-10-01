@@ -2102,6 +2102,9 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "doska-barcha-ekranlarda": {
+        "title": "Doska: set a widget to “On all screens” — the timer, clock or schedule stays put when you switch screens"
+      },
       "doska-yorliqlar": {
         "title": "Doska: press K to see every shortcut — they also work with a Russian keyboard, and a clicker switches screens"
       },
@@ -5228,7 +5231,11 @@
       "unlock": "{widget} — unlock",
       "unlockShort": "Unlock",
       "spotlight": "{widget} — spotlight",
-      "spotlightShort": "Spotlight"
+      "spotlightShort": "Spotlight",
+      "pin": "{widget} — show on all screens",
+      "pinShort": "On all screens",
+      "unpin": "{widget} — keep on this screen only",
+      "unpinShort": "This screen only"
     },
     "bar": {
       "clear": "Clear",

@@ -36,6 +36,13 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "doska-barcha-ekranlarda",
+    date: "2026-10-01",
+    type: "yangi",
+    title: "Doska: vidjetni «Barcha ekranlarda» qiling — taymer, soat va jadval ekran almashganda ham joyida qoladi",
+    href: "/doska",
+  },
+  {
     id: "doska-yorliqlar",
     date: "2026-10-01",
     type: "yaxshilandi",

@@ -2102,6 +2102,9 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "doska-barcha-ekranlarda": {
+        "title": "Doska: vidjetni «Barcha ekranlarda» qiling — taymer, soat va jadval ekran almashganda ham joyida qoladi"
+      },
       "doska-yorliqlar": {
         "title": "Doska: «K» tugmasi barcha tezkor tugmalarni koʻrsatadi, ular rus klaviaturasida ham ishlaydi, pult bilan ekran almashadi"
       },
@@ -5106,7 +5109,11 @@
       "unlock": "{widget} — qulfni ochish",
       "unlockShort": "Qulfni ochish",
       "spotlight": "{widget} — markazga chiqarish",
-      "spotlightShort": "Markazga"
+      "spotlightShort": "Markazga",
+      "pin": "{widget} — barcha ekranlarda koʻrsatish",
+      "pinShort": "Barcha ekranlarda",
+      "unpin": "{widget} — faqat shu ekranda qoldirish",
+      "unpinShort": "Faqat shu ekranda"
     },
     "bar": {
       "clear": "Tozalash",

@@ -47,6 +47,13 @@ export type DoskaWidget = {
    * eski saqlangan ekranlarda yoʻq va `undefined` = qulflanmagan.
    */
   locked?: boolean;
+  /**
+   * Barcha ekranlarda — ekran almashganda vidjet yangi ekranga oʻzi
+   * koʻchadi (taymer, soat, jadval). Nusxa EMAS: aynan shu vidjet, shuning
+   * uchun ishlayotgan taymer toʻxtamaydi va ikki joyda sanamaydi
+   * (docs/doska-referens-koriklari.md R398). `undefined` = shu ekranda.
+   */
+  pinned?: boolean;
   state: Record<string, unknown>;
 };
 

@@ -359,6 +359,8 @@ type DoskaState = {
   closeSettings: () => void;
   /** Qulflash/qulfni ochish — oʻqituvchi amali, tarixga yoziladi. */
   toggleLock: (id: string) => void;
+  /** «Barcha ekranlarda» — yoqish/oʻchirish, tarixga yoziladi. */
+  togglePin: (id: string) => void;
   setSpotlight: (id: string | null) => void;
   setCurtain: (on: boolean) => void;
 
@@ -449,6 +451,46 @@ function withScreenInk(
     screens: deck.screens.map((s) =>
       s.id === screenId ? { ...s, ink: fn(s.ink ?? []) } : s,
     ),
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+/**
+ * «Barcha ekranlarda» vidjetlarini `targetId` ekranga yigʻadi — bogʻlangan
+ * yozuvi bilan birga. Har ekrandan yigʻiladi, faqat oldingisidan emas:
+ * holat qanday kelgan boʻlmasin (eski saqlash, qaytarish), qadalgan
+ * vidjet doim koʻrinayotgan ekranda boʻladi. Koʻchiradigan narsa yoʻq
+ * boʻlsa deck oʻsha obyekt qaytadi — saqlash bekor qoʻzgʻalmaydi.
+ */
+function gatherPinned(deck: DoskaDeck, targetId: string): DoskaDeck {
+  const moved: DoskaWidget[] = [];
+  const movedInk: InkStroke[] = [];
+  const screens = deck.screens.map((s) => {
+    if (s.id === targetId || !s.widgets.some((w) => w.pinned)) return s;
+    const ids = new Set(s.widgets.filter((w) => w.pinned).map((w) => w.id));
+    moved.push(...s.widgets.filter((w) => ids.has(w.id)));
+    const ink = s.ink ?? [];
+    movedInk.push(...ink.filter((x) => x.anchor && ids.has(x.anchor.widgetId)));
+    return {
+      ...s,
+      widgets: s.widgets.filter((w) => !ids.has(w.id)),
+      ink: ink.filter((x) => !(x.anchor && ids.has(x.anchor.widgetId))),
+    };
+  });
+  if (moved.length === 0) return deck;
+
+  return {
+    ...deck,
+    screens: screens.map((s) => {
+      if (s.id !== targetId) return s;
+      // Qadalgan vidjet ustda turadi — yangi ekranning mazmuni uni yopmasin.
+      const top = s.widgets.reduce((m, w) => Math.max(m, w.z), 0);
+      return {
+        ...s,
+        widgets: [...s.widgets, ...moved.map((w, i) => ({ ...w, z: top + 1 + i }))],
+        ink: [...(s.ink ?? []), ...movedInk],
+      };
+    }),
     updatedAt: new Date().toISOString(),
   };
 }
@@ -613,6 +655,8 @@ export const useDoskaStore = create<DoskaState>()(
             state: structuredClone(source.state),
             // Nusxa QULFSIZ tugʻiladi: oʻqituvchi uni joyiga surmoqchi.
             locked: undefined,
+            // …va faqat shu ekranda: ikkinchi «hamma joyda» taymer kerak emas.
+            pinned: undefined,
           };
 
           set({
@@ -694,6 +738,19 @@ export const useDoskaStore = create<DoskaState>()(
             };
           }),
 
+        togglePin: (id) =>
+          set((s) => {
+            const screen = s.deck.screens.find((x) => x.id === s.activeScreenId);
+            if (!screen?.widgets.some((w) => w.id === id)) return s;
+            return {
+              ...pushHistory(s),
+              notice: null,
+              deck: withActiveScreen(s.deck, s.activeScreenId, (ws) =>
+                ws.map((w) => (w.id === id ? { ...w, pinned: w.pinned ? undefined : true } : w)),
+              ),
+            };
+          }),
+
         // Tanlov ham yopiladi: markazdagi vidjetda tanlovga bogʻliq
         // tugmalar (taymerning «Qaytadan», «+1») sinfga koʻrinmasin.
         setSpotlight: (id) =>
@@ -732,14 +789,18 @@ export const useDoskaStore = create<DoskaState>()(
             if (s.deck.screens.length <= 1) return s;
             if (screenHasLocked(s.deck, id)) return s;
 
-            const rest = s.deck.screens
-              .filter((x) => x.id !== id)
+            const nextActive =
+              s.activeScreenId === id ? s.deck.screens.find((x) => x.id !== id)!.id : s.activeScreenId;
+            // Qadalgan vidjetlar oʻchayotgan ekran bilan ketmaydi — avval
+            // keyingi koʻrinadigan ekranga oʻtadi.
+            const rest = gatherPinned(s.deck, nextActive)
+              .screens.filter((x) => x.id !== id)
               .map((x, i) => ({ ...x, ordinal: i }));
 
             return {
               ...pushHistory(s),
               deck: { ...s.deck, screens: rest, updatedAt: new Date().toISOString() },
-              activeScreenId: s.activeScreenId === id ? rest[0].id : s.activeScreenId,
+              activeScreenId: nextActive,
               selectedId: null,
               editingId: null,
               settingsId: null,
@@ -754,11 +815,14 @@ export const useDoskaStore = create<DoskaState>()(
             return {
               ...pushHistory(s),
               notice: null,
-              deck: {
-                ...s.deck,
-                screens: [...s.deck.screens, screen],
-                updatedAt: new Date().toISOString(),
-              },
+              deck: gatherPinned(
+                {
+                  ...s.deck,
+                  screens: [...s.deck.screens, screen],
+                  updatedAt: new Date().toISOString(),
+                },
+                screen.id,
+              ),
               activeScreenId: screen.id,
               selectedId: null,
               editingId: null,
@@ -767,21 +831,25 @@ export const useDoskaStore = create<DoskaState>()(
             };
           }),
 
+        // Qadalgan vidjetlarning koʻchishi tarixga YOZILMAYDI: bu ekran
+        // almashtirishning bir qismi, oʻqituvchi amali emas. Tarixdagi
+        // har surat oʻz `activeScreenId` si bilan izchil.
         setActiveScreen: (id) =>
-          set({
+          set((s) => ({
+            deck: gatherPinned(s.deck, id),
             activeScreenId: id,
             selectedId: null,
             editingId: null,
             settingsId: null,
             spotlightId: null,
-          }),
+          })),
 
         clearScreen: () =>
           set((s) => {
             const screen = s.deck.screens.find((x) => x.id === s.activeScreenId);
-            // Qulflangan vidjetlar tozalashdan ham omon qoladi — qulf
+            // Qulflangan va «barcha ekranlarda» vidjetlar tozalashdan omon qoladi — qulf
             // «bu joyida tursin» degani (R311).
-            const kept = screen?.widgets.filter((w) => w.locked) ?? [];
+            const kept = screen?.widgets.filter((w) => w.locked || w.pinned) ?? [];
             // Yozuv ham ketadi: «ekranni tozalash» — toza doska. Faqat
             // QOLGAN (qulflangan) vidjet sahifalariga bogʻlangan yozuv
             // u bilan birga qoladi — aks holda taqdimotning boshqa

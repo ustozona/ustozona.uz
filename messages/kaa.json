@@ -2102,6 +2102,9 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "doska-barcha-ekranlarda": {
+        "title": "Doska: vidjetti «Barlıq ekranlarda» etiń — taymer, saat hám keste ekran almasqanda da ornında qaladı"
+      },
       "doska-yorliqlar": {
         "title": "Doska: K túymesi barlıq tez túymelerdi kórsetedi — olar rus klaviaturasında da isleydi, pult ekranlardı almastıradı"
       },
@@ -5229,7 +5232,11 @@
       "unlock": "{widget} — bosatıw",
       "unlockShort": "Bosatıw",
       "spotlight": "{widget} — ortaǵa shıǵarıw",
-      "spotlightShort": "Ortaǵa"
+      "spotlightShort": "Ortaǵa",
+      "pin": "{widget} — barlıq ekranlarda kórsetiw",
+      "pinShort": "Barlıq ekranlarda",
+      "unpin": "{widget} — tek usı ekranda qaldırıw",
+      "unpinShort": "Tek usı ekranda"
     },
     "bar": {
       "clear": "Tazalaw",

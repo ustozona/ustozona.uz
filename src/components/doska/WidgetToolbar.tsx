@@ -7,7 +7,7 @@ import { useDoskaStore } from "@/lib/doska/store";
 import { widgetMeta } from "@/lib/doska/registry";
 import type { DoskaWidget } from "@/lib/doska/types";
 import { BarDivider, BarGroup, BarTextButton } from "./BarGroup";
-import { IconCopy, IconLock, IconSettings, IconSpotlight, IconTrash, IconUnlock } from "./icons";
+import { IconCopy, IconLock, IconPin, IconSettings, IconSpotlight, IconTrash, IconUnlock } from "./icons";
 import { clamp, usePinnedPosition } from "./usePinnedPosition";
 import { hasSettings } from "./widgets";
 
@@ -59,6 +59,7 @@ export function WidgetToolbar({ widget }: { widget: DoskaWidget }) {
   const duplicateWidget = useDoskaStore((s) => s.duplicateWidget);
   const toggleSettings = useDoskaStore((s) => s.toggleSettings);
   const toggleLock = useDoskaStore((s) => s.toggleLock);
+  const togglePin = useDoskaStore((s) => s.togglePin);
   const setSpotlight = useDoskaStore((s) => s.setSpotlight);
   const settingsOpen = useDoskaStore((s) => s.settingsId === widget.id);
 
@@ -66,6 +67,7 @@ export function WidgetToolbar({ widget }: { widget: DoskaWidget }) {
   const t = useTranslations("Doska.toolbar");
   const name = tWidget(widgetMeta(widget.kind).labelKey);
   const locked = widget.locked === true;
+  const pinned = widget.pinned === true;
 
   // Vidjet ekranning tepasiga yopishganda panel yuqorida joy topolmaydi
   // va kanvasdan chiqib ketardi — bunday holatda pastga tushadi.
@@ -127,6 +129,16 @@ export function WidgetToolbar({ widget }: { widget: DoskaWidget }) {
           onClick={() => toggleLock(widget.id)}
         />
 
+        {/* Barcha ekranlarda (R398) — taymer va jadval ekran almashganda qoladi. */}
+        <BarTextButton
+          label={pinned ? t("unpinShort") : t("pinShort")}
+          aria-label={pinned ? t("unpin", { widget: name }) : t("pin", { widget: name })}
+          aria-pressed={pinned}
+          icon={<IconPin className="size-5" />}
+          data-doska-no-drag=""
+          onClick={() => togglePin(widget.id)}
+          className={pinned ? "bg-muted text-foreground" : undefined}
+        />
         <BarTextButton
           label={t("spotlightShort")}
           aria-label={t("spotlight", { widget: name })}

@@ -933,7 +933,7 @@ bilan toʻlov, onboarding qoʻllanmalari.
 1. ✅ R380 + R381 + R383 + R402 — yorliqlar paketi: kirill klaviatura,
    `translate`, tooltipda harf, `K` roʻyxati, pult bilan ekran
    almashtirish. **Qurildi — §2.10.**
-2. R398 — barcha ekranlarda (pin).
+2. ✅ R398 — barcha ekranlarda (pin). **Qurildi** (branch `maxdum/doska-pin`): `DoskaWidget.pinned`, `gatherPinned` — ekran almashganda, qoʻshilganda va oʻchirilganda vidjet (bogʻlangan yozuvi bilan) koʻrinayotgan ekranga koʻchadi, nusxa emas; tozalashda qoladi; nusxasi qadalmaydi; kontekst panelda «Barcha ekranlarda». Store testi 9/9.
 3. R399 — ekranni tartiblash va nusxa olish; R400 — ekranlar aro
    nusxa/joylash.
 4. R405 + R406 — taymer: takrorlash, qizil chegara, yorliqda vaqt,
