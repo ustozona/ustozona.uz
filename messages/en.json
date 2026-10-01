@@ -2102,6 +2102,9 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "doska-guruhlar-sinf": {
+        "title": "Connect a class roster to “Groups” (Pro): students absent today are left out automatically from attendance"
+      },
       "doska-bugun-reja": {
         "title": "The “Today” widget reads your lesson plan: the topic next to each lesson, steps from the plan’s headings automatically"
       },
@@ -5609,6 +5612,10 @@
       "make": "Make groups",
       "shuffle": "Shuffle again",
       "moveHint": "Which group? Tap a group",
+      "connected": "Class {name} connected",
+      "absentHint": "Students marked “Absent” or “Excused” in today’s attendance are left out.",
+      "disconnect": "Disconnect class",
+      "absentToday": "Absent today: {count}",
       "groupName": "Group {n}",
       "summaryCount": "{n} groups",
       "summarySize": "{n} per group",

@@ -397,7 +397,7 @@ export function WheelWidget({ widget }: { widget: DoskaWidget }) {
    turadi. Server har safar tarifni tekshiradi: Pro tugagan yoki
    hisobdan chiqilgan boʻlsa javob `denied` va gʻildirak yopiladi. */
 
-type RosterLoad =
+export type RosterLoad =
   | { status: "loading" }
   | { status: "ok"; className: string; students: WheelStudent[] }
   | { status: "denied" }
@@ -411,7 +411,7 @@ type RosterLoad =
  */
 const rosterCache = new Map<string, Promise<RosterLoad>>();
 
-function loadRoster(classId: string): Promise<RosterLoad> {
+export function loadRoster(classId: string): Promise<RosterLoad> {
   let request = rosterCache.get(classId);
   if (!request) {
     request = wheelRosterAction({ classId })
@@ -431,7 +431,7 @@ function loadRoster(classId: string): Promise<RosterLoad> {
   return request;
 }
 
-function useRosterStudents(classId: string | null): (RosterLoad & { retry: () => void }) | null {
+export function useRosterStudents(classId: string | null): (RosterLoad & { retry: () => void }) | null {
   const [result, setResult] = React.useState<{ classId: string; load: RosterLoad } | null>(null);
   const [attempt, setAttempt] = React.useState(0);
 
@@ -479,7 +479,7 @@ function loadWheelAccess(): Promise<WheelAccess> {
   return accessInflight;
 }
 
-function useWheelAccess(): WheelAccess | null {
+export function useWheelAccess(): WheelAccess | null {
   const [access, setAccess] = React.useState<WheelAccess | null>(null);
   React.useEffect(() => {
     let alive = true;
@@ -755,7 +755,7 @@ function WheelList({
    ochiladi (DoskaMenu naqshi). Ruxsat va tarif serverda tekshiriladi —
    bu yerdagi `access` faqat nimani koʻrsatishni hal qiladi. */
 
-function ConnectClass({
+export function ConnectClass({
   access,
   onConnected,
 }: {

@@ -2102,6 +2102,9 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "doska-guruhlar-sinf": {
+        "title": "«Guruhlar»ga sinf roʻyxatini ulang (Pro): bugun kelmaganlar davomatdan oʻzi chiqarib tashlanadi"
+      },
       "doska-bugun-reja": {
         "title": "«Bugun» vidjeti dars rejangizni koʻradi: darslar yonida mavzu, bosqichlar esa reja sarlavhalaridan avtomatik"
       },
@@ -5487,6 +5490,10 @@
       "make": "Guruhlarga ajratish",
       "shuffle": "Qayta aralashtirish",
       "moveHint": "Qaysi guruhga? Guruhga teging",
+      "connected": "{name} sinfi ulangan",
+      "absentHint": "Bugun davomatda «Kelmadi» yoki «Sababli» belgilanganlar guruhga tushmaydi.",
+      "disconnect": "Sinfni uzish",
+      "absentToday": "Bugun yoʻq: {count}",
       "groupName": "{n}-guruh",
       "summaryCount": "{n} ta guruh",
       "summarySize": "Guruhda {n} tadan",

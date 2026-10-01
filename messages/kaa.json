@@ -2102,6 +2102,9 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "doska-guruhlar-sinf": {
+        "title": "«Toparlar»ǵa klass dizimin jalǵań (Pro): búgin kelmegenler qatnasıqtan ózi shıǵarıp taslanadı"
+      },
       "doska-bugun-reja": {
         "title": "«Búgin» vidjeti sabaq jobańızdı kóredi: sabaqlar janında tema, basqıshlar bolsa joba sarlawhalarınan avtomat"
       },
@@ -5610,6 +5613,10 @@
       "make": "Toparlarǵa bóliw",
       "shuffle": "Qayta aralastırıw",
       "moveHint": "Qaysı toparǵa? Toparǵa tiyiń",
+      "connected": "{name} klassı jalǵanǵan",
+      "absentHint": "Búgin qatnasıqta «Kelmedi» yamasa «Sebepli» belgilengenler toparǵa túspeydi.",
+      "disconnect": "Klasstı ajıratıw",
+      "absentToday": "Búgin joq: {count}",
       "groupName": "{n}-topar",
       "summaryCount": "{n} topar",
       "summarySize": "Toparda {n} adamnan",
