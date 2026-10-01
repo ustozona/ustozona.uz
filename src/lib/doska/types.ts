@@ -25,7 +25,8 @@ export type WidgetKind =
   | "dice.v1"
   | "qr.v1"
   | "sticker.v1"
-  | "groups.v1";
+  | "groups.v1"
+  | "poll.v1";
 
 /**
  * Vidjetning ekrandagi oʻrni va oʻz holati.

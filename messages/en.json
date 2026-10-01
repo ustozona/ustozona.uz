@@ -2102,6 +2102,9 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "doska-ovoz": {
+        "title": "Board “Poll”: students come up and tap a smiley, yes/no or A–E — an exit ticket without phones"
+      },
       "doska-guruhlar": {
         "title": "Board “Groups”: split a list into random groups in one tap — by number of groups or people per group"
       },
@@ -5254,7 +5257,8 @@
       "dice": "Dice",
       "qr": "QR code",
       "sticker": "Sticker",
-      "groups": "Groups"
+      "groups": "Groups",
+      "poll": "Poll"
     },
     "toolbar": {
       "duplicate": "{widget} — duplicate",
@@ -5405,7 +5409,8 @@
         "dice": "Dice, number, letter or coin",
         "qr": "A link or text to scan with a phone",
         "sticker": "Praise, sign, arrow",
-        "groups": "Split into random groups"
+        "groups": "Split into random groups",
+        "poll": "Tap on the board: smiley, yes/no"
       }
     },
     "appearance": {
@@ -5558,6 +5563,25 @@
       "namesCount": "Names · {count}",
       "namesHint": "One name per line",
       "samplesHint": "List is empty — sample names are used",
+      "less": "Fewer",
+      "more": "More"
+    },
+    "poll": {
+      "yes": "Yes",
+      "no": "No",
+      "voteFor": "Vote: {option}",
+      "total": "Total: {count}",
+      "show": "Show results",
+      "hide": "Hide",
+      "reset": "Restart",
+      "type": "Type",
+      "typeSmiley": "Smiley",
+      "typeYesNo": "Yes / No",
+      "typeChoice": "A–E",
+      "options": "Number of options",
+      "question": "Question (optional)",
+      "questionPlaceholder": "How was today’s lesson?",
+      "hideResults": "Hide results",
       "less": "Fewer",
       "more": "More"
     },

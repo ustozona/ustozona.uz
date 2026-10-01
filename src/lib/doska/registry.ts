@@ -33,7 +33,8 @@ export type WidgetLabelKey =
   | "dice"
   | "qr"
   | "sticker"
-  | "groups";
+  | "groups"
+  | "poll";
 
 /**
  * «Hammasi» oynasidagi toifa (docs/doska-ux-tadqiqot.md §3 «Topish»).
@@ -292,6 +293,18 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
     openSettingsOnAdd: true,
     remember: ["by", "n"],
   },
+  "poll.v1": {
+    kind: "poll.v1",
+    category: "class",
+    labelKey: "poll",
+    // Qoʻshnisi «Guruhlar» (binafsha) — koʻk-yashil undan aniq ajraladi.
+    tint: "emerald",
+    // Keng: 5 ta variant yonma-yon, ostida tugma — doskada qoʻl yetadi.
+    defaultSize: { w: 520, h: 380 },
+    minSize: { w: 260, h: 220 },
+    initialState: { type: "smiley", count: 3, votes: [], hidden: false, question: "" },
+    remember: ["type", "count", "hidden"],
+  },
 };
 
 /**
@@ -314,6 +327,7 @@ export const TOOL_ORDER: WidgetKind[] = [
   "wheel.v1",
   "dice.v1",
   "groups.v1",
+  "poll.v1",
   "text.v1",
   "sticky-note.v1",
   "sticker.v1",

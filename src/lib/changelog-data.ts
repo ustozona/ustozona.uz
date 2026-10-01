@@ -36,6 +36,13 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "doska-ovoz",
+    date: "2026-10-01",
+    type: "yangi",
+    title: "Doskada «Ovoz berish»: oʻquvchilar doskaga chiqib smaylik, «ha/yoʻq» yoki A–E ni bosadi — telefonsiz chiqish chiptasi",
+    href: "/doska",
+  },
+  {
     id: "doska-guruhlar",
     date: "2026-10-01",
     type: "yangi",

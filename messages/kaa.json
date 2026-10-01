@@ -2102,6 +2102,9 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "doska-ovoz": {
+        "title": "Doskada «Dawıs beriw»: oqıwshılar doskaǵa shıǵıp smaylik, «awa/yaq» yamasa A–E ni basadı — telefonsız shıǵıw bileti"
+      },
       "doska-guruhlar": {
         "title": "Doskada «Toparlar»: dizimdi bir basıwda tosınnan toparlarǵa bóliń — toparlar sanı yamasa topardaǵı adam sanı boyınsha"
       },
@@ -5255,7 +5258,8 @@
       "dice": "Zar",
       "qr": "QR kod",
       "sticker": "Stiker",
-      "groups": "Toparlar"
+      "groups": "Toparlar",
+      "poll": "Dawıs beriw"
     },
     "toolbar": {
       "duplicate": "{widget} — nusqa alıw",
@@ -5406,7 +5410,8 @@
         "dice": "Zar, san, hárip yamasa teńge",
         "qr": "Siltew yamasa tekst — telefon menen skanerlenedi",
         "sticker": "Maqtaw, belgi, strelka",
-        "groups": "Tosınnan toparlarǵa bóliw"
+        "groups": "Tosınnan toparlarǵa bóliw",
+        "poll": "Doskaǵa shıǵıp basıw: smaylik, awa/yaq"
       }
     },
     "appearance": {
@@ -5559,6 +5564,25 @@
       "namesCount": "Atlar · {count}",
       "namesHint": "Hár qatarǵa bir at",
       "samplesHint": "Dizim bos — úlgi atlar qollanıladı",
+      "less": "Azıraq",
+      "more": "Kóbirek"
+    },
+    "poll": {
+      "yes": "Awa",
+      "no": "Yaq",
+      "voteFor": "Dawıs: {option}",
+      "total": "Jámi: {count}",
+      "show": "Nátiyjeni kórsetiw",
+      "hide": "Jasırıw",
+      "reset": "Qaytadan",
+      "type": "Túri",
+      "typeSmiley": "Smaylik",
+      "typeYesNo": "Awa / Yaq",
+      "typeChoice": "A–E",
+      "options": "Variantlar sanı",
+      "question": "Soraw (qálewge qaray)",
+      "questionPlaceholder": "Búgingi sabaq qalay ótti?",
+      "hideResults": "Nátiyjeni jasırıw",
       "less": "Azıraq",
       "more": "Kóbirek"
     },
