@@ -228,7 +228,7 @@ export function useDoskaInteraction(rootRef: React.RefObject<HTMLElement | null>
        * vidjetning yarmi chetdan chiqishi tasodifan boʻladi, barmoqni
        * chetgacha olib borish esa — ataylab.
        */
-      if (session.moved && session.mode === "move") {
+      if (session.moved && session.mode === "move" && e.type === "pointerup") {
         const box = root.getBoundingClientRect();
         const side =
           e.clientX <= box.left + PARK_EDGE ? "left" : e.clientX >= box.right - PARK_EDGE ? "right" : null;
