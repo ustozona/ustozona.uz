@@ -39,7 +39,8 @@ export type DoskaTemplate = {
 
 const minutes = (m: number) => ({ mode: "countdown", durationSec: m * 60, remainingSec: m * 60, running: false });
 
-const card = (preset: string, tint: string) => ({ preset, tint, title: "", text: "" });
+/** Kartaning faqat shablonga xos qiymati — qolgani reyestrdagi boshlangʻich holatdan. */
+const card = (preset: string, tint: string) => ({ preset, tint });
 
 export const DOSKA_TEMPLATES: DoskaTemplate[] = [
   {

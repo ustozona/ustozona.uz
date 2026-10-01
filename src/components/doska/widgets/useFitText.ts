@@ -98,7 +98,23 @@ export function useFitText(
     const observer = new ResizeObserver(measure);
     observer.observe(el);
 
-    return () => observer.disconnect();
+    // Uslub shrifti keyin keladi (`stage-font-faces.ts`: `preload: false`,
+    // `display: swap`) — birinchi oʻlchov zaxira shriftda boʻladi. Shrift
+    // almashganda matn eni oʻzgaradi, element oʻlchami esa yoʻq, yaʼni
+    // `ResizeObserver` jim turadi: bir qatorli matn («Sana») chetidan
+    // kesilib qolardi. Shrift yuklanganda qayta oʻlchanadi.
+    let alive = true;
+    const fonts = "fonts" in document ? document.fonts : null;
+    fonts?.addEventListener("loadingdone", measure);
+    void fonts?.ready.then(() => {
+      if (alive) measure();
+    });
+
+    return () => {
+      alive = false;
+      observer.disconnect();
+      fonts?.removeEventListener("loadingdone", measure);
+    };
   }, [ref, widthRatio, min, max]);
 
   React.useLayoutEffect(() => {

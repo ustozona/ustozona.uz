@@ -42,20 +42,38 @@ function readToday(state: DoskaWidget["state"]) {
 
 export function TodayWidget({ widget }: { widget: DoskaWidget }) {
   const { view } = readToday(widget.state);
-  return view === "steps" ? <StepsView widget={widget} /> : <LessonsView />;
+  return view === "steps" ? <StepsView widget={widget} /> : <LessonsView widget={widget} />;
 }
 
-function LessonsView() {
+function LessonsView({ widget }: { widget: DoskaWidget }) {
   const t = useTranslations("Doska.today");
+  const patch = useDoskaStore((s) => s.patchWidgetState);
+  const toggleSettings = useDoskaStore((s) => s.toggleSettings);
   const { now, load } = useTodayLoad();
+
+  // Jadval yoʻq (mehmon yoki jadvalsiz oʻqituvchi): faqat matn boʻlsa sinf
+  // xato koʻradi, «Kun rejasi» shablonida esa eng katta ustun boʻsh qoladi.
+  // Boʻsh holat (§2.9 4-qoida) — bitta bosishda bosqichlar koʻrinishiga oʻtib,
+  // ularni yozish kartasini ochadi.
+  if (load === null) {
+    return (
+      <WidgetEmpty
+        Icon={IconToday}
+        text={t("noTimetable")}
+        action={t("stepsWrite")}
+        onAction={() => {
+          patch(widget.id, { view: "steps" });
+          toggleSettings(widget.id);
+        }}
+      />
+    );
+  }
 
   const lessons = load?.lessons ?? [];
   const message =
     load === undefined
       ? t("loading")
-      : load === null
-        ? t("noTimetable")
-        : load.holiday
+      : load.holiday
           ? t("holiday", { name: load.holiday })
           : lessons.length === 0
             ? t("noLessons")

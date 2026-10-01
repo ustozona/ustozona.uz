@@ -46,13 +46,17 @@ function readCard(state: DoskaWidget["state"]) {
 
 export function CardWidget({ widget }: { widget: DoskaWidget }) {
   const t = useTranslations("Doska.card");
+  const selected = useDoskaStore((s) => s.selectedId === widget.id);
   const { tint, preset, title } = readCard(widget.state);
   const heading = title.trim() || (preset ? t(`presets.${preset}`) : "");
 
   return (
     <div className="doska-card flex size-full flex-col gap-[3cqw] p-[4cqw]" data-card={tint}>
+      {/* Sarlavhasiz kartada «Sarlavha» faqat oʻqituvchiga — tanlanganda.
+          Sinf xira yozuvni chala vidjet deb koʻradi. Joy esa saqlanadi
+          (`invisible`): tanlov almashganda yozuv sakramasin. */}
       <h3
-        className={cn("doska-card-title shrink-0 truncate", !heading && "opacity-40")}
+        className={cn("doska-card-title shrink-0 truncate", !heading && (selected ? "opacity-40" : "invisible"))}
         style={{ fontSize: "clamp(0.9rem, 8cqw, 3.5rem)" }}
       >
         {heading || t("untitled")}

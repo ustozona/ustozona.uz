@@ -7,7 +7,7 @@ import type { DoskaDeck, DoskaScreen, DoskaWidget, InkStroke, WidgetKind } from 
 import { widgetMeta } from "./registry";
 import { visibleInk } from "./ink";
 import { DEFAULT_BACKGROUND_ID } from "./backgrounds";
-import { findFreeSpot, rectInArea, usableArea } from "./placement";
+import { findFreeSpot, placeTemplateWidget, usableArea } from "./placement";
 import { useDoskaPrefs } from "./prefs";
 import type { DoskaTemplate } from "./templates";
 
@@ -664,7 +664,12 @@ export const useDoskaStore = create<DoskaState>()(
             // tugmasini bosdi, demak yozmoqchi. Aks holda u qoʻyilgan
             // quti bilan yozish orasida ikkinchi qadam paydo boʻladi
             // va bu dars oʻrtasida sezilarli.
-            editingId: meta.editable ? widget.id : null,
+            //
+            // ⚠️ Sozlama ham ochiladigan vidjetda (karta) — YOʻQ: fokus sensorli
+            // doskada ekran klaviaturasini chiqaradi va u yonidagi sozlama
+            // kartasini (tayyor sarlavhalarni) yopib qoʻyadi. Avval sozlama,
+            // yozish — vidjetga qayta teginganda (`InteractionLayer`).
+            editingId: meta.editable && !meta.openSettingsOnAdd ? widget.id : null,
             settingsId: meta.openSettingsOnAdd ? widget.id : null,
           });
         },
@@ -974,11 +979,12 @@ export const useDoskaStore = create<DoskaState>()(
             const area = canvas ? usableArea(canvas, dock) : null;
             for (const [i, item] of template.widgets.entries()) {
               const meta = widgetMeta(item.kind);
-              // Shablon joyni bersa — oʻsha joyga (R452); aks holda oldingilarini
-              // hisobga olib boʻsh joyga, ustma-ust emas.
+              // Shablon joyni bersa — oʻsha joyga (R452), qadalgan vidjet u yerda
+              // boʻlmasa; aks holda oldingilarini hisobga olib boʻsh joyga,
+              // ustma-ust emas.
               const rect =
                 item.at && area
-                  ? rectInArea(item.at, area, meta.minSize)
+                  ? placeTemplateWidget(item.at, meta.minSize, area, pinned, screen.widgets)
                   : {
                       ...findFreeSpot(meta.defaultSize, [...pinned, ...screen.widgets], canvas, dock),
                       ...meta.defaultSize,

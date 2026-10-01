@@ -38,13 +38,22 @@ const STYLES = {
 const LIGHT_BG = "oklch(0.97 0.002 250)"; // oq taxta
 const DARK_BG = "oklch(0.33 0.045 158)"; // yashil doska (standart)
 
-/** «Yumshoq sahna» fonlarining eng toʻq dogʻi, shaffofligisiz — eng yomon
-    holat (`src/lib/doska/backgrounds.ts`, R448). Idishsiz siyoh shu ustida. */
-const SOFT_BLOBS = {
-  "soft-warm": "oklch(0.9 0.07 55)",
-  "soft-green": "oklch(0.9 0.08 140)",
-  "soft-sky": "oklch(0.9 0.06 235)",
-};
+/** «Yumshoq sahna» fonlari (R448) — `backgrounds.ts` dan oʻqiladi, qoʻlda
+    koʻchirilmaydi: fon rangi oʻzgarsa sinov ham oʻzi yangisini tekshiradi.
+    Har fondan eng toʻq rang (OKLCH `L` eng kichigi), shaffofligisiz — eng
+    yomon holat. Idishsiz siyoh shu ustida. */
+const BACKGROUNDS_TS = readFileSync("src/lib/doska/backgrounds.ts", "utf8");
+const SOFT_BLOBS = Object.fromEntries(
+  [...BACKGROUNDS_TS.matchAll(/id: "(soft-[\w-]+)"([\s\S]*?)(?=\n {2}\{|\n\];)/g)].map(([, id, body]) => {
+    const colors = [...body.matchAll(/oklch\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)/g)];
+    const darkest = colors.reduce((a, b) => (+b[1] < +a[1] ? b : a));
+    return [id, `oklch(${darkest[1]} ${darkest[2]} ${darkest[3]})`];
+  }),
+);
+if (Object.keys(SOFT_BLOBS).length === 0) {
+  console.error("⛔ backgrounds.ts da «soft-*» fonlar topilmadi — sinov ularni tekshira olmaydi");
+  process.exit(1);
+}
 
 const TINTS = ["blue", "amber", "slate", "teal", "note", "done"];
 

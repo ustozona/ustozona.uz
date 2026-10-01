@@ -45,11 +45,18 @@ function readDate(state: DoskaWidget["state"]) {
 export function DateWidget({ widget }: { widget: DoskaWidget }) {
   const locale = useLocale();
   const { showDate, showYear, showHoliday } = readDate(widget.state);
-  const { now, load } = useTodayLoad();
+  // Bayram nomi kerak boʻlmasa server soʻralmaydi — faqat soat kerak.
+  const { now, load } = useTodayLoad(showHoliday);
   const ref = React.useRef<HTMLDivElement>(null);
 
   // Sana mountdan keyin — server va brauzer soati farq qilsa gidratsiya buzilmasin.
-  const label = now ? dayLabel(dateKeyToDate(now.day), locale, showYear) : null;
+  // Kun almashgandagina qayta hisoblanadi: `useNowMin` har 30 soniyada yangilanadi,
+  // `Intl` formatlagichlari esa har safar yangidan quriladi.
+  const day = now?.day ?? null;
+  const label = React.useMemo(
+    () => (day ? dayLabel(dateKeyToDate(day), locale, showYear) : null),
+    [day, locale, showYear],
+  );
   const holiday = showHoliday ? (load?.holiday ?? null) : null;
   const wide = widget.w / widget.h > WIDE_RATIO;
 
@@ -82,7 +89,14 @@ export function DateWidget({ widget }: { widget: DoskaWidget }) {
             {showDate && <p style={{ fontSize: "0.42em", marginTop: "0.15em", opacity: 0.8 }}>{label.date}</p>}
           </>
         ))}
-      {holiday && <p style={{ fontSize: "0.3em", marginTop: "0.3em", opacity: 0.8 }}>{holiday}</p>}
+      {/* `truncate` — uzun bayram nomi («Kuzgi taʼtil (1-chorak yakuni)»)
+          oʻzi kesiladi va sigʻdirishni boshqarmaydi: aks holda u eng keng
+          qator boʻlib, kun nomini yarim oʻlchamga tushirardi. */}
+      {holiday && (
+        <p className="truncate" style={{ fontSize: "0.3em", marginTop: "0.3em", opacity: 0.8 }}>
+          {holiday}
+        </p>
+      )}
     </div>
   );
 }

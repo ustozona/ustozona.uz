@@ -1561,9 +1561,28 @@ Branch: `maxdum/doska-kun-rejasi`. §3.4 dagi 1–6-bandlar.
 | `icons.tsx` | `IconCard`, `IconDate` (oʻzimiz chizdik) |
 | `messages/*.json`, `changelog-data.ts` | 7 tilda matn; bitta changelog yozuvi `doska-kun-rejasi` |
 
-Tekshiruv: «Kun rejasi» joylashuvi 1920×1080, 1366×768, 1280×720 da
-maydon ichida; 1280×720 da taymer eng kichik balandligi (180 px) tufayli
-pastki qatorga 7 px kiradi. Sana 7 tilda «M10» siz chiqadi.
+Tekshiruv: «Kun rejasi» joylashuvi 1920×1080, 1366×768, 1280×720,
+1024×600 va tik 768×1024 da maydon ichida (eng kichik oʻlchamga
+kattalashgan vidjet maydon ichiga qaytariladi); 1280×720 da taymer eng
+kichik balandligi (180 px) tufayli pastki qatorga 7 px kiradi. Sana 7 tilda
+«M10» siz chiqadi.
+
+**Kod koʻrigi (xhigh, 12 topilma — hammasi tuzatildi):**
+- shablon vidjeti maydon ichiga qaytariladi (`rectInArea`); «Barcha
+  ekranlarda» vidjeti turgan joyga tushmaydi — boʻsh joyga
+  (`placeTemplateWidget`);
+- `useFitText` uslub shrifti yuklangach qayta oʻlchaydi
+  (`document.fonts`) — bir qatorli «Sana» chetidan kesilmaydi;
+- uzun bayram nomi oʻzi kesiladi (`truncate`), kun nomini kichraytirmaydi;
+- yozish ham, sozlama ham ochiladigan vidjetda (karta) qoʻyilganda yozish
+  YOQILMAYDI — ekran klaviaturasi tayyor sarlavhalarni yopardi (`addWidget`);
+- «Bugun»da jadval yoʻq boʻlsa — boʻsh holat va «Bosqichlarni yozish»;
+- «Sana»: bayram oʻchiq boʻlsa server soʻralmaydi, kirill oʻzbekcha uchun
+  oʻz nomlari (`localization.ts`: `DAYS_UZ_CYRL_SUN`, `MONTHS_UZ_CYRL`),
+  matn kun almashgandagina hisoblanadi;
+- sarlavhasiz kartada «Sarlavha» faqat tanlanganda;
+- proyektor sinovi yumshoq fon ranglarini `backgrounds.ts` dan oʻzi
+  oʻqiydi (`id: "soft-…"`).
 
 **«1:1 emas» tekshiruvi (R453):** joylashuv — tepada keng sarlavha
 qatori va teng uch ustun (referensda markaziy sarlavha va markaziy

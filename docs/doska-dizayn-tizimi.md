@@ -596,8 +596,9 @@ ni oʻqiydi.
 R448) — kundalik ekranlar uchun fotosurat oʻrnida: xiralashgan rang
 dogʻlari, och va past kontrastli. Fotosurat katalogi va yarim shaffof
 («muzli») kartalar ataylab olinmagan: proyektorda matn yuvilib ketadi.
-Dogʻlarning eng toʻq rangi proyektor sinovida siyoh bilan tekshiriladi
-(`SOFT_BLOBS`) — fon rangini oʻzgartirsangiz u yerda ham yangilang.
+Har fonning eng toʻq rangi proyektor sinovida siyoh bilan tekshiriladi —
+sinov ranglarni `backgrounds.ts` dan oʻzi oʻqiydi (`id: "soft-…"`), shuning
+uchun yangi yumshoq fon ham `soft-` bilan nomlanadi.
 
 ---
 

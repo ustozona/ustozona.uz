@@ -49,19 +49,23 @@ export function useNowMin(): { day: string; min: number } | null {
   return now;
 }
 
-/** Joriy vaqt va bugungi darslar (`undefined` — yuklanmoqda, `null` — jadval yoʻq). */
-export function useTodayLoad() {
+/**
+ * Joriy vaqt va bugungi darslar (`undefined` — yuklanmoqda, `null` — jadval yoʻq).
+ * `enabled = false` — server soʻralmaydi (masalan «Sana»da bayram nomi
+ * oʻchirilgan), `load` `undefined` boʻlib qoladi.
+ */
+export function useTodayLoad(enabled = true) {
   const now = useNowMin();
   const [load, setLoad] = React.useState<TodayLoad | null | undefined>(undefined);
   const day = now?.day ?? null;
 
   React.useEffect(() => {
-    if (!day) return;
+    if (!day || !enabled) return;
     let alive = true;
     void loadToday(day).then((l) => alive && setLoad(l));
     return () => {
       alive = false;
     };
-  }, [day]);
+  }, [day, enabled]);
   return { now, load };
 }

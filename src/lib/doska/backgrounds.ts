@@ -211,9 +211,10 @@ export const DOSKA_BACKGROUNDS: DoskaBackground[] = [
      Kundalik ekranlarda fotosurat oʻrniga: xiralashgan rang dogʻlari, och
      va past kontrastli — kartalar va matn ustida ajralib turadi. Fotosurat
      emas, ataylab: deploy yuki yoʻq va proyektorda pikselli chiqmaydi.
-     Dogʻlarning eng toʻq rangi proyektor sinovida siyoh bilan tekshiriladi
-     (`scripts/doska-projector-check.mjs`, `SOFT_BLOBS`) — rangni oʻzgartirsangiz
-     u yerda ham yangilang. */
+     Har fonning eng toʻq rangi proyektor sinovida siyoh bilan tekshiriladi —
+     sinov ularni shu fayldan oʻzi oʻqiydi (`scripts/doska-projector-check.mjs`,
+     `id: "soft-…"` boʻyicha), shuning uchun yangi yumshoq fon ham `soft-`
+     bilan nomlanadi. */
   {
     /** Iliq — shaftoli va qumrang: kun rejasi, ertalabki salom. */
     id: "soft-warm",

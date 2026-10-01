@@ -428,7 +428,9 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
     initialState: { preset: null, title: "", text: "", tint: "blue" },
     remember: ["tint"],
     editable: true,
-    // Avval sarlavha tanlanadi — sozlama kartasida tayyor variantlar.
+    // Avval sarlavha tanlanadi — sozlama kartasida tayyor variantlar. Shu
+    // sababli qoʻyilganda yozish rejimi YOQILMAYDI (`addWidget`): klaviatura
+    // sozlamani yopib qoʻyardi. Yozish — kartaga qayta teginganda.
     openSettingsOnAdd: true,
   },
   "date.v1": {

@@ -31,6 +31,21 @@ export const MONTHS_UZ: readonly string[] = [
   "Iyul", "Avgust", "Sentabr", "Oktabr", "Noyabr", "Dekabr",
 ];
 
+/**
+ * Kirill yozuvidagi oʻzbekcha (`uz-Cyrl`) — YAKSHANBA-birinchi kun nomlari va
+ * oylar. Baʼzi brauzer va panellarda `uz` uchun ICU maʼlumoti yoʻq — kirill
+ * interfeysida lotin nomlar chiqmasin. Oy nomlari ICU dagi bilan bir xil
+ * (yumshoq belgisiz: «октябр»).
+ */
+export const DAYS_UZ_CYRL_SUN: readonly string[] = [
+  "Якшанба", "Душанба", "Сешанба", "Чоршанба", "Пайшанба", "Жума", "Шанба",
+];
+
+export const MONTHS_UZ_CYRL: readonly string[] = [
+  "Январ", "Феврал", "Март", "Апрел", "Май", "Июн",
+  "Июл", "Август", "Сентябр", "Октябр", "Ноябр", "Декабр",
+];
+
 /** Oy nomlari (qisqa, kichik harf). */
 export const MONTHS_UZ_SHORT: readonly string[] = [
   "yan", "fev", "mar", "apr", "may", "iyun",
