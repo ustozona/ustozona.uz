@@ -1396,9 +1396,9 @@
     "classUnitsTip": "{count} units",
     "classLessonsTip": "{count} topics · {taught} taught",
     "statusDraft": "Draft",
-    "unitDeletedToast": "\"{unit}\" was deleted",
-    "undo": "Undo",
-    "selectAria": "Select",
+    "unitDeletedToast": "\"{unit}\" was deleted",
+    "undo": "Undo",
+    "selectAria": "Select",
     "selectMenuItem": "Select",
     "reorderMenuItem": "Reorder",
     "reorderHint": "Drag or press ↑ ↓",
@@ -5371,7 +5371,7 @@
       "minutes": "{n} min",
       "less": "Less",
       "more": "More",
-      "view": "Display",
+      "view": "Display",
       "viewAuto": "Auto",
       "viewDigits": "Digits",
       "viewDisk": "Disk",
@@ -5426,6 +5426,7 @@
       "localOnly": "{n, plural, one {# screen} other {# screens}} · this browser only",
       "curtain": "Cover the screen",
       "bell": "Ring the bell",
+      "templates": "Ready screens",
       "newScreen": "New screen",
       "duplicateScreen": "Duplicate screen",
       "moveScreenEarlier": "Move screen earlier",
@@ -5475,6 +5476,29 @@
         "camera": "Notebooks and experiments on screen",
         "countdown": "Days until the break",
         "today": "Today’s lessons or lesson steps"
+      }
+    },
+    "templates": {
+      "title": "Ready screens",
+      "back": "Back",
+      "hint": "Opens a new screen — the current one stays as is.",
+      "items": {
+        "lesson-start": {
+          "name": "Lesson start",
+          "desc": "Today's lessons, 5-minute timer, traffic light"
+        },
+        "group-work": {
+          "name": "Group work",
+          "desc": "Groups, 10-minute timer, traffic light"
+        },
+        "quiz": {
+          "name": "Quiz",
+          "desc": "Wheel, 1-minute timer, scoreboard"
+        },
+        "exit-ticket": {
+          "name": "Lesson wrap-up",
+          "desc": "Mood poll and 3-minute timer"
+        }
       }
     },
     "appearance": {
@@ -5632,7 +5656,7 @@
       "disconnect": "Disconnect class",
       "absentToday": "Absent today: {count}",
       "groupName": "Group {n}",
-      "summaryCount": "{n} groups",
+      "summaryCount": "{n} groups",
       "resultEven": "{groups} groups of {size}",
       "resultRange": "{groups} groups of {min}–{max}",
       "summarySize": "{n} per group",
@@ -5745,7 +5769,7 @@
       "noTimetable": "No timetable found — sign in or choose the “Steps” view",
       "noLessons": "No lessons today",
       "holiday": "No lessons today: {name}",
-      "stepsTitle": "Lesson steps",
+      "stepsTitle": "Lesson steps",
       "stepsWrite": "Write steps",
       "stepsEmpty": "Type the steps — or, if your lesson plan has headings, they appear here automatically",
       "stepsAuto": "Leave empty to use the headings of the current lesson plan.",

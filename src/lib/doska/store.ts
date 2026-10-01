@@ -9,6 +9,7 @@ import { visibleInk } from "./ink";
 import { DEFAULT_BACKGROUND_ID } from "./backgrounds";
 import { findFreeSpot } from "./placement";
 import { useDoskaPrefs } from "./prefs";
+import type { DoskaTemplate } from "./templates";
 
 /* ════════════════════════════════════════════════════════════════════
    DOSKA STORE — mehmon rejimi (localStorage).
@@ -385,6 +386,11 @@ type DoskaState = {
   renameDeck: (title: string) => void;
   removeScreen: (id: string) => void;
   addScreen: () => void;
+  /**
+   * Tayyor ekran (R423): yangi ekran shablon foni va vidjetlari bilan,
+   * bitta qaytarish qadami. Joriy ekranga tegilmaydi.
+   */
+  addTemplateScreen: (template: DoskaTemplate) => void;
   /**
    * Joriy ekranning nusxasi — darhol keyingi oʻringa (R399). Dars
    * bosqichlari koʻpincha bir-biriga oʻxshaydi: fon, jadval va taymer
@@ -946,6 +952,42 @@ export const useDoskaStore = create<DoskaState>()(
                   screens: [...s.deck.screens, screen],
                   updatedAt: new Date().toISOString(),
                 },
+                screen.id,
+              ),
+              activeScreenId: screen.id,
+              selectedId: null,
+              editingId: null,
+              settingsId: null,
+              spotlightId: null,
+            };
+          }),
+
+        addTemplateScreen: (template) =>
+          set((s) => {
+            const screen = emptyScreen(s.deck.screens.length);
+            screen.background = template.background;
+            const canvas = typeof window === "undefined" ? null : { w: window.innerWidth, h: window.innerHeight };
+            const dock = useDoskaPrefs.getState().dock;
+            // Har biri oldingilarini hisobga olib boʻsh joyga — ustma-ust emas.
+            for (const [i, item] of template.widgets.entries()) {
+              const meta = widgetMeta(item.kind);
+              const spot = findFreeSpot(meta.defaultSize, screen.widgets, canvas, dock);
+              screen.widgets.push({
+                id: newId(),
+                kind: item.kind,
+                x: spot.x,
+                y: spot.y,
+                w: meta.defaultSize.w,
+                h: meta.defaultSize.h,
+                z: i + 1,
+                state: { ...structuredClone(meta.initialState), ...rememberedState(item.kind), ...item.initial },
+              });
+            }
+            return {
+              ...pushHistory(s),
+              notice: null,
+              deck: gatherPinned(
+                { ...s.deck, screens: [...s.deck.screens, screen], updatedAt: new Date().toISOString() },
                 screen.id,
               ),
               activeScreenId: screen.id,

@@ -1396,9 +1396,9 @@
     "classUnitsTip": "{count} ta boʻlim",
     "classLessonsTip": "{count} ta mavzu · {taught} tasi oʻtildi",
     "statusDraft": "Qoralama",
-    "unitDeletedToast": "«{unit}» oʻchirildi",
-    "undo": "Bekor qilish",
-    "selectAria": "Belgilash",
+    "unitDeletedToast": "«{unit}» oʻchirildi",
+    "undo": "Bekor qilish",
+    "selectAria": "Belgilash",
     "selectMenuItem": "Tanlash",
     "reorderMenuItem": "Tartibni oʻzgartirish",
     "reorderHint": "Sudrang yoki ↑ ↓ bosing",
@@ -5249,7 +5249,7 @@
       "minutes": "{n} daq",
       "less": "Kamroq",
       "more": "Koʻproq",
-      "view": "Koʻrinish",
+      "view": "Koʻrinish",
       "viewAuto": "Avto",
       "viewDigits": "Raqam",
       "viewDisk": "Disk",
@@ -5304,6 +5304,7 @@
       "localOnly": "{n} ta ekran · faqat shu brauzerda",
       "curtain": "Ekranni yopish",
       "bell": "Qoʻngʻiroq chalish",
+      "templates": "Tayyor ekranlar",
       "newScreen": "Yangi ekran",
       "duplicateScreen": "Ekrandan nusxa olish",
       "moveScreenEarlier": "Ekranni oldinga surish",
@@ -5353,6 +5354,29 @@
         "camera": "Daftar va tajribani ekranga",
         "countdown": "Taʼtilgacha necha kun",
         "today": "Bugungi darslar yoki dars bosqichlari"
+      }
+    },
+    "templates": {
+      "title": "Tayyor ekranlar",
+      "back": "Orqaga",
+      "hint": "Yangi ekran ochiladi — joriy ekran oʻzgarmaydi.",
+      "items": {
+        "lesson-start": {
+          "name": "Dars boshi",
+          "desc": "Bugungi darslar, 5 daqiqa taymer, svetofor"
+        },
+        "group-work": {
+          "name": "Guruh ishi",
+          "desc": "Guruhlar, 10 daqiqa taymer, svetofor"
+        },
+        "quiz": {
+          "name": "Savol-javob",
+          "desc": "Gʻildirak, 1 daqiqa taymer, hisob taxtasi"
+        },
+        "exit-ticket": {
+          "name": "Dars yakuni",
+          "desc": "Kayfiyat soʻrovi va 3 daqiqa taymer"
+        }
       }
     },
     "appearance": {
@@ -5510,7 +5534,7 @@
       "disconnect": "Sinfni uzish",
       "absentToday": "Bugun yoʻq: {count}",
       "groupName": "{n}-guruh",
-      "summaryCount": "{n} ta guruh",
+      "summaryCount": "{n} ta guruh",
       "resultEven": "{groups} ta guruh, har birida {size} tadan",
       "resultRange": "{groups} ta guruh, har birida {min}–{max} tadan",
       "summarySize": "Guruhda {n} tadan",
@@ -5623,7 +5647,7 @@
       "noTimetable": "Dars jadvali topilmadi — hisobga kiring yoki «Bosqichlar» koʻrinishini tanlang",
       "noLessons": "Bugun darsingiz yoʻq",
       "holiday": "Bugun dars yoʻq: {name}",
-      "stepsTitle": "Dars bosqichlari",
+      "stepsTitle": "Dars bosqichlari",
       "stepsWrite": "Bosqichlarni yozish",
       "stepsEmpty": "Bosqichlarni yozing — yoki dars rejasida sarlavhalar boʻlsa, ular bu yerda oʻzi chiqadi",
       "stepsAuto": "Boʻsh qoldirilsa — hozirgi dars rejasidagi sarlavhalar.",

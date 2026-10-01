@@ -10,6 +10,7 @@ import { screenHasLocked, useDoskaStore } from "@/lib/doska/store";
 import { downloadScreenPng, exportFileName } from "@/lib/doska/export";
 import { barIconButtonClass } from "./BarGroup";
 import { DoskaAppearance } from "./DoskaAppearance";
+import { DoskaTemplates } from "./DoskaTemplates";
 import { ProBadge } from "./ProBadge";
 import { playBell } from "./sounds";
 import {
@@ -26,6 +27,7 @@ import {
   IconKeyboard,
   IconCopy,
   IconArrowLeft,
+  IconCatalog,
 } from "./icons";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -82,7 +84,7 @@ export function DoskaMenu({ onShowShortcuts }: { onShowShortcuts: () => void }) 
   const tm = useTranslations("Doska.menu");
   const [open, setOpen] = React.useState(false);
   /** Menyu ichidagi boʻlim. Yopilganda doim bosh roʻyxatga qaytadi. */
-  const [view, setView] = React.useState<"main" | "appearance">("main");
+  const [view, setView] = React.useState<"main" | "appearance" | "templates">("main");
   const [exporting, setExporting] = React.useState<"idle" | "busy" | "failed">("idle");
 
   const saveImage = async () => {
@@ -134,6 +136,14 @@ export function DoskaMenu({ onShowShortcuts }: { onShowShortcuts: () => void }) 
       >
         {view === "appearance" ? (
           <DoskaAppearance onBack={() => setView("main")} />
+        ) : view === "templates" ? (
+          <DoskaTemplates
+            onBack={() => setView("main")}
+            onDone={() => {
+              setOpen(false);
+              setView("main");
+            }}
+          />
         ) : (
           <>
           {/* ── Sarlavha ── */}
@@ -176,6 +186,9 @@ export function DoskaMenu({ onShowShortcuts }: { onShowShortcuts: () => void }) 
           <div className="py-1">
             <MenuItem Icon={IconAdd} onClick={run(addScreen)}>
               {tm("newScreen")}
+            </MenuItem>
+            <MenuItem Icon={IconCatalog} next onClick={() => setView("templates")}>
+              {tm("templates")}
             </MenuItem>
             <MenuItem Icon={IconCopy} onClick={run(duplicateScreen)}>
               {tm("duplicateScreen")}

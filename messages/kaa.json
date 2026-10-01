@@ -1396,9 +1396,9 @@
     "classUnitsTip": "{count} bólim",
     "classLessonsTip": "{count} tema · {taught} ótildi",
     "statusDraft": "Qaralama",
-    "unitDeletedToast": "«{unit}» óshirildi",
-    "undo": "Biykar etiw",
-    "selectAria": "Belgilew",
+    "unitDeletedToast": "«{unit}» óshirildi",
+    "undo": "Biykar etiw",
+    "selectAria": "Belgilew",
     "selectMenuItem": "Tańlaw",
     "reorderMenuItem": "Tártipti ózgertiw",
     "reorderHint": "Súyreń yamasa ↑ ↓ basıń",
@@ -5372,7 +5372,7 @@
       "minutes": "{n} min",
       "less": "Azıraq",
       "more": "Kóbirek",
-      "view": "Kóriniw",
+      "view": "Kóriniw",
       "viewAuto": "Avto",
       "viewDigits": "San",
       "viewDisk": "Disk",
@@ -5427,6 +5427,7 @@
       "localOnly": "{n} ekran · tek usı brauzerde",
       "curtain": "Ekrandı jabıw",
       "bell": "Qońıraw qaǵıw",
+      "templates": "Tayın ekranlar",
       "newScreen": "Jańa ekran",
       "duplicateScreen": "Ekrannan nusqa alıw",
       "moveScreenEarlier": "Ekrandı aldınǵa jıljıtıw",
@@ -5476,6 +5477,29 @@
         "camera": "Dápter hám tájiriybeni ekranǵa",
         "countdown": "Dem alıwǵa neshe kún",
         "today": "Búgingi sabaqlar yamasa sabaq basqıshları"
+      }
+    },
+    "templates": {
+      "title": "Tayın ekranlar",
+      "back": "Artqa",
+      "hint": "Jańa ekran ashıladı — házirgi ekran ózgermeydi.",
+      "items": {
+        "lesson-start": {
+          "name": "Sabaq bası",
+          "desc": "Búgingi sabaqlar, 5 minut taymer, svetofor"
+        },
+        "group-work": {
+          "name": "Topar jumısı",
+          "desc": "Toparlar, 10 minut taymer, svetofor"
+        },
+        "quiz": {
+          "name": "Soraw-juwap",
+          "desc": "Dóńgelek, 1 minut taymer, esap taxtası"
+        },
+        "exit-ticket": {
+          "name": "Sabaq juwmaǵı",
+          "desc": "Kewil-kúy sorawı hám 3 minut taymer"
+        }
       }
     },
     "appearance": {
@@ -5633,7 +5657,7 @@
       "disconnect": "Klasstı ajıratıw",
       "absentToday": "Búgin joq: {count}",
       "groupName": "{n}-topar",
-      "summaryCount": "{n} topar",
+      "summaryCount": "{n} topar",
       "resultEven": "{groups} topar, hár birinde {size}",
       "resultRange": "{groups} topar, hár birinde {min}–{max}",
       "summarySize": "Toparda {n} adamnan",
@@ -5746,7 +5770,7 @@
       "noTimetable": "Sabaq kestesi tabılmadı — esapqa kiriń yamasa «Basqıshlar» kórinisin tańlań",
       "noLessons": "Búgin sabaǵıńız joq",
       "holiday": "Búgin sabaq joq: {name}",
-      "stepsTitle": "Sabaq basqıshları",
+      "stepsTitle": "Sabaq basqıshları",
       "stepsWrite": "Basqıshlardı jazıw",
       "stepsEmpty": "Basqıshlardı jazıń — yamasa sabaq jobasında sarlawhalar bolsa, olar bul jerde ózi shıǵadı",
       "stepsAuto": "Bos qaldırılsa — házirgi sabaq jobasındaǵı sarlawhalar.",
