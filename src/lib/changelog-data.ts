@@ -36,6 +36,13 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "doska-fonlar-mavsum",
+    date: "2026-10-01",
+    type: "yangi",
+    title: "Doskada yangi fonlar: nota chizigʻi (musiqa darsi), kuz, bahor va qish",
+    href: "/doska",
+  },
+  {
     id: "doska-kamera",
     date: "2026-10-01",
     type: "yangi",

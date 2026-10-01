@@ -2102,6 +2102,9 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "doska-fonlar-mavsum": {
+        "title": "Doskada jańa fonlar: nota sızıǵı (muzıka sabaǵı), gúz, báhár hám qıs"
+      },
       "doska-kamera": {
         "title": "Doskada «Kamera»: dápter, kitap yamasa tájiriybeni pútkil klassqa kórsetiń — kadrdı toqtatıp, ústinen jazıw múmkin"
       },
@@ -5460,6 +5463,10 @@
       "dot-paper": "Noqatlı qaǵaz",
       "notebook": "Dápter paraǵı",
       "husnixat": "Hush jazıw shınıǵıwı",
+      "music-staff": "Nota sızıǵı",
+      "autumn": "Gúz",
+      "spring": "Báhár",
+      "winter": "Qıs",
       "dusk": "Keshki reń",
       "shakllar": "Reńli figuralar"
     },

@@ -2102,6 +2102,9 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "doska-fonlar-mavsum": {
+        "title": "Doskada yangi fonlar: nota chizigʻi (musiqa darsi), kuz, bahor va qish"
+      },
       "doska-kamera": {
         "title": "Doskada «Kamera»: daftar, kitob yoki tajribani butun sinfga koʻrsating — kadrni toʻxtatib, ustidan yozish mumkin"
       },
@@ -5337,6 +5340,10 @@
       "dot-paper": "Nuqtali qogʻoz",
       "notebook": "Daftar varagʻi",
       "husnixat": "Husnixat mashqi",
+      "music-staff": "Nota chizigʻi",
+      "autumn": "Kuz",
+      "spring": "Bahor",
+      "winter": "Qish",
       "dusk": "Kechki tus",
       "shakllar": "Rangli shakllar"
     },

@@ -178,6 +178,57 @@ export const DOSKA_BACKGROUNDS: DoskaBackground[] = [
     },
   },
   {
+    /**
+     * Nota chizigʻi — musiqa darsi (R420). Besh chiziqli yoʻl, chiziqlar
+     * orasi 16px, yoʻllar orasi 54px — nota boshi (≈16px) qalam bilan
+     * bemalol chiziladi. Chiziq 2px — proyektordan koʻrinsin (husnixat
+     * izohiga qarang). Tepada bitta yoʻl boʻsh qoladi.
+     */
+    id: "music-staff",
+    tone: "light",
+    style: {
+      backgroundColor: "oklch(0.99 0.004 90)",
+      backgroundImage: [
+        "repeating-linear-gradient(to bottom",
+        "oklch(0.55 0 0) 0 2px, transparent 2px 16px",
+        "oklch(0.55 0 0) 16px 18px, transparent 18px 32px",
+        "oklch(0.55 0 0) 32px 34px, transparent 34px 48px",
+        "oklch(0.55 0 0) 48px 50px, transparent 50px 64px",
+        "oklch(0.55 0 0) 64px 66px, transparent 66px 120px)",
+      ].join(", "),
+      backgroundPosition: "0 60px",
+      backgroundRepeat: "repeat-x",
+      backgroundSize: "100% calc(100% - 120px)",
+    },
+  },
+  {
+    /** Kuz — iliq toʻq tus (oktyabr, «Oʻqituvchilar kuni» oyi). */
+    id: "autumn",
+    tone: "dark",
+    style: {
+      background:
+        "radial-gradient(120% 90% at 85% 0%, oklch(0.5 0.12 55 / 0.55), transparent 60%), linear-gradient(170deg, oklch(0.33 0.07 45), oklch(0.27 0.05 25))",
+    },
+  },
+  {
+    /** Bahor — och, yashil-pushti (mart, Navroʻz). Matn qora siyohda oʻqiladi. */
+    id: "spring",
+    tone: "light",
+    style: {
+      background:
+        "radial-gradient(90% 70% at 10% 0%, oklch(0.93 0.06 350 / 0.9), transparent 60%), linear-gradient(170deg, oklch(0.97 0.03 140), oklch(0.93 0.06 145))",
+    },
+  },
+  {
+    /** Qish — sovuq toʻq koʻk (dekabr–fevral). */
+    id: "winter",
+    tone: "dark",
+    style: {
+      background:
+        "radial-gradient(110% 80% at 50% 0%, oklch(0.55 0.08 230 / 0.5), transparent 65%), linear-gradient(175deg, oklch(0.32 0.06 245), oklch(0.24 0.04 260))",
+    },
+  },
+  {
     id: "dusk",
     tone: "dark",
     style: { background: "linear-gradient(160deg, oklch(0.36 0.07 265), oklch(0.34 0.09 300))" },

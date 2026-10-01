@@ -2102,6 +2102,9 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "doska-fonlar-mavsum": {
+        "title": "New board backgrounds: music staff (music lessons), autumn, spring and winter"
+      },
       "doska-kamera": {
         "title": "Board “Camera”: show a notebook, book or experiment to the whole class — freeze the frame and write over it"
       },
@@ -5459,6 +5462,10 @@
       "dot-paper": "Dot paper",
       "notebook": "Notebook page",
       "husnixat": "Handwriting practice",
+      "music-staff": "Music staff",
+      "autumn": "Autumn",
+      "spring": "Spring",
+      "winter": "Winter",
       "dusk": "Dusk",
       "shakllar": "Colorful shapes"
     },
