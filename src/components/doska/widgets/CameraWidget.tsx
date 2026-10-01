@@ -39,7 +39,15 @@ export function CameraWidget({ widget }: { widget: DoskaWidget }) {
     streamRef.current = null;
   }, []);
 
-  React.useEffect(() => release, [release]);
+  // Ruxsat oynasi ochiq turganda vidjet olib tashlansa — kelgan oqim darhol yopiladi.
+  const mounted = React.useRef(true);
+  React.useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      release();
+    };
+  }, [release]);
 
   async function start(index = deviceIndex) {
     if (!navigator.mediaDevices?.getUserMedia) {
@@ -55,6 +63,10 @@ export function CameraWidget({ widget }: { widget: DoskaWidget }) {
         video: id ? { deviceId: { exact: id } } : { width: { ideal: 1920 }, height: { ideal: 1080 } },
         audio: false,
       });
+      if (!mounted.current) {
+        stream.getTracks().forEach((tr) => tr.stop());
+        return;
+      }
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;

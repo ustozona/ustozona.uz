@@ -83,7 +83,9 @@ export function ClockWidget({ widget }: { widget: DoskaWidget }) {
   const prevLesson = React.useRef<number | null>(null);
   React.useEffect(() => {
     const lesson = status?.kind === "lesson" ? status.period.startMin : null;
-    if (prevLesson.current !== null && lesson !== prevLesson.current && bellSound) playBell();
+    // Faqat haqiqiy dars oxiri: jadval oʻchirilsa yoki yuklanmasa (`status`
+    // yoʻq) qoʻngʻiroq chalinmaydi.
+    if (status && prevLesson.current !== null && lesson !== prevLesson.current && bellSound) playBell();
     prevLesson.current = lesson;
   }, [status, bellSound]);
 

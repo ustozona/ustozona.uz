@@ -59,7 +59,15 @@ export function NoiseWidget({ widget }: { widget: DoskaWidget }) {
     live.current = { smooth, limit, sound, overs };
   });
 
-  React.useEffect(() => () => stopRef.current?.(), []);
+  // Ruxsat oynasi ochiq turganda vidjet olib tashlansa — kelgan oqim darhol yopiladi.
+  const mounted = React.useRef(true);
+  React.useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      stopRef.current?.();
+    };
+  }, []);
 
   async function start() {
     if (!navigator.mediaDevices?.getUserMedia) {
@@ -73,6 +81,10 @@ export function NoiseWidget({ widget }: { widget: DoskaWidget }) {
       stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false } });
     } catch {
       setStatus("denied");
+      return;
+    }
+    if (!mounted.current) {
+      stream.getTracks().forEach((tr) => tr.stop());
       return;
     }
     const ctx = new AudioContext();
