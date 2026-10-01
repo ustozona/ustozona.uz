@@ -2102,6 +2102,9 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "doska-shovqin": {
+        "title": "Board “Noise”: see the class volume through the microphone — the bar turns red over the limit, with an optional bell"
+      },
       "doska-hisob": {
         "title": "Board “Score”: 2–6 teams, big numbers and +/− — keep points in quizzes and group work"
       },
@@ -5262,7 +5265,8 @@
       "sticker": "Sticker",
       "groups": "Groups",
       "poll": "Poll",
-      "score": "Score"
+      "score": "Score",
+      "noise": "Noise"
     },
     "toolbar": {
       "duplicate": "{widget} — duplicate",
@@ -5415,7 +5419,8 @@
         "sticker": "Praise, sign, arrow",
         "groups": "Split into random groups",
         "poll": "Tap on the board: smiley, yes/no",
-        "score": "Team points"
+        "score": "Team points",
+        "noise": "Class volume via microphone"
       }
     },
     "appearance": {
@@ -5599,6 +5604,25 @@
       "reset": "Reset scores",
       "less": "Fewer",
       "more": "More"
+    },
+    "noise": {
+      "hint": "Press “Start” to turn on the microphone",
+      "ok": "Good",
+      "tooLoud": "Quieter!",
+      "denied": "Microphone access was denied",
+      "unsupported": "No microphone in this browser",
+      "overs": "Over the limit: {count}",
+      "start": "Start",
+      "stop": "Stop",
+      "limit": "Limit",
+      "smooth": "Smoothing",
+      "smoothLive": "Live",
+      "smoothMedium": "Medium",
+      "smoothSmooth": "Smooth",
+      "sound": "Bell when over",
+      "resetOvers": "Reset counter ({count})",
+      "less": "Lower",
+      "more": "Higher"
     },
     "sticker": {
       "groups": {

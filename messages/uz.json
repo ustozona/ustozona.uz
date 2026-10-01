@@ -2102,6 +2102,9 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "doska-shovqin": {
+        "title": "Doskada «Shovqin»: sinf ovozini mikrofon orqali koʻring — chegaradan oshsa ustun qizaradi, xohlasangiz qoʻngʻiroq chaladi"
+      },
       "doska-hisob": {
         "title": "Doskada «Hisob»: 2–6 jamoa, katta raqam va +/− — viktorina va guruh ishida ochko sanash"
       },
@@ -5140,7 +5143,8 @@
       "sticker": "Stiker",
       "groups": "Guruhlar",
       "poll": "Ovoz berish",
-      "score": "Hisob"
+      "score": "Hisob",
+      "noise": "Shovqin"
     },
     "toolbar": {
       "duplicate": "{widget} — nusxalash",
@@ -5293,7 +5297,8 @@
         "sticker": "Maqtov, belgi, strelka",
         "groups": "Tasodifiy guruhlarga boʻlish",
         "poll": "Doskaga chiqib bosish: smaylik, ha/yoʻq",
-        "score": "Jamoalar ochkosi"
+        "score": "Jamoalar ochkosi",
+        "noise": "Sinf ovozi mikrofon orqali"
       }
     },
     "appearance": {
@@ -5475,6 +5480,25 @@
       "teams": "Jamoalar soni",
       "names": "Jamoa nomlari",
       "reset": "Ochkolarni nolga tushirish",
+      "less": "Kamroq",
+      "more": "Koʻproq"
+    },
+    "noise": {
+      "hint": "Mikrofonni yoqish uchun «Boshlash»",
+      "ok": "Yaxshi",
+      "tooLoud": "Jimroq!",
+      "denied": "Mikrofonga ruxsat berilmadi",
+      "unsupported": "Bu brauzerda mikrofon yoʻq",
+      "overs": "Chegaradan oshdi: {count}",
+      "start": "Boshlash",
+      "stop": "Toʻxtatish",
+      "limit": "Chegara",
+      "smooth": "Silliqlash",
+      "smoothLive": "Jonli",
+      "smoothMedium": "Oʻrtacha",
+      "smoothSmooth": "Silliq",
+      "sound": "Oshganda qoʻngʻiroq",
+      "resetOvers": "Sanoqni nolga tushirish ({count})",
       "less": "Kamroq",
       "more": "Koʻproq"
     },

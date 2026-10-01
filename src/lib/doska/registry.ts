@@ -35,7 +35,8 @@ export type WidgetLabelKey =
   | "sticker"
   | "groups"
   | "poll"
-  | "score";
+  | "score"
+  | "noise";
 
 /**
  * «Hammasi» oynasidagi toifa (docs/doska-ux-tadqiqot.md §3 «Topish»).
@@ -317,6 +318,18 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
     minSize: { w: 260, h: 180 },
     initialState: { teams: [{ name: "", score: 0 }, { name: "", score: 0 }] },
   },
+  "noise.v1": {
+    kind: "noise.v1",
+    category: "class",
+    labelKey: "noise",
+    // Svetofor (qizil) bilan bir maʼno — lekin qizil band; moviy-koʻk.
+    tint: "sky",
+    // Tik: ustun pastdan yuqoriga toʻladi.
+    defaultSize: { w: 300, h: 380 },
+    minSize: { w: 180, h: 220 },
+    initialState: { limit: 60, smooth: "medium", sound: false, overs: 0 },
+    remember: ["limit", "smooth", "sound"],
+  },
 };
 
 /**
@@ -341,6 +354,7 @@ export const TOOL_ORDER: WidgetKind[] = [
   "groups.v1",
   "poll.v1",
   "score.v1",
+  "noise.v1",
   "text.v1",
   "sticky-note.v1",
   "sticker.v1",

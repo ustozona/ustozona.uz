@@ -744,6 +744,21 @@ export function IconScore({ className }: IconProps) {
   );
 }
 
+/** Shovqin oʻlchagich — doira (massa) ichida tovush toʻlqini ustunlari (detal). */
+export function IconNoise({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={cn("doska-icon", className)} aria-hidden="true">
+      <g>
+        <circle cx="12" cy="12" r="10" opacity=".5" />
+        <rect x="6.25" y="10.5" width="1.8" height="3" rx=".9" />
+        <rect x="9.25" y="8" width="1.8" height="8" rx=".9" />
+        <rect x="12.25" y="6.5" width="1.8" height="11" rx=".9" />
+        <rect x="15.25" y="9.5" width="1.8" height="5" rx=".9" />
+      </g>
+    </svg>
+  );
+}
+
 /**
  * Klaviatura yorliqlari — oʻzimiz chizdik: korpus (massa) va tugmalar
  * (detal), Solar oʻlchamlarida — tashqi chegara 20×14, radius 3.5
@@ -864,6 +879,7 @@ export const DOSKA_ICONS: { name: string; source: string; Icon: React.ComponentT
   { name: "IconSticker", source: "oʻzimiz:stiker", Icon: IconSticker },
   { name: "IconPoll", source: "oʻzimiz:ovoz", Icon: IconPoll },
   { name: "IconScore", source: "oʻzimiz:hisob", Icon: IconScore },
+  { name: "IconNoise", source: "oʻzimiz:shovqin", Icon: IconNoise },
   { name: "IconKeyboard", source: "oʻzimiz:klaviatura", Icon: IconKeyboard },
   { name: "IconDockBottom", source: "oʻzimiz:panel-past", Icon: IconDockBottom },
   { name: "IconDockLeft", source: "oʻzimiz:panel-chap", Icon: IconDockLeft },

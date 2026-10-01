@@ -961,7 +961,7 @@ oqimda):**
 - «Yaqinda oʻchirilganlar».
 
 **D — keyinroq:**
-- R413 shovqin;
+- ✅ R413 shovqin qurildi (`noise.v1`: Web Audio, chegara, silliqlash, sanoq, qoʻngʻiroq);
 - ✅ R414 hisob taxtasi qurildi (`score.v1`, 2–6 jamoa);
 - veb-kamera, video, embed, havola;
 - R420 bayram fonlari;

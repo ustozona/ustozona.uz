@@ -2102,6 +2102,9 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "doska-shovqin": {
+        "title": "Doskada «Shawqım»: klass dawısın mikrofon arqalı kóriń — shekten assa baǵana qızaradı, qáleseńiz qońıraw shalınadı"
+      },
       "doska-hisob": {
         "title": "Doskada «Esap»: 2–6 komanda, úlken san hám +/− — viktorina hám topar jumısında ochko sanaw"
       },
@@ -5263,7 +5266,8 @@
       "sticker": "Stiker",
       "groups": "Toparlar",
       "poll": "Dawıs beriw",
-      "score": "Esap"
+      "score": "Esap",
+      "noise": "Shawqım"
     },
     "toolbar": {
       "duplicate": "{widget} — nusqa alıw",
@@ -5416,7 +5420,8 @@
         "sticker": "Maqtaw, belgi, strelka",
         "groups": "Tosınnan toparlarǵa bóliw",
         "poll": "Doskaǵa shıǵıp basıw: smaylik, awa/yaq",
-        "score": "Komandalar ochkosı"
+        "score": "Komandalar ochkosı",
+        "noise": "Klass dawısı mikrofon arqalı"
       }
     },
     "appearance": {
@@ -5598,6 +5603,25 @@
       "teams": "Komandalar sanı",
       "names": "Komanda atları",
       "reset": "Ochkolardı nolge túsiriw",
+      "less": "Azıraq",
+      "more": "Kóbirek"
+    },
+    "noise": {
+      "hint": "Mikrofondı qosıw ushın «Baslaw»",
+      "ok": "Jaqsı",
+      "tooLoud": "Tınıshıraq!",
+      "denied": "Mikrofonǵa ruqsat berilmedi",
+      "unsupported": "Bul brauzerde mikrofon joq",
+      "overs": "Shekten asıp ketti: {count}",
+      "start": "Baslaw",
+      "stop": "Toqtatıw",
+      "limit": "Shek",
+      "smooth": "Tegislew",
+      "smoothLive": "Tiri",
+      "smoothMedium": "Ortasha",
+      "smoothSmooth": "Tegis",
+      "sound": "Asqanda qońıraw",
+      "resetOvers": "Sanawdı nolge túsiriw ({count})",
       "less": "Azıraq",
       "more": "Kóbirek"
     },
