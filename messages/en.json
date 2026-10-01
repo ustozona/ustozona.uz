@@ -2102,6 +2102,15 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "doska-gildirak-davomat": {
+        "title": "The board wheel leaves out students absent today on its own — from attendance of the connected class"
+      },
+      "doska-guruhlar-sinf": {
+        "title": "Connect a class roster to “Groups” (Pro): students absent today are left out automatically from attendance"
+      },
+      "doska-bugun-reja": {
+        "title": "The “Today” widget reads your lesson plan: the topic next to each lesson, steps from the plan’s headings automatically"
+      },
       "doska-bugun": {
         "title": "Board “Today”: your lessons from the timetable automatically, or a checklist of lesson steps"
       },
@@ -5571,6 +5580,8 @@
       "fromClass": "{className} list",
       "disconnect": "Disconnect",
       "absentToggle": "{name} — absent today",
+      "absentByAttendance": "Absent today in attendance",
+      "absentAttendance": "Absent today in attendance: {count} — left off the wheel",
       "absentHint": "Tap a student who is absent today — they won’t appear on the wheel.",
       "suggestConnect": "If your class is in the gradebook, you don’t need to type names by hand.",
       "rosterUnavailable": "The class list is available only on Pro, when you’re signed in.",
@@ -5606,6 +5617,10 @@
       "make": "Make groups",
       "shuffle": "Shuffle again",
       "moveHint": "Which group? Tap a group",
+      "connected": "Class {name} connected",
+      "absentHint": "Students marked “Absent” or “Excused” in today’s attendance are left out.",
+      "disconnect": "Disconnect class",
+      "absentToday": "Absent today: {count}",
       "groupName": "Group {n}",
       "summaryCount": "{n} groups",
       "summarySize": "{n} per group",
@@ -5717,8 +5732,10 @@
       "loading": "Loading timetable…",
       "noTimetable": "No timetable found — sign in or choose the “Steps” view",
       "noLessons": "No lessons today",
+      "holiday": "No lessons today: {name}",
       "stepsTitle": "Lesson steps",
-      "stepsEmpty": "Type the steps in settings",
+      "stepsEmpty": "Type the steps — or, if your lesson plan has headings, they appear here automatically",
+      "stepsAuto": "Leave empty to use the headings of the current lesson plan.",
       "view": "View",
       "viewLessons": "Lessons",
       "viewSteps": "Steps",

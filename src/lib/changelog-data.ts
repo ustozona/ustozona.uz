@@ -36,6 +36,27 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "doska-gildirak-davomat",
+    date: "2026-10-01",
+    type: "yangi",
+    title: "Doska gʻildiragi bugun kelmaganlarni oʻzi chiqarib tashlaydi — davomatdan, ulangan sinfda",
+    href: "/doska",
+  },
+  {
+    id: "doska-guruhlar-sinf",
+    date: "2026-10-01",
+    type: "yangi",
+    title: "«Guruhlar»ga sinf roʻyxatini ulang (Pro): bugun kelmaganlar davomatdan oʻzi chiqarib tashlanadi",
+    href: "/doska",
+  },
+  {
+    id: "doska-bugun-reja",
+    date: "2026-10-01",
+    type: "yangi",
+    title: "«Bugun» vidjeti dars rejangizni koʻradi: darslar yonida mavzu, bosqichlar esa reja sarlavhalaridan avtomatik",
+    href: "/doska",
+  },
+  {
     id: "doska-bugun",
     date: "2026-10-01",
     type: "yangi",

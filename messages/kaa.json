@@ -2102,6 +2102,15 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "doska-gildirak-davomat": {
+        "title": "Doska dóńgelegi búgin kelmegenlerdi ózi shıǵarıp taslaydı — jalǵanǵan klasstıń qatnasıǵınan"
+      },
+      "doska-guruhlar-sinf": {
+        "title": "«Toparlar»ǵa klass dizimin jalǵań (Pro): búgin kelmegenler qatnasıqtan ózi shıǵarıp taslanadı"
+      },
+      "doska-bugun-reja": {
+        "title": "«Búgin» vidjeti sabaq jobańızdı kóredi: sabaqlar janında tema, basqıshlar bolsa joba sarlawhalarınan avtomat"
+      },
       "doska-bugun": {
         "title": "Doskada «Búgin»: búgingi sabaqlarıńız kesteden avtomat yamasa sabaq basqıshları belgilenetuǵın dizim"
       },
@@ -5572,6 +5581,8 @@
       "fromClass": "{className} dizimi",
       "disconnect": "Ajıratıw",
       "absentToggle": "{name} — búgin joq",
+      "absentByAttendance": "Qatnasıqta búgin joq",
+      "absentAttendance": "Qatnasıqta búgin joq: {count} — olar dóńgelekke shıqpaydı",
       "absentHint": "Búgin joq oqıwshını basıń — ol dóńgelekke shıqpaydı.",
       "suggestConnect": "Klasıńız jurnalda bolsa, atlardı qolda jazıw shárt emes.",
       "rosterUnavailable": "Klas dizimi tek Pro tarifinde, akkauntıńızǵa kirgenińizde kórinedi.",
@@ -5607,6 +5618,10 @@
       "make": "Toparlarǵa bóliw",
       "shuffle": "Qayta aralastırıw",
       "moveHint": "Qaysı toparǵa? Toparǵa tiyiń",
+      "connected": "{name} klassı jalǵanǵan",
+      "absentHint": "Búgin qatnasıqta «Kelmedi» yamasa «Sebepli» belgilengenler toparǵa túspeydi.",
+      "disconnect": "Klasstı ajıratıw",
+      "absentToday": "Búgin joq: {count}",
       "groupName": "{n}-topar",
       "summaryCount": "{n} topar",
       "summarySize": "Toparda {n} adamnan",
@@ -5718,8 +5733,10 @@
       "loading": "Keste júklenbekte…",
       "noTimetable": "Sabaq kestesi tabılmadı — esapqa kiriń yamasa «Basqıshlar» kórinisin tańlań",
       "noLessons": "Búgin sabaǵıńız joq",
+      "holiday": "Búgin sabaq joq: {name}",
       "stepsTitle": "Sabaq basqıshları",
-      "stepsEmpty": "Sazlawda basqıshlardı jazıń",
+      "stepsEmpty": "Basqıshlardı jazıń — yamasa sabaq jobasında sarlawhalar bolsa, olar bul jerde ózi shıǵadı",
+      "stepsAuto": "Bos qaldırılsa — házirgi sabaq jobasındaǵı sarlawhalar.",
       "view": "Kórinis",
       "viewLessons": "Sabaqlar",
       "viewSteps": "Basqıshlar",

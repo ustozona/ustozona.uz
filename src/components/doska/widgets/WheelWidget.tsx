@@ -37,6 +37,7 @@ import { playSpinTick, playSpinWinner, unlockSpinSound } from "@/components/stag
 import { ClassList } from "../ClassList";
 import { IconArrowLeft, IconClose, IconUsers } from "../icons";
 import { ProBadge } from "../ProBadge";
+import { useAbsentToday } from "./useAbsentToday";
 import { WidgetButton } from "./WidgetButton";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -113,6 +114,9 @@ export function WheelWidget({ widget }: { widget: DoskaWidget }) {
   const typed = React.useMemo(() => parseEntries(state.text), [state.text]);
   const roster = state.roster;
   const rosterLoad = useRosterStudents(roster?.classId ?? null);
+  // Bugun davomatda «Kelmadi»/«Sababli» — gʻildirakka chiqmaydi (qoʻlda
+  // belgilangan `excluded` bilan birga). Yuklanguncha qoʻlda belgilangani.
+  const absentToday = useAbsentToday(roster?.classId ?? null);
   const students = rosterLoad?.status === "ok" ? rosterLoad.students : null;
 
   // Manba tartibi: ulangan sinf → qoʻlda yozilgan roʻyxat → namuna ismlar.
@@ -121,11 +125,11 @@ export function WheelWidget({ widget }: { widget: DoskaWidget }) {
   const allKeys = React.useMemo(() => {
     if (roster) {
       if (!students) return NO_KEYS; // yuklanmoqda / yopiq — gʻildirak boʻsh
-      const out = new Set(roster.excluded);
+      const out = new Set([...roster.excluded, ...(absentToday ?? [])]);
       return students.filter((s) => !out.has(s.id)).map((s) => s.id);
     }
     return usingSamples ? samples : typed;
-  }, [roster, students, usingSamples, samples, typed]);
+  }, [roster, students, usingSamples, samples, typed, absentToday]);
   const entries = React.useMemo(() => allKeys.slice(0, WHEEL_MAX_ENTRIES), [allKeys]);
   const overflow = allKeys.length > WHEEL_MAX_ENTRIES;
   const pool = React.useMemo(
@@ -205,6 +209,7 @@ export function WheelWidget({ widget }: { widget: DoskaWidget }) {
   if (listOpen) {
     return (
       <WheelList
+        absentToday={absentToday ?? NO_KEYS}
         state={state}
         typed={typed}
         entries={entries}
@@ -397,7 +402,7 @@ export function WheelWidget({ widget }: { widget: DoskaWidget }) {
    turadi. Server har safar tarifni tekshiradi: Pro tugagan yoki
    hisobdan chiqilgan boʻlsa javob `denied` va gʻildirak yopiladi. */
 
-type RosterLoad =
+export type RosterLoad =
   | { status: "loading" }
   | { status: "ok"; className: string; students: WheelStudent[] }
   | { status: "denied" }
@@ -411,7 +416,7 @@ type RosterLoad =
  */
 const rosterCache = new Map<string, Promise<RosterLoad>>();
 
-function loadRoster(classId: string): Promise<RosterLoad> {
+export function loadRoster(classId: string): Promise<RosterLoad> {
   let request = rosterCache.get(classId);
   if (!request) {
     request = wheelRosterAction({ classId })
@@ -431,7 +436,7 @@ function loadRoster(classId: string): Promise<RosterLoad> {
   return request;
 }
 
-function useRosterStudents(classId: string | null): (RosterLoad & { retry: () => void }) | null {
+export function useRosterStudents(classId: string | null): (RosterLoad & { retry: () => void }) | null {
   const [result, setResult] = React.useState<{ classId: string; load: RosterLoad } | null>(null);
   const [attempt, setAttempt] = React.useState(0);
 
@@ -479,7 +484,7 @@ function loadWheelAccess(): Promise<WheelAccess> {
   return accessInflight;
 }
 
-function useWheelAccess(): WheelAccess | null {
+export function useWheelAccess(): WheelAccess | null {
   const [access, setAccess] = React.useState<WheelAccess | null>(null);
   React.useEffect(() => {
     let alive = true;
@@ -500,6 +505,7 @@ function useWheelAccess(): WheelAccess | null {
    qatori — sudrash tutqichi; qolgan qismi `data-doska-no-drag`. */
 
 function WheelList({
+  absentToday,
   state,
   typed,
   entries,
@@ -512,6 +518,8 @@ function WheelList({
   onBack,
   onSourceChange,
 }: {
+  /** Bugun davomatda yoʻq — roʻyxatda alohida koʻrsatiladi. */
+  absentToday: string[];
   state: WheelState;
   /** Oʻqituvchi yozgan hamma ism — chegaradan oshgani ham. */
   typed: string[];
@@ -616,6 +624,7 @@ function WheelList({
 
           {roster ? (
             <RosterNames
+              absentToday={absentToday}
               roster={roster}
               load={rosterLoad}
               overflowWarning={overflowWarning}
@@ -755,7 +764,7 @@ function WheelList({
    ochiladi (DoskaMenu naqshi). Ruxsat va tarif serverda tekshiriladi —
    bu yerdagi `access` faqat nimani koʻrsatishni hal qiladi. */
 
-function ConnectClass({
+export function ConnectClass({
   access,
   onConnected,
 }: {
@@ -846,15 +855,18 @@ function ConnectClass({
 /**
  * Ulangan sinf: ismlar — tugma. Bosilgan bola bugun yoʻq deb belgilanadi va
  * gʻildirakka chiqmaydi (R296: «bittasini vaqtincha oʻchirib qoʻyish»).
- * Davomatdan avtomatik olish — keyingi bosqich (v2).
+ * Davomatda bugun «Kelmadi»/«Sababli» belgilanganlar esa avtomatik chiqmaydi
+ * (`useAbsentToday`), bu roʻyxatda ular alohida belgilanmaydi.
  */
 function RosterNames({
+  absentToday,
   roster,
   load,
   overflowWarning,
   onToggle,
   onDisconnect,
 }: {
+  absentToday: string[];
   roster: WheelRoster;
   load: (RosterLoad & { retry: () => void }) | null;
   overflowWarning: React.ReactNode;
@@ -897,6 +909,18 @@ function RosterNames({
         <>
           <div className="flex flex-wrap gap-1.5" translate="no">
             {load.students.map((s) => {
+              // Davomatda yoʻq — qoʻlda qaytarib boʻlmaydi: manba davomat.
+              if (absentToday.includes(s.id)) {
+                return (
+                  <span
+                    key={s.id}
+                    title={t("absentByAttendance")}
+                    className="bg-muted text-muted-foreground rounded-full px-3 py-0.5 text-xs line-through opacity-70"
+                  >
+                    {s.name}
+                  </span>
+                );
+              }
               const absent = roster.excluded.includes(s.id);
               return (
                 <button
@@ -919,6 +943,11 @@ function RosterNames({
           </div>
           {overflowWarning || (
             <p className="text-muted-foreground text-xs leading-snug">{t("absentHint")}</p>
+          )}
+          {absentToday.length > 0 && (
+            <p className="text-muted-foreground text-xs leading-snug">
+              {t("absentAttendance", { count: absentToday.length })}
+            </p>
           )}
         </>
       )}

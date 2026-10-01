@@ -10,7 +10,10 @@ import { useDoskaStore } from "@/lib/doska/store";
 import type { DoskaWidget } from "@/lib/doska/types";
 import { parseEntries } from "@/lib/doska/wheel";
 import { randomIndex } from "@/lib/spin-wheel";
+import { Button } from "@/components/ui/button";
 import { SettingsSection, SettingsStepper } from "../SettingsFields";
+import { ConnectClass, useRosterStudents, useWheelAccess } from "./WheelWidget";
+import { useAbsentToday } from "./useAbsentToday";
 import { WidgetButton } from "./WidgetButton";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -22,8 +25,13 @@ import { WidgetButton } from "./WidgetButton";
    guruhlar orasidagi farq koʻpi bilan bitta odam.
 
    Roʻyxat gʻildirak kabi: har qator bitta ism; boʻsh boʻlsa namuna
-   ismlar (gʻildirakniki). Sinf roʻyxati, bugun yoʻqlar va cheklovlar
-   («birga qoʻyilmasin») — keyingi qadam, server bilan (B bosqichi).
+   ismlar (gʻildirakniki).
+
+   SINF ULANSA (Pro, gʻildirak bilan bir xil yoʻl): guruhlarda oʻquvchi
+   ID lari saqlanadi, ismlar esa har ochilishda serverdan olinadi —
+   localStorageʼda ism QOLMAYDI (wheel.ts, `WheelRoster` izohi). Bugun
+   davomatda «Kelmadi» yoki «Sababli» belgilanganlar guruhga tushmaydi.
+   Cheklovlar («birga qoʻyilmasin») — keyingi qadam.
 
    Natija storeʼda (`groups`) — sahifa yangilansa ham guruhlar qoladi:
    oʻquvchilar dars davomida ekranga qarab oʻz guruhini topadi.
@@ -40,7 +48,12 @@ function readGroups(state: DoskaWidget["state"]) {
   const groups = Array.isArray(state.groups)
     ? state.groups.filter(Array.isArray).map((g) => (g as unknown[]).map(String))
     : [];
-  return { text: typeof state.text === "string" ? state.text : "", by, n, groups };
+  const r = state.roster as Record<string, unknown> | null | undefined;
+  const roster =
+    r && typeof r.classId === "string" && r.classId
+      ? { classId: r.classId, className: typeof r.className === "string" ? r.className : "" }
+      : null;
+  return { text: typeof state.text === "string" ? state.text : "", by, n, groups, roster };
 }
 
 /** Fisher–Yates, kriptografik tasodif bilan. */
@@ -74,7 +87,14 @@ export function GroupsWidget({ widget }: { widget: DoskaWidget }) {
   const patch = useDoskaStore((s) => s.patchWidgetState);
   const t = useTranslations("Doska.groups");
   const tWheel = useTranslations("Doska.wheel");
-  const { text, by, n, groups } = readGroups(widget.state);
+  const { text, by, n, groups: saved, roster } = readGroups(widget.state);
+  const rosterLoad = useRosterStudents(roster?.classId ?? null);
+  const absent = useAbsentToday(roster?.classId ?? null);
+  const students = rosterLoad?.status === "ok" ? rosterLoad.students : null;
+  const labels = React.useMemo(() => (students ? new Map(students.map((s) => [s.id, s.name])) : null), [students]);
+  // Ulangan sinfda kalit — ID; roʻyxatda endi yoʻq (chiqib ketgan) bola koʻrinmaydi.
+  const groups = roster ? (labels ? saved.map((g) => g.filter((id) => labels.has(id))) : []) : saved;
+  const labelOf = (key: string) => labels?.get(key) ?? key;
   /**
    * Koʻchirish — sudrash emas, IKKI TEGINISH: ismga tegiladi (tanlanadi),
    * keyin boshqa guruhga. Sensorli doskada ism ustida sudrash vidjetni
@@ -96,18 +116,41 @@ export function GroupsWidget({ widget }: { widget: DoskaWidget }) {
 
   const make = () => {
     setPicked(null);
-    const typed = parseEntries(text);
-    const names = typed.length > 0 ? typed : (tWheel.raw("sampleNames") as string[]);
+    let names: string[];
+    if (roster) {
+      if (!students) return;
+      const out = new Set(absent ?? []);
+      names = students.filter((s) => !out.has(s.id)).map((s) => s.id);
+    } else {
+      const typed = parseEntries(text);
+      names = typed.length > 0 ? typed : (tWheel.raw("sampleNames") as string[]);
+    }
     patch(widget.id, { groups: makeGroups(names, by, n) });
   };
+
+  // Ulangan sinf ismlari kelmagan yoki yopiq — sababini aytamiz.
+  const rosterHint =
+    roster && rosterLoad?.status !== "ok"
+      ? rosterLoad?.status === "denied"
+        ? tWheel("rosterLocked")
+        : rosterLoad?.status === "failed"
+          ? tWheel("rosterFailed")
+          : tWheel("loading")
+      : null;
 
   if (groups.length === 0) {
     return (
       <div className="doska-card flex size-full flex-col items-center justify-center gap-[4cqw] p-[6cqw] text-center" data-card="slate">
         <p className="leading-snug opacity-80" style={{ fontSize: "clamp(0.8rem, 5cqw, 1.75rem)" }}>
-          {by === "count" ? t("summaryCount", { n }) : t("summarySize", { n })}
+          {rosterHint ?? (by === "count" ? t("summaryCount", { n }) : t("summarySize", { n }))}
         </p>
+        {roster && students && absent && absent.length > 0 && (
+          <p className="opacity-70" style={{ fontSize: "clamp(0.75rem, 4cqw, 1.3rem)" }}>
+            {t("absentToday", { count: absent.length })}
+          </p>
+        )}
         <WidgetButton
+          disabled={Boolean(roster && !students)}
           tone="primary"
           onClick={make}
           className="min-h-11 px-[6cqw] py-[3cqw] font-semibold"
@@ -154,7 +197,7 @@ export function GroupsWidget({ widget }: { widget: DoskaWidget }) {
                       picked?.g === i && picked.i === j && "bg-primary text-primary-foreground",
                     )}
                   >
-                    {name}
+                    {labelOf(name)}
                   </button>
                 </li>
               ))}
@@ -187,9 +230,10 @@ export function GroupsSettings({ widget }: { widget: DoskaWidget }) {
   const patch = useDoskaStore((s) => s.patchWidgetState);
   const t = useTranslations("Doska.groups");
   const tWheel = useTranslations("Doska.wheel");
-  const { text, by, n } = readGroups(widget.state);
+  const { text, by, n, roster } = readGroups(widget.state);
   const samples = tWheel.raw("sampleNames") as string[];
   const count = parseEntries(text).length;
+  const access = useWheelAccess();
 
   // Usul yoki son oʻzgarsa eski guruhlar oʻchadi — ular endi boshqa narsa.
   return (
@@ -218,7 +262,26 @@ export function GroupsSettings({ widget }: { widget: DoskaWidget }) {
         />
       </SettingsSection>
 
+      {roster ? (
+        <SettingsSection label={t("names")}>
+          <p className="text-sm">{t("connected", { name: roster.className })}</p>
+          <p className="text-muted-foreground text-xs leading-snug">{t("absentHint")}</p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="w-fit"
+            onClick={() => patch(widget.id, { roster: null, groups: [] })}
+          >
+            {t("disconnect")}
+          </Button>
+        </SettingsSection>
+      ) : (
       <SettingsSection label={count > 0 ? t("namesCount", { count }) : t("names")}>
+        <ConnectClass
+          access={access}
+          onConnected={(next) => patch(widget.id, { roster: { classId: next.classId, className: next.className }, groups: [] })}
+        />
         <Textarea
           value={text}
           rows={6}
@@ -231,6 +294,7 @@ export function GroupsSettings({ widget }: { widget: DoskaWidget }) {
         />
         <p className="text-muted-foreground text-xs leading-snug">{count > 0 ? t("namesHint") : t("samplesHint")}</p>
       </SettingsSection>
+      )}
     </>
   );
 }

@@ -2102,6 +2102,15 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "doska-gildirak-davomat": {
+        "title": "Doska gʻildiragi bugun kelmaganlarni oʻzi chiqarib tashlaydi — davomatdan, ulangan sinfda"
+      },
+      "doska-guruhlar-sinf": {
+        "title": "«Guruhlar»ga sinf roʻyxatini ulang (Pro): bugun kelmaganlar davomatdan oʻzi chiqarib tashlanadi"
+      },
+      "doska-bugun-reja": {
+        "title": "«Bugun» vidjeti dars rejangizni koʻradi: darslar yonida mavzu, bosqichlar esa reja sarlavhalaridan avtomatik"
+      },
       "doska-bugun": {
         "title": "Doskada «Bugun»: bugungi darslaringiz jadvaldan avtomatik yoki dars bosqichlari belgilanadigan roʻyxat"
       },
@@ -5449,6 +5458,8 @@
       "fromClass": "{className} roʻyxati",
       "disconnect": "Uzish",
       "absentToggle": "{name} — bugun yoʻq",
+      "absentByAttendance": "Davomatda bugun yoʻq",
+      "absentAttendance": "Davomatda bugun yoʻq: {count} — ular gʻildirakka chiqmaydi",
       "absentHint": "Bugun yoʻq bolani bosing — u gʻildirakka chiqmaydi.",
       "suggestConnect": "Sinfingiz jurnalda boʻlsa, ismlarni qoʻlda yozish shart emas.",
       "rosterUnavailable": "Sinf roʻyxati faqat Pro tarifida, hisobingizga kirganingizda koʻrinadi.",
@@ -5484,6 +5495,10 @@
       "make": "Guruhlarga ajratish",
       "shuffle": "Qayta aralashtirish",
       "moveHint": "Qaysi guruhga? Guruhga teging",
+      "connected": "{name} sinfi ulangan",
+      "absentHint": "Bugun davomatda «Kelmadi» yoki «Sababli» belgilanganlar guruhga tushmaydi.",
+      "disconnect": "Sinfni uzish",
+      "absentToday": "Bugun yoʻq: {count}",
       "groupName": "{n}-guruh",
       "summaryCount": "{n} ta guruh",
       "summarySize": "Guruhda {n} tadan",
@@ -5595,8 +5610,10 @@
       "loading": "Jadval yuklanmoqda…",
       "noTimetable": "Dars jadvali topilmadi — hisobga kiring yoki «Bosqichlar» koʻrinishini tanlang",
       "noLessons": "Bugun darsingiz yoʻq",
+      "holiday": "Bugun dars yoʻq: {name}",
       "stepsTitle": "Dars bosqichlari",
-      "stepsEmpty": "Sozlamada bosqichlarni yozing",
+      "stepsEmpty": "Bosqichlarni yozing — yoki dars rejasida sarlavhalar boʻlsa, ular bu yerda oʻzi chiqadi",
+      "stepsAuto": "Boʻsh qoldirilsa — hozirgi dars rejasidagi sarlavhalar.",
       "view": "Koʻrinish",
       "viewLessons": "Darslar",
       "viewSteps": "Bosqichlar",
