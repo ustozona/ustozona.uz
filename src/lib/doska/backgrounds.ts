@@ -207,6 +207,53 @@ export const DOSKA_BACKGROUNDS: DoskaBackground[] = [
       backgroundSize: "100% calc(100% - 120px)",
     },
   },
+  /* ── «Yumshoq sahna» (docs/doska-referens-koriklari.md R448) ──
+     Kundalik ekranlarda fotosurat oʻrniga: xiralashgan rang dogʻlari, och
+     va past kontrastli — kartalar va matn ustida ajralib turadi. Fotosurat
+     emas, ataylab: deploy yuki yoʻq va proyektorda pikselli chiqmaydi.
+     Har fonning eng toʻq rangi proyektor sinovida siyoh bilan tekshiriladi —
+     sinov ularni shu fayldan oʻzi oʻqiydi (`scripts/doska-projector-check.mjs`,
+     `id: "soft-…"` boʻyicha), shuning uchun yangi yumshoq fon ham `soft-`
+     bilan nomlanadi. */
+  {
+    /** Iliq — shaftoli va qumrang: kun rejasi, ertalabki salom. */
+    id: "soft-warm",
+    tone: "light",
+    style: {
+      background: [
+        "radial-gradient(45% 55% at 10% 15%, oklch(0.9 0.07 55 / 0.75), transparent 70%)",
+        "radial-gradient(40% 50% at 90% 85%, oklch(0.9 0.06 20 / 0.6), transparent 70%)",
+        "radial-gradient(35% 40% at 75% 5%, oklch(0.95 0.06 95 / 0.8), transparent 70%)",
+        "linear-gradient(160deg, oklch(0.975 0.015 80), oklch(0.95 0.03 60))",
+      ].join(", "),
+    },
+  },
+  {
+    /** Koʻkalam — och yashil va yalpiz. */
+    id: "soft-green",
+    tone: "light",
+    style: {
+      background: [
+        "radial-gradient(45% 55% at 85% 10%, oklch(0.9 0.08 140 / 0.7), transparent 70%)",
+        "radial-gradient(40% 50% at 10% 90%, oklch(0.92 0.07 110 / 0.65), transparent 70%)",
+        "radial-gradient(35% 40% at 30% 10%, oklch(0.93 0.05 185 / 0.6), transparent 70%)",
+        "linear-gradient(170deg, oklch(0.975 0.015 140), oklch(0.95 0.03 155))",
+      ].join(", "),
+    },
+  },
+  {
+    /** Osmon — och koʻk va lola rang. */
+    id: "soft-sky",
+    tone: "light",
+    style: {
+      background: [
+        "radial-gradient(45% 55% at 15% 10%, oklch(0.9 0.06 235 / 0.7), transparent 70%)",
+        "radial-gradient(40% 50% at 90% 80%, oklch(0.91 0.06 300 / 0.6), transparent 70%)",
+        "radial-gradient(35% 40% at 70% 15%, oklch(0.95 0.04 200 / 0.7), transparent 70%)",
+        "linear-gradient(165deg, oklch(0.975 0.012 240), oklch(0.95 0.025 275))",
+      ].join(", "),
+    },
+  },
   {
     /** Kuz — iliq toʻq tus (oktyabr, «Oʻqituvchilar kuni» oyi). */
     id: "autumn",

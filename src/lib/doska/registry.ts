@@ -42,7 +42,9 @@ export type WidgetLabelKey =
   | "today"
   | "video"
   | "link"
-  | "embed";
+  | "embed"
+  | "card"
+  | "date";
 
 /**
  * «Hammasi» oynasidagi toifa (docs/doska-ux-tadqiqot.md §3 «Topish»).
@@ -409,6 +411,42 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
     initialState: { url: "" },
     openSettingsOnAdd: true,
   },
+  "card.v1": {
+    kind: "card.v1",
+    category: "writing",
+    // Sarlavhali karta: «Dars maqsadi», «Uyga vazifa»… (docs/doska-referens-koriklari.md R447).
+    labelKey: "card",
+    // Qoʻshnilari «Eslatma» (pushti) va «Stiker» (sariq) — zumrad ikkalasidan
+    // uzoq; «Ovoz berish» ham zumrad, lekin u boshqa guruhda.
+    tint: "emerald",
+    // Tik toʻrtburchak: sarlavha + 3–5 qator yozuv.
+    defaultSize: { w: 380, h: 300 },
+    // Sarlavha va kamida ikki qator yozuv sigʻsin.
+    minSize: { w: 200, h: 160 },
+    // `preset` — tayyor sarlavha kaliti (`Doska.card.presets.*`), `title` —
+    // oʻqituvchi oʻzi yozgan sarlavha; yozilgan boʻlsa u ustun.
+    initialState: { preset: null, title: "", text: "", tint: "blue" },
+    remember: ["tint"],
+    editable: true,
+    // Avval sarlavha tanlanadi — sozlama kartasida tayyor variantlar. Shu
+    // sababli qoʻyilganda yozish rejimi YOQILMAYDI (`addWidget`): klaviatura
+    // sozlamani yopib qoʻyardi. Yozish — kartaga qayta teginganda.
+    openSettingsOnAdd: true,
+  },
+  "date.v1": {
+    kind: "date.v1",
+    category: "time",
+    // Kun nomi va sana, oʻzi yangilanadi (R445). «Bugun» — bu kun jadvali.
+    labelKey: "date",
+    // Qoʻshnilari «Soat» (koʻk) va «Taymer» (sariq) — qizgʻish ikkalasidan
+    // uzoq; «Hisob» ham qizgʻish, lekin u boshqa guruhda.
+    tint: "rose",
+    // Keng va past — sarlavha qatori.
+    defaultSize: { w: 560, h: 200 },
+    minSize: { w: 220, h: 90 },
+    initialState: { showDate: true, showYear: false, showHoliday: true },
+    remember: ["showDate", "showYear", "showHoliday"],
+  },
 };
 
 /**
@@ -424,6 +462,7 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
  */
 export const TOOL_ORDER: WidgetKind[] = [
   "clock.v1",
+  "date.v1",
   "timer.v1",
   "countdown.v1",
   "today.v1",
@@ -438,6 +477,7 @@ export const TOOL_ORDER: WidgetKind[] = [
   "noise.v1",
   "text.v1",
   "sticky-note.v1",
+  "card.v1",
   "sticker.v1",
   "shape.v1",
   "presentation.v1",

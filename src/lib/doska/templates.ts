@@ -12,9 +12,24 @@ import type { WidgetKind } from "./types";
    Vidjet holati reyestrdagi boshlangʻich va oʻqituvchining oxirgi
    tanlovi ustiga qoʻyiladi — faqat shablonga xos qiymat beriladi
    (masalan taymer daqiqasi).
+
+   JOYLASHUV (R452): `at` berilsa — vidjet aniq joyga, vidjetlar
+   maydonining ulushi sifatida (0…1, `placement.ts` → `rectInArea`). Ekran
+   ochilgan paytdagi oyna oʻlchamiga koʻpaytiriladi, saqlanishi esa
+   hozirgidek pikselda. `at` boʻlmasa — boʻsh joyga.
+
+   ⚠️ YANGI SHABLON — «1:1 emas» tekshiruvidan oʻtadi
+   (docs/doska-referens-koriklari.md R453): joylashuv, rang, shrift, tasvir
+   va matn — beshalasi oʻzimizniki; boshqa xizmatning biror ekranini
+   takrorlamaydi va undan fayl olinmaydi.
    ════════════════════════════════════════════════════════════════════ */
 
-export type DoskaTemplateWidget = { kind: WidgetKind; initial?: Record<string, unknown> };
+export type DoskaTemplateWidget = {
+  kind: WidgetKind;
+  initial?: Record<string, unknown>;
+  /** Joy — vidjetlar maydonining ulushi (0…1). */
+  at?: { x: number; y: number; w: number; h: number };
+};
 
 export type DoskaTemplate = {
   id: string;
@@ -24,7 +39,29 @@ export type DoskaTemplate = {
 
 const minutes = (m: number) => ({ mode: "countdown", durationSec: m * 60, remainingSec: m * 60, running: false });
 
+/** Kartaning faqat shablonga xos qiymati — qolgani reyestrdagi boshlangʻich holatdan. */
+const card = (preset: string, tint: string) => ({ preset, tint });
+
 export const DOSKA_TEMPLATES: DoskaTemplate[] = [
+  {
+    /**
+     * Kun rejasi (R454): tepada keng sarlavha qatori — kun va sana (oʻzi
+     * yangilanadi) va taymer; ostida teng uch ustun — bugungi darslar
+     * (jadvaldan oʻzi) va toʻrtta karta. Bitta ekran har kuni toʻgʻri
+     * kunni koʻrsatadi — kunlar uchun alohida ekran kerak emas.
+     */
+    id: "day-plan",
+    background: "soft-warm",
+    widgets: [
+      { kind: "date.v1", at: { x: 0, y: 0, w: 0.7, h: 0.27 } },
+      { kind: "timer.v1", initial: minutes(5), at: { x: 0.72, y: 0, w: 0.28, h: 0.27 } },
+      { kind: "today.v1", initial: { view: "lessons" }, at: { x: 0, y: 0.3, w: 0.3, h: 0.7 } },
+      { kind: "card.v1", initial: card("goal", "blue"), at: { x: 0.32, y: 0.3, w: 0.33, h: 0.335 } },
+      { kind: "card.v1", initial: card("homework", "teal"), at: { x: 0.67, y: 0.3, w: 0.33, h: 0.335 } },
+      { kind: "card.v1", initial: card("materials", "amber"), at: { x: 0.32, y: 0.665, w: 0.33, h: 0.335 } },
+      { kind: "card.v1", initial: card("earlyFinish", "note"), at: { x: 0.67, y: 0.665, w: 0.33, h: 0.335 } },
+    ],
+  },
   {
     /** Dars boshi: bugungi jadval, kirish taymeri, jimlik svetofori. */
     id: "lesson-start",

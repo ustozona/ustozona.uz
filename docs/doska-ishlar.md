@@ -22,7 +22,6 @@ tavsifi — `docs/doska-referens-koriklari.md` (R-raqamlar).
 | R411 guruhlarda cheklovlar: «birga qoʻyilmasin / albatta birga» | 2026-10-01, referens koʻrigi | Qayerda saqlanadi: A — vidjet holatida (bazasiz, tavsiya), B — bazada (`student_constraints`) | — |
 | R384 + R420 rasm qoʻyish va oʻz rasmini fon qilish | 2026-10-01, referens koʻrigi | Rasm saqlash joyi | — |
 | R397 vidjet joylashuvi uchun bitta 16:9 maydon | 2026-10-01, referens koʻrigi | Tasdiq kerak; ekranlarni serverga saqlashdan OLDIN | — |
-
 ## 2. Server bilan (keyin)
 
 | Ish | Gʻoya | Kim |
@@ -44,7 +43,7 @@ tavsifi — `docs/doska-referens-koriklari.md` (R-raqamlar).
 
 | Ish | Gʻoya | Boshlandi | Kim |
 |---|---|---|---|
-| — | | | |
+| R443–R454 kundalik ekran: «Karta» va «Sana» vidjetlari, shablonda joy ulushi, «Kun rejasi» shabloni, «Bugun»da vaqt chizigʻi, yumshoq fonlar | 2026-10-01, 3-referens | 2026-10-01, `maxdum/doska-kun-rejasi` | maxdum + Claude |
 
 ## 5. Tugadi
 
@@ -71,3 +70,5 @@ tavsifi — `docs/doska-referens-koriklari.md` (R-raqamlar).
 | R406 taymer diskini sudrash | 2026-10-01 | Disk qolgan ulushni koʻrsatadi, 60 daqiqalik siferblat emas |
 | R415 ish belgilari | 2026-10-01 | Svetofor deyarli toʻliq qoplaydi |
 | R421 vidjetga oʻz rang mavzusi, fon karuseli | 2026-10-01 | Uslub qarori; sinfga taʼsiri kichik |
+| R448 fotosurat fonlar katalogi, yarim shaffof kartalar | 2026-10-01, foydalanuvchi | Proyektorda matn yuviladi, deploy yuki; oʻrniga CSS «yumshoq sahna» |
+| R451 shablon palitrasi vidjetlarga | 2026-10-01 | Vidjet tusi — turining belgisi, koʻrinish — oʻqituvchi tanlagan uslub (Q1) |

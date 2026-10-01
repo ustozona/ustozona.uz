@@ -2102,6 +2102,9 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "doska-kun-rejasi": {
+        "title": "Doskada «Kun rejasi» tayyor ekrani: bugungi kun oʻzi yangilanadi, yangi «Karta» va «Sana» vidjetlari, yumshoq fonlar"
+      },
       "doska-tayyor-ekranlar": {
         "title": "Doska menyusida «Tayyor ekranlar»: dars boshi, guruh ishi, savol-javob va dars yakuni bir bosishda"
       },
@@ -5189,7 +5192,9 @@
       "today": "Bugun",
       "video": "Video",
       "link": "Havola",
-      "embed": "Sayt"
+      "embed": "Sayt",
+      "card": "Karta",
+      "date": "Sana"
     },
     "toolbar": {
       "duplicate": "{widget} — nusxalash",
@@ -5365,7 +5370,9 @@
         "today": "Bugungi darslar yoki dars bosqichlari",
         "video": "Video havola yoki fayl doskada",
         "link": "Sahifani yangi varaqda ochish",
-        "embed": "Sahifa doska ichida"
+        "embed": "Sahifa doska ichida",
+        "card": "Sarlavha va yozuv: maqsad, uyga vazifa, eslatma",
+        "date": "Bugungi kun va sana — oʻzi yangilanadi"
       }
     },
     "templates": {
@@ -5373,6 +5380,10 @@
       "back": "Orqaga",
       "hint": "Yangi ekran ochiladi — joriy ekran oʻzgarmaydi.",
       "items": {
+        "day-plan": {
+          "name": "Kun rejasi",
+          "desc": "Bugungi kun, darslar, taymer va toʻrtta karta"
+        },
         "lesson-start": {
           "name": "Dars boshi",
           "desc": "Bugungi darslar, 5 daqiqa taymer, svetofor"
@@ -5432,7 +5443,10 @@
       "navruz": "Navroʻz",
       "mustaqillik": "Mustaqillik",
       "dusk": "Kechki tus",
-      "shakllar": "Rangli shakllar"
+      "shakllar": "Rangli shakllar",
+      "soft-warm": "Iliq",
+      "soft-green": "Koʻkalam",
+      "soft-sky": "Osmon"
     },
     "shapes": {
       "triangle": "Uchburchak",
@@ -5768,6 +5782,35 @@
       "notes": {
         "inkNote": "Qayta bosilsa — tanlash rejimiga qaytadi."
       }
+    },
+    "card": {
+      "untitled": "Sarlavha",
+      "placeholder": "Yozing…",
+      "title": "Sarlavha",
+      "custom": "Oʻz sarlavhangiz",
+      "color": "Rang",
+      "presets": {
+        "goal": "Dars maqsadi",
+        "homework": "Uyga vazifa",
+        "materials": "Kerakli narsalar",
+        "reminder": "Eslatma",
+        "earlyFinish": "Tugatgan boʻlsang",
+        "question": "Kun savoli"
+      },
+      "tints": {
+        "blue": "Koʻk",
+        "teal": "Feruza",
+        "amber": "Toʻq sariq",
+        "note": "Pushti",
+        "slate": "Toʻq kulrang"
+      }
+    },
+    "date": {
+      "show": "Koʻrsatish",
+      "showDate": "Sana",
+      "showYear": "Yil",
+      "showHoliday": "Bayram va taʼtil nomi",
+      "holidayHint": "Bayram va taʼtil — oʻquv kalendaringizdan."
     }
   },
   "LessonPlanWizard": {

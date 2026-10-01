@@ -378,6 +378,34 @@ qolgani uslubdan. Tuslar: `blue` (soat), `amber` (taymer), `slate`
   chiroqlari va gʻildirak ham jismoniy — uslubdan qatʼi nazar bir xil.
 - Matn oʻlchami `cqw` da — konteynerga bogʻliq, uslubga emas.
 
+### «Karta» — sarlavha va yozuv varagʻi
+
+`card.v1` (docs/doska-referens-koriklari.md R447) — ekranning boʻlimi:
+sarlavha (`.doska-card-title`) va yozuv varagʻi (`.doska-card-body`),
+BITTA vidjet. Tus oʻqituvchi tanlaydi — `data-card` dan beshtasi:
+`blue`, `teal`, `amber`, `note`, `slate` (`done` emas — u «tugadi»
+maʼnosida band). Varaq tokenlari:
+
+| Token | Sokin | Oʻyinchoq | Doska |
+|---|---|---|---|
+| `--doska-card-body-bg` / `-fg` | oq / siyoh | oq / siyoh | qogʻozdan oqroq / siyoh |
+| `--doska-card-body-line(-width)` | yoʻq | 2,5 px siyoh | 1 px siyoh/12% |
+| `--doska-card-rule-width` (sarlavha ostida, `--card-accent`) | 0 | 0 | 5 px |
+
+Doskada fon hamma tusda qogʻoz — tus magnit va sarlavha ostidagi
+chiziqdan koʻrinadi. Varaq juftligi proyektor sinovida («karta yozuvi»).
+
+Sozlamadagi tus namunasi `.doska-card` ni QOʻYMAYDI: magnit (`::before`)
+qatlamsiz qoida va 36 px namunada 26 px doira boʻlib chiqardi. Namuna
+`--doska-{tus}-bg` va `-accent` ni toʻgʻridan-toʻgʻri oʻqiydi.
+
+### «Sana» — idishsiz sarlavha
+
+`date.v1` (R445) — matn vidjeti kabi `.doska-ink`: kun nomi
+`--doska-display-weight` da, sana va bayram nomi undan kichik (`em`).
+Butun blok `useFitText` bilan qutiga sigʻdiriladi — «Chorshanba»
+«Juma»dan ikki barobar uzun, `cqw` yolgʻiz yetmaydi.
+
 ### Rang qayerdan keladi
 
 **Ikki xil rang tizimi, ular aralashmaydi:**
@@ -563,6 +591,14 @@ uslubning kartasi (toʻyingan blok, rangli plitka, qogʻoz) toʻq fonda
 ham oʻzi ajralib turadi, shaffof karta esa proyektorda yuvilib ketardi
 (A9, R324). Komponentlar bu haqda bilmaydi — ular `var(--doska-ink)`
 ni oʻqiydi.
+
+**«Yumshoq sahna» fonlari** (`soft-warm`, `soft-green`, `soft-sky`,
+R448) — kundalik ekranlar uchun fotosurat oʻrnida: xiralashgan rang
+dogʻlari, och va past kontrastli. Fotosurat katalogi va yarim shaffof
+(«muzli») kartalar ataylab olinmagan: proyektorda matn yuvilib ketadi.
+Har fonning eng toʻq rangi proyektor sinovida siyoh bilan tekshiriladi —
+sinov ranglarni `backgrounds.ts` dan oʻzi oʻqiydi (`id: "soft-…"`), shuning
+uchun yangi yumshoq fon ham `soft-` bilan nomlanadi.
 
 ---
 
