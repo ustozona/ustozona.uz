@@ -2102,6 +2102,9 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "doska-zar": {
+        "title": "New “Dice” tool in Doska: 1–3 dice, a random number from a range, a letter of the Uzbek alphabet or a coin flip"
+      },
       "doska-taymer-takrorlash": {
         "title": "Doska timer: repeats for station rotations, turns red in the last seconds, shows the time left in the browser tab"
       },
@@ -5223,7 +5226,8 @@
       "stickyNote": "Note",
       "shape": "Shape",
       "presentation": "Slides",
-      "wheel": "Wheel"
+      "wheel": "Wheel",
+      "dice": "Dice"
     },
     "toolbar": {
       "duplicate": "{widget} — duplicate",
@@ -5367,7 +5371,8 @@
         "stickyNote": "Colored note",
         "shape": "Geometric shapes",
         "presentation": "Questions and answers",
-        "wheel": "Pick a random name"
+        "wheel": "Pick a random name",
+        "dice": "Dice, number, letter or coin"
       }
     },
     "appearance": {
@@ -5475,6 +5480,22 @@
       "rosterLocked": "List locked",
       "rosterFailed": "List didn’t load",
       "retry": "Try again"
+    },
+    "dice": {
+      "roll": "Roll",
+      "empty": "Not rolled yet",
+      "heads": "Heads",
+      "tails": "Tails",
+      "mode": "What to roll",
+      "modeDice": "Dice",
+      "modeNumber": "Number",
+      "modeLetter": "Letter",
+      "modeCoin": "Coin",
+      "count": "Number of dice",
+      "from": "From",
+      "to": "To",
+      "less": "Fewer",
+      "more": "More"
     },
     "ink": {
       "toolbar": "Ink tools",

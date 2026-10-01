@@ -940,7 +940,7 @@ bilan toʻlov, onboarding qoʻllanmalari.
    diskda sudrash, sekundomer rejimi.
 5. R401 + R422 — chetga qoʻyish, faol nusxa nuqtasi, oxirgi tanlovni
    eslab qolish.
-6. Yangi arzon vidjetlar: R415 ish belgilari, R416 zar (oʻzbek
+6. ✅ R416 zar (oʻzbek alifbosi, son, tanga) **qurildi** — `dice.v1`. R415 ish belgilari QILINMADI: svetoforimiz (jim · pichirlab · gaplashamiz, belgi + soʻz) uni deyarli toʻliq qoplaydi. Yangi arzon vidjetlar: R415 ish belgilari, R416 zar (oʻzbek
    alifbosi), R419 stikerlar, R418 QR.
 7. R410 — tasodifiy ism: standart koʻrinish va tayyor roʻyxatlar.
 

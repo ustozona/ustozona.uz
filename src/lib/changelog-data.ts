@@ -36,6 +36,13 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "doska-zar",
+    date: "2026-10-01",
+    type: "yangi",
+    title: "Doskada yangi «Zar» vositasi: 1–3 zar, oraliqdan tasodifiy son, oʻzbek alifbosidan harf yoki tanga",
+    href: "/doska",
+  },
+  {
     id: "doska-taymer-takrorlash",
     date: "2026-10-01",
     type: "yaxshilandi",

@@ -2102,6 +2102,9 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "doska-zar": {
+        "title": "Doskada jańa «Zar» quralı: 1–3 zar, aralıqtan tosınnan san, ózbek álipbesinen hárip yamasa teńge"
+      },
       "doska-taymer-takrorlash": {
         "title": "Doska taymeri: toparlar almasıwı ushın qaytalanadı, sońǵı sekundlarda qızılǵa ótedi, qalǵan waqıt brauzer betinde kórinedi"
       },
@@ -5224,7 +5227,8 @@
       "stickyNote": "Eslatpe",
       "shape": "Figura",
       "presentation": "Slaydlar",
-      "wheel": "Dóńgelek"
+      "wheel": "Dóńgelek",
+      "dice": "Zar"
     },
     "toolbar": {
       "duplicate": "{widget} — nusqa alıw",
@@ -5368,7 +5372,8 @@
         "stickyNote": "Reńli eslatpe qaǵaz",
         "shape": "Geometriyalıq figuralar",
         "presentation": "Sorawlar hám juwaplar",
-        "wheel": "Tosınnan at tańlaw"
+        "wheel": "Tosınnan at tańlaw",
+        "dice": "Zar, san, hárip yamasa teńge"
       }
     },
     "appearance": {
@@ -5476,6 +5481,22 @@
       "rosterLocked": "Dizim jabıq",
       "rosterFailed": "Dizim júklenbedi",
       "retry": "Qaytadan urınıw"
+    },
+    "dice": {
+      "roll": "Taslaw",
+      "empty": "Ele taslanbadı",
+      "heads": "Gerb",
+      "tails": "San",
+      "mode": "Ne taslanadı",
+      "modeDice": "Zar",
+      "modeNumber": "San",
+      "modeLetter": "Hárip",
+      "modeCoin": "Teńge",
+      "count": "Zarlar sanı",
+      "from": "Baslap",
+      "to": "Shekem",
+      "less": "Azıraq",
+      "more": "Kóbirek"
     },
     "ink": {
       "toolbar": "Qoljazba ásbapları",

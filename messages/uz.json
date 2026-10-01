@@ -2102,6 +2102,9 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "doska-zar": {
+        "title": "Doskada yangi «Zar» vositasi: 1–3 zar, oraliqdan tasodifiy son, oʻzbek alifbosidan harf yoki tanga"
+      },
       "doska-taymer-takrorlash": {
         "title": "Doska taymeri: guruhlar aylanishi uchun takrorlanadi, oxirgi soniyalarda qizilga oʻtadi, qolgan vaqt brauzer yorligʻida koʻrinadi"
       },
@@ -5101,7 +5104,8 @@
       "stickyNote": "Eslatma",
       "shape": "Shakl",
       "presentation": "Taqdimot",
-      "wheel": "Gʻildirak"
+      "wheel": "Gʻildirak",
+      "dice": "Zar"
     },
     "toolbar": {
       "duplicate": "{widget} — nusxalash",
@@ -5245,7 +5249,8 @@
         "stickyNote": "Rangli eslatma qogʻoz",
         "shape": "Geometrik figuralar",
         "presentation": "Savollar va javoblar",
-        "wheel": "Tasodifiy ism tanlash"
+        "wheel": "Tasodifiy ism tanlash",
+        "dice": "Zar, son, harf yoki tanga"
       }
     },
     "appearance": {
@@ -5353,6 +5358,22 @@
       "rosterLocked": "Roʻyxat yopiq",
       "rosterFailed": "Roʻyxat yuklanmadi",
       "retry": "Qayta urinish"
+    },
+    "dice": {
+      "roll": "Tashlash",
+      "empty": "Hali tashlanmadi",
+      "heads": "Gerb",
+      "tails": "Raqam",
+      "mode": "Nima tashlanadi",
+      "modeDice": "Zar",
+      "modeNumber": "Son",
+      "modeLetter": "Harf",
+      "modeCoin": "Tanga",
+      "count": "Zarlar soni",
+      "from": "Dan",
+      "to": "Gacha",
+      "less": "Kamroq",
+      "more": "Koʻproq"
     },
     "ink": {
       "toolbar": "Qoʻlyozma asboblari",

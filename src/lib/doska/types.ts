@@ -21,7 +21,8 @@ export type WidgetKind =
   | "sticky-note.v1"
   | "shape.v1"
   | "presentation.v1"
-  | "wheel.v1";
+  | "wheel.v1"
+  | "dice.v1";
 
 /**
  * Vidjetning ekrandagi oʻrni va oʻz holati.

@@ -29,7 +29,8 @@ export type WidgetLabelKey =
   | "stickyNote"
   | "shape"
   | "presentation"
-  | "wheel";
+  | "wheel"
+  | "dice";
 
 /**
  * «Hammasi» oynasidagi toifa (docs/doska-ux-tadqiqot.md §3 «Topish»).
@@ -225,6 +226,17 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
       speed: "medium",
     },
   },
+  "dice.v1": {
+    kind: "dice.v1",
+    category: "class",
+    labelKey: "dice",
+    // Qoʻshnisi «Gʻildirak» (teal) — sariq-yashil undan aniq farqlanadi.
+    tint: "lime",
+    // Uch zar yonma-yon sigʻadigan, son va harf uzoqdan oʻqiladigan.
+    defaultSize: { w: 360, h: 300 },
+    minSize: { w: 180, h: 160 },
+    initialState: { mode: "dice", count: 1, min: 1, max: 30, values: [] },
+  },
 };
 
 /**
@@ -245,6 +257,7 @@ export const TOOL_ORDER: WidgetKind[] = [
   // Sinfni boshqarish vositalari yonida (soat, taymer, svetofor) —
   // mazmun vositalaridan (matn, eslatma, taqdimot) oldin.
   "wheel.v1",
+  "dice.v1",
   "text.v1",
   "sticky-note.v1",
   "shape.v1",
