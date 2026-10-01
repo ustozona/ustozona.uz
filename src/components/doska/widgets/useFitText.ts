@@ -38,8 +38,14 @@ type FitOptions = {
   max: number;
 };
 
+/**
+ * Element — `<textarea>` (matn qatorga oʻraladi, faqat balandlik toshadi)
+ * yoki oddiy blok (`white-space: nowrap` qatorlar eniga ham toshadi —
+ * «Sana» vidjeti). Ikkala yoʻnalish ham tekshiriladi; oʻraladigan matnda
+ * en hech qachon toshmaydi, yaʼni textarea uchun natija oʻzgarmaydi.
+ */
 export function useFitText(
-  ref: React.RefObject<HTMLTextAreaElement | null>,
+  ref: React.RefObject<HTMLElement | null>,
   { text, widthRatio, min, max }: FitOptions,
 ) {
   /**
@@ -52,6 +58,8 @@ export function useFitText(
     const el = ref.current;
     if (!el) return;
 
+    const fits = () => el.scrollHeight <= el.clientHeight && el.scrollWidth <= el.clientWidth;
+
     const measure = () => {
       const upper = Math.min(max, Math.max(min, el.clientWidth * widthRatio));
 
@@ -59,7 +67,7 @@ export function useFitText(
       // shrift QAYTA kattalashishi kerak, aks holda bir marta
       // kichraygan matn shundayligicha qolib ketardi.
       el.style.fontSize = `${upper}px`;
-      if (el.scrollHeight <= el.clientHeight) return;
+      if (fits()) return;
 
       // Sakkiz qadam — 80px oraliqni ~0.3px gacha toraytiradi, bu
       // koʻzga sezilmaydigan aniqlik.
@@ -70,7 +78,7 @@ export function useFitText(
       for (let i = 0; i < 8; i++) {
         const mid = (lo + hi) / 2;
         el.style.fontSize = `${mid}px`;
-        if (el.scrollHeight <= el.clientHeight) {
+        if (fits()) {
           best = mid;
           lo = mid;
         } else {

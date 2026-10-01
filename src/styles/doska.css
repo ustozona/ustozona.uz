@@ -63,6 +63,13 @@ html[data-product="doska"],
   --doska-card-line: oklch(1 0 0 / 0.16);
   --doska-card-shadow: 0 12px 28px -14px oklch(0 0 0 / 0.55);
   --doska-card-magnet: none;
+  /* «Karta» vidjeti (R447): tusli ramka ichida oq varaq, sarlavha ostida
+     chiziq yoʻq — ramkaning oʻzi tus. */
+  --doska-card-body-bg: oklch(0.99 0 0);
+  --doska-card-body-fg: oklch(0.26 0.02 260);
+  --doska-card-body-line-width: 0px;
+  --doska-card-body-line: transparent;
+  --doska-card-rule-width: 0px;
 
   --doska-blue-bg: oklch(0.52 0.16 255);
   --doska-blue-fg: oklch(0.99 0 0);
@@ -143,6 +150,12 @@ html[data-product="doska"][data-doska-style="oyinchoq"],
   --doska-card-line: oklch(0.24 0.03 265);
   --doska-card-shadow: 0 6px 0 0 oklch(0.24 0.03 265);
   --doska-card-magnet: none;
+  /* Varaq ham siyoh kontur bilan chizilgan — kartaning oʻzi kabi. */
+  --doska-card-body-bg: oklch(0.99 0 0);
+  --doska-card-body-fg: oklch(0.24 0.03 265);
+  --doska-card-body-line-width: 2.5px;
+  --doska-card-body-line: oklch(0.24 0.03 265);
+  --doska-card-rule-width: 0px;
 
   --doska-blue-bg: oklch(0.82 0.1 240);
   --doska-blue-fg: oklch(0.24 0.03 265);
@@ -220,6 +233,13 @@ html[data-product="doska"][data-doska-style="doska"],
   --doska-card-line: oklch(0.25 0.02 260 / 0.14);
   --doska-card-shadow: 0 10px 22px -6px oklch(0 0 0 / 0.45);
   --doska-card-magnet: block;
+  /* Karta — qogʻoz, tusi qayerdadir koʻrinishi kerak: magnitdan tashqari
+     sarlavha ostidagi qalin chiziq. Varaq qogʻozdan sal oqroq. */
+  --doska-card-body-bg: oklch(0.995 0.004 90);
+  --doska-card-body-fg: oklch(0.25 0.02 260);
+  --doska-card-body-line-width: 1px;
+  --doska-card-body-line: oklch(0.25 0.02 260 / 0.12);
+  --doska-card-rule-width: 5px;
 
   --doska-blue-bg: oklch(0.975 0.012 90);
   --doska-blue-fg: oklch(0.25 0.02 260);
@@ -529,6 +549,24 @@ html[data-doska-style] {
   background: radial-gradient(circle at 34% 32%, oklch(1 0 0 / 0.9) 0 14%, var(--card-accent) 42%);
   box-shadow: 0 3px 5px oklch(0 0 0 / 0.4);
   pointer-events: none;
+}
+
+/* «Karta» vidjeti (R447) — sarlavha va yozuv varagʻi, bitta obyekt.
+   Sarlavha kartaning oʻz rangida; «Doska» uslubida ostida tus chizigʻi
+   (`--doska-card-rule-width`, boshqa uslublarda 0). Varaq — uslubdan. */
+.doska-card-title {
+  font-weight: var(--doska-display-weight);
+  line-height: 1.15;
+  padding-bottom: 0.15em;
+  border-bottom: var(--doska-card-rule-width) solid var(--card-accent);
+}
+
+.doska-card-body {
+  background: var(--doska-card-body-bg);
+  color: var(--doska-card-body-fg);
+  font-weight: var(--doska-text-weight);
+  border-radius: calc(var(--doska-card-radius) * 0.6);
+  box-shadow: inset 0 0 0 var(--doska-card-body-line-width) var(--doska-card-body-line);
 }
 
 /* Idishsiz matn — matn vidjeti va shakl. */

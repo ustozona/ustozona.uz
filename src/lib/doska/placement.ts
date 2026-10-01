@@ -33,6 +33,34 @@ function overlaps(a: Rect, b: Rect): boolean {
   );
 }
 
+type Dock = "bottom" | "left" | "right";
+
+/**
+ * Vidjetlar uchun maydon — kanvas chetlari va boshqaruv paneli
+ * chiqarilgan. Boʻsh joy qidiruvi ham, shablon joylashuvi ham shu
+ * chegarada ishlaydi: ikkalasi panel ostiga vidjet qoʻymaydi.
+ */
+export function usableArea(canvas: { w: number; h: number }, dock: Dock = "bottom"): Rect {
+  const left = MARGIN + (dock === "left" ? SIDE_RESERVED : 0);
+  const right = MARGIN + (dock === "right" ? SIDE_RESERVED : 0);
+  return { x: left, y: MARGIN, w: canvas.w - left - right, h: canvas.h - MARGIN - BOTTOM_RESERVED };
+}
+
+/**
+ * Shablondagi joy (`area` ning ulushi, 0…1) → piksel
+ * (docs/doska-referens-koriklari.md R452). Kichik ekranda vidjet oʻzining
+ * eng kichik oʻlchamidan kichraymaydi — qoʻshnisiga sal kirsa ham ichi
+ * buzilmaydi.
+ */
+export function rectInArea(at: Rect, area: Rect, min: { w: number; h: number }): Rect {
+  return {
+    x: Math.round(area.x + at.x * area.w),
+    y: Math.round(area.y + at.y * area.h),
+    w: Math.round(Math.max(min.w, at.w * area.w)),
+    h: Math.round(Math.max(min.h, at.h * area.h)),
+  };
+}
+
 /**
  * Boʻsh joy: `size` oʻlchamdagi vidjet uchun `others` ga tegmaydigan
  * birinchi nuqta. `canvas` yoʻq (server) yoki joy qolmagan boʻlsa —
@@ -42,16 +70,16 @@ export function findFreeSpot(
   size: { w: number; h: number },
   others: readonly Rect[],
   canvas: { w: number; h: number } | null,
-  dock: "bottom" | "left" | "right" = "bottom",
+  dock: Dock = "bottom",
 ): { x: number; y: number } {
   const fallback = { x: 80 + others.length * 28, y: 80 + others.length * 28 };
   if (!canvas) return fallback;
 
-  const minX = MARGIN + (dock === "left" ? SIDE_RESERVED : 0);
-  const maxX = canvas.w - MARGIN - (dock === "right" ? SIDE_RESERVED : 0) - size.w;
-  const maxY = canvas.h - BOTTOM_RESERVED - size.h;
-  for (let y = MARGIN; y <= maxY; y += STEP) {
-    for (let x = minX; x <= maxX; x += STEP) {
+  const area = usableArea(canvas, dock);
+  const maxX = area.x + area.w - size.w;
+  const maxY = area.y + area.h - size.h;
+  for (let y = area.y; y <= maxY; y += STEP) {
+    for (let x = area.x; x <= maxX; x += STEP) {
       const spot = { x, y, w: size.w, h: size.h };
       if (!others.some((o) => overlaps(spot, o))) return { x, y };
     }

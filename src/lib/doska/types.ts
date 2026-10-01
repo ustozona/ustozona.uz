@@ -34,7 +34,9 @@ export type WidgetKind =
   | "today.v1"
   | "video.v1"
   | "link.v1"
-  | "embed.v1";
+  | "embed.v1"
+  | "card.v1"
+  | "date.v1";
 
 /**
  * Vidjetning ekrandagi oʻrni va oʻz holati.

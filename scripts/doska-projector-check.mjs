@@ -38,6 +38,14 @@ const STYLES = {
 const LIGHT_BG = "oklch(0.97 0.002 250)"; // oq taxta
 const DARK_BG = "oklch(0.33 0.045 158)"; // yashil doska (standart)
 
+/** «Yumshoq sahna» fonlarining eng toʻq dogʻi, shaffofligisiz — eng yomon
+    holat (`src/lib/doska/backgrounds.ts`, R448). Idishsiz siyoh shu ustida. */
+const SOFT_BLOBS = {
+  "soft-warm": "oklch(0.9 0.07 55)",
+  "soft-green": "oklch(0.9 0.08 140)",
+  "soft-sky": "oklch(0.9 0.06 235)",
+};
+
 const TINTS = ["blue", "amber", "slate", "teal", "note", "done"];
 
 // `parse` va `toSrgb` pastda (function hoisting) — ular shu yerda ham ishlaydi.
@@ -114,6 +122,9 @@ for (const [name, re] of Object.entries(STYLES)) {
     ["varaq izohi", t["doska-sheet-muted"], t["doska-sheet-bg"]],
     ["siyoh · oq taxta", t["doska-ink"], LIGHT_BG],
     ["boʻr · yashil doska", t["doska-chalk"], DARK_BG],
+    ...Object.entries(SOFT_BLOBS).map(([id, bg]) => [`siyoh · ${id}`, t["doska-ink"], bg]),
+    // «Karta» vidjetining yozuv varagʻi (R447).
+    ["karta yozuvi", t["doska-card-body-fg"], t["doska-card-body-bg"]],
   ];
 
   console.log(`\n${name}`);

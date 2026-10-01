@@ -7,7 +7,7 @@ import type { DoskaDeck, DoskaScreen, DoskaWidget, InkStroke, WidgetKind } from 
 import { widgetMeta } from "./registry";
 import { visibleInk } from "./ink";
 import { DEFAULT_BACKGROUND_ID } from "./backgrounds";
-import { findFreeSpot } from "./placement";
+import { findFreeSpot, rectInArea, usableArea } from "./placement";
 import { useDoskaPrefs } from "./prefs";
 import type { DoskaTemplate } from "./templates";
 
@@ -971,17 +971,25 @@ export const useDoskaStore = create<DoskaState>()(
             // «Barcha ekranlarda» vidjetlar ham yangi ekranga koʻchadi (gatherPinned) —
             // ularning joyi ham band hisoblanadi.
             const pinned = s.deck.screens.flatMap((x) => x.widgets.filter((w) => w.pinned && !w.parked));
-            // Har biri oldingilarini hisobga olib boʻsh joyga — ustma-ust emas.
+            const area = canvas ? usableArea(canvas, dock) : null;
             for (const [i, item] of template.widgets.entries()) {
               const meta = widgetMeta(item.kind);
-              const spot = findFreeSpot(meta.defaultSize, [...pinned, ...screen.widgets], canvas, dock);
+              // Shablon joyni bersa — oʻsha joyga (R452); aks holda oldingilarini
+              // hisobga olib boʻsh joyga, ustma-ust emas.
+              const rect =
+                item.at && area
+                  ? rectInArea(item.at, area, meta.minSize)
+                  : {
+                      ...findFreeSpot(meta.defaultSize, [...pinned, ...screen.widgets], canvas, dock),
+                      ...meta.defaultSize,
+                    };
               screen.widgets.push({
                 id: newId(),
                 kind: item.kind,
-                x: spot.x,
-                y: spot.y,
-                w: meta.defaultSize.w,
-                h: meta.defaultSize.h,
+                x: rect.x,
+                y: rect.y,
+                w: rect.w,
+                h: rect.h,
                 z: i + 1,
                 state: { ...structuredClone(meta.initialState), ...rememberedState(item.kind), ...item.initial },
               });

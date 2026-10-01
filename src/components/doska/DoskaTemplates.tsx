@@ -52,12 +52,13 @@ export function DoskaTemplates({ onBack, onDone }: { onBack: () => void; onDone:
             >
               <span
                 aria-hidden="true"
-                className="flex h-12 w-20 shrink-0 items-center justify-center gap-1 overflow-hidden rounded-md border"
+                className="flex h-12 w-24 shrink-0 items-center justify-center gap-1 overflow-hidden rounded-md border"
                 style={{ ...bg.style, color: bg.tone === "dark" ? "oklch(0.97 0 0)" : "oklch(0.3 0 0)" }}
               >
-                {tpl.widgets.map((w, i) => {
-                  const Icon = WIDGET_ICONS[w.kind];
-                  return <Icon key={i} className="size-5" />;
+                {/* Har tur bir marta — toʻrtta karta toʻrtta bir xil ikona boʻlib namunaga sigʻmaydi. */}
+                {[...new Set(tpl.widgets.map((w) => w.kind))].map((kind) => {
+                  const Icon = WIDGET_ICONS[kind];
+                  return <Icon key={kind} className="size-5 shrink-0" />;
                 })}
               </span>
               <span className="flex min-w-0 flex-col">

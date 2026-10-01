@@ -840,6 +840,34 @@ export function IconToday({ className }: IconProps) {
   );
 }
 
+/** Karta — ramka (massa), ichida sarlavha chizigʻi va yozuv varagʻi (detal). */
+export function IconCard({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={cn("doska-icon", className)} aria-hidden="true">
+      <g>
+        <rect x="2.5" y="3" width="19" height="18" rx="4" opacity=".5" />
+        <rect x="6" y="6.1" width="8" height="1.8" rx=".9" />
+        <rect x="6" y="10.5" width="12" height="7" rx="1.8" />
+      </g>
+    </svg>
+  );
+}
+
+/** Sana — kalendar varagʻi (massa), tepada halqalar va kun nomi qatori (detal). */
+export function IconDate({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={cn("doska-icon", className)} aria-hidden="true">
+      <g>
+        <rect x="2.5" y="4" width="19" height="17.5" rx="4" opacity=".5" />
+        <rect x="6.75" y="2" width="1.8" height="4.5" rx=".9" />
+        <rect x="15.45" y="2" width="1.8" height="4.5" rx=".9" />
+        <rect x="6.5" y="10.5" width="11" height="2.6" rx="1.3" />
+        <rect x="6.5" y="15.4" width="7" height="1.8" rx=".9" />
+      </g>
+    </svg>
+  );
+}
+
 /**
  * Klaviatura yorliqlari — oʻzimiz chizdik: korpus (massa) va tugmalar
  * (detal), Solar oʻlchamlarida — tashqi chegara 20×14, radius 3.5
@@ -967,6 +995,8 @@ export const DOSKA_ICONS: { name: string; source: string; Icon: React.ComponentT
   { name: "IconVideo", source: "oʻzimiz:video", Icon: IconVideo },
   { name: "IconLink", source: "oʻzimiz:havola", Icon: IconLink },
   { name: "IconEmbed", source: "oʻzimiz:sayt", Icon: IconEmbed },
+  { name: "IconCard", source: "oʻzimiz:karta", Icon: IconCard },
+  { name: "IconDate", source: "oʻzimiz:sana", Icon: IconDate },
   { name: "IconKeyboard", source: "oʻzimiz:klaviatura", Icon: IconKeyboard },
   { name: "IconDockBottom", source: "oʻzimiz:panel-past", Icon: IconDockBottom },
   { name: "IconDockLeft", source: "oʻzimiz:panel-chap", Icon: IconDockLeft },

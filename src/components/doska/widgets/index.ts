@@ -23,8 +23,12 @@ import {
   IconVideo,
   IconLink,
   IconEmbed,
+  IconCard,
+  IconDate,
 } from "../icons";
+import { CardSettings, CardWidget } from "./CardWidget";
 import { ClockSettings, ClockWidget } from "./ClockWidget";
+import { DateSettings, DateWidget } from "./DateWidget";
 import { DiceSettings, DiceWidget } from "./DiceWidget";
 import { GroupsSettings, GroupsWidget } from "./GroupsWidget";
 import { PollSettings, PollWidget } from "./PollWidget";
@@ -96,6 +100,8 @@ export const WIDGET_COMPONENTS: Record<WidgetKind, ComponentType<WidgetProps>> =
   "video.v1": VideoWidget,
   "link.v1": LinkWidget,
   "embed.v1": EmbedWidget,
+  "card.v1": CardWidget,
+  "date.v1": DateWidget,
 };
 
 export const WIDGET_ICONS: Record<
@@ -123,6 +129,8 @@ export const WIDGET_ICONS: Record<
   "video.v1": IconVideo,
   "link.v1": IconLink,
   "embed.v1": IconEmbed,
+  "card.v1": IconCard,
+  "date.v1": IconDate,
 };
 
 /**
@@ -151,6 +159,8 @@ export const WIDGET_SETTINGS: Partial<Record<WidgetKind, ComponentType<WidgetPro
   "video.v1": VideoSettings,
   "link.v1": LinkSettings,
   "embed.v1": EmbedSettings,
+  "card.v1": CardSettings,
+  "date.v1": DateSettings,
 };
 
 /**

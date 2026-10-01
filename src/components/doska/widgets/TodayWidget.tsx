@@ -9,12 +9,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { useDoskaStore } from "@/lib/doska/store";
 import type { DoskaWidget } from "@/lib/doska/types";
 import { parseEntries } from "@/lib/doska/wheel";
-import { fmtMin, type TodayLesson } from "@/lib/doska/today";
-import { todayKey } from "@/lib/date-keys";
-import { doskaTodayAction } from "@/server/actions/doska-today";
+import { fmtMin } from "@/lib/doska/today";
 import { SettingsSection } from "../SettingsFields";
 import { IconToday } from "../icons";
 import { WidgetEmpty } from "./WidgetEmpty";
+import { useTodayLoad } from "./useTodayLoad";
 
 /* ════════════════════════════════════════════════════════════════════
    BUGUN — kun jadvali yoki dars bosqichlari (docs/doska-referens-koriklari.md R409).
@@ -41,60 +40,9 @@ function readToday(state: DoskaWidget["state"]) {
   return { view, steps, done, doneKey };
 }
 
-type TodayLoad = { lessons: TodayLesson[]; holiday: string | null };
-
-let lessonsPromise: { day: string; promise: Promise<TodayLoad | null> } | null = null;
-
-function loadLessons(day: string): Promise<TodayLoad | null> {
-  if (lessonsPromise?.day !== day) {
-    const promise = doskaTodayAction({ today: day })
-      .then((res) =>
-        res.ok && res.data.status === "ok" ? { lessons: res.data.lessons, holiday: res.data.holiday ?? null } : null,
-      )
-      .catch(() => {
-        lessonsPromise = null;
-        return null;
-      });
-    lessonsPromise = { day, promise };
-  }
-  return lessonsPromise.promise;
-}
-
-/** Daqiqa aniqligidagi joriy vaqt (kun boshidan) va sana — mountdan keyin. */
-function useNowMin(): { day: string; min: number } | null {
-  const [now, setNow] = React.useState<{ day: string; min: number } | null>(null);
-  React.useEffect(() => {
-    const tick = () => {
-      const d = new Date();
-      setNow({ day: todayKey(), min: d.getHours() * 60 + d.getMinutes() });
-    };
-    tick();
-    const id = setInterval(tick, 30_000);
-    return () => clearInterval(id);
-  }, []);
-  return now;
-}
-
 export function TodayWidget({ widget }: { widget: DoskaWidget }) {
   const { view } = readToday(widget.state);
   return view === "steps" ? <StepsView widget={widget} /> : <LessonsView />;
-}
-
-/** Joriy vaqt va bugungi darslar (`undefined` — yuklanmoqda, `null` — jadval yoʻq). */
-function useTodayLoad() {
-  const now = useNowMin();
-  const [load, setLoad] = React.useState<TodayLoad | null | undefined>(undefined);
-  const day = now?.day ?? null;
-
-  React.useEffect(() => {
-    if (!day) return;
-    let alive = true;
-    void loadLessons(day).then((l) => alive && setLoad(l));
-    return () => {
-      alive = false;
-    };
-  }, [day]);
-  return { now, load };
 }
 
 function LessonsView() {
@@ -127,11 +75,14 @@ function LessonsView() {
           {lessons.map((l, i) => {
             const current = now !== null && now.min >= l.startMin && now.min < l.endMin;
             const past = now !== null && now.min >= l.endMin;
+            // Hozirgi dars qancha oʻtdi (R446) — sinf «qancha qoldi?» deb
+            // soatga qaramaydi. Daqiqa aniqligi yetarli (`useNowMin`).
+            const elapsed = current && now ? ((now.min - l.startMin) / Math.max(1, l.endMin - l.startMin)) * 100 : 0;
             return (
               <li
                 key={i}
                 className={cn(
-                  "flex items-baseline gap-[2.5cqw] rounded-[0.6rem] px-[2cqw] py-[0.8cqw]",
+                  "relative flex items-baseline gap-[2.5cqw] overflow-hidden rounded-[0.6rem] px-[2cqw] py-[0.8cqw]",
                   current && "bg-primary text-primary-foreground font-semibold",
                   past && "opacity-45",
                 )}
@@ -139,6 +90,11 @@ function LessonsView() {
                 <span className="font-mono tabular-nums">{fmtMin(l.startMin)}</span>
                 <span className="shrink-0">{l.className}</span>
                 {l.title && <span className="min-w-0 truncate opacity-75">{l.title}</span>}
+                {current && (
+                  <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-[0.8cqw] min-h-[3px] bg-current/25">
+                    <span className="block h-full bg-current" style={{ width: `${elapsed}%` }} />
+                  </span>
+                )}
               </li>
             );
           })}

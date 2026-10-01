@@ -2102,6 +2102,9 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "doska-kun-rejasi": {
+        "title": "“Day plan” ready-made screen on the board: today's date updates itself, new “Card” and “Date” widgets, soft backgrounds"
+      },
       "doska-tayyor-ekranlar": {
         "title": "Ready screens in the board menu: lesson start, group work, quiz and wrap-up in one tap"
       },
@@ -5311,7 +5314,9 @@
       "today": "Today",
       "video": "Video",
       "link": "Link",
-      "embed": "Website"
+      "embed": "Website",
+      "card": "Card",
+      "date": "Date"
     },
     "toolbar": {
       "duplicate": "{widget} — duplicate",
@@ -5487,7 +5492,9 @@
         "today": "Today’s lessons or lesson steps",
         "video": "Video link or file on the board",
         "link": "Open a page in a new tab",
-        "embed": "A page inside the board"
+        "embed": "A page inside the board",
+        "card": "Title and text: goal, homework, note",
+        "date": "Today's day and date — updates itself"
       }
     },
     "templates": {
@@ -5495,6 +5502,10 @@
       "back": "Back",
       "hint": "Opens a new screen — the current one stays as is.",
       "items": {
+        "day-plan": {
+          "name": "Day plan",
+          "desc": "Today's date, lessons, timer and four cards"
+        },
         "lesson-start": {
           "name": "Lesson start",
           "desc": "Today's lessons, 5-minute timer, traffic light"
@@ -5554,7 +5565,10 @@
       "navruz": "Navruz",
       "mustaqillik": "Independence",
       "dusk": "Dusk",
-      "shakllar": "Colorful shapes"
+      "shakllar": "Colorful shapes",
+      "soft-warm": "Warm",
+      "soft-green": "Greenery",
+      "soft-sky": "Sky"
     },
     "shapes": {
       "triangle": "Triangle",
@@ -5890,6 +5904,35 @@
       "notes": {
         "inkNote": "Press again to go back to selecting."
       }
+    },
+    "card": {
+      "untitled": "Title",
+      "placeholder": "Write…",
+      "title": "Title",
+      "custom": "Your own title",
+      "color": "Color",
+      "presets": {
+        "goal": "Lesson goal",
+        "homework": "Homework",
+        "materials": "You will need",
+        "reminder": "Note",
+        "earlyFinish": "If you finish early",
+        "question": "Today's question"
+      },
+      "tints": {
+        "blue": "Blue",
+        "teal": "Teal",
+        "amber": "Orange",
+        "note": "Pink",
+        "slate": "Dark gray"
+      }
+    },
+    "date": {
+      "show": "Show",
+      "showDate": "Date",
+      "showYear": "Year",
+      "showHoliday": "Holiday or break name",
+      "holidayHint": "Holidays and breaks come from your school calendar."
     }
   },
   "LessonPlanWizard": {

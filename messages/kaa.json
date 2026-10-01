@@ -2102,6 +2102,9 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "doska-kun-rejasi": {
+        "title": "Doskada «Kún rejesi» tayın ekranı: búgingi kún ózi jańalanadı, jańa «Karta» hám «Sáne» vidjetleri, jumsaq fonlar"
+      },
       "doska-tayyor-ekranlar": {
         "title": "Doska menyuinde «Tayın ekranlar»: sabaq bası, topar jumısı, soraw-juwap hám sabaq juwmaǵı bir basıwda"
       },
@@ -5312,7 +5315,9 @@
       "today": "Búgin",
       "video": "Video",
       "link": "Siltelme",
-      "embed": "Sayt"
+      "embed": "Sayt",
+      "card": "Karta",
+      "date": "Sáne"
     },
     "toolbar": {
       "duplicate": "{widget} — nusqa alıw",
@@ -5488,7 +5493,9 @@
         "today": "Búgingi sabaqlar yamasa sabaq basqıshları",
         "video": "Video siltelme yamasa fayl doskada",
         "link": "Betti jańa betshede ashıw",
-        "embed": "Bet doska ishinde"
+        "embed": "Bet doska ishinde",
+        "card": "Atama hám jazıw: maqset, úy tapsırması, eslatpe",
+        "date": "Búgingi kún hám sáne — ózi jańalanadı"
       }
     },
     "templates": {
@@ -5496,6 +5503,10 @@
       "back": "Artqa",
       "hint": "Jańa ekran ashıladı — házirgi ekran ózgermeydi.",
       "items": {
+        "day-plan": {
+          "name": "Kún rejesi",
+          "desc": "Búgingi kún, sabaqlar, taymer hám tórt karta"
+        },
         "lesson-start": {
           "name": "Sabaq bası",
           "desc": "Búgingi sabaqlar, 5 minut taymer, svetofor"
@@ -5555,7 +5566,10 @@
       "navruz": "Nawrız",
       "mustaqillik": "Ǵárezsizlik",
       "dusk": "Keshki reń",
-      "shakllar": "Reńli figuralar"
+      "shakllar": "Reńli figuralar",
+      "soft-warm": "Jıllı",
+      "soft-green": "Jasıl",
+      "soft-sky": "Aspan"
     },
     "shapes": {
       "triangle": "Úshmúyeshlik",
@@ -5891,6 +5905,35 @@
       "notes": {
         "inkNote": "Qayta basılsa — saylaw rejimine qaytadı."
       }
+    },
+    "card": {
+      "untitled": "Atama",
+      "placeholder": "Jazıń…",
+      "title": "Atama",
+      "custom": "Óz atamańız",
+      "color": "Reń",
+      "presets": {
+        "goal": "Sabaq maqseti",
+        "homework": "Úy tapsırması",
+        "materials": "Kerekli zatlar",
+        "reminder": "Eslatpe",
+        "earlyFinish": "Pitkerseń",
+        "question": "Kún sorawı"
+      },
+      "tints": {
+        "blue": "Kók",
+        "teal": "Firuza",
+        "amber": "Qızǵılt sarı",
+        "note": "Qızǵılt",
+        "slate": "Qara sur"
+      }
+    },
+    "date": {
+      "show": "Kórsetiw",
+      "showDate": "Sáne",
+      "showYear": "Jıl",
+      "showHoliday": "Bayram hám dem alıs atı",
+      "holidayHint": "Bayram hám dem alıs — oqıw kalendarıńızdan."
     }
   },
   "GamesPage": {
