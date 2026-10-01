@@ -36,6 +36,13 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "doska-bugun",
+    date: "2026-10-01",
+    type: "yangi",
+    title: "Doskada «Bugun»: bugungi darslaringiz jadvaldan avtomatik yoki dars bosqichlari belgilanadigan roʻyxat",
+    href: "/doska",
+  },
+  {
     id: "doska-soat-qongiroq",
     date: "2026-10-01",
     type: "yangi",

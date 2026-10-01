@@ -19,6 +19,7 @@ import {
   IconNoise,
   IconCamera,
   IconCountdown,
+  IconToday,
 } from "../icons";
 import { ClockSettings, ClockWidget } from "./ClockWidget";
 import { DiceSettings, DiceWidget } from "./DiceWidget";
@@ -28,6 +29,7 @@ import { ScoreSettings, ScoreWidget } from "./ScoreWidget";
 import { NoiseSettings, NoiseWidget } from "./NoiseWidget";
 import { CameraSettings, CameraWidget } from "./CameraWidget";
 import { CountdownSettings, CountdownWidget } from "./CountdownWidget";
+import { TodaySettings, TodayWidget } from "./TodayWidget";
 import { QrSettings, QrWidget } from "./QrWidget";
 import { StickerSettings, StickerWidget } from "./StickerWidget";
 import { PresentationWidget } from "./PresentationWidget";
@@ -86,6 +88,7 @@ export const WIDGET_COMPONENTS: Record<WidgetKind, ComponentType<WidgetProps>> =
   "noise.v1": NoiseWidget,
   "camera.v1": CameraWidget,
   "countdown.v1": CountdownWidget,
+  "today.v1": TodayWidget,
 };
 
 export const WIDGET_ICONS: Record<
@@ -109,6 +112,7 @@ export const WIDGET_ICONS: Record<
   "noise.v1": IconNoise,
   "camera.v1": IconCamera,
   "countdown.v1": IconCountdown,
+  "today.v1": IconToday,
 };
 
 /**
@@ -133,6 +137,7 @@ export const WIDGET_SETTINGS: Partial<Record<WidgetKind, ComponentType<WidgetPro
   "noise.v1": NoiseSettings,
   "camera.v1": CameraSettings,
   "countdown.v1": CountdownSettings,
+  "today.v1": TodaySettings,
 };
 
 /**

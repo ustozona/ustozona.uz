@@ -30,7 +30,8 @@ export type WidgetKind =
   | "score.v1"
   | "noise.v1"
   | "camera.v1"
-  | "countdown.v1";
+  | "countdown.v1"
+  | "today.v1";
 
 /**
  * Vidjetning ekrandagi oʻrni va oʻz holati.

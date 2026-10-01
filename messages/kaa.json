@@ -2102,6 +2102,9 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "doska-bugun": {
+        "title": "Doskada «Búgin»: búgingi sabaqlarıńız kesteden avtomat yamasa sabaq basqıshları belgilenetuǵın dizim"
+      },
       "doska-soat-qongiroq": {
         "title": "Doskadaǵı saatta qońıraw kestesi: «3-saat · tamamlanıwına 12 min», sońǵı minutlarda eskertiw hám qálewge qaray qońıraw"
       },
@@ -5287,7 +5290,8 @@
       "score": "Esap",
       "noise": "Shawqım",
       "camera": "Kamera",
-      "countdown": "Waqıya sanaǵı"
+      "countdown": "Waqıya sanaǵı",
+      "today": "Búgin"
     },
     "toolbar": {
       "duplicate": "{widget} — nusqa alıw",
@@ -5456,7 +5460,8 @@
         "score": "Komandalar ochkosı",
         "noise": "Klass dawısı mikrofon arqalı",
         "camera": "Dápter hám tájiriybeni ekranǵa",
-        "countdown": "Dem alıwǵa neshe kún"
+        "countdown": "Dem alıwǵa neshe kún",
+        "today": "Búgingi sabaqlar yamasa sabaq basqıshları"
       }
     },
     "appearance": {
@@ -5707,6 +5712,21 @@
       "customPlaceholder": "Mısalı: Olimpiada",
       "customDefault": "Waqıya",
       "schoolOnly": "Tek sabaq kúnleri"
+    },
+    "today": {
+      "title": "Búgingi sabaqlar",
+      "loading": "Keste júklenbekte…",
+      "noTimetable": "Sabaq kestesi tabılmadı — esapqa kiriń yamasa «Basqıshlar» kórinisin tańlań",
+      "noLessons": "Búgin sabaǵıńız joq",
+      "stepsTitle": "Sabaq basqıshları",
+      "stepsEmpty": "Sazlawda basqıshlardı jazıń",
+      "view": "Kórinis",
+      "viewLessons": "Sabaqlar",
+      "viewSteps": "Basqıshlar",
+      "lessonsHint": "Sabaq kesteńizden avtomat alınadı; házirgi sabaq ajıratıladı.",
+      "steps": "Basqıshlar (hár qatarǵa birewi)",
+      "stepsPlaceholder": "Sálemlesiw\nÚy tapsırması\nJańa tema\nShınıǵıw\nJuwmaq",
+      "uncheckAll": "Belgilerdi alıp taslaw"
     },
     "sticker": {
       "groups": {

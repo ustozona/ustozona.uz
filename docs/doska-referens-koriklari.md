@@ -946,7 +946,7 @@ bilan toʻlov, onboarding qoʻllanmalari.
 
 **B — maʼlumot ustunligi (kirgan oʻqituvchi; Gʻildirak v2 bilan bir
 oqimda):**
-- R409 bugungi dars;
+- ✅ R409 «Bugun» qurildi (`today.v1`: jadvaldan bugungi darslar `doskaTodayAction`, yoki qoʻlda dars bosqichlari belgilash bilan); qoldi: bosqichlarni dars rejasidan olish;
 - R411 guruh tuzuvchi — ✅ 1-qadam qurildi (`groups.v1`: qoʻlda roʻyxat, son yoki hajm boʻyicha); qoldi: sinf roʻyxati, yoʻqlar, cheklovlar, sudrash;
 - ✅ R407 voqea sanogʻi qurildi (`countdown.v1`: faol yil kalendari — taʼtil, chorak oxiri, yil oxiri; mehmonga oʻz voqeasi; «faqat dars kunlari»);
 - ✅ R408 soatda qoʻngʻiroq jadvali qurildi (`doskaBellsAction`: bugungi jadval versiyasining `bellConfig`; dars/tanaffus, ogohlantirish, qoʻngʻiroq);

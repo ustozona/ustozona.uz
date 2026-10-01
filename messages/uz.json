@@ -2102,6 +2102,9 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "doska-bugun": {
+        "title": "Doskada «Bugun»: bugungi darslaringiz jadvaldan avtomatik yoki dars bosqichlari belgilanadigan roʻyxat"
+      },
       "doska-soat-qongiroq": {
         "title": "Doskadagi soatda qoʻngʻiroq jadvali: «3-soat · tugashiga 12 daq», oxirgi daqiqalarda ogohlantirish va ixtiyoriy qoʻngʻiroq"
       },
@@ -5164,7 +5167,8 @@
       "score": "Hisob",
       "noise": "Shovqin",
       "camera": "Kamera",
-      "countdown": "Voqea sanogʻi"
+      "countdown": "Voqea sanogʻi",
+      "today": "Bugun"
     },
     "toolbar": {
       "duplicate": "{widget} — nusxalash",
@@ -5333,7 +5337,8 @@
         "score": "Jamoalar ochkosi",
         "noise": "Sinf ovozi mikrofon orqali",
         "camera": "Daftar va tajribani ekranga",
-        "countdown": "Taʼtilgacha necha kun"
+        "countdown": "Taʼtilgacha necha kun",
+        "today": "Bugungi darslar yoki dars bosqichlari"
       }
     },
     "appearance": {
@@ -5584,6 +5589,21 @@
       "customPlaceholder": "Masalan: Olimpiada",
       "customDefault": "Voqea",
       "schoolOnly": "Faqat dars kunlari"
+    },
+    "today": {
+      "title": "Bugungi darslar",
+      "loading": "Jadval yuklanmoqda…",
+      "noTimetable": "Dars jadvali topilmadi — hisobga kiring yoki «Bosqichlar» koʻrinishini tanlang",
+      "noLessons": "Bugun darsingiz yoʻq",
+      "stepsTitle": "Dars bosqichlari",
+      "stepsEmpty": "Sozlamada bosqichlarni yozing",
+      "view": "Koʻrinish",
+      "viewLessons": "Darslar",
+      "viewSteps": "Bosqichlar",
+      "lessonsHint": "Dars jadvalingizdan avtomatik olinadi; hozirgi dars ajratiladi.",
+      "steps": "Bosqichlar (har qatorga bittasi)",
+      "stepsPlaceholder": "Salomlashish\nUy vazifasi\nYangi mavzu\nMashq\nYakun",
+      "uncheckAll": "Belgilarni olib tashlash"
     },
     "sticker": {
       "groups": {

@@ -2102,6 +2102,9 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "doska-bugun": {
+        "title": "Board “Today”: your lessons from the timetable automatically, or a checklist of lesson steps"
+      },
       "doska-soat-qongiroq": {
         "title": "Bell schedule on the board clock: “Period 3 · 12 min left”, a warning in the last minutes and an optional bell"
       },
@@ -5286,7 +5289,8 @@
       "score": "Score",
       "noise": "Noise",
       "camera": "Camera",
-      "countdown": "Countdown"
+      "countdown": "Countdown",
+      "today": "Today"
     },
     "toolbar": {
       "duplicate": "{widget} — duplicate",
@@ -5455,7 +5459,8 @@
         "score": "Team points",
         "noise": "Class volume via microphone",
         "camera": "Notebooks and experiments on screen",
-        "countdown": "Days until the break"
+        "countdown": "Days until the break",
+        "today": "Today’s lessons or lesson steps"
       }
     },
     "appearance": {
@@ -5706,6 +5711,21 @@
       "customPlaceholder": "e.g. Olympiad",
       "customDefault": "Event",
       "schoolOnly": "School days only"
+    },
+    "today": {
+      "title": "Today’s lessons",
+      "loading": "Loading timetable…",
+      "noTimetable": "No timetable found — sign in or choose the “Steps” view",
+      "noLessons": "No lessons today",
+      "stepsTitle": "Lesson steps",
+      "stepsEmpty": "Type the steps in settings",
+      "view": "View",
+      "viewLessons": "Lessons",
+      "viewSteps": "Steps",
+      "lessonsHint": "Taken from your timetable automatically; the current lesson is highlighted.",
+      "steps": "Steps (one per line)",
+      "stepsPlaceholder": "Greeting\nHomework\nNew topic\nPractice\nWrap-up",
+      "uncheckAll": "Clear checks"
     },
     "sticker": {
       "groups": {

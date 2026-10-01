@@ -38,7 +38,8 @@ export type WidgetLabelKey =
   | "score"
   | "noise"
   | "camera"
-  | "countdown";
+  | "countdown"
+  | "today";
 
 /**
  * «Hammasi» oynasidagi toifa (docs/doska-ux-tadqiqot.md §3 «Topish»).
@@ -361,6 +362,18 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
     initialState: { eventId: null, name: "", date: "", schoolOnly: false },
     remember: ["schoolOnly"],
   },
+  "today.v1": {
+    kind: "today.v1",
+    category: "time",
+    labelKey: "today",
+    // Rang takrorlanadi («Shovqin» bilan) — lekin u boshqa guruhda.
+    tint: "sky",
+    // Tik: 6–7 dars qatori ustma-ust sigʻadi.
+    defaultSize: { w: 340, h: 420 },
+    minSize: { w: 220, h: 200 },
+    initialState: { view: "lessons", steps: "", done: [] },
+    remember: ["view"],
+  },
 };
 
 /**
@@ -378,6 +391,7 @@ export const TOOL_ORDER: WidgetKind[] = [
   "clock.v1",
   "timer.v1",
   "countdown.v1",
+  "today.v1",
   "traffic-light.v1",
   // Sinfni boshqarish vositalari yonida (soat, taymer, svetofor) —
   // mazmun vositalaridan (matn, eslatma, taqdimot) oldin.

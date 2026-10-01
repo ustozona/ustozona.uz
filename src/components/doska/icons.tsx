@@ -785,6 +785,23 @@ export function IconCountdown({ className }: IconProps) {
   );
 }
 
+/** Bugun — varaq (massa) ustida belgilangan roʻyxat (detal). */
+export function IconToday({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={cn("doska-icon", className)} aria-hidden="true">
+      <g>
+        <rect x="3.5" y="2" width="17" height="20" rx="4" opacity=".5" />
+        <rect x="7" y="6.5" width="3" height="3" rx="1" />
+        <rect x="11.5" y="7.1" width="6" height="1.8" rx=".9" />
+        <rect x="7" y="11" width="3" height="3" rx="1" />
+        <rect x="11.5" y="11.6" width="6" height="1.8" rx=".9" />
+        <rect x="7" y="15.5" width="3" height="3" rx="1" />
+        <rect x="11.5" y="16.1" width="4" height="1.8" rx=".9" />
+      </g>
+    </svg>
+  );
+}
+
 /**
  * Klaviatura yorliqlari — oʻzimiz chizdik: korpus (massa) va tugmalar
  * (detal), Solar oʻlchamlarida — tashqi chegara 20×14, radius 3.5
@@ -908,6 +925,7 @@ export const DOSKA_ICONS: { name: string; source: string; Icon: React.ComponentT
   { name: "IconNoise", source: "oʻzimiz:shovqin", Icon: IconNoise },
   { name: "IconCamera", source: "oʻzimiz:kamera", Icon: IconCamera },
   { name: "IconCountdown", source: "oʻzimiz:voqea-sanogʻi", Icon: IconCountdown },
+  { name: "IconToday", source: "oʻzimiz:bugun", Icon: IconToday },
   { name: "IconKeyboard", source: "oʻzimiz:klaviatura", Icon: IconKeyboard },
   { name: "IconDockBottom", source: "oʻzimiz:panel-past", Icon: IconDockBottom },
   { name: "IconDockLeft", source: "oʻzimiz:panel-chap", Icon: IconDockLeft },
