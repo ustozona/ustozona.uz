@@ -715,6 +715,35 @@ export function IconSticker({ className }: IconProps) {
   );
 }
 
+/** Ovoz berish — ramka (massa) ichida uch ustun (detal). */
+export function IconPoll({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={cn("doska-icon", className)} aria-hidden="true">
+      <g>
+        <rect x="2" y="2" width="20" height="20" rx="5" opacity=".5" />
+        <rect x="6.25" y="11" width="2.5" height="7" rx="1.25" />
+        <rect x="10.75" y="6" width="2.5" height="12" rx="1.25" />
+        <rect x="15.25" y="9" width="2.5" height="9" rx="1.25" />
+      </g>
+    </svg>
+  );
+}
+
+/** Hisob taxtasi — taxta (massa) ikki yarmida ochko belgilari (detal). */
+export function IconScore({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={cn("doska-icon", className)} aria-hidden="true">
+      <g>
+        <rect x="2" y="4" width="20" height="16" rx="4" opacity=".5" />
+        <rect x="11.25" y="7" width="1.5" height="10" rx=".75" />
+        <rect x="5" y="11.1" width="4" height="1.8" rx=".9" />
+        <rect x="6.1" y="10" width="1.8" height="4" rx=".9" />
+        <rect x="15" y="11.1" width="4" height="1.8" rx=".9" />
+      </g>
+    </svg>
+  );
+}
+
 /**
  * Klaviatura yorliqlari — oʻzimiz chizdik: korpus (massa) va tugmalar
  * (detal), Solar oʻlchamlarida — tashqi chegara 20×14, radius 3.5
@@ -833,6 +862,8 @@ export const DOSKA_ICONS: { name: string; source: string; Icon: React.ComponentT
   { name: "IconDice", source: "oʻzimiz:zar", Icon: IconDice },
   { name: "IconQr", source: "oʻzimiz:qr", Icon: IconQr },
   { name: "IconSticker", source: "oʻzimiz:stiker", Icon: IconSticker },
+  { name: "IconPoll", source: "oʻzimiz:ovoz", Icon: IconPoll },
+  { name: "IconScore", source: "oʻzimiz:hisob", Icon: IconScore },
   { name: "IconKeyboard", source: "oʻzimiz:klaviatura", Icon: IconKeyboard },
   { name: "IconDockBottom", source: "oʻzimiz:panel-past", Icon: IconDockBottom },
   { name: "IconDockLeft", source: "oʻzimiz:panel-chap", Icon: IconDockLeft },

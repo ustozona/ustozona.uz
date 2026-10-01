@@ -2102,6 +2102,15 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "doska-hisob": {
+        "title": "Doskada «Hisob»: 2–6 jamoa, katta raqam va +/− — viktorina va guruh ishida ochko sanash"
+      },
+      "doska-ovoz": {
+        "title": "Doskada «Ovoz berish»: oʻquvchilar doskaga chiqib smaylik, «ha/yoʻq» yoki A–E ni bosadi — telefonsiz chiqish chiptasi"
+      },
+      "doska-guruhlar": {
+        "title": "Doskada «Guruhlar»: roʻyxatni bir bosishda tasodifiy guruhlarga boʻling — guruhlar soni yoki guruhdagi odam soni boʻyicha"
+      },
       "doska-oxirgi-sozlama": {
         "title": "Doska oxirgi sozlamani eslab qoladi: yangi taymer, gʻildirak va zar siz tanlagan vaqt va rejim bilan chiqadi"
       },
@@ -5128,7 +5137,10 @@
       "wheel": "Gʻildirak",
       "dice": "Zar",
       "qr": "QR kod",
-      "sticker": "Stiker"
+      "sticker": "Stiker",
+      "groups": "Guruhlar",
+      "poll": "Ovoz berish",
+      "score": "Hisob"
     },
     "toolbar": {
       "duplicate": "{widget} — nusxalash",
@@ -5278,7 +5290,10 @@
         "wheel": "Tasodifiy ism tanlash",
         "dice": "Zar, son, harf yoki tanga",
         "qr": "Havola yoki matn — telefon bilan skanerlanadi",
-        "sticker": "Maqtov, belgi, strelka"
+        "sticker": "Maqtov, belgi, strelka",
+        "groups": "Tasodifiy guruhlarga boʻlish",
+        "poll": "Doskaga chiqib bosish: smaylik, ha/yoʻq",
+        "score": "Jamoalar ochkosi"
       }
     },
     "appearance": {
@@ -5415,6 +5430,53 @@
       "caption": "Yozuv (ixtiyoriy)",
       "captionPlaceholder": "Masalan: Uy vazifasi",
       "aria": "QR kod: {text}"
+    },
+    "groups": {
+      "make": "Guruhlarga ajratish",
+      "shuffle": "Qayta aralashtirish",
+      "groupName": "{n}-guruh",
+      "summaryCount": "{n} ta guruh",
+      "summarySize": "Guruhda {n} tadan",
+      "by": "Qanday boʻlish",
+      "byCount": "Guruhlar soni",
+      "bySize": "Guruhdagi odam",
+      "groupsCount": "Guruhlar soni",
+      "perGroup": "Guruhda necha kishi",
+      "names": "Ismlar",
+      "namesCount": "Ismlar · {count}",
+      "namesHint": "Har qatorga bitta ism",
+      "samplesHint": "Roʻyxat boʻsh — namuna ismlar ishlatiladi",
+      "less": "Kamroq",
+      "more": "Koʻproq"
+    },
+    "poll": {
+      "yes": "Ha",
+      "no": "Yoʻq",
+      "voteFor": "Ovoz: {option}",
+      "total": "Jami: {count}",
+      "show": "Natijani koʻrsatish",
+      "hide": "Yashirish",
+      "reset": "Qaytadan",
+      "type": "Turi",
+      "typeSmiley": "Smaylik",
+      "typeYesNo": "Ha / Yoʻq",
+      "typeChoice": "A–E",
+      "options": "Variantlar soni",
+      "question": "Savol (ixtiyoriy)",
+      "questionPlaceholder": "Bugungi dars qanday boʻldi?",
+      "hideResults": "Natijani yashirish",
+      "less": "Kamroq",
+      "more": "Koʻproq"
+    },
+    "score": {
+      "teamName": "{n}-jamoa",
+      "plus": "{name}: +1",
+      "minus": "{name}: −1",
+      "teams": "Jamoalar soni",
+      "names": "Jamoa nomlari",
+      "reset": "Ochkolarni nolga tushirish",
+      "less": "Kamroq",
+      "more": "Koʻproq"
     },
     "sticker": {
       "groups": {

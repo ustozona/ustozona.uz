@@ -32,7 +32,10 @@ export type WidgetLabelKey =
   | "wheel"
   | "dice"
   | "qr"
-  | "sticker";
+  | "sticker"
+  | "groups"
+  | "poll"
+  | "score";
 
 /**
  * «Hammasi» oynasidagi toifa (docs/doska-ux-tadqiqot.md §3 «Topish»).
@@ -278,6 +281,42 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
     initialState: { emoji: "⭐" },
     openSettingsOnAdd: true,
   },
+  "groups.v1": {
+    kind: "groups.v1",
+    category: "class",
+    labelKey: "groups",
+    // Qoʻshnilari «Gʻildirak» (teal) va «Zar» (lime) — binafsha ikkalasidan uzoq.
+    tint: "violet",
+    // Keng: 4–6 guruh ustun boʻlib yonma-yon, ismlar uzoqdan oʻqilsin.
+    defaultSize: { w: 640, h: 420 },
+    minSize: { w: 300, h: 220 },
+    initialState: { text: "", by: "count", n: 4, groups: [] },
+    openSettingsOnAdd: true,
+    remember: ["by", "n"],
+  },
+  "poll.v1": {
+    kind: "poll.v1",
+    category: "class",
+    labelKey: "poll",
+    // Qoʻshnisi «Guruhlar» (binafsha) — koʻk-yashil undan aniq ajraladi.
+    tint: "emerald",
+    // Keng: 5 ta variant yonma-yon, ostida tugma — doskada qoʻl yetadi.
+    defaultSize: { w: 520, h: 380 },
+    minSize: { w: 260, h: 220 },
+    initialState: { type: "smiley", count: 3, votes: [], hidden: false, question: "" },
+    remember: ["type", "count", "hidden"],
+  },
+  "score.v1": {
+    kind: "score.v1",
+    category: "class",
+    labelKey: "score",
+    // Qoʻshnisi «Ovoz berish» (zumrad) — qizgʻish undan aniq ajraladi.
+    tint: "rose",
+    // Keng: 2–3 jamoa yonma-yon, katta son uzoqdan oʻqilsin.
+    defaultSize: { w: 520, h: 300 },
+    minSize: { w: 260, h: 180 },
+    initialState: { teams: [{ name: "", score: 0 }, { name: "", score: 0 }] },
+  },
 };
 
 /**
@@ -299,6 +338,9 @@ export const TOOL_ORDER: WidgetKind[] = [
   // mazmun vositalaridan (matn, eslatma, taqdimot) oldin.
   "wheel.v1",
   "dice.v1",
+  "groups.v1",
+  "poll.v1",
+  "score.v1",
   "text.v1",
   "sticky-note.v1",
   "sticker.v1",

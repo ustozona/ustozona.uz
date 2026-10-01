@@ -2102,6 +2102,15 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "doska-hisob": {
+        "title": "Doskada «Esap»: 2–6 komanda, úlken san hám +/− — viktorina hám topar jumısında ochko sanaw"
+      },
+      "doska-ovoz": {
+        "title": "Doskada «Dawıs beriw»: oqıwshılar doskaǵa shıǵıp smaylik, «awa/yaq» yamasa A–E ni basadı — telefonsız shıǵıw bileti"
+      },
+      "doska-guruhlar": {
+        "title": "Doskada «Toparlar»: dizimdi bir basıwda tosınnan toparlarǵa bóliń — toparlar sanı yamasa topardaǵı adam sanı boyınsha"
+      },
       "doska-oxirgi-sozlama": {
         "title": "Doska sońǵı sazlawdı yadta saqlaydı: jańa taymer, dóńgelek hám zar siz tańlaǵan waqıt hám rejim menen shıǵadı"
       },
@@ -5251,7 +5260,10 @@
       "wheel": "Dóńgelek",
       "dice": "Zar",
       "qr": "QR kod",
-      "sticker": "Stiker"
+      "sticker": "Stiker",
+      "groups": "Toparlar",
+      "poll": "Dawıs beriw",
+      "score": "Esap"
     },
     "toolbar": {
       "duplicate": "{widget} — nusqa alıw",
@@ -5401,7 +5413,10 @@
         "wheel": "Tosınnan at tańlaw",
         "dice": "Zar, san, hárip yamasa teńge",
         "qr": "Siltew yamasa tekst — telefon menen skanerlenedi",
-        "sticker": "Maqtaw, belgi, strelka"
+        "sticker": "Maqtaw, belgi, strelka",
+        "groups": "Tosınnan toparlarǵa bóliw",
+        "poll": "Doskaǵa shıǵıp basıw: smaylik, awa/yaq",
+        "score": "Komandalar ochkosı"
       }
     },
     "appearance": {
@@ -5538,6 +5553,53 @@
       "caption": "Jazıw (qálewge qaray)",
       "captionPlaceholder": "Mısalı: Úy jumısı",
       "aria": "QR kod: {text}"
+    },
+    "groups": {
+      "make": "Toparlarǵa bóliw",
+      "shuffle": "Qayta aralastırıw",
+      "groupName": "{n}-topar",
+      "summaryCount": "{n} topar",
+      "summarySize": "Toparda {n} adamnan",
+      "by": "Qalay bóliw",
+      "byCount": "Toparlar sanı",
+      "bySize": "Topardaǵı adam",
+      "groupsCount": "Toparlar sanı",
+      "perGroup": "Toparda neshe adam",
+      "names": "Atlar",
+      "namesCount": "Atlar · {count}",
+      "namesHint": "Hár qatarǵa bir at",
+      "samplesHint": "Dizim bos — úlgi atlar qollanıladı",
+      "less": "Azıraq",
+      "more": "Kóbirek"
+    },
+    "poll": {
+      "yes": "Awa",
+      "no": "Yaq",
+      "voteFor": "Dawıs: {option}",
+      "total": "Jámi: {count}",
+      "show": "Nátiyjeni kórsetiw",
+      "hide": "Jasırıw",
+      "reset": "Qaytadan",
+      "type": "Túri",
+      "typeSmiley": "Smaylik",
+      "typeYesNo": "Awa / Yaq",
+      "typeChoice": "A–E",
+      "options": "Variantlar sanı",
+      "question": "Soraw (qálewge qaray)",
+      "questionPlaceholder": "Búgingi sabaq qalay ótti?",
+      "hideResults": "Nátiyjeni jasırıw",
+      "less": "Azıraq",
+      "more": "Kóbirek"
+    },
+    "score": {
+      "teamName": "{n}-komanda",
+      "plus": "{name}: +1",
+      "minus": "{name}: −1",
+      "teams": "Komandalar sanı",
+      "names": "Komanda atları",
+      "reset": "Ochkolardı nolge túsiriw",
+      "less": "Azıraq",
+      "more": "Kóbirek"
     },
     "sticker": {
       "groups": {

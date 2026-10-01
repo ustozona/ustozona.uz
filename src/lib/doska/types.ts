@@ -24,7 +24,10 @@ export type WidgetKind =
   | "wheel.v1"
   | "dice.v1"
   | "qr.v1"
-  | "sticker.v1";
+  | "sticker.v1"
+  | "groups.v1"
+  | "poll.v1"
+  | "score.v1";
 
 /**
  * Vidjetning ekrandagi oʻrni va oʻz holati.

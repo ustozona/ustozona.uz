@@ -947,10 +947,10 @@ bilan toʻlov, onboarding qoʻllanmalari.
 **B — maʼlumot ustunligi (kirgan oʻqituvchi; Gʻildirak v2 bilan bir
 oqimda):**
 - R409 bugungi dars;
-- R411 guruh tuzuvchi;
+- R411 guruh tuzuvchi — ✅ 1-qadam qurildi (`groups.v1`: qoʻlda roʻyxat, son yoki hajm boʻyicha); qoldi: sinf roʻyxati, yoʻqlar, cheklovlar, sudrash;
 - R407 voqea sanogʻi;
 - R408 budilnik ← qoʻngʻiroq;
-- R412 doskada ovoz berish;
+- ✅ R412 doskada ovoz berish qurildi (`poll.v1`: smaylik, ha/yoʻq, A–E);
 - R384/R418 rasm va nusxalab joylash (saqlash joyi hal boʻlgach).
 
 **C — server bilan:**
@@ -962,7 +962,7 @@ oqimda):**
 
 **D — keyinroq:**
 - R413 shovqin;
-- R414 hisob taxtasi;
+- ✅ R414 hisob taxtasi qurildi (`score.v1`, 2–6 jamoa);
 - veb-kamera, video, embed, havola;
 - R420 bayram fonlari;
 - R417 matn formatlash.
