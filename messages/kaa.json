@@ -2102,6 +2102,12 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "doska-tayyor-ekranlar": {
+        "title": "Doska menyuinde «Tayın ekranlar»: sabaq bası, topar jumısı, soraw-juwap hám sabaq juwmaǵı bir basıwda"
+      },
+      "doska-video-havola-sayt": {
+        "title": "Doskada «Video», «Siltelme» hám «Sayt» vidjetleri — video, bet yamasa siltelmeni ekranǵa shıǵarıw"
+      },
       "doska-bayram-fonlari": {
         "title": "Doskada bayram fonları: Muǵallimler kúni, Nawrız, Ǵárezsizlik hám basqalar — fon tańlawda «Búginge say» qatarı"
       },
@@ -5303,7 +5309,10 @@
       "noise": "Shawqım",
       "camera": "Kamera",
       "countdown": "Waqıya sanaǵı",
-      "today": "Búgin"
+      "today": "Búgin",
+      "video": "Video",
+      "link": "Siltelme",
+      "embed": "Sayt"
     },
     "toolbar": {
       "duplicate": "{widget} — nusqa alıw",
@@ -5476,7 +5485,10 @@
         "noise": "Klass dawısı mikrofon arqalı",
         "camera": "Dápter hám tájiriybeni ekranǵa",
         "countdown": "Dem alıwǵa neshe kún",
-        "today": "Búgingi sabaqlar yamasa sabaq basqıshları"
+        "today": "Búgingi sabaqlar yamasa sabaq basqıshları",
+        "video": "Video siltelme yamasa fayl doskada",
+        "link": "Betti jańa betshede ashıw",
+        "embed": "Bet doska ishinde"
       }
     },
     "templates": {
@@ -5639,6 +5651,23 @@
       "to": "Shekem",
       "less": "Azıraq",
       "more": "Kóbirek"
+    },
+    "web": {
+      "enter": "Siltelme kirgiziw",
+      "url": "Mánzil",
+      "invalid": "Mánzil qáte — https:// penen baslanatuǵın siltelme kirgiziń",
+      "open": "Ashıw",
+      "openShort": "Jańa betshede",
+      "caption": "Jazıw (qálewge qaray)",
+      "captionPlaceholder": "Mısalı: Úy tapsırması",
+      "videoEmpty": "Video siltelmesin kirgiziń",
+      "videoUnsupported": "Bul siltelmeden video ashılmadı — videoxosting siltelmesi yamasa .mp4 fayl kerek",
+      "videoTitle": "Video",
+      "videoHint": "Videoxosting siltelmesi yamasa .mp4 / .webm fayl mánzili.",
+      "linkEmpty": "Siltelme kirgiziń — ol jańa betshede ashıladı",
+      "linkHint": "Basılǵanda bet jańa betshede ashıladı, doska ornında qaladı.",
+      "embedEmpty": "Sayt mánzilin kirgiziń — bet doska ishinde ashıladı",
+      "embedHint": "Ayırım saytlar ózin basqa bette kórsetiwge ruqsat bermeydi — onda ayna bos qaladı. «Jańa betshede» túymesi bárqulla isleydi."
     },
     "qr": {
       "empty": "Siltew yamasa tekst kirgiziń — oqıwshılar telefon menen skanerleydi",

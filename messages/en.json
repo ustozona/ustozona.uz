@@ -2102,6 +2102,12 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "doska-tayyor-ekranlar": {
+        "title": "Ready screens in the board menu: lesson start, group work, quiz and wrap-up in one tap"
+      },
+      "doska-video-havola-sayt": {
+        "title": "Video, Link and Website widgets on the board — put a video, page or link on screen"
+      },
       "doska-bayram-fonlari": {
         "title": "Holiday board backgrounds: Teachers' Day, Navruz, Independence and more — with a “Fits today” row in the picker"
       },
@@ -5302,7 +5308,10 @@
       "noise": "Noise",
       "camera": "Camera",
       "countdown": "Countdown",
-      "today": "Today"
+      "today": "Today",
+      "video": "Video",
+      "link": "Link",
+      "embed": "Website"
     },
     "toolbar": {
       "duplicate": "{widget} — duplicate",
@@ -5475,7 +5484,10 @@
         "noise": "Class volume via microphone",
         "camera": "Notebooks and experiments on screen",
         "countdown": "Days until the break",
-        "today": "Today’s lessons or lesson steps"
+        "today": "Today’s lessons or lesson steps",
+        "video": "Video link or file on the board",
+        "link": "Open a page in a new tab",
+        "embed": "A page inside the board"
       }
     },
     "templates": {
@@ -5638,6 +5650,23 @@
       "to": "To",
       "less": "Fewer",
       "more": "More"
+    },
+    "web": {
+      "enter": "Enter link",
+      "url": "Address",
+      "invalid": "Invalid address — enter a link starting with https://",
+      "open": "Open",
+      "openShort": "New tab",
+      "caption": "Caption (optional)",
+      "captionPlaceholder": "e.g. Homework",
+      "videoEmpty": "Enter a video link",
+      "videoUnsupported": "Could not open a video from this link — use a video-hosting link or an .mp4 file",
+      "videoTitle": "Video",
+      "videoHint": "A video-hosting link or an .mp4 / .webm file address.",
+      "linkEmpty": "Enter a link — it opens in a new tab",
+      "linkHint": "Tapping opens the page in a new tab; the board stays put.",
+      "embedEmpty": "Enter a website address — the page opens inside the board",
+      "embedHint": "Some sites refuse to be shown inside other pages — the frame stays blank then. The “New tab” button always works."
     },
     "qr": {
       "empty": "Enter a link or text — students scan it with a phone",

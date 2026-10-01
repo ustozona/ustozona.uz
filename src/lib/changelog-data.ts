@@ -36,6 +36,20 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "doska-tayyor-ekranlar",
+    date: "2026-10-01",
+    type: "yangi",
+    title: "Doska menyusida «Tayyor ekranlar»: dars boshi, guruh ishi, savol-javob va dars yakuni bir bosishda",
+    href: "/doska",
+  },
+  {
+    id: "doska-video-havola-sayt",
+    date: "2026-10-01",
+    type: "yangi",
+    title: "Doskada «Video», «Havola» va «Sayt» vidjetlari — video, sahifa yoki havolani ekranga chiqarish",
+    href: "/doska",
+  },
+  {
     id: "doska-bayram-fonlari",
     date: "2026-10-01",
     type: "yangi",

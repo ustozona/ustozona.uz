@@ -2102,6 +2102,12 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "doska-tayyor-ekranlar": {
+        "title": "Doska menyusida «Tayyor ekranlar»: dars boshi, guruh ishi, savol-javob va dars yakuni bir bosishda"
+      },
+      "doska-video-havola-sayt": {
+        "title": "Doskada «Video», «Havola» va «Sayt» vidjetlari — video, sahifa yoki havolani ekranga chiqarish"
+      },
       "doska-bayram-fonlari": {
         "title": "Doskada bayram fonlari: Oʻqituvchilar kuni, Navroʻz, Mustaqillik va boshqalar — fon tanlashda «Bugunga mos» qatori"
       },
@@ -5180,7 +5186,10 @@
       "noise": "Shovqin",
       "camera": "Kamera",
       "countdown": "Voqea sanogʻi",
-      "today": "Bugun"
+      "today": "Bugun",
+      "video": "Video",
+      "link": "Havola",
+      "embed": "Sayt"
     },
     "toolbar": {
       "duplicate": "{widget} — nusxalash",
@@ -5353,7 +5362,10 @@
         "noise": "Sinf ovozi mikrofon orqali",
         "camera": "Daftar va tajribani ekranga",
         "countdown": "Taʼtilgacha necha kun",
-        "today": "Bugungi darslar yoki dars bosqichlari"
+        "today": "Bugungi darslar yoki dars bosqichlari",
+        "video": "Video havola yoki fayl doskada",
+        "link": "Sahifani yangi varaqda ochish",
+        "embed": "Sahifa doska ichida"
       }
     },
     "templates": {
@@ -5516,6 +5528,23 @@
       "to": "Gacha",
       "less": "Kamroq",
       "more": "Koʻproq"
+    },
+    "web": {
+      "enter": "Havola kiritish",
+      "url": "Manzil",
+      "invalid": "Manzil notoʻgʻri — https:// bilan boshlanadigan havola kiriting",
+      "open": "Ochish",
+      "openShort": "Yangi varaqda",
+      "caption": "Yozuv (ixtiyoriy)",
+      "captionPlaceholder": "Masalan: Uy vazifasi",
+      "videoEmpty": "Video havolasini kiriting",
+      "videoUnsupported": "Bu havoladan video ochilmadi — videoxosting havolasi yoki .mp4 fayl kerak",
+      "videoTitle": "Video",
+      "videoHint": "Videoxosting havolasi yoki .mp4 / .webm fayl manzili.",
+      "linkEmpty": "Havola kiriting — u yangi varaqda ochiladi",
+      "linkHint": "Bosilganda sahifa yangi varaqda ochiladi, doska joyida qoladi.",
+      "embedEmpty": "Sayt manzilini kiriting — sahifa doska ichida ochiladi",
+      "embedHint": "Ayrim saytlar oʻzini boshqa sahifada koʻrsatishni taqiqlaydi — unda oyna boʻsh qoladi. «Yangi varaqda» tugmasi baribir ishlaydi."
     },
     "qr": {
       "empty": "Havola yoki matn kiriting — oʻquvchilar telefon bilan skanerlaydi",

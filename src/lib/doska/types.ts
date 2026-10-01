@@ -31,7 +31,10 @@ export type WidgetKind =
   | "noise.v1"
   | "camera.v1"
   | "countdown.v1"
-  | "today.v1";
+  | "today.v1"
+  | "video.v1"
+  | "link.v1"
+  | "embed.v1";
 
 /**
  * Vidjetning ekrandagi oʻrni va oʻz holati.
