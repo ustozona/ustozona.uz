@@ -7,6 +7,7 @@ import type { DoskaDeck, DoskaScreen, DoskaWidget, InkStroke, WidgetKind } from 
 import { widgetMeta } from "./registry";
 import { visibleInk } from "./ink";
 import { DEFAULT_BACKGROUND_ID } from "./backgrounds";
+import { findFreeSpot } from "./placement";
 
 /* ════════════════════════════════════════════════════════════════════
    DOSKA STORE — mehmon rejimi (localStorage).
@@ -593,11 +594,21 @@ export const useDoskaStore = create<DoskaState>()(
           const screen = deck.screens.find((s) => s.id === activeScreenId);
           const maxZ = screen?.widgets.reduce((m, w) => Math.max(m, w.z), 0) ?? 0;
 
+          // Joy berilmagan boʻlsa — boʻsh joyga, boshqa vidjetlar ustiga emas
+          // (placement.ts). Kanvas butun oynani egallaydi.
+          const spot =
+            at ??
+            findFreeSpot(
+              meta.defaultSize,
+              screen?.widgets ?? [],
+              typeof window === "undefined" ? null : { w: window.innerWidth, h: window.innerHeight },
+            );
+
           const widget: DoskaWidget = {
             id: newId(),
             kind,
-            x: at?.x ?? 80 + (screen?.widgets.length ?? 0) * 28,
-            y: at?.y ?? 80 + (screen?.widgets.length ?? 0) * 28,
+            x: spot.x,
+            y: spot.y,
             w: meta.defaultSize.w,
             h: meta.defaultSize.h,
             z: maxZ + 1,
