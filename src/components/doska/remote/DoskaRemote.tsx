@@ -11,6 +11,7 @@ import { useDoskaStore } from "@/lib/doska/store";
 import { widgetMeta } from "@/lib/doska/registry";
 import { presentationEntry, subscribePresentations } from "@/lib/doska/remote-bus";
 import { lessonTitle } from "@/lib/doska/lesson-handoff";
+import { quickTemplateText } from "@/lib/quick-check";
 import {
   REMOTE_EVENTS, parseRemoteCommand, type RemoteScreen, type RemoteState,
 } from "@/lib/doska/remote-protocol";
@@ -149,6 +150,10 @@ export function DoskaRemote() {
   );
 
   const tw = useTranslations("Doska.widgets");
+  const templateLabelRef = React.useRef(t("templateName"));
+  React.useEffect(() => {
+    templateLabelRef.current = t("templateName");
+  }, [t]);
 
   const state = React.useMemo<RemoteState>(() => {
     void screensSig;
@@ -223,6 +228,23 @@ export function DoskaRemote() {
       case "curtain":
         store.setCurtain(!store.curtain);
         return;
+      case "template": {
+        // Tezkor tekshirish: oʻquvchi shu shablonni qogʻozga koʻchiradi.
+        // Yangi ekran — joriy ekrandagi taqdimotga tegilmaydi.
+        const background = screens[index]?.background ?? undefined;
+        store.addTemplateScreen({
+          id: "quick-template",
+          background: background ?? "whiteboard",
+          widgets: [
+            {
+              kind: "text.v1",
+              initial: { text: quickTemplateText(cmd.count, templateLabelRef.current), paper: true },
+              at: { x: 0.05, y: 0.04, w: 0.9, h: 0.88 },
+            },
+          ],
+        });
+        return;
+      }
       case "scanned":
         setLastScan({ added: cmd.added, answers: cmd.answers, at });
         return;

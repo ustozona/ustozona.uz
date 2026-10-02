@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import Link from "next/link";
 import {
-  Camera, Check, IdCard, Info, Loader2, ScanLine, Smartphone, Trash2, TriangleAlert,
+  Camera, Check, IdCard, Info, Loader2, PenLine, ScanLine, Smartphone, Trash2, TriangleAlert,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -84,7 +84,7 @@ type Props = {
   /** Qaysi yoʻldan kelindi. `cards` — Topshiriqlardagi «QR-kartalar»:
       telefonda karta skaneri ASOSIY tugma boʻladi, noutbukdagi QR esa
       telefonni shu rejimda ochadi. Standart — `sheets` (varaq). */
-  mode?: "sheets" | "cards";
+  mode?: "sheets" | "cards" | "quick";
   /** Javoblar yozilgach (noutbuk oqimi) — natija ekranini ochish uchun. */
   onApplied?: (report: { sessionId: string; studentsAdded: number; answersSaved: number }) => void;
 };
@@ -98,6 +98,8 @@ export default function ScanPanel({
   onApplied,
 }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
+  const quickRef = useRef<HTMLInputElement>(null);
+  const [quickBusy, setQuickBusy] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [warnings, setWarnings] = useState<string[]>([]);
@@ -251,6 +253,76 @@ export default function ScanPanel({
     }
   }
 
+  /* ── TEZKOR TEKSHIRISH — qoʻlda yozilgan javob varagʻi ──────────────
+     Maxsus varaq shart emas: oʻquvchi oddiy qogʻozga ismini va «1) A …»
+     yozadi, AI oʻqiydi (`/api/baholash/quick-check`, faqat oʻqish).
+     Natija OʻSHA roʻyxatga tushadi — tekshirish va kiritish yoʻli bitta.
+     AI ishonchsiz harf sariq («tekshiring»), ism topilmasa — qoʻlda. */
+  async function onQuickFiles(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    setQuickBusy(true);
+    setError(null);
+    setReport(null);
+    try {
+      for (const file of Array.from(files)) {
+        const image = await downscale(file);
+        const form = new FormData();
+        form.set("setId", setId);
+        form.set("classId", classId);
+        if (ticket) form.set("ticket", ticket);
+        form.set("image", image, "javob.jpg");
+        const res = await fetch("/api/baholash/quick-check", { method: "POST", body: form });
+        const data = (await res.json().catch(() => null)) as
+          | {
+              ok: true;
+              read: { name: string; studentId: string | null; answers: Record<string, string | null>; unsure: number[] };
+              roster: ScanPreview["roster"];
+              questionCount: number;
+            }
+          | { ok: false; message?: string }
+          | null;
+        if (!res.ok || !data || !data.ok) {
+          throw new Error((data && "message" in data ? data.message : null) ?? `Varaq oʻqilmadi (${res.status})`);
+        }
+        const { read } = data;
+        setRoster(data.roster);
+        const unsure = new Set(read.unsure);
+        const taken = sheets.some((sh) => sh.studentId && sh.studentId === read.studentId);
+        setSheets((prev) => [
+          ...prev,
+          {
+            key: `quick-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            studentId: taken ? null : read.studentId,
+            problems: [
+              ...(read.studentId && !taken
+                ? []
+                : [read.name ? `«${read.name}» roʻyxatdan aniq topilmadi — oʻquvchini tanlang.` : "Ism oʻqilmadi — oʻquvchini tanlang."]),
+              ...(taken ? ["Bu oʻquvchining varagʻi roʻyxatda allaqachon bor."] : []),
+              ...(unsure.size ? ["Sariq belgilangan javoblarni varaq bilan solishtiring."] : []),
+            ],
+            blocked: false,
+            alreadyEntered: false,
+            answers: Array.from({ length: data.questionCount }, (_, i) => {
+              const letter = read.answers[String(i + 1)];
+              return {
+                no: i + 1,
+                letter: letter === "A" || letter === "B" || letter === "C" || letter === "D" ? letter : null,
+                confidence: unsure.has(i + 1) ? 0.4 : 1,
+                gradable: true,
+                optionCount: 4,
+              };
+            }),
+          },
+        ]);
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Varaq oʻqilmadi");
+    } finally {
+      setQuickBusy(false);
+      if (quickRef.current) quickRef.current.value = "";
+    }
+  }
+
   /** Kiritishga tayyor varaqlar — oʻquvchisi bor va toʻsilmagan. */
   const ready = sheets.filter((s) => s.studentId && !s.blocked && !s.alreadyEntered);
 
@@ -317,11 +389,11 @@ export default function ScanPanel({
             )}
             {plan && (
               <Button
-                size={mode === "cards" ? "sm" : "lg"}
-                variant={mode === "cards" ? "outline" : "default"}
+                size={mode === "sheets" ? "lg" : "sm"}
+                variant={mode === "sheets" ? "default" : "outline"}
                 onClick={() => setLiveOpen(true)}
               >
-                <ScanLine className={mode === "cards" ? "size-3.5" : "size-4"} />
+                <ScanLine className={mode === "sheets" ? "size-4" : "size-3.5"} />
                 Jonli skaner
               </Button>
             )}
@@ -340,6 +412,16 @@ export default function ScanPanel({
               {busy ? <Loader2 className="size-4 animate-spin" /> : <Camera className="size-4" />}
               {busy ? "Oʻqilmoqda..." : "Surat bilan"}
             </Button>
+            {/* Tezkor tekshirish — maxsus varaqsiz, qoʻlda yozilgan javoblar. */}
+            <Button
+              size={mode === "quick" ? "lg" : "sm"}
+              variant={mode === "quick" ? "default" : "outline"}
+              disabled={quickBusy}
+              onClick={() => quickRef.current?.click()}
+            >
+              {quickBusy ? <Loader2 className="size-3.5 animate-spin" /> : <PenLine className="size-3.5" />}
+              {quickBusy ? "AI oʻqiyapti..." : "Qoʻlda yozilgan"}
+            </Button>
           </div>
           <p className="text-xs text-muted-foreground">
             {plan
@@ -351,7 +433,7 @@ export default function ScanPanel({
         <HandoffBlock
           setId={setId}
           classId={classId}
-          mode={mode}
+          mode={mode === "cards" ? "cards" : "sheets"}
           onPickFile={() => fileRef.current?.click()}
           busy={busy}
         />
@@ -359,6 +441,15 @@ export default function ScanPanel({
 
       {/* `capture="environment"` — telefonda orqa kamerani ochadi;
           kompyuterda oddiy fayl tanlash boʻlib qoladi. */}
+      <input
+        ref={quickRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        multiple
+        className="hidden"
+        onChange={(e) => onQuickFiles(e.target.files)}
+      />
       <input
         ref={fileRef}
         type="file"

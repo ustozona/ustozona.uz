@@ -5802,7 +5802,8 @@
       "loggedInHint": "Telefonda Ustozona'ga kirgan boʻlsangiz — ustozona.uz/pult ni oching, QR kerak emas.",
       "scanned": "Telefondan: {added} oʻquvchi, {answers} javob yozildi",
       "newQr": "Yangi QR",
-      "disconnect": "Uzish"
+      "disconnect": "Uzish",
+      "templateName": "Ism Familiya"
     }
   },
   "LessonPlanWizard": {
@@ -6215,6 +6216,8 @@
     "entryTitle": "Ustoz pulti",
     "entryNoBoard": "Ochiq Doska topilmadi. Kompyuterda Doskani oching va tepadagi «Telefon pult» tugmasini bosing — shu sahifa oʻzi ulanadi.",
     "entryLogin": "Doskadagi QR ni skanerlang yoki Ustozona'ga kiring — kirgan boʻlsangiz QR kerak emas.",
-    "login": "Kirish"
+    "login": "Kirish",
+    "scanQuick": "Qoʻlda yozilgan",
+    "showTemplate": "Shablon doskaga"
   }
 }

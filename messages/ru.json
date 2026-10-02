@@ -5991,7 +5991,8 @@
       "loggedInHint": "Если вы вошли в Ustozona на телефоне — откройте ustozona.uz/pult, QR не нужен.",
       "scanned": "С телефона: {added} учеников, {answers} ответов",
       "newQr": "Новый QR",
-      "disconnect": "Отключить"
+      "disconnect": "Отключить",
+      "templateName": "Имя Фамилия"
     }
   },
   "LessonPlanWizard": {
@@ -6404,6 +6405,8 @@
     "entryTitle": "Пульт учителя",
     "entryNoBoard": "Открытая доска не найдена. Откройте Доску на компьютере и нажмите «Пульт в телефоне» — эта страница подключится сама.",
     "entryLogin": "Отсканируйте QR на доске или войдите в Ustozona — после входа QR не нужен.",
-    "login": "Войти"
+    "login": "Войти",
+    "scanQuick": "Написано от руки",
+    "showTemplate": "Шаблон на доску"
   }
 }
