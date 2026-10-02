@@ -22,6 +22,7 @@ import {
   Presentation,
   Printer,
   Search,
+  ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,11 +44,12 @@ import type {
   RunSummary,
 } from "@/lib/launch-types";
 import type { ActivitySetRow } from "@/server/db/schema";
-import { listSetsAction } from "@/server/actions/assess";
+import { getSetDraftAction, listSetsAction, type SetDraft } from "@/server/actions/assess";
 import { launchSetInfoAction, startRunAction } from "@/server/actions/assess-runs";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
 import ScanPanel from "@/components/scan/ScanPanel";
-import { LAUNCH_GROUPS, LAUNCH_INTENTS, LAUNCH_MODES } from "./launch-modes";
+import { LAUNCH_GROUPS, LAUNCH_INTENTS, LAUNCH_MODES, launchModeIssue } from "./launch-modes";
+import { ClassPreflight } from "./ClassPreflight";
 import { dateKeyInTashkent, formatDue } from "./format";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -86,7 +88,7 @@ export type LaunchPreset = {
   dueDate?: string;
 };
 
-type Step = "set" | "where" | "mode" | "game" | "homework" | "paper" | "cards";
+type Step = "set" | "where" | "mode" | "preflight" | "game" | "homework" | "paper" | "cards";
 
 /** Baholanmaydigan oʻyinlar — oʻz savollari bilan, «mashq». */
 const PRACTICE_GAMES: GameFile[] = ["xotira", "krossvord", "so-z-topish", "qaysi-katta"];
@@ -149,6 +151,9 @@ export function LaunchDialog({
   const [info, setInfo] = useState<LaunchSetInfo | null>(null);
   const [infoError, setInfoError] = useState<string | null>(null);
   const [starting, setStarting] = useState<LaunchMode | null>(null);
+  const [previewDraft, setPreviewDraft] = useState<SetDraft | null>(null);
+  const [previewError, setPreviewError] = useState<string | null>(null);
+  const [previewRetry, setPreviewRetry] = useState(0);
 
   // Sinf roʻyxati kech kelsa (gidratsiya) — birinchisi tanlanadi.
   useEffect(() => {
@@ -174,6 +179,22 @@ export function LaunchDialog({
       alive = false;
     };
   }, [setId, t]);
+
+  // Tarkib faqat oʻqituvchi koʻrikni ochganda olinadi; oddiy startga qoʻshimcha soʻrov yoʻq.
+  useEffect(() => {
+    if (step !== "preflight" || !setId) return;
+    let alive = true;
+    setPreviewDraft(null);
+    setPreviewError(null);
+    getSetDraftAction(setId)
+      .then((draft) => {
+        if (!alive) return;
+        if (draft) setPreviewDraft(draft);
+        else setPreviewError(t("loadFailed"));
+      })
+      .catch(() => { if (alive) setPreviewError(t("loadFailed")); });
+    return () => { alive = false; };
+  }, [step, setId, previewRetry, t]);
 
   const className = liveClasses.find((c) => c.id === classId)?.name ?? "";
 
@@ -249,6 +270,7 @@ export function LaunchDialog({
       case "game":
       case "paper":
       case "cards":
+      case "preflight":
         return "mode";
       case "mode":
       case "homework":
@@ -268,7 +290,9 @@ export function LaunchDialog({
         ? t("whereTitle")
         : step === "mode"
           ? t("dialogTitle")
-          : t(`mode_${step}`);
+          : step === "preflight"
+            ? t("preflightTitle")
+            : t(`mode_${step}`);
   const description =
     step === "set"
       ? className
@@ -279,7 +303,7 @@ export function LaunchDialog({
     step === "set" || step === "where"
       ? ClipboardCheck
       : LAUNCH_INTENTS[step === "homework" ? "home" : "class"].icon;
-  const needsInfo = step === "game" || step === "homework" || step === "paper" || step === "cards";
+  const needsInfo = step === "game" || step === "homework" || step === "paper" || step === "cards" || step === "preflight";
 
   return (
     <Dialog open onOpenChange={(v) => !v && onClose()}>
@@ -302,7 +326,7 @@ export function LaunchDialog({
             </Button>
           )}
 
-          {(step === "where" || step === "mode" || step === "homework") && info && (
+          {(step === "where" || step === "mode" || step === "homework" || step === "preflight") && info && (
             <SetMeta
               info={info}
               canChangeSet={!preset?.setId}
@@ -327,7 +351,19 @@ export function LaunchDialog({
           {step === "where" && <WhereStep onPick={chooseIntent} />}
 
           {step === "mode" && (
-            <ModeStep info={info} error={infoError} starting={starting} onPick={pick} />
+            <ModeStep info={info} error={infoError} starting={starting} onPick={pick} onPreview={() => setStep("preflight")} />
+          )}
+
+          {step === "preflight" && info && (
+            <ClassPreflight
+              info={info}
+              draft={previewDraft}
+              className={className}
+              loading={!previewDraft && !previewError}
+              error={previewError}
+              onRetry={() => setPreviewRetry((n) => n + 1)}
+              onBack={() => setStep("mode")}
+            />
           )}
 
           {needsInfo && !info && (
@@ -665,11 +701,13 @@ function ModeStep({
   error,
   starting,
   onPick,
+  onPreview,
 }: {
   info: LaunchSetInfo | null;
   error: string | null;
   starting: LaunchMode | null;
   onPick: (mode: LaunchMode) => void;
+  onPreview: () => void;
 }) {
   const t = useTranslations("LaunchHub");
   const serial = hasWebSerial();
@@ -677,10 +715,8 @@ function ModeStep({
   /** Usul nega ishlamaydi — `null` boʻlsa ishlaydi. */
   function blockedReason(mode: LaunchMode): string | null {
     if (!info) return null;
-    if (LAUNCH_MODES[mode].needsMcq && info.mcqCount === 0) return t("needsMcq");
-    if (mode === "paper" && !info.engineReady) return t("engineMissing");
-    if (mode === "pult" && !serial) return t("pultUnsupported");
-    return null;
+    const issue = launchModeIssue(mode, info, serial);
+    return issue ? t(issue) : null;
   }
 
   if (error) {
@@ -689,6 +725,9 @@ function ModeStep({
 
   return (
     <div className="flex flex-col gap-5">
+      <Button variant="outline" className="self-start shadow-none" disabled={!info} onClick={onPreview}>
+        <ShieldCheck className="size-4" />{t("preflightOpen")}
+      </Button>
       {LAUNCH_GROUPS.map((group) => (
         <section key={group.id} className="flex flex-col gap-2">
           <div className="flex flex-col gap-0.5">

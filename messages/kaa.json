@@ -4135,6 +4135,18 @@
     "soon": "Tez arada"
   },
   "LaunchHub": {
+    "preflightTitle": "Sabaqtan aldın tekseriw",
+    "preflightOpen": "Sabaqtan aldın tekseriw",
+    "preflightMaterials": "Materiallar izbe-izligi",
+    "preflightSlide": "Slayd",
+    "preflightQuestion": "Soraw",
+    "preflightCompatibility": "Ótkeriw usıllarınıń sáykesligi",
+    "preflightReady": "Sáykes",
+    "preflightReview": "Mazmunın tekseriń",
+    "preflightOptions": "Qaǵazda, QR-kartada hám pultta tek A–D variantları bar. Tórtten kóp variantlı sorawlardı dúzetiń.",
+    "preflightAnswers": "Ayırım variantlı sorawlardıń juwap dúzilisi bul usıllarǵa sáykes kelmewi múmkin. Sabaqtan aldın tekseriń.",
+    "preflightPartial": "Qaǵaz, QR-karta hám pult {mcq} variantlı soraw menen isleydi. Jáne {count} bahalanatuǵın soraw bul usıllarda avtomat túrde tekserilmeydi.",
+    "preflightChooseMode": "Usıldı tańlaw",
     "dialogTitle": "Sabaqta qalay ótkeremiz?",
     "runInClass": "Sabaqta ótkeriw",
     "runInClassHint": "Házir, klass penen — telefonda, oyında, qaǵazda yamasa pult penen",

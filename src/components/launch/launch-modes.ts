@@ -10,7 +10,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import type { ClassColor } from "@/lib/class-colors";
-import type { LaunchIntent, LaunchMode, RunKind } from "@/lib/launch-types";
+import type { LaunchIntent, LaunchMode, LaunchSetInfo, RunKind } from "@/lib/launch-types";
+import { GAME_SHELLS, shellAvailability } from "@/lib/baholash-shells";
 
 /* ════════════════════════════════════════════════════════════════════
    «QANDAY OʻTKAZAMIZ?» — USULLAR REESTRI (yagona manba).
@@ -51,6 +52,17 @@ export const LAUNCH_GROUPS: { id: Exclude<LaunchGroup, "home">; modes: LaunchMod
   { id: "phones", modes: ["live", "game", "selfpaced"] },
   { id: "offline", modes: ["paper", "cards", "pult"] },
 ];
+
+/** Bir xil moslik sababi tanlash oynasi va darsdan oldingi koʻrikda ishlatiladi. */
+export function launchModeIssue(mode: LaunchMode, info: LaunchSetInfo, serialAvailable: boolean):
+  "needsMcq" | "engineMissing" | "pultUnsupported" | "noGameFits" | "gamesMissing" | null {
+  if (LAUNCH_MODES[mode].needsMcq && info.mcqCount === 0) return "needsMcq";
+  if (mode === "paper" && !info.engineReady) return "engineMissing";
+  if (mode === "pult" && !serialAvailable) return "pultUnsupported";
+  if (mode === "game" && !info.gamesReady) return "gamesMissing";
+  if (mode === "game" && !GAME_SHELLS.some((shell) => shellAvailability(shell, info.content).ok)) return "noGameFits";
+  return null;
+}
 
 /** Ikki kirish tugmasi — roʻyxat, muharrir, test banki va «Qayerda
     ishlaydi?» ekranida AYNAN bir xil belgi va nom. */

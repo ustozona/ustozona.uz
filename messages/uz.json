@@ -4012,6 +4012,18 @@
     "soon": "Tez orada"
   },
   "LaunchHub": {
+    "preflightTitle": "Darsdan oldin tekshirish",
+    "preflightOpen": "Darsdan oldin tekshirish",
+    "preflightMaterials": "Materiallar ketma-ketligi",
+    "preflightSlide": "Slayd",
+    "preflightQuestion": "Savol",
+    "preflightCompatibility": "O‘tkazish usullarining mosligi",
+    "preflightReady": "Mos",
+    "preflightReview": "Tekshiring",
+    "preflightOptions": "Qog‘oz, QR-karta va pultda faqat A–D variantlari bor. 4 tadan ko‘p variantli savollarni tahrirlang.",
+    "preflightAnswers": "Ayrim variantli savollarning javob tuzilishi bu usullarga mos kelmasligi mumkin; darsdan oldin ko‘rib chiqing.",
+    "preflightPartial": "Qog‘oz, QR-karta va pult {mcq} ta variantli savol bilan ishlaydi. Yana {count} ta baholanadigan savol bu usullarda avtomatik tekshirilmaydi.",
+    "preflightChooseMode": "Usulni tanlash",
     "dialogTitle": "Darsda qanday oʻtkazamiz?",
     "runInClass": "Darsda oʻtkazish",
     "runInClassHint": "Hozir, sinf bilan — telefonda, oʻyinda, qogʻozda yoki pult bilan",
