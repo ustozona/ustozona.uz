@@ -43,12 +43,13 @@ tavsifi — `docs/doska-referens-koriklari.md` (R-raqamlar).
 
 | Ish | Gʻoya | Boshlandi | Kim |
 |---|---|---|---|
-| R455–R467 Doska UI referens koʻrinishida: oq panel va oq varaq, burchak tugmalari, uch ustunli panel, ikonali kontekst panel, oʻngdan sozlama oynasi, «Karta» tasmasi, «Matn» varaqda, taymer halqasi | 2026-10-01, 2-referens vizual koʻrigi; qaror 2026-10-02 (`doska-referens-koriklari.md` §4.5–4.6) | 2026-10-02, branch `maxdum/doska-referens-ui` | maxdum + Claude |
+| — | | | |
 
 ## 5. Tugadi
 
 | Ish | Gʻoya | Boshlandi | Tugadi | Kim |
 |---|---|---|---|---|
+| R455–R467 Doska UI referens koʻrinishida: oq panel va oq varaq, burchak tugmalari, uch ustunli panel, ikonali kontekst panel, oʻngdan sozlama oynasi, «Karta» tasmasi, «Matn» varaqda, taymer halqasi | 2026-10-01, 2-referens vizual koʻrigi; qaror 2026-10-02 | 2026-10-02 | 2026-10-02, PR #291 | maxdum + Claude |
 | R443–R454 kundalik ekran: «Karta» va «Sana» vidjetlari, shablonda joy ulushi, «Kun rejasi» shabloni, «Bugun»da vaqt chizigʻi, yumshoq fonlar | 2026-10-01, 3-referens | 2026-10-01 | 2026-10-01, PR #286 | maxdum + Claude |
 | R433 kichik taymerda ikkilamchi tugmalar yashiriladi | 2026-10-01 | 2026-10-01 | 2026-10-01, PR #285 | maxdum + Claude |
 | R435 rasmli kartalar zar rejimi va gʻildirak koʻrinishida | 2026-10-01 | 2026-10-01 | 2026-10-01, PR #285 | maxdum + Claude |
