@@ -80,6 +80,15 @@ export const classes = pgTable(
         pickerlardan yashiriladi (rollover: bitiruvchi guruhlar). Sinf UUID va
         tarixi (davomat/baho) saqlanadi — faqat roʻyxatdan yashirin. */
     archivedAt: text("archived_at"),
+    /** SAVAT: sinf oʻchirilgan vaqt yoki null. Toʻldirilgan sinf hech
+        qayerda koʻrinmaydi (`visibleClassIds`/`taughtClassIds` uni
+        chiqarib tashlaydi), lekin qatori va butun tarixi joyida turadi —
+        7 kun ichida tiklanadi, keyin cron butunlay oʻchiradi
+        (dal/class-trash.ts). Faqat arxivlangan sinf savatga tushadi. */
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
+    /** Savatga kim tashlagani (teachers.id). FK ATAYLAB yoʻq: oʻqituvchi
+        hisobi oʻchsa ham savatdagi yozuv buzilmasin. */
+    deletedBy: text("deleted_by"),
     /** Shogird onboarding: yoqilsa, oʻquvchi sinfga qoʻshilganda ota-ona
         telefon raqamini kiritishi talab qilinadi (guardian_phone). */
     requireGuardianContact: boolean("require_guardian_contact").notNull().default(false),
@@ -89,6 +98,7 @@ export const classes = pgTable(
   (t) => [
     index("classes_workspace_idx").on(t.workspaceId),
     index("classes_parent_idx").on(t.parentClassId),
+    index("classes_deleted_idx").on(t.deletedAt),
   ]
 );
 

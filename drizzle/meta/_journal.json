@@ -351,6 +351,13 @@
       "when": 1790754114683,
       "tag": "0049_azolik_davrlari",
       "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "7",
+      "when": 1790940824713,
+      "tag": "0050_sinf_savat",
+      "breakpoints": true
     }
   ]
 }

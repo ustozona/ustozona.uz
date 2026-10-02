@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useCollator } from "@/lib/use-collator";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { unwrap } from "@/lib/action-result";
-import { previewClassDeletionAction } from "@/server/actions/workspace";
+import { TrashClassDialog, TrashedClassesSection } from "@/components/classes/ClassTrash";
 import { TourDemoBanner } from "@/components/tour/TourDemoBanner";
 import { BulkActionBar, BulkActionButton, BulkActionCount, BulkActionDivider } from "@/components/BulkActionBar";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -40,7 +39,6 @@ import {
 } from "@/components/ui/empty";
 import { Illustration } from "@/components/ui/illustration";
 import {
-  DropdownMenuSeparator,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -65,16 +63,6 @@ import { makeClassesTourDemo } from "@/components/tour/classes-tour-demo";
 import { ClassFormModal, type ClassFormValues } from "@/components/ClassFormModal";
 import { ImportClassesModal } from "@/components/ImportClassesModal";
 import { downloadClassesCsv } from "@/lib/import-roster";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import DashboardPage, {
   panelCardClass,
@@ -84,8 +72,9 @@ import DashboardPage, {
 } from "@/components/DashboardPage";
 
 /* Sinflar — jonli manbadan (useGradesStore.classDataMap, server-backed).
-   Yaratish/tahrirlash/oʻchirish store'ga yoziladi; GradesServerSync
-   oʻzgarishni avtomatik serverga sinxronlaydi. */
+   Yaratish/tahrirlash/arxivlash store'ga yoziladi; GradesServerSync
+   oʻzgarishni avtomatik serverga sinxronlaydi. Oʻchirish esa OʻZ server
+   amali: arxiv → savat (7 kun) → butunlay (components/classes/ClassTrash). */
 
 type SortKey = "name" | "students" | "lessons";
 type ViewMode = "grid" | "list" | "table";
@@ -142,17 +131,11 @@ export default function ClassesPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<LiveClass | null>(null);
-  const [deleteTargets, setDeleteTargets] = useState<LiveClass[] | null>(null);
-  /* Oʻchirish dialogi ochilganda serverdan soʻraladi: qaysi sinflar
-     haqiqatan oʻchadi, qaysilari faqat roʻyxatdan chiqadi (hamkasb ham
-     oʻsha darsni oʻtsa sinf saqlanadi — dal/class-teachers.ts).
-     `null` = javob hali kelmagan. */
-  const [deletionModes, setDeletionModes] = useState<Map<
-    string,
-    "delete" | "detach" | "blocked"
-  > | null>(null);
-  const [deletePending, setDeletePending] = useState(false);
-  // Jadval koʻrinishida qator tanlash — faqat bulk arxivlash/oʻchirish uchun.
+  /* Oʻchirish faqat ARXIVDAGI sinfdan boshlanadi va savatga tushiradi
+     (7 kun ichida tiklanadi) — components/classes/ClassTrash.tsx. */
+  const [trashTargets, setTrashTargets] = useState<{ id: string; name: string }[] | null>(null);
+  const [trashRefresh, setTrashRefresh] = useState(0);
+  // Jadval koʻrinishida qator tanlash — faqat bulk arxivlash uchun.
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   // Onboarding CTA'dan (`?new=1`) kelganda create-modalni avtomatik ochish —
@@ -173,7 +156,6 @@ export default function ClassesPage() {
 
   const classDataMap = useGradesStore((s) => s.classDataMap);
   const hydrated = useGradesStore((s) => s._hasHydrated);
-  const setClassDataMap = useGradesStore((s) => s.setClassDataMap);
   const updateClass = useGradesStore((s) => s.updateClass);
   const allLessons = useLessonStore((s) => s.lessons);
   // Server hydration tugamaguncha skeleton
@@ -242,84 +224,7 @@ export default function ClassesPage() {
     setEditTarget(null);
   };
 
-  /* ⭐ Dialog javob KELGACH ochiladi, oldin emas.
-     Ilgari u darhol ochilib, javob kelgunicha sukut boʻyicha
-     «butunlay oʻchiriladi, qaytarib boʻlmaydi» deb turardi va keyin
-     matn koʻz oldida almashardi. Yaʼni oʻqituvchi bir lahza yolgʻon
-     ogohlantirishni koʻrardi — tez bosgan odam esa faqat oʻshani
-     koʻrardi. Soʻrov bitta SELECT, kechikishi sezilmaydi.
-
-     Xato boʻlsa (tarmoq uzildi) boʻsh xarita bilan ochiladi: dialog
-     eski, qatʼiy matnini koʻrsatadi — kam vaʼda qilgan ogohlantirish
-     xavfsizroq. */
-  const requestDelete = (targets: LiveClass[]) => {
-    if (targets.length === 0 || deletePending) return;
-    setDeletePending(true);
-    previewClassDeletionAction({ classIds: targets.map((c) => c.id) })
-      .then((r) => setDeletionModes(new Map(unwrap(r).map((x) => [x.classId, x.mode]))))
-      .catch(() => setDeletionModes(new Map()))
-      .finally(() => {
-        setDeletePending(false);
-        setDeleteTargets(targets);
-      });
-  };
-
-  const closeDeleteDialog = () => {
-    setDeleteTargets(null);
-    setDeletionModes(null);
-  };
-
-  const modeOf = (id: string) => deletionModes?.get(id) ?? "delete";
-  const detachCount = deleteTargets
-    ? deleteTargets.filter((c) => modeOf(c.id) === "detach").length
-    : 0;
-  /* Egasi men boʻlgan, lekin hamkasbim ham oʻtadigan sinf — server uni
-     uzmaydi (dal/grades.ts). Dialog buni oldindan aytadi, aks holda
-     sinf UI'dan yoʻqolib, keyingi yangilashda qaytib kelardi. */
-  const blockedCount = deleteTargets
-    ? deleteTargets.filter((c) => modeOf(c.id) === "blocked").length
-    : 0;
-  const allBlocked = !!deleteTargets && blockedCount === deleteTargets.length;
-  /* Hammasi ajratish boʻlsa — dialog «oʻchirish» haqida umuman
-     gapirmaydi, tugma ham boshqacha nomlanadi. */
-  const allDetach = !!deleteTargets && detachCount === deleteTargets.length;
-
-  const handleDelete = () => {
-    if (!deleteTargets || deleteTargets.length === 0) return;
-    /* Toʻsilganlari store'dan ham chiqmaydi: server ularni saqlaydi,
-       demak UI'da yoʻqolishi yolgʻon boʻlardi. */
-    const targets = deleteTargets.filter((c) => modeOf(c.id) !== "blocked");
-    if (targets.length === 0) {
-      closeDeleteDialog();
-      return;
-    }
-    const ids = new Set(targets.map((c) => c.id));
-    setClassDataMap((prev) => {
-      const next = { ...prev };
-      for (const id of ids) delete next[id];
-      return next;
-    });
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      for (const id of ids) next.delete(id);
-      return next;
-    });
-    toast.success(
-      allDetach
-        ? targets.length === 1
-          ? t("detachToast", { name: targets[0].name })
-          : t("detachBulkToast", { count: targets.length })
-        : detachCount > 0
-          ? t("deleteMixedToast", {
-              deleted: targets.length - detachCount,
-              detached: detachCount,
-            })
-          : targets.length === 1
-            ? t("deleteToast", { name: targets[0].name })
-            : t("deleteBulkToast", { count: targets.length })
-    );
-    closeDeleteDialog();
-  };
+  const closeTrashDialog = useCallback(() => setTrashTargets(null), []);
 
   // Arxivlash — sinf pickerlardan yashirin boʻladi, lekin id/tarixi saqlanadi.
   const handleArchive = (cls: LiveClass) => {
@@ -507,13 +412,6 @@ export default function ClassesPage() {
                 >
                   {t("archive")}
                 </BulkActionButton>
-                <BulkActionButton
-                  icon={<TrashIcon className="size-4" />}
-                  variant="destructive"
-                  onClick={() => requestDelete(filteredAndSorted.filter((c) => selectedIds.has(c.id)))}
-                >
-                  {t("delete")}
-                </BulkActionButton>
                 <BulkActionDivider />
                 <BulkActionButton onClick={() => setSelectedIds(new Set())}>
                   {t("cancel")}
@@ -585,7 +483,6 @@ export default function ClassesPage() {
                           disabled={isDemoMode}
                           onEdit={() => setEditTarget(cls)}
                           onArchive={() => handleArchive(cls)}
-                          onDelete={() => requestDelete([cls])}
                         />
                       ))}
                       <AddClassCard onClick={() => setIsCreateModalOpen(true)} />
@@ -600,7 +497,6 @@ export default function ClassesPage() {
                           disabled={isDemoMode}
                           onEdit={() => setEditTarget(cls)}
                           onArchive={() => handleArchive(cls)}
-                          onDelete={() => requestDelete([cls])}
                         />
                       ))}
                     </div>
@@ -626,7 +522,6 @@ export default function ClassesPage() {
                       }
                       onEdit={setEditTarget}
                       onArchive={handleArchive}
-                      onDelete={(cls) => requestDelete([cls])}
                     />
                   )}
                 </div>
@@ -634,8 +529,13 @@ export default function ClassesPage() {
 
               {/* Arxivlangan sinflar — asosiy roʻyxatdan yashirin, tiklash mumkin */}
               {!loading && !isDemoMode && archivedClasses.length > 0 && (
-                <ArchivedClassesSection classes={archivedClasses} onRestore={handleRestore} />
+                <ArchivedClassesSection
+                  classes={archivedClasses}
+                  onRestore={handleRestore}
+                  onDelete={(cls) => setTrashTargets([{ id: cls.id, name: cls.name }])}
+                />
               )}
+              {!loading && !isDemoMode && <TrashedClassesSection refreshKey={trashRefresh} />}
             </div>
           </CardContent>
         </Card>
@@ -727,62 +627,11 @@ export default function ClassesPage() {
         />
       )}
 
-      <AlertDialog open={!!deleteTargets} onOpenChange={(o) => !o && closeDeleteDialog()}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              {allBlocked
-                ? t("blockedDialogTitle")
-                : allDetach
-                ? t("detachDialogTitle")
-                : t("deleteDialogTitle")}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {/* ⭐ Toʻrt xil haqiqat, toʻrt xil matn. Ilgari bittasi bor
-                  edi («butunlay oʻchiriladi, qaytarib boʻlmaydi») va u
-                  hamkasbning sinfida yolgʻon boʻlardi. */}
-              {allBlocked
-                ? deleteTargets && deleteTargets.length > 1
-                  ? t("blockedDialogBulk", { count: deleteTargets.length })
-                  : t("blockedDialogOne", { name: deleteTargets?.[0]?.name ?? "" })
-                : allDetach
-                ? deleteTargets && deleteTargets.length > 1
-                  ? t("detachDialogBulk", { count: deleteTargets.length })
-                  : t("detachDialogOne", { name: deleteTargets?.[0]?.name ?? "" })
-                : detachCount > 0 && deleteTargets
-                ? t("deleteDialogMixed", {
-                    deleted: deleteTargets.length - detachCount,
-                    detached: detachCount,
-                  })
-                : deleteTargets && deleteTargets.length > 1
-                ? t("deleteDialogBulk", {
-                    count: deleteTargets.length,
-                    students: deleteTargets.reduce((s, c) => s + c.students, 0),
-                  })
-                : deleteTargets && deleteTargets[0].students > 0
-                ? t("deleteDialogWithStudents", { name: deleteTargets[0].name, count: deleteTargets[0].students })
-                : t("deleteDialogWithoutStudents", { name: deleteTargets?.[0]?.name ?? "" })}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            {/* Toʻsilgan holatda tasdiq tugmasi umuman yoʻq: bosiladigan
-                narsa boʻlmasligi kerak, chunki hech narsa boʻlmaydi. */}
-            <AlertDialogCancel>{allBlocked ? t("close") : t("cancel")}</AlertDialogCancel>
-            {allBlocked ? null : (
-              <AlertDialogAction
-                onClick={handleDelete}
-                /* Ajratish qaytariladigan amal (ega qayta biriktiradi) —
-                   qizil tugma uni haqiqatdan xavfliroq koʻrsatardi. */
-                className={
-                  allDetach ? undefined : "bg-destructive text-white hover:bg-destructive/90"
-                }
-              >
-                {allDetach ? t("detachConfirm") : t("delete")}
-              </AlertDialogAction>
-            )}
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <TrashClassDialog
+        targets={trashTargets}
+        onClose={closeTrashDialog}
+        onDone={() => setTrashRefresh((n) => n + 1)}
+      />
     </DashboardPage>
   );
 }
@@ -869,14 +718,12 @@ function ClassGridCard({
   disabled,
   onEdit,
   onArchive,
-  onDelete,
 }: {
   cls: LiveClass;
   index: number;
   disabled?: boolean;
   onEdit: () => void;
   onArchive: () => void;
-  onDelete: () => void;
 }) {
   const router = useRouter();
   const t = useTranslations("ClassesPage");
@@ -932,7 +779,7 @@ function ClassGridCard({
       )}
       {!disabled && (
       <div className="absolute top-3 right-3 z-20">
-        <ClassCardMenu onEdit={onEdit} onArchive={onArchive} onDelete={onDelete} />
+        <ClassCardMenu onEdit={onEdit} onArchive={onArchive} />
       </div>
       )}
 
@@ -1012,7 +859,7 @@ function ClassGridCard({
 
 
 /* ── Karta uchun 3-nuqta DropdownMenu ── */
-function ClassCardMenu({ onEdit, onArchive, onDelete }: { onEdit: () => void; onArchive: () => void; onDelete: () => void }) {
+function ClassCardMenu({ onEdit, onArchive }: { onEdit: () => void; onArchive: () => void }) {
   const t = useTranslations("ClassesPage");
   return (
     <DropdownMenu>
@@ -1042,14 +889,6 @@ function ClassCardMenu({ onEdit, onArchive, onDelete }: { onEdit: () => void; on
           <ArchiveIcon className="size-4 text-muted-foreground" />
           {t("archive")}
         </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          className="gap-2 cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
-          onClick={(e) => { e.stopPropagation(); onDelete(); }}
-        >
-          <TrashIcon className="size-4" />
-          {t("delete")}
-        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -1077,9 +916,11 @@ function AddClassCard({ onClick }: { onClick?: () => void }) {
 function ArchivedClassesSection({
   classes,
   onRestore,
+  onDelete,
 }: {
   classes: LiveClass[];
   onRestore: (id: string) => void;
+  onDelete: (cls: LiveClass) => void;
 }) {
   const t = useTranslations("ClassesPage");
   const [open, setOpen] = useState(false);
@@ -1117,6 +958,15 @@ function ArchivedClassesSection({
                     {t("archivedStudentsCount", { count: cls.students })}
                   </p>
                 </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="shrink-0 gap-1.5 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  onClick={() => onDelete(cls)}
+                >
+                  <TrashIcon className="size-4" />
+                  {t("delete")}
+                </Button>
                 <Button variant="outline" size="sm" className="shrink-0 gap-1.5" onClick={() => onRestore(cls.id)}>
                   <ArchiveRestore className="size-4" />
                   {t("restore")}
@@ -1143,7 +993,6 @@ function ClassesDataTable({
   onToggleSelectAll,
   onEdit,
   onArchive,
-  onDelete,
 }: {
   rows: LiveClass[];
   disabled?: boolean;
@@ -1152,7 +1001,6 @@ function ClassesDataTable({
   onToggleSelectAll: () => void;
   onEdit: (cls: LiveClass) => void;
   onArchive: (cls: LiveClass) => void;
-  onDelete: (cls: LiveClass) => void;
 }) {
   const router = useRouter();
   const t = useTranslations("ClassesPage");
@@ -1269,7 +1117,6 @@ function ClassesDataTable({
                     <ClassCardMenu
                       onEdit={() => onEdit(cls)}
                       onArchive={() => onArchive(cls)}
-                      onDelete={() => onDelete(cls)}
                     />
                   </div>
                 </TableCell>
@@ -1290,14 +1137,12 @@ function ClassListRow({
   disabled,
   onEdit,
   onArchive,
-  onDelete,
 }: {
   cls: LiveClass;
   index: number;
   disabled?: boolean;
   onEdit: () => void;
   onArchive: () => void;
-  onDelete: () => void;
 }) {
   const router = useRouter();
   const t = useTranslations("ClassesPage");
@@ -1356,7 +1201,7 @@ function ClassListRow({
       </div>
 
       {/* 3-nuqta menu */}
-      {!disabled && <ClassCardMenu onEdit={onEdit} onArchive={onArchive} onDelete={onDelete} />}
+      {!disabled && <ClassCardMenu onEdit={onEdit} onArchive={onArchive} />}
     </div>
   );
 }

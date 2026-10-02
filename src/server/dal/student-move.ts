@@ -270,7 +270,13 @@ export async function membershipOf(studentId: string): Promise<MembershipHistory
     })
     .from(enrollmentPeriods)
     .innerJoin(classes, eq(classes.id, enrollmentPeriods.classId))
-    .where(and(eq(enrollmentPeriods.studentId, studentId), eq(classes.workspaceId, ctx.workspaceId)));
+    .where(
+      and(
+        eq(enrollmentPeriods.studentId, studentId),
+        eq(classes.workspaceId, ctx.workspaceId),
+        isNull(classes.deletedAt)
+      )
+    );
 
   const moves = await db
     .select()

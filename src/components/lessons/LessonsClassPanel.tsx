@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { GraduationCap, Plus, Pencil, Trash2 } from "lucide-react";
+import { GraduationCap, Plus, Pencil, Archive } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { panelHeaderClass } from "@/components/DashboardPage";
@@ -182,8 +182,8 @@ export function LessonsClassPanel({ selectedClassId, onSelect, onAddClass, units
                       <Pencil className="size-4" />
                       {t("edit")}
                     </ContextMenuItem>
-                    <ContextMenuItem variant="destructive" className="gap-2 cursor-pointer" onClick={() => setDeleteTarget(cls)}>
-                      <Trash2 className="size-4" />
+                    <ContextMenuItem className="gap-2 cursor-pointer" onClick={() => setDeleteTarget(cls)}>
+                      <Archive className="size-4" />
                       {t("delete")}
                     </ContextMenuItem>
                   </ContextMenuContent>
@@ -218,7 +218,7 @@ export function LessonsClassPanel({ selectedClassId, onSelect, onAddClass, units
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t("deleteDialog.cancel")}</AlertDialogCancel>
-            <AlertDialogAction className="bg-destructive text-white hover:bg-destructive/90" onClick={handleConfirmDelete}>
+            <AlertDialogAction onClick={handleConfirmDelete}>
               {t("deleteDialog.confirm")}
             </AlertDialogAction>
           </AlertDialogFooter>

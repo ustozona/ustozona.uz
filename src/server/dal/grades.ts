@@ -327,7 +327,10 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
           archivedAt: sql`excluded.archived_at`,
           updatedAt: now,
         },
-        setWhere: eq(classes.workspaceId, ctx.workspaceId),
+        /* Savatdagi sinfga eski tab/qurilma tegolmasin: aks holda u sinfni
+           jimgina arxivdan chiqarib, savatdan «tiriltirardi». Tiklash —
+           faqat aniq amal orqali (dal/class-trash.ts). */
+        setWhere: and(eq(classes.workspaceId, ctx.workspaceId), isNull(classes.deletedAt)),
       });
 
       /* Yaratuvchi — EGA. `onConflictDoNothing` muhim: mavjud sinf
@@ -595,7 +598,7 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
      «oʻchirish» — bu MENING roʻyxatimdan olib tashlash. Yozuvning oʻzi
      faqat undan boshqa hech kim foydalanmayotgan boʻlsa oʻchadi. */
   await detachOrDeleteStudents(batch.studentsDelete);
-  await detachOrDeleteClasses(batch.classesDelete, tid, ctx.workspaceId);
+  await detachOrDeleteClasses(batch.classesDelete, tid);
 
   /* Sinf paydo boʻldi — «Birinchi sinfingizni oching» xati endi
      oʻrinsiz, uni bekor qilamiz.
@@ -689,18 +692,13 @@ async function detachOrDeleteStudents(ids: string[]): Promise<void> {
 }
 
 /**
- * Sinfni oʻchiradi yoki undan chiqadi.
+ * Store'dan yoʻqolgan sinf — oddiy hamkasb uchun «darsdan chiqish».
  *
- * Hamkasb ham shu darsni oʻtayotgan boʻlsa — sinf OʻCHMAYDI, faqat
- * mening biriktirishim uziladi. Bu «umumiy sinfdan chiqish» naqshining
- * aynan oʻzi va bizga ham shu kerak: sinf oʻchsa cascade
- * hamkasbning baholarini ham olib ketardi.
+ * Sinf bu yoʻl bilan HECH QACHON oʻchmaydi (pastdagi 🗑 izohi): ega
+ * uchun buyruq e'tiborsiz qoladi, oʻchirish — dal/class-trash.ts.
+ * Funksiya nomi tarixiy.
  */
-async function detachOrDeleteClasses(
-  ids: string[],
-  tid: string,
-  workspaceId: string
-): Promise<void> {
+async function detachOrDeleteClasses(ids: string[], tid: string): Promise<void> {
   if (ids.length === 0) return;
 
   /* ⛔ Oʻchirish — admin istisnosiSIZ toʻplam (§11.6). */
@@ -752,10 +750,15 @@ async function detachOrDeleteClasses(
 
      ⛔ Ega uchun ikki maʼnoli yoʻl qoladi va ikkalasi ham oshkor:
      egalikni oʻtkazish, yoki avval hamkasbni darsdan chiqarish.
-     Yolgʻiz sinfini oʻchirish esa pastda, `solo` da — u toʻsilmaydi. */
-  const blocked = new Set(
-    scoped.filter((id) => myRole.get(id) === "owner" && others.has(id))
-  );
+
+     🗑 2026-10-02 dan EGA uchun bu yoʻl umuman hech narsa qilmaydi —
+     yolgʻiz sinfini ham oʻchirmaydi. Oʻchirish endi faqat aniq amal:
+     arxiv → savat (7 kun) → butunlay (dal/class-trash.ts). Ilgari
+     shu yerdagi `db.delete(classes)` sinfning butun tarixini darhol,
+     savatsiz cascade qilardi — va buyruq foydalanuvchi qaroridan emas,
+     store diff'idan kelardi. Bu yerda faqat oddiy hamkasbning
+     «darsdan chiqishi» qoldi. */
+  const blocked = new Set(scoped.filter((id) => myRole.get(id) === "owner"));
   const actionable = scoped.filter((id) => !blocked.has(id));
   if (actionable.length === 0) return;
 
@@ -783,12 +786,5 @@ async function detachOrDeleteClasses(
       .where(
         and(eq(classTeachers.classId, classId), eq(classTeachers.teacherId, heir.teacherId))
       );
-  }
-
-  const solo = actionable.filter((id) => !others.has(id));
-  for (const part of chunks(solo)) {
-    await db
-      .delete(classes)
-      .where(and(eq(classes.workspaceId, workspaceId), inArray(classes.id, part)));
   }
 }
