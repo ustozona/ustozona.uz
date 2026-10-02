@@ -4,10 +4,9 @@ import SchoolsTable from "./_components/SchoolsTable";
 /* Maktablar — CRUD + oʻqituvchi biriktirish (faqat super_admin). */
 
 export default async function AdminSchoolsPage() {
-  const [schools, teachers] = await Promise.all([
-    listSchools(),
-    listTeachersForAssignment(),
-  ]);
+  // Ketma-ket, `Promise.all` EMAS — sabab `getSignupTrends` izohida (Supavisor).
+  const schools = await listSchools();
+  const teachers = await listTeachersForAssignment();
 
   return (
     <div className="p-5">
