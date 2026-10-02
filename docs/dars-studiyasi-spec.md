@@ -169,6 +169,9 @@ yoʻl bilan ochiladi:
 
 ## 8. Keyingi bosqich — Doska «Dars rejimi» (muhokama uchun)
 
+> **2026-10-02:** amalga oshirildi — `ustoz-pulti-spec.md` (Doska dars
+> rejimi va telefon pulti).
+
 Loyiha egasining taklifi: darsni oʻtkazishning asosiy maydoni **Doska**.
 Yoʻnalish: **Studiya — tayyorlash, Doska — oʻtkazish.**
 

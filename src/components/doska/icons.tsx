@@ -1002,3 +1002,16 @@ export const DOSKA_ICONS: { name: string; source: string; Icon: React.ComponentT
   { name: "IconDockLeft", source: "oʻzimiz:panel-chap", Icon: IconDockLeft },
   { name: "IconDockRight", source: "oʻzimiz:panel-oʻng", Icon: IconDockRight },
 ];
+
+/** Telefon (Ustoz pulti) — oʻzimiz chizdik: korpus (massa) va ekran/dinamik (detal). */
+export function IconPhone({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={cn("doska-icon", className)} aria-hidden="true">
+      <g>
+        <rect x="5.5" y="2" width="13" height="20" rx="3.2" opacity=".5" />
+        <rect x="9.5" y="4" width="5" height="1.3" rx=".65" />
+        <rect x="10" y="18.2" width="4" height="1.6" rx=".8" />
+      </g>
+    </svg>
+  );
+}

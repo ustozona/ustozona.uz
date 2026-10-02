@@ -33,6 +33,7 @@ import {
   startLiveSessionAction,
 } from "@/server/actions/assess-live";
 import { useLiveNudge } from "@/hooks/useLiveNudge";
+import { publishPresentation, unpublishPresentation } from "@/lib/doska/remote-bus";
 import { ClassList } from "../ClassList";
 import {
   ChoiceGrid,
@@ -125,6 +126,8 @@ export function PresentationWidget({ widget }: { widget: DoskaWidget }) {
 
   return (
     <Player
+      remoteId={widget.id}
+      classId={(widget.state.classId as string | undefined) ?? deckClassId ?? null}
       setId={setId}
       index={index}
       revealed={revealed}
@@ -290,6 +293,8 @@ function SetPicker({ onPick }: { onPick: (setId: string) => void }) {
 }
 
 function Player({
+  remoteId,
+  classId,
   setId,
   index,
   revealed,
@@ -306,6 +311,10 @@ function Player({
   onStartLive,
   onEndLive,
 }: {
+  /** Ustoz pulti uchun kalit (vidjet id) — `lib/doska/remote-bus.ts`. */
+  remoteId: string;
+  /** Telefondan skanerlash uchun sinf (vidjet yoki doska sinfi). */
+  classId: string | null;
   setId: string;
   index: number;
   revealed: boolean;
@@ -382,6 +391,42 @@ function Player({
       reveal: () => step && step.shape !== "slide" && onReveal(step.activityId),
     };
   });
+
+  /* USTOZ PULTI — telefon shu vidjetning OʻZ tugmalarini bosadi
+     (`keysRef`), shuning uchun jonli sessiya ham xuddi qoʻlda bosilgandek
+     suriladi. Holat har renderdan keyin eʼlon qilinadi; oʻzgarmagan
+     holat koʻprikda jim tashlanadi. */
+  React.useEffect(() => {
+    if (!draft) return;
+    const total = draft.questions.length;
+    const current = Math.min(Math.max(index, 0), Math.max(total - 1, 0));
+    const step = draft.questions[current];
+    const shape = step?.shape ?? null;
+    const openEnded = shape === "poll" || shape === "wordcloud" || shape === "text";
+    const text = (shape === "slide" ? step?.title || step?.stem : step?.stem) ?? "";
+    publishPresentation(
+      remoteId,
+      {
+        next: () => keysRef.current?.next(),
+        prev: () => keysRef.current?.prev(),
+        reveal: () => keysRef.current?.reveal(),
+      },
+      {
+        setId,
+        classId,
+        title: draft.set.title,
+        index: current,
+        total,
+        shape,
+        stepText: text.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 160),
+        revealed,
+        canReveal: Boolean(step) && shape !== "slide" && (Boolean(live) || !openEnded),
+        live: live ? { joinCode: live.joinCode, joined: results?.joined ?? 0 } : null,
+        mcqCount: draft.questions.filter((q) => q.shape === "mcq").length,
+      },
+    );
+  });
+  React.useEffect(() => () => unpublishPresentation(remoteId), [remoteId]);
 
   // Toʻplam yuklangach qadam oraliqqa keltiriladi (`onClampIndex`).
   const loadedTotal = draft?.questions.length ?? 0;

@@ -79,7 +79,7 @@ const SIG_BYTES = 12;
     Ikki xil holat bor, chunki `teacherId` UUID boʻlishi shart emas
     (u autentifikatsiya kutubxonasidan keladi). Format oʻzini oʻzi
     tavsiflaydi — birinchi bayt turni aytadi. */
-function packId(id: string): Buffer {
+export function packId(id: string): Buffer {
   if (UUID_RE.test(id)) {
     return Buffer.concat([Buffer.from([0]), Buffer.from(id.replace(/-/g, ""), "hex")]);
   }
@@ -88,7 +88,7 @@ function packId(id: string): Buffer {
   return Buffer.concat([Buffer.from([raw.length]), raw]);
 }
 
-function unpackId(buf: Buffer, offset: number): { id: string; next: number } {
+export function unpackId(buf: Buffer, offset: number): { id: string; next: number } {
   const kind = buf[offset];
   if (kind === 0) {
     const hex = buf.subarray(offset + 1, offset + 17).toString("hex");

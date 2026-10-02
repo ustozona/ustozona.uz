@@ -5900,6 +5900,31 @@
       "showYear": "Year",
       "showHoliday": "Holiday or break name",
       "holidayHint": "Holidays and breaks come from your school calendar."
+    },
+    "remote": {
+      "button": "Phone remote",
+      "buttonConnected": "Phone remote — connected",
+      "title": "Phone remote",
+      "description": "Run the lesson from your phone — in front of the class, without walking back to the board.",
+      "close": "Close",
+      "features": {
+        "f1": "Slides and questions: next, back, Reveal answer — instantly on the board",
+        "f2": "Switch screens and close the curtain",
+        "f3": "Check this test with QR cards or answer sheets using the phone camera",
+        "f4": "Results land in Assignments — gradebook in one click"
+      },
+      "connect": "Connect phone",
+      "connecting": "Preparing…",
+      "errorRealtime": "Live connection isn't configured — tell your administrator",
+      "errorLogin": "Couldn't connect. Make sure you're signed in to Ustozona",
+      "statusOnline": "Phone connected",
+      "statusWaiting": "Waiting for the phone — scan the QR",
+      "statusOffline": "Connecting…",
+      "scanHint": "Point your phone camera at this QR. No sign-in needed.",
+      "loggedInHint": "Signed in on your phone? Open ustozona.uz/pult — no QR needed.",
+      "scanned": "From the phone: {added} students, {answers} answers saved",
+      "newQr": "New QR",
+      "disconnect": "Disconnect"
     }
   },
   "LessonPlanWizard": {
@@ -6263,7 +6288,55 @@
       "pickGame": "Pick a game first",
       "gameNeedsTest": "This game runs on a test — link one",
       "prepareFirst": "Prepare the material first",
-      "oralHint": "Oral check — write the questions in the notes and ask the class"
+      "oralHint": "Oral check — write the questions in the notes and ask the class",
+      "doskaFailed": "Couldn't hand over to the board — browser storage is blocked"
+    },
+    "startList": "Run from a list on this computer",
+    "doska": {
+      "shellHint": "Start the game via Assignments → Run now — results go to the gradebook.",
+      "homeworkHint": "Assignments → Give homework: link and QR, with a due date."
     }
+  },
+  "Remote": {
+    "title": "Teacher remote",
+    "connected": "Connected to the board",
+    "waitingBoard": "Waiting for the board…",
+    "connecting": "Connecting…",
+    "curtainOn": "Curtain",
+    "curtainOff": "Open",
+    "waitingHint": "Keep the Phone remote window open on the board. Connecting takes a few seconds.",
+    "stepSlide": "Slide",
+    "stepQuestion": "Question",
+    "live": "PIN {code} · {joined} joined",
+    "revealAnswer": "Reveal answer",
+    "hideAnswer": "Hide answer",
+    "prevStep": "Previous step",
+    "nextStep": "Next",
+    "noPresentation": "No presentation on this screen — switch screens below.",
+    "checkTitle": "Check — this test",
+    "scanCards": "QR cards",
+    "scanSheets": "Sheet (OMR)",
+    "checkHint": "The camera opens. Results show in a list first and are saved only when you tap Add to gradebook.",
+    "screens": "Screens",
+    "screenEmpty": "Empty screen",
+    "prevScreen": "Prev screen",
+    "nextScreen": "Next screen",
+    "back": "Back to remote",
+    "questionCount": "{count} questions",
+    "errors": {
+      "expired": "Remote link expired — scan the QR on the board again",
+      "notFound": "Test or class not found",
+      "engine": "Sheet scanner isn't configured yet — use QR cards",
+      "network": "Check your internet connection"
+    },
+    "expiredTitle": "Link expired",
+    "expiredHint": "Press Phone remote on the board and scan the new QR.",
+    "unavailableTitle": "Remote unavailable",
+    "unavailableHint": "Live connection isn't configured. Tell your administrator.",
+    "tryLoggedIn": "Signed in to Ustozona? Connect without QR",
+    "entryTitle": "Teacher remote",
+    "entryNoBoard": "No open board found. Open the board on your computer and press Phone remote — this page connects on its own.",
+    "entryLogin": "Scan the QR on the board or sign in to Ustozona — once signed in, no QR needed.",
+    "login": "Sign in"
   }
 }
