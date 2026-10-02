@@ -140,9 +140,20 @@ Gemini bilan cheklanadi — boshqa model rasmsiz javob toʻqimasin).
   boradi (`remote-bus` → `publishPult`), telefonda «N / M javob berdi».
 - Saqlash — kompyuterda «Tugatish va saqlash» (avvalgidek).
 
-## 9. Keyingi bosqichlar
+## 9. Telegram va Ustozona ilovasi (4-bosqich)
+
+- **Telegramga yuborish** — Doskadagi pult oynasida tugma: bot
+  oʻqituvchining Telegramiga «Pultni ochish» tugmali xabar yuboradi
+  (`sendRemoteToTelegramAction`). Havola mijozdan olinmaydi — serverdagi
+  oxirgi chiptadan quriladi. Telegram bogʻlanmagan boʻlsa — aniq sabab.
+- **Ilova** — `GET /api/mobile/v1/remote` (Bearer): oxirgi Doskaning pult
+  havolasi. Ilova uni brauzerda ochadi — brauzerda kirish shart emas.
+  Ilova tomoni (LessonLab repo, `mobile/`) — Skaner boʻlimida
+  «Doska pulti».
+
+## 10. Keyingi bosqichlar
 
 1. **Kartani savolga bogʻlash** — QR-karta skaneri Doskadagi joriy savol
    bilan sinxron (hozir skaner savollarni oʻzi sanaydi).
-2. **Ustozona ilovasi** — Skaner boʻlimida «Pult» → `/pult` (ilova
-   ichida, kirish bilan); **bot** — `/pult` havolasi.
+2. **Ilova ichida native kamera** — QR-karta skanerini WebView'siz,
+   ilovaning oʻz kamerasi bilan (hozir brauzer sahifasi).

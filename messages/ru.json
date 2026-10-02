@@ -5992,7 +5992,13 @@
       "scanned": "С телефона: {added} учеников, {answers} ответов",
       "newQr": "Новый QR",
       "disconnect": "Отключить",
-      "templateName": "Имя Фамилия"
+      "templateName": "Имя Фамилия",
+      "tgSend": "Отправить в Telegram",
+      "tgSending": "Отправляем…",
+      "tg_sent": "Отправлено — нажмите «Pultni ochish» в Telegram на телефоне.",
+      "tg_bot": "Telegram-бот не настроен.",
+      "tg_not_linked": "Telegram не привязан — Настройки → Telegram.",
+      "tg_failed": "Не удалось отправить — используйте QR."
     }
   },
   "LessonPlanWizard": {
