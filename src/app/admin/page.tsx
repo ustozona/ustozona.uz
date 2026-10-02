@@ -41,21 +41,24 @@ export const maxDuration = 30;
 /* ── Yengil oqim: roʻyxatdan oʻtish grafigi + taqsimotlar ── */
 
 async function TrendsSection() {
-  const [{ signupsByDay, planBreakdown }, devices] = await Promise.all([
-    getSignupTrends(),
-    getDeviceBreakdown(),
-  ]);
+  // Ketma-ket — sabab `getSignupTrends` izohida (Supavisor).
+  const { signupsByDay, planBreakdown } = await getSignupTrends();
+  const devices = await getDeviceBreakdown();
 
   return (
     <div className="grid gap-4 xl:grid-cols-[2fr_1fr]">
       <SignupsChart data={signupsByDay} />
       <DistributionPanel
-        plans={planBreakdown.map((p) => ({
-          key: p.plan,
-          // Tarif kaliti bazada kichik harfda («free», «pro»).
-          label: p.plan.charAt(0).toUpperCase() + p.plan.slice(1),
-          value: p.n,
-        }))}
+        plans={planBreakdown.map((p) => {
+          // Tarif kaliti bazada kichik harfda («free», «pro»). Matn
+          // boʻlmasa ham butun boʻlim yiqilmasin (2026-10-02 hodisasi).
+          const plan = String(p.plan ?? "");
+          return {
+            key: plan,
+            label: plan.charAt(0).toUpperCase() + plan.slice(1),
+            value: p.n,
+          };
+        })}
         devices={devices.map((d) => ({
           key: d.device,
           label: deviceLabel(d.device as DeviceKind),

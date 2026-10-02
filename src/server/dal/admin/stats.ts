@@ -258,17 +258,23 @@ export async function getSignupTrends(): Promise<SignupTrends> {
 
   const since30 = new Date(Date.now() - 30 * DAY_MS);
 
-  const [signupRows, planRows] = await Promise.all([
-    db
-      .select({
-        day: sql<string>`to_char(date_trunc('day', ${user.createdAt}), 'YYYY-MM-DD')`,
-        n: count(),
-      })
-      .from(user)
-      .where(gt(user.createdAt, since30))
-      .groupBy(sql`date_trunc('day', ${user.createdAt})`),
-    db.select({ plan: teachers.plan, n: count() }).from(teachers).groupBy(teachers.plan),
-  ]);
+  /* Ketma-ket, `Promise.all` EMAS: /admin da uchta Suspense boʻlimi
+     baribir bir vaqtda soʻraydi, Supavisor esa pipeline qilingan
+     soʻrovlardan birining javobini yoʻqotadi yoki boshqasiga beradi —
+     2026-10-02 prodda `plan` ga matn emas qiymat keldi va 30 s timeout
+     boʻldi. Qarang `bootstrap.ts` dagi `gate`. */
+  const signupRows = await db
+    .select({
+      day: sql<string>`to_char(date_trunc('day', ${user.createdAt}), 'YYYY-MM-DD')`,
+      n: count(),
+    })
+    .from(user)
+    .where(gt(user.createdAt, since30))
+    .groupBy(sql`date_trunc('day', ${user.createdAt})`);
+  const planRows = await db
+    .select({ plan: teachers.plan, n: count() })
+    .from(teachers)
+    .groupBy(teachers.plan);
 
   const byDay = new Map(signupRows.map((r) => [r.day, r.n]));
   const signupsByDay: { day: string; n: number }[] = [];
