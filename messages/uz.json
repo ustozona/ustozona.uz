@@ -6218,6 +6218,10 @@
     "entryLogin": "Doskadagi QR ni skanerlang yoki Ustozona'ga kiring — kirgan boʻlsangiz QR kerak emas.",
     "login": "Kirish",
     "scanQuick": "Qoʻlda yozilgan",
-    "showTemplate": "Shablon doskaga"
+    "showTemplate": "Shablon doskaga",
+    "scanPult": "Pult (radio)",
+    "pultAnswered": "{answered} / {total} oʻquvchi javob berdi",
+    "pultNotConnected": "Qabul qilgich ulanmagan — kompyuterda «Qabul qilgichni ulash» ni bir marta bosing, keyingi safar oʻzi ulanadi.",
+    "pultSaveHint": "Oxirida kompyuterda «Tugatish va saqlash» — javoblar Topshiriqlarga yoziladi."
   }
 }

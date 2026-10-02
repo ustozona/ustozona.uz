@@ -6340,6 +6340,10 @@
     "entryLogin": "Scan the QR on the board or sign in to Ustozona — once signed in, no QR needed.",
     "login": "Sign in",
     "scanQuick": "Handwritten",
-    "showTemplate": "Template to board"
+    "showTemplate": "Template to board",
+    "scanPult": "Clickers (radio)",
+    "pultAnswered": "{answered} of {total} students answered",
+    "pultNotConnected": "Receiver not connected — press Connect receiver on the computer once; next time it connects on its own.",
+    "pultSaveHint": "At the end press Finish and save on the computer — answers go to Assignments."
   }
 }

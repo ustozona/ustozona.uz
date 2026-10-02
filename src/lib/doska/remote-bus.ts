@@ -63,3 +63,35 @@ export function subscribePresentations(cb: () => void): () => void {
   listeners.add(cb);
   return () => listeners.delete(cb);
 }
+
+/* ── Radio pult (PultRunner) — Doskada ochiq boʻlsa, telefon qadam va
+   «Javobni koʻrsatish» ni unga yuboradi (taqdimot oʻrniga). ── */
+
+export type PultStatus = {
+  title: string;
+  index: number;
+  total: number;
+  answered: number;
+  rosterSize: number;
+  revealed: boolean;
+  connected: boolean;
+};
+
+let pult: { control: PresentationControl; status: PultStatus } | null = null;
+
+export function publishPult(control: PresentationControl, status: PultStatus) {
+  const changed = !pult || JSON.stringify(pult.status) !== JSON.stringify(status);
+  pult = { control, status };
+  if (changed) emit();
+}
+
+export function unpublishPult() {
+  if (pult) {
+    pult = null;
+    emit();
+  }
+}
+
+export function pultEntry() {
+  return pult;
+}
