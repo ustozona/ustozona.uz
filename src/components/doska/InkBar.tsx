@@ -26,6 +26,7 @@ import {
   type InkSize,
 } from "@/lib/doska/ink";
 import { BarButton } from "./BarButton";
+import { BarEndColumn } from "./BarEndColumn";
 import { BarGroup, BarSeparator, BarTextButton } from "./BarGroup";
 import { useDockLayout } from "./dock";
 import {
@@ -71,13 +72,18 @@ import {
    va rangli qalamlar ham ochroq tusda (src/styles/doska.css).
 
    Nishonlar ≥ 44 px (R321) — rang va qalinlik tugmalari ham.
+
+   Oxirida — vidjet panelidagi bilan bir xil ustun (`BarEndColumn`):
+   ⋮ menyusida bekor qilish va qaytadan bajarish, ostida yigʻish. Sensorli
+   doskada klaviatura yoʻq — notoʻgʻri chiziqni qaytarish va ekranni
+   tozalab koʻrsatish ham qalam rejimidan chiqmasdan boʻlishi kerak.
    ════════════════════════════════════════════════════════════════════ */
 
 const SIZE_KEYS = { 1: "thin", 2: "medium", 3: "thick" } as const;
 /** Qalinlik tugmasidagi nuqta diametri (px) — daraja koʻzga koʻrinsin. */
 const SIZE_DOTS = { 1: 6, 2: 11, 3: 18 } as const;
 
-export function InkBar() {
+export function InkBar({ onHide }: { onHide: () => void }) {
   const t = useTranslations("Doska.ink");
   const { orientation } = useDockLayout();
   const vertical = orientation === "vertical";
@@ -178,148 +184,155 @@ export function InkBar() {
       orientation={orientation}
       role="toolbar"
       aria-label={t("toolbar")}
-      // Tor ekranda panel oʻz ustunidan oshmaydi va ichida aylanadi —
-      // `WidgetBar` dagi bilan bir xil sabab.
-      className={cn(
-        vertical
-          ? "max-h-full min-h-0 overflow-y-auto overscroll-y-contain"
-          : "max-w-full overflow-x-auto overscroll-x-contain",
-      )}
+      className={cn("items-stretch gap-0 p-0", vertical ? "max-h-full min-h-0" : "max-w-full min-w-0")}
     >
-      <BarButton label={t("select")} Icon={IconCursor} onClick={() => setMode(null)} />
-
-      {divider}
-
-      {toolButton("pen", t("pen"), IconPen)}
-      {toolButton("marker", t("marker"), IconMarker)}
-      {toolButton("eraser", t("eraser"), IconEraser)}
-      {toolButton("laser", t("laser"), IconLaser)}
-      {toolButton("lasso", t("lasso"), IconLasso)}
-
-      {!laser && divider}
-
+      {/* Tor ekranda asboblar oʻz ustunidan oshmaydi va ichida aylanadi —
+          `WidgetBar` dagi bilan bir xil sabab; oxirgi ustun esa doim koʻrinadi. */}
       <div
-        role="group"
-        aria-label={t("color")}
-        data-bg-tone={tone}
-        aria-hidden={idleLasso || undefined}
         className={cn(
-          "grid shrink-0",
-          vertical ? "grid-cols-2" : "grid-flow-col",
-          laser && "hidden",
-          idleLasso && "invisible",
+          "flex gap-0.5 p-1",
+          vertical
+            ? "min-h-0 flex-col items-center overflow-y-auto overscroll-y-contain"
+            : "min-w-0 items-center overflow-x-auto overscroll-x-contain",
         )}
       >
-        {palette.map((key) => {
-          const selected = !erasing && key === color;
-          return (
+        <BarButton label={t("select")} Icon={IconCursor} onClick={() => setMode(null)} />
+
+        {divider}
+
+        {toolButton("pen", t("pen"), IconPen)}
+        {toolButton("marker", t("marker"), IconMarker)}
+        {toolButton("eraser", t("eraser"), IconEraser)}
+        {toolButton("laser", t("laser"), IconLaser)}
+        {toolButton("lasso", t("lasso"), IconLasso)}
+
+        {!laser && divider}
+
+        <div
+          role="group"
+          aria-label={t("color")}
+          data-bg-tone={tone}
+          aria-hidden={idleLasso || undefined}
+          className={cn(
+            "grid shrink-0",
+            vertical ? "grid-cols-2" : "grid-flow-col",
+            laser && "hidden",
+            idleLasso && "invisible",
+          )}
+        >
+          {palette.map((key) => {
+            const selected = !erasing && key === color;
+            return (
+              <button
+                key={key}
+                type="button"
+                aria-label={colorLabel(key)}
+                aria-pressed={selected}
+                onClick={() => pickColor(key)}
+                className="hover:bg-muted focus-visible:ring-ring grid size-11 place-items-center rounded-xl transition-colors focus-visible:ring-2 focus-visible:outline-none"
+              >
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    "size-7 rounded-full transition-transform",
+                    selected
+                      ? "ring-primary ring-offset-background scale-110 ring-2 ring-offset-2"
+                      : // Ingichka halqa — toʻq siyoh namunasi grafit panelda ham ajralsin.
+                        "ring-foreground/25 ring-1 ring-inset",
+                  )}
+                  style={{ background: `var(${inkColorVar(tool, key)})` }}
+                />
+              </button>
+            );
+          })}
+        </div>
+
+        {!laser && divider}
+
+        <div
+          role="group"
+          aria-label={t("size")}
+          data-bg-tone={tone}
+          aria-hidden={idleLasso || undefined}
+          className={cn("flex shrink-0", vertical && "flex-col", laser && "hidden", idleLasso && "invisible")}
+        >
+          {INK_SIZES.map((s: InkSize) => (
             <button
-              key={key}
+              key={s}
               type="button"
-              aria-label={colorLabel(key)}
-              aria-pressed={selected}
-              onClick={() => pickColor(key)}
-              className="hover:bg-muted focus-visible:ring-ring grid size-11 place-items-center rounded-xl transition-colors focus-visible:ring-2 focus-visible:outline-none"
+              aria-label={t(`sizes.${SIZE_KEYS[s]}`)}
+              aria-pressed={shownSize === s}
+              onClick={() => pickSize(s)}
+              className="hover:bg-muted aria-pressed:bg-muted focus-visible:ring-ring grid size-11 place-items-center rounded-xl transition-colors focus-visible:ring-2 focus-visible:outline-none"
             >
               <span
                 aria-hidden="true"
-                className={cn(
-                  "size-7 rounded-full transition-transform",
-                  selected
-                    ? "ring-primary ring-offset-background scale-110 ring-2 ring-offset-2"
-                    : // Ingichka halqa — toʻq siyoh namunasi grafit panelda ham ajralsin.
-                      "ring-foreground/25 ring-1 ring-inset",
-                )}
-                style={{ background: `var(${inkColorVar(tool, key)})` }}
+                className={cn("rounded-full", erasing ? "border-foreground border-2" : "ring-foreground/25 ring-1")}
+                style={{
+                  width: SIZE_DOTS[s],
+                  height: SIZE_DOTS[s],
+                  background: erasing ? undefined : `var(${inkColorVar(tool, color ?? "")})`,
+                }}
               />
             </button>
-          );
-        })}
-      </div>
+          ))}
+        </div>
 
-      {!laser && divider}
-
-      <div
-        role="group"
-        aria-label={t("size")}
-        data-bg-tone={tone}
-        aria-hidden={idleLasso || undefined}
-        className={cn("flex shrink-0", vertical && "flex-col", laser && "hidden", idleLasso && "invisible")}
-      >
-        {INK_SIZES.map((s: InkSize) => (
-          <button
-            key={s}
-            type="button"
-            aria-label={t(`sizes.${SIZE_KEYS[s]}`)}
-            aria-pressed={shownSize === s}
-            onClick={() => pickSize(s)}
-            className="hover:bg-muted aria-pressed:bg-muted focus-visible:ring-ring grid size-11 place-items-center rounded-xl transition-colors focus-visible:ring-2 focus-visible:outline-none"
-          >
-            <span
-              aria-hidden="true"
-              className={cn("rounded-full", erasing ? "border-foreground border-2" : "ring-foreground/25 ring-1")}
-              style={{
-                width: SIZE_DOTS[s],
-                height: SIZE_DOTS[s],
-                background: erasing ? undefined : `var(${inkColorVar(tool, color ?? "")})`,
-              }}
-            />
-          </button>
-        ))}
-      </div>
-
-      {erasing && (
-        <BarTextButton
-          label={t("erasePartial")}
-          aria-pressed={eraserPartial}
-          onClick={toggleEraserPartial}
-          className="aria-pressed:bg-muted shrink-0 rounded-xl"
-          icon={
-            <IconCheck className={cn("size-5 transition-opacity", eraserPartial ? "opacity-100" : "opacity-25")} />
-          }
-        />
-      )}
-
-      {lasso && (
-        <BarButton
-          label={t("deleteSelection")}
-          Icon={IconTrash}
-          disabled={!hasSelection}
-          onClick={deleteSelection}
-          className="disabled:pointer-events-none disabled:opacity-30"
-        />
-      )}
-
-      {divider}
-
-      {guideButton("ruler", t("ruler"), IconRuler, ruler)}
-      {guideButton("protractor", t("protractor"), IconProtractor, protractor)}
-
-      {divider}
-
-      <BarButton
-        label={t("clear")}
-        aria-label={t("clearLabel")}
-        Icon={IconTrash}
-        disabled={!hasInk}
-        onClick={clearInk}
-        className="disabled:pointer-events-none disabled:opacity-30"
-      />
-
-      {penSeen && (
-        <>
-          {divider}
+        {erasing && (
           <BarTextButton
-            label={t("penOnly")}
-            aria-pressed={penOnly}
-            onClick={togglePenOnly}
+            label={t("erasePartial")}
+            aria-pressed={eraserPartial}
+            onClick={toggleEraserPartial}
             className="aria-pressed:bg-muted shrink-0 rounded-xl"
             icon={
-              <IconCheck className={cn("size-5 transition-opacity", penOnly ? "opacity-100" : "opacity-25")} />
+              <IconCheck className={cn("size-5 transition-opacity", eraserPartial ? "opacity-100" : "opacity-25")} />
             }
           />
-        </>
-      )}
+        )}
+
+        {lasso && (
+          <BarButton
+            label={t("deleteSelection")}
+            Icon={IconTrash}
+            disabled={!hasSelection}
+            onClick={deleteSelection}
+            className="disabled:pointer-events-none disabled:opacity-30"
+          />
+        )}
+
+        {divider}
+
+        {guideButton("ruler", t("ruler"), IconRuler, ruler)}
+        {guideButton("protractor", t("protractor"), IconProtractor, protractor)}
+
+        {divider}
+
+        <BarButton
+          label={t("clear")}
+          aria-label={t("clearLabel")}
+          Icon={IconTrash}
+          disabled={!hasInk}
+          onClick={clearInk}
+          className="disabled:pointer-events-none disabled:opacity-30"
+        />
+
+        {penSeen && (
+          <>
+            {divider}
+            <BarTextButton
+              label={t("penOnly")}
+              aria-pressed={penOnly}
+              onClick={togglePenOnly}
+              className="aria-pressed:bg-muted shrink-0 rounded-xl"
+              icon={
+                <IconCheck className={cn("size-5 transition-opacity", penOnly ? "opacity-100" : "opacity-25")} />
+              }
+            />
+          </>
+        )}
+      </div>
+
+      <BarEndColumn vertical={vertical} onHide={onHide} />
     </BarGroup>
   );
 }

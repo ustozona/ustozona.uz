@@ -1,5 +1,13 @@
 # Doska UX tadqiqoti — asboblar va dizayn yoʻnalishi
 
+> **2026-10-02:** standart koʻrinish va joylashuv referens ilovasiga
+> koʻchirildi (foydalanuvchi qarori, [doska-referens-koriklari.md](./doska-referens-koriklari.md)
+> §4.5–4.6). Shu sababli bu hujjatdagi uchta qaror almashdi: **Q2**
+> (sozlama vidjet yonida → oʻngdan butun balandlikdagi oyna), **R319**
+> (tepada hech narsa yoʻq → burchaklarda bosh sahifa, toʻliq ekran, menyu),
+> **R322** (kontekst panelda yozuv → ikona, kam ishlatiladigani ⋮ menyusida
+> yozuvi bilan). Qolgan UX yadrosi (§3) kuchda.
+>
 > **Holat (2026-09-25):** tadqiqot tugadi, qarorlar qabul qilindi (§0),
 > **1–3-bosqich qurildi** (§5).
 > [doska-dizayn-tizimi.md](./doska-dizayn-tizimi.md) §1–4 shu hujjat

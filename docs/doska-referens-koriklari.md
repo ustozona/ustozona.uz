@@ -1,10 +1,11 @@
 # Doska — referens koʻriklari (boshqa doskalardan nima olamiz)
 
-> **Holat (2026-10-01):** 3 ta referens koʻrildi. Foydalanuvchi
-> keyingi referenslarni ham beradi — har biri shu hujjatga alohida
-> boʻlim boʻlib qoʻshiladi, raqamlar davom etadi.
+> **Holat (2026-10-01):** 3 ta referens koʻrildi; 2-referensning vizual
+> tizimi alohida chuqur koʻrildi (§4 — vidjet yuzasi, «Varaq» taklifi).
+> Foydalanuvchi keyingi referenslarni ham beradi — har biri shu hujjatga
+> alohida boʻlim boʻlib qoʻshiladi, raqamlar davom etadi.
 >
-> Referens topilmalari **R380–R454** (oldingilari
+> Referens topilmalari **R380–R467** (oldingilari
 > [doska-tezlik-tadqiqot.md](./doska-tezlik-tadqiqot.md) da, R372–R379).
 > Mahsulot nomlari yozilmaydi (AGENTS.md) — referens oʻz xususiyati
 > bilan tasvirlanadi.
@@ -17,6 +18,9 @@
 > - 3-referens: oʻsha xizmatning «kundalik ekran» shablonlari —
 >   foydalanuvchi bergan skrinshot va DOM, ustiga beshta shablon ilovada
 >   ochib koʻrildi — §3.1.
+> - 2-referensning vizual tizimi: ilova mehmon rejimida qayta ochildi,
+>   vidjetlarning hisoblangan uslublari va rang mavzulari oʻlchandi,
+>   oʻzimizning fonlarimiz boʻyicha hisob qilindi — §4.1.
 >
 > Ikkalasi ham hozirgi Doska kodi bilan solishtiriladi. DOMda
 > koʻrinmagan, mahsulotning maʼlum xususiyatidan olingan narsa alohida
@@ -71,6 +75,19 @@ Batafsil — §3. Tartib — §3.4.
 | **Olinmaydi** | R448 fotosurat katalogi va yarim shaffof kartalar · R451 shablon palitrasi vidjetlarga · ularning har qanday fayli (R453) |
 | **Qoida** | R453 — «1:1 emas» tekshiruvi: joylashuv, rang, shrift, tasvir, matn — beshalasi oʻzimizniki |
 | **Qaror qilindi (§3.5)** | «Karta» alohida vidjet; fon faqat CSS; nomi «Sana» |
+
+### 0.4. Referens 2 — vizual tizim: vidjet yuzasi (R455–R467)
+
+Batafsil — §4. Taklif — §4.3, savollar — §4.5.
+
+| Qaror | Topilmalar |
+|---|---|
+| **Taklif — «Varaq»** | Har vidjet oq varaqda, fondan qatʼiy nazar (R455, R459, R465); tus — urgʻu, fon emas (R456, R460); butun varaq faqat holat uchun rang oladi; uslub faqat ishlovni tanlaydi (R462) |
+| **Tuzatib olinadi** | R458 — chegarasiz oq karta 21 fonimizdan 13 tasida koʻrinmaydi → chiziq + soya |
+| **Bizda yaxshiroq / qoladi** | R461 raqam qalinligi 600–700 (proyektor); R464 sozlama vidjet yonida (Q2) |
+| **Olinmaydi** | Ularning mavzu ranglari, shrifti, radiusi; vidjetga alohida mavzu (R421 rad qarori kuchda) — R467 |
+| **✅ Qaror (2026-10-02)** | «UI toʻliq referens asosida boʻlsin, xuddi shuni olamiz» — §4.5 |
+| **✅ Qurildi (§4.6)** | standart uslub — oq panel va oq varaq; qobiq joylashuvi, panel, kontekst panel, sozlama oynasi referensdek; «Karta» sarlavha tasmasi; «Matn» varaqda; taymer halqasi |
 
 ---
 
@@ -1592,9 +1609,497 @@ oʻzimiz yozdik. Hech qanday tashqi fayl yoʻq.
 
 ---
 
-## 4. Keyingi referenslar
+## 4. Referens 2 — vizual tizim: vidjet yuzasi (chuqur koʻrik)
+
+2026-10-01, foydalanuvchi soʻrovi: «Doskaning dizayn tizimi boʻlmayapti.
+Bulardagi har bir vidjetning oq foni yaxshi — umumiy fondan qatʼiy nazar
+vidjetning oʻz oq foni mos boʻlaveradi. Chuqur oʻrgan. 1:1 boʻlmasin,
+mualliflik huquqi buzilmasin.» Berilgani — 3-referensdagi oʻsha ekran
+(skrinshot + DOM).
+
+§3 da savol ekranning **kompozitsiyasi** edi. Bu safar — **vidjet
+yuzasining materiali va rang tizimi**: nega ularning ekrani har qanday
+fonda «yigʻilgan» koʻrinadi, bizniki esa yoʻq.
+
+### 4.1. Nima koʻrildi
+
+- **Ilova mehmon rejimida.** 9 ta vidjet qoʻshildi (taymer, soat,
+  svetofor, matn, ish belgilari, kun jadvali, soʻrovnoma, tasodifiy ism,
+  shovqin) va har birining hisoblangan uslubi oʻlchandi: fon, radius,
+  soya, chegara, shrift, ichki elementlar.
+- **Rang mavzusi tanlovi** — 30 ta mavzu DOMdan rol boʻyicha oʻqildi;
+  mavzu tokenlari (CSS oʻzgaruvchilari) va ularning hosilalari.
+- **Bir xil vidjetlar toʻrt fonda:** fotosurat, toʻq bir tekis, oq, och
+  kulrang.
+- **«Toʻq panel»** ekran sozlamasi yoqib koʻrildi, keyin asliga qaytarildi.
+- **Toifa** (bitta referens emas): telefon va kompyuter vidjetlari dizayn
+  qoʻllanmasi, ochiq dizayn tizimlaridagi karta turlari, rasm ustidagi
+  matn usullari.
+- **Oʻzimizning 21 fonimiz** boʻyicha hisob — oq karta har fonda qanchalik
+  ajraladi. Formula proyektor sinovidan
+  (`scripts/doska-projector-check.mjs`): oddiy kontrast va yuvilgan
+  proyektor simulyatsiyasi.
+
+Hech qanday fayl (rasm, ikona, shrift, CSS) olinmadi va loyihaga
+qoʻshilmadi.
+
+### 4.2. Topilmalar
+
+#### R455 — Hamma vidjet bitta materialda: oq varaq
+
+Har vidjetning orqa qatlami bir xil: **oq** (`#fff`), radius **8 px**,
+**soyasiz, chegarasiz**. Taymer, soat, svetofor, matn, jadval,
+soʻrovnoma, tasodifiy ism — hammasi. Istisno faqat oʻzi rasm boʻlgan
+vidjet: ish belgisi (oq doira — belgining oʻzi).
+
+Vidjet ichidagi elementlar ham shu varaq ustida chiziladi:
+
+| Element | Koʻrinish |
+|---|---|
+| Ichki tanlov kartasi (soʻrovnoma turi) | shaffof, 2 px och kulrang chegara, juda yengil soya, radius 8 — tashqi bilan bir xil |
+| Asosiy tugma («Sozlamani ochish», ▶) | toʻla yumaloq, urgʻu rangida, oq yozuv |
+| Ikkilamchi tugma (⏹) | toʻla yumaloq, faqat kontur |
+| Boʻsh holat matni | 20 px, 600 qalinlik, toʻq |
+
+**Maʼnosi:** mazmun fon ustida emas, **oʻz varagʻida** turadi. Oʻqituvchi
+qaysi fonni tanlamasin, vidjet ichi bir xil sharoitda oʻqiladi.
+
+#### R456 — Rang mavzusi = rollar, rang emas
+
+Har vidjetga mavzu beriladi va u **beshta rol**dan iborat:
+
+| Rol | Vazifa | Standart mavzuda |
+|---|---|---|
+| Matn | raqam, yozuv, soat raqamlari | toʻq kulrang-koʻk (sof qora emas) |
+| Fon | varaq | oq |
+| Urgʻu 1 | bosh grafika: taymer halqasi, soat gardishi, ▶ tugma | indigo |
+| Urgʻu 2 | ikkilamchi: kontur tugma, soat millari | matn bilan bir xil |
+| Xavf | tugash, ogohlantirish | qizil |
+
+Har rolning **hosilaviy shkalasi** bor: 10% va 20% shaffof (yumshoq fon,
+ajratgich chiziq), yorqinligi −5, −10, −25 (hover, bosilgan, toʻq
+variant). Vidjet kodi faqat rol nomini oʻqiydi — mavzu almashsa vidjet
+koʻdiga tegilmaydi. Masalan jadval qatorlari orasidagi chiziq — «urgʻu 1,
+10% shaffof».
+
+**Bizda:** `--card-bg` / `--card-fg` / `--card-accent` — uchta rol bor,
+lekin «urgʻu 2», «yumshoq urgʻu» va hosilalar yoʻq; urgʻuni faqat taymer
+ishlatadi (R466).
+
+#### R457 — 30 ta tayyor mavzu, standarti oq
+
+Mavzular toʻrt oilada:
+
+| Oila | Soni | Tavsif |
+|---|---|---|
+| Oq | 5 | oq varaq, toʻq matn; urgʻu besh xil (indigo — **standart**, yashil, sariq, binafsha, koʻk) |
+| Shaffof | 3 | fonsiz — yozuv toʻgʻridan-toʻgʻri fon ustida (toʻq yoki oq matn) |
+| Pastel | 14 | och tusli varaq, toʻq yoki oʻsha tusning toʻq matni |
+| Toʻq | 8 | toʻyingan toʻq varaq, och matn |
+
+- Mavzu **har vidjetda alohida** tanlanadi; koʻrilgan sozlamada «hamma
+  vidjetga qoʻllash» yoʻq edi.
+- Oʻz mavzusini yaratish — pullik tarifda.
+- Mavzu tanlovi — rasmli mini-karta: varaq rangi ustida matn chizigʻi,
+  urgʻu chizigʻi va nuqta. Shaffof mavzu katak naqsh bilan koʻrsatiladi.
+
+**Maʼnosi:** rang — **tanlov**, asos emas. Asos — oq varaq; 30 dan 25
+mavzu rangli boʻlsa ham, yangi vidjet doim oq chiqadi.
+
+#### R458 — ⭐ Chegarasiz oq karta och fonda yoʻqoladi (ularning kamchiligi)
+
+Sinab koʻrildi:
+
+- **Oq fonda** matn vidjeti faqat placeholder yozuviga aylandi, karta
+  koʻrinmaydi. Taymer, svetofor va soat bir-biriga yopishib, bitta shakl
+  boʻlib qoldi.
+- **Och kulrang fonda** kartalar xira ajraldi, **ustma-ust tushgan
+  kartalar** esa chegarasi yoʻqligi sababli bitta dogʻga qoʻshilib ketdi.
+
+Bizda bu xavf kattaroq. 21 fonimizning har biridagi **eng och** nuqta
+bilan oq karta orasidagi yorqinlik nisbati:
+
+| Fonlar | Soni | Oq karta ↔ fon | Proyektorda |
+|---|---|---|---|
+| Oq taxta, katak, nuqta, daftar, husnixat, nota, yumshoq ×3, bahor, Navroʻz, bahor bayrami, Mustaqillik | 13 | **1,01–1,11** — koʻrinmaydi | 1,01–1,08 |
+| Oʻqituvchilar kuni (oltin) | 1 | 2,0 | 1,7 |
+| Kuz, Yangi yil | 2 | 5,8–6,2 | 3,6–3,7 |
+| Yashil va qora doska, qish, shom, shakllar | 5 | 10,8–19,6 | 5,2–9,3 |
+
+Yaʼni ularning naqshi 21 fonimizning **13 tasida** ishlamaydi —
+jumladan, eng koʻp ishlatiladigan «Oq taxta»da.
+
+**Olinadi — lekin tuzatilgan holda:** varaq **chiziq + soya** bilan.
+Chiziq och fonda va ustma-ust kartalar orasida chegara chizadi, soya esa
+uzoqdan (5 m, proyektor) koʻrinadi — 1 px chiziq u masofada yoʻqoladi.
+Bu `BarGroup` dagi qaror bilan bir xil (doska-dizayn-tizimi.md §1.5:
+ixtiyoriy fonda «border YOKI shadow» emas, ikkalasi).
+
+#### R459 — Toʻq va fotosurat fonda oq karta eng kuchli
+
+- **Toʻq bir tekis fonda** oq vidjetlar eng aniq ajraldi. Bizda: yashil
+  doska 11,8:1, qora doska 17:1.
+- **Fotosurat fonda** ham vidjet ichi toʻliq oʻqiladi — fon matnga
+  tegmaydi. Bu yarim shaffof «muzli» kartadan (R448) tubdan farq qiladi:
+  u yerda rasm matn ostidan koʻrinib, uni yuvardi.
+
+Toifa ham shuni aytadi: rasm ustida matnni oʻqitishning eng ishonchli
+usuli — yaxlit quti (yarim shaffof parda va gradient esa rasmga qarab
+ishlaydi yoki ishlamaydi).
+
+#### R460 — Urgʻu faqat kichik maydonda
+
+| Vidjet | Urgʻu qayerda | Qolgani |
+|---|---|---|
+| Taymer | halqa (diametrning ~6%), ▶ tugma | raqamlar toʻq, varaq oq |
+| Soat | gardish (8 px) | raqamlar va millar toʻq |
+| Jadval | qatorlar orasidagi chiziq (10%), belgilash katagi | ism va yozuvlar toʻq |
+| Soʻrovnoma | variant doiralari | sarlavha toʻq |
+
+Vidjet maydonining **90% dan koʻprogʻi oq + toʻq matn**. Rang
+identifikatsiya qiladi (qaysi vidjet), lekin oʻqishga xalaqit bermaydi.
+
+**Bizda:** Sokin uslubida tus **butun karta foni** — oq matn toʻyingan
+rang ustida (R466).
+
+#### R461 — Vidjet ichidagi tipografika
+
+Bitta shrift (yumaloq geometrik), hamma vidjetda. Mantiqiy oʻlchamda
+(R463 — masshtabdan oldin):
+
+| Element | Oʻlcham / qalinlik |
+|---|---|
+| Taymer raqami | 120 px / **500** |
+| Soat raqamlari (analog) | 32 / 600 |
+| Boʻsh holat va sarlavha | 20 / 600 |
+| Tanlov yorligʻi | 18 / 600, ochroq kulrang |
+| Matn vidjeti | 28 / 400 |
+| Tugma | 14 / 600 |
+
+Matn rangi — toʻq kulrang-koʻk, sof qora emas.
+
+**Bizda:** raqam `--doska-display-weight` (700). 500 qalinlikdagi raqam
+yengil va chiroyli, lekin proyektorda ingichka chiziq yuviladi (R324) —
+**biz 600–700 da qolamiz**.
+
+#### R462 — Boshqaruv va mazmun alohida
+
+Ekran sozlamasidagi «Toʻq vidjet paneli» faqat **boshqaruvni**
+oʻzgartiradi: panel va ekran tugmalari toʻq (deyarli qora, 70% shaffof,
+radius 10), panel ikonalari toʻq fon uchun alohida toʻplamdan. Vidjetlar
+esa **oq qoladi**.
+
+**Bizda ham shunday ajratish bor** (`.doska-ctl` va `.doska-card` —
+alohida tokenlar), lekin uslub ikkalasini birga oʻzgartiradi. Varaq
+taklifida (§4.4) uslub vidjet **yuzasini** emas, faqat uning
+**ishlovini** (radius, chiziq, soya, shrift) va boshqaruvni oʻzgartiradi.
+
+#### R463 — Mantiqiy oʻlcham va masshtab (R397 tasdigʻi)
+
+Vidjet mantiqiy oʻlchamda yaratiladi va `transform: scale(k)` bilan
+ekranga sigʻdiriladi:
+
+| Vidjet | Mantiqiy oʻlcham |
+|---|---|
+| Taymer | 620 × 230 |
+| Soat | 300 × 380 |
+| Svetofor | 180 × 343 |
+| Matn | 480 × 300 |
+| Ish belgisi | 320 × 400 |
+
+1440 px kenglikda k = 0,75; 1264 px da 0,79. Shuning uchun ichki
+oʻlchamlar piksel (raqam 120 px) — masshtab hammasini birga
+kichraytiradi. Bizda ichki oʻlcham `cqw` — natija bir xil, R397 qarori
+oʻzgarmaydi.
+
+#### R464 — Sozlama oynasi
+
+Oʻngdan butun balandlikdagi oq varaq (448 px, kuchli soya). Mavzu
+tanlovi — R457 dagi rasmli mini-kartalar, belgilangani 2 px urgʻu ramka
+va ✓.
+
+**Bizda:** sozlama vidjet yonidagi karta (UX Q2) — **oʻzgarmaydi**:
+e-doskada oʻqituvchi vidjet yonida turadi, oʻng chetga borish shart
+emas. Olinadigani — **rasmli namuna**: tus tanlovida oddiy doira emas,
+vidjetning kichik nusxasi (R435 bilan bir xil naqsh).
+
+#### R465 — Toifa: konteyner foni oʻqilishni fondan mustaqil qiladi
+
+- **Telefon va kompyuter vidjetlari** (operatsion tizim qoʻllanmasi):
+  vidjet mazmuni oʻz konteyner fonida turadi, devor qogʻozi qanday
+  boʻlmasin. Fon olib tashlanadigan rejimda (uzoqdan koʻriladigan ekran)
+  qoʻllanma mazmunni kattalashtirishni va chetga surishni tavsiya qiladi —
+  yaʼni fonsiz holat alohida loyihalanadi, «shunchaki shaffof» emas.
+- **Ochiq dizayn tizimlaridagi kartalar** — uch xil ajratish: soya
+  (koʻtarilgan), toʻldirish (fondan boshqa tus), kontur (chiziq). Soyali
+  karta fondan konturlidan kamroq, toʻldirilgandan koʻproq ajraladi.
+- **Rasm ustida matn:** yarim shaffof parda 30–70% (rasmga bogʻliq),
+  gradient, yoki yaxlit quti. Faqat yaxlit quti har qanday rasmda
+  kafolatli.
+
+**Xulosa:** «oq varaq» — tasodifiy uslub emas, toifaning umumiy yechimi.
+Ochiq fonda ajratishni esa **soya** va **chiziq** beradi — referens
+ikkalasini ham olib tashlagan va R458 shuning natijasi.
+
+#### R466 — Hozirgi Doska bilan solishtirish (audit)
+
+| | Hozir (Sokin — standart, 95% oʻqituvchi koʻradi) | Varaq |
+|---|---|---|
+| Yuzasi | vidjet turiga qarab toʻyingan tus | hamma vidjetda oq |
+| Matn | oq, rang ustida | toʻq, oq ustida |
+| Eng tor kontrast | taymer: 4,63:1, proyektorda **3,23:1** | **15,3:1**, proyektorda **6,8:1** |
+| Fon bilan munosabat | sariq taymer iliq fonda, koʻk soat osmon fonida qoʻshiladi | fon qanday boʻlmasin, varaq bir xil |
+| Ekrandagi rang soni | har vidjet — bitta katta rangli blok (5–6 rang) | rang faqat urgʻuda; ekran tinch |
+| Holat signali (taymer tugadi) | qizil karta — boshqa rangli kartalar orasida | qizil varaq — oq varaqlar orasida **yagona** rang |
+
+Muhim kuzatishlar:
+
+1. **«Doska» uslubi allaqachon shu naqsh** — krem qogʻoz, siyoh matn,
+   tus faqat magnitda. Lekin u standart emas, uni deyarli hech kim
+   ochmaydi.
+2. **Koʻchish asosan token darajasida.** Vidjetlar ichidagi ranglar
+   `currentColor` ga nisbatan yozilgan (`bg-current/15`, `opacity-75`) —
+   matn rangi siyohga oʻtsa, ular oʻzi moslashadi.
+3. **Urgʻuni faqat taymer ishlatadi** (`--card-accent` — disk). Boshqa
+   vidjetlarda urgʻu joyi hali belgilanmagan — varaqda ular rangsiz
+   qoladi. Har vidjetga urgʻu joyi kerak (§4.4 xaritasi).
+4. **Toʻq karta uchun yozilgan istisnolar:** «Taqdimot» (`bg-white/10`,
+   `border-white/30`), «Svetofor» (oʻchiq chiroq toʻq fonda xira — oq
+   varaqda korpus kerak), «Soʻrovnoma» (ustun brend rangida — maʼlumot,
+   harakat emas), «QR» (oʻz oq qutisi bor — `.doska-card` ga oʻtadi).
+
+#### R467 — Mualliflik: nima olinadi, nima olinmaydi
+
+| Olinadi (naqsh) | Olinmaydi (ularning ijodi) |
+|---|---|
+| Mazmun fon ustida emas, oʻz varagʻida (R455) | Ularning 30 mavzusining ranglari, standart indigo |
+| Rang — rol (matn, fon, urgʻu, xavf), fon emas (R456) | Shrift, radius 8 aynan, soyasiz/chegarasiz koʻrinish |
+| Urgʻu kichik maydonda (R460) | Ikonalar, ish belgilari rasmlari, mavzu kartasi chizmasi |
+| Boshqaruv va mazmun alohida (R462) | Interfeys matnlari |
+
+**«1:1 emas» tekshiruvi (R453 dagi besh band):**
+
+1. **Joylashuv** — vidjet ichini oʻzimiz tuzganmiz; oʻzgarmaydi.
+2. **Rang** — tus sinf palitramizdan (`class-colors.ts`, 17 rang,
+   yorqinligi kalibrlangan), siyoh va varaq — bizning tokenlar.
+3. **Shrift** — uslub shriftlari (Onest / Nunito / Rubik).
+4. **Material** — varaq + chiziq + ikki qatlamli soya (ularda ikkalasi
+   yoʻq), radius uslubga koʻra 16 / 24 / 10.
+5. **Matn** — oʻzbekcha, oʻzimiz yozamiz.
+
+### 4.3. Taklif — «Varaq»: Doska vidjetlarining yagona yuzasi
+
+Maket (hozirgi Sokin · chiziq-soyasiz oq · Varaq; toʻrt fon; proyektor
+simulyatsiyasi; «taymer tugadi» holati):
+https://claude.ai/artifact/Uy7zYZZgx8VAMk7EVDScXh
+
+#### Yetti qoida
+
+1. **Yuzasi doim varaq.** Har mazmunli vidjet oq varaqda turadi; ekran
+   foni unga taʼsir qilmaydi. Boʻr rejimi faqat idishsiz narsaga (qalam,
+   shakl, matn, sana).
+2. **Matn doim siyoh** (toʻq), varaq ustida. Rangli matn faqat yirik
+   sarlavha yoki yorliqda va ≥ 4,5:1 boʻlsa.
+3. **Vidjet tusi = urgʻu** — vidjetning **bosh grafikasi** (disk,
+   gardish, ustun, sarlavha tasmasi). Maydonning ~10–25% i.
+4. **Butun varaq faqat HOLAT uchun rang oladi** — taymer tugadi, shovqin
+   oshdi. Identifikatsiya uchun hech qachon. Oq varaqlar orasida qizil
+   varaq — ekrandagi yagona katta rang, signal shuning uchun kuchli.
+5. **Chegara + soya, ikkalasi.** Och fonda chiziq, uzoqdan va toʻq fonda
+   soya ushlaydi (R458).
+6. **Ichki qatlamlar varaqdan:** chuqur maydon (roʻyxat qatori, katak) —
+   siyoh 5%, ajratgich — siyoh 10%, izoh — `paper-muted`. Ichki radius =
+   tashqi radius − ichki chekinish.
+7. **Jismoniy narsa jismoniy rangda** — yopishqoq qogʻoz, svetofor
+   chiroqlari va korpusi, gʻildirak boʻlaklari, qalam ranglari.
+
+#### Tokenlar
+
+| Token | Vazifa | Sokin | Oʻyinchoq | Doska |
+|---|---|---|---|---|
+| `--doska-paper` | varaq | `oklch(0.99 0 0)` | `oklch(0.99 0 0)` | krem qogʻoz (hozirgi) |
+| `--doska-paper-ink` | matn | siyoh `0.26` | siyoh `0.24` | siyoh `0.25` |
+| `--doska-paper-muted` | izoh | `oklch(0.45 0.02 260)` — 7,2:1, proyektorda 3,9:1 | shu | shu |
+| `--doska-paper-line(-width)` | chegara | 1 px, siyoh 14% | 3 px siyoh | 1 px, siyoh 14% |
+| `--doska-paper-shadow` | soya | ikki qatlam: yaqin (chegara) + yumshoq (masofa) | `0 6px 0` siyoh | yumshoq, chuqurroq |
+| `--doska-paper-sunken` | ichki maydon | siyoh 5% | siyoh 6% | siyoh 6% |
+| `--doska-{tus}` | urgʻu | **hozirgi Sokin karta tuslari** | yorqin pastel + siyoh kontur | magnit tusi (hozirgi) |
+| `--doska-{tus}-soft` | yumshoq urgʻu (yorliq foni, trek) | tus 12% | tus 20% | tus 12% |
+| `--doska-done-bg/-fg` | holat — butun varaq | oʻzgarmaydi | oʻzgarmaydi | oʻzgarmaydi |
+| `--doska-note-bg/-fg` | jismoniy qogʻoz | oʻzgarmaydi | oʻzgarmaydi | oʻzgarmaydi |
+
+⭐ Sokinning hozirgi karta tuslari **oq matn ostida ≥ 4,6:1** qilib
+kalibrlangan. Demak ular oq varaq **ustida** ham ≥ 4,6:1: koʻk 5,5:1,
+sariq 4,7:1, firuza 5,1:1 (proyektorda 3,3–3,5:1). Yangi rang ixtiro
+qilinmaydi — ular urgʻuga koʻchadi.
+
+Varaq ustidagi siyoh: 15,3:1, proyektorda 6,8:1. Yumshoq urgʻu (12%)
+ustidagi siyoh: 12,8:1, proyektorda 5,9:1.
+
+#### Vidjetlar xaritasi
+
+| Vidjet | Hozir (Sokin) | Varaqda | Ish |
+|---|---|---|---|
+| Taymer | sariq karta, oq raqam, oq disk | oq varaq, siyoh raqam, **sariq disk**; tugadi — qizil varaq (holat); oxirgi soniyalar — qizil ichki chiziq | token |
+| Soat | koʻk karta, oq raqam | siyoh raqam; dars holati yorligʻi `blue-soft` fonda; ogohlantirish qizil | kichik (`color-mix` → token) |
+| Svetofor | toʻq karta, chiroqlar | varaq ichida **toʻq korpus** (jismoniy), chiroqlar korpus ustida | kichik |
+| Bugun / Bosqichlar | toʻq karta | siyoh; hozirgi qator — brend (faol holat, oʻzgarmaydi); oʻtgan qator — `paper-muted` | token + kichik |
+| Karta | tusli ramka + oq yozuv varagʻi | varaq + **tusli sarlavha tasmasi** (savol 2) | oʻrta |
+| Soʻrovnoma | ustun brend rangida | ustun **vidjet tusida** (maʼlumot, harakat emas) | kichik |
+| Guruhlar, Hisob, Gʻildirak, Zar, Shovqin, Kun sanogʻi, boʻsh holat | toʻq yoki tusli karta | `currentColor` orqali oʻzi moslashadi; urgʻu joyi har birida belgilanadi | token + tekshiruv |
+| Taqdimot | `bg-white/10`, `border-white/30` | `bg-current/…` | kichik |
+| QR | oʻz `bg-white` qutisi | `.doska-card` | kichik |
+| Kamera, Video, Havola, Sayt | toʻq karta | mazmun oʻzi (qora / sayt), ramka varaq | token |
+| Yopishqoq qogʻoz | qogʻoz | **oʻzgarmaydi** (jismoniy) | — |
+| Matn, Sana, Shakl, Stiker, qalam | idishsiz | **oʻzgarmaydi** (savol 3) | — |
+
+#### Uslublar (Q1) nima boʻladi
+
+Uslub endi vidjet **yuzasini** tanlamaydi — u bitta (varaq). Uslub
+**ishlov**ni tanlaydi:
+
+| | Sokin (standart) | Oʻyinchoq | Doska |
+|---|---|---|---|
+| Varaq | oq | oq | krem qogʻoz |
+| Chegara | 1 px yengil | 3 px siyoh | 1 px yengil |
+| Soya | yumshoq, ikki qatlam | qattiq ofset | yumshoq, chuqur |
+| Radius | 16 | 24 | 10 |
+| Urgʻu | toʻyingan tus | yorqin pastel + siyoh kontur | magnit + sarlavha chizigʻi |
+| Shrift | Onest | Nunito | Rubik |
+| Boshqaruv | grafit | oq + siyoh kontur | toʻq relsa |
+
+«Doska» uslubi deyarli oʻzgarmaydi — u allaqachon varaq. Sokin va
+Oʻyinchoq rangli fonini yoʻqotadi. Uslub arxitekturasi (faqat token
+qatlami, doska-dizayn-tizimi.md §1) oʻzgarmaydi.
+
+#### Proyektor sinoviga qoʻshiladi
+
+- siyoh / varaq, izoh / varaq — har uslubda (≥ 4,5:1 va ≥ 3:1);
+- urgʻu / varaq — ≥ 3:1 ikkala sharoitda (grafika chegarasi). Oʻyinchoqda
+  urgʻu pastel boʻlgani uchun uning siyoh konturi tekshiriladi;
+- siyoh / yumshoq urgʻu.
+
+Varaq chegarasi kontrast bilan tekshirilmaydi — chiziq va soya ikkalasi
+ham majburiy, koʻz bilan «Oq taxta» fonida tekshiriladi.
+
+### 4.4. Tavsiya etilgan tartib
+
+| # | Ish | Topilma | Hajm |
+|---|---|---|---|
+| 1 | Tokenlar: `--doska-paper-*`, tus → urgʻu + yumshoq; `.doska-card` varaqqa; Sokin va Oʻyinchoq qiymatlari; proyektor sinovi | R455, R456, R458, R466 | oʻrta — asosan `doska.css` va skript |
+| 2 | Vidjet istisnolari: svetofor korpusi, soat yorligʻi, soʻrovnoma ustuni, taqdimot, QR, oʻtgan dars → `paper-muted`; har vidjetda urgʻu joyi | R460, R466 | kichik, ~8 fayl |
+| 3 | Karta sarlavhasi, «Koʻrinish» namunalari (`DoskaAppearance`), sozlamadagi tus namunasi — vidjet nusxasi | R464, savol 2 | kichik |
+| 4 | `doska-dizayn-tizimi.md` §1 jadvali va §3 qayta yoziladi; changelog bitta yozuv | — | kichik |
+
+Ataylab **qilinmaydi**: vidjetga alohida rang mavzusi (R421 rad qarori
+kuchda — varaq + tus yetarli; ularda ham 95% standartda qoladi),
+soyasiz/chegarasiz varaq (R458), 500 qalinlikdagi raqam (R461).
+
+### 4.5. Qaror (foydalanuvchi, 2026-10-02)
+
+«UI toʻliq referens ilovasi asosida boʻlsin. Xuddi shuni olamiz.»
+Brauzerda ishlashga ruxsat berildi. Ilova qayta ochilib, endi
+**boshqaruv** ham oʻlchandi:
+
+| Qism | Referensda |
+|---|---|
+| Idish | oq, 1 px och kulrang chegara, radius 10, soyasiz |
+| Kichik tugma | 32 × 32, ikona 18 px, kulrang; hover — och kulrang |
+| Burchaklar | chap tepa — bosh sahifa; oʻng tepa — toʻliq ekran, menyu (alohida idishlar); oʻng past — ekranlar (‹ 1 +) |
+| Vidjet paneli | uch ustun: chap — qalam/tanlash (faol — och indigo plitka); oʻrta — 64 px ustunlar: 3 px nuqta qatori (nusxalar soni), 52 px tugma (ikona 40), 11 px/600 nom; oʻng — ⋮ (Bekor qilish · Qaytadan bajarish · Panelni tahrirlash) va yigʻish |
+| Kontekst panel | vidjet ustida markazda: Oʻchirish · Sozlash · ⋮, faqat ikona |
+| Tanlov | 2 px brend chiziq vidjet chetida, burchaklarda 16 px oq doira |
+| Sozlama | oʻngdan butun balandlik, 448 px; kulrang sarlavha qismi (ikona · nom · ×), boʻlim sarlavhasi 16/600 |
+| Tooltip | qora «pill», oq 14 px matn |
+| Shrift | yumaloq geometrik, **kirill harflari yoʻq** |
+
+Savollarga javob shu qarordan:
+
+1. **Standart uslub = referens koʻrinishi.** Oʻyinchoq va Doska uslublari
+   tanlov sifatida qoldi (faqat token qatlami, joylashuv hammaga umumiy).
+2. **«Karta»** — tusli sarlavha tasmasi, oq yozuv (referens ekranidagi
+   rangli ramkali kartalar gʻoyasi, bitta vidjetda).
+3. **«Matn»** — yangi matn oq varaqda (referensdagi standart mavzu);
+   sozlamada «Oq varaqda» tumbleri. **«Sana»** — idishsiz qoldi (kun
+   nomi sarlavha).
+
+**Ataylab farq qiladi (asoslanib):**
+
+- **Brend rangi** — ularning indigo emas, Ustozona brendi (firuza):
+  brend rangi koʻchirilsa «1:1» boʻladi.
+- **Shrift** — ularniki kirill harfisiz; bizda rus va oʻzbek-kirill
+  interfeysi bor → oʻxshash yumaloq Nunito.
+- **Ikonalar** — ularning rasmlari ularning ijodi (R453); bizda Solar
+  ikonalari, ierarxik ranglash.
+- **Och fonda varaq chegarasi** — R458: chegarasiz oq karta 21 fonimizdan
+  13 tasida koʻrinmaydi. Toʻq fonda — ularniki kabi chegarasiz.
+- **Tugma oʻlchami** — 32 emas, 36 px (loyiha standarti, DESIGN.md).
+- **Ekranlar** — ‹ 2/3 › + (jami son va «keyingi» qoladi).
+- **Taymer halqasi** — sal qalinroq (proyektor, R324).
+
+### 4.6. Qurilgani (2026-10-02)
+
+Branch: `maxdum/doska-referens-ui`.
+
+| Joy | Nima |
+|---|---|
+| `styles/doska.css` | Sokin tokenlari: oq boshqaruv (`--doska-ctl-*`, `--doska-ctl-active`), oq varaq (radius 8, chegara/soya yoʻq), urgʻu — brend, `--doska-{tus}-mark` («Karta» tasmasi), `--doska-card-line-light*` + `[data-bg-tone="light"]` (R458), tanlov 2 px / tutqich 2 px (`--doska-sel-width`, `--doska-handle-width`), shrift Nunito; `.doska-sheet[data-drawer]`; `.doska-card-title::before` tasma; svetofor korpusi `--doska-light-housing`; varaqdagi rangli matn uchun qalam ranglari |
+| `DoskaShell.tsx` | burchaklar: ⌂ · ⛶ · ⋮; pastda: xabar · panel · ekranlar; doimiy «↶ ↷» guruhi olib tashlandi |
+| `WidgetBar.tsx` | uch ustun; panel menyusi (bekor qilish, qaytadan bajarish, panelni tahrirlash) |
+| `BarButton.tsx` | 64 px ustun: nuqtalar (nusxalar soni) · 52 px plitka · 11 px nom |
+| `BarGroup.tsx` | ikonali tugma 36 px |
+| `WidgetToolbar.tsx` | Oʻchirish · Sozlash · ⋮ (Nusxa, Qulflash, Barcha ekranlarda, Markazga) |
+| `WidgetSettingsCard.tsx` | oʻngdan butun balandlikdagi oyna; `Z_SETTINGS` (`layers.ts`) |
+| `DoskaMenu.tsx` | oʻng tepadan pastga ochiladi; `MenuItem` eksport, yorliq massivi |
+| `ToolCatalog.tsx`, `ShapePicker.tsx` | nusxalar soni; katalog panel menyusidan ham ochiladi |
+| `prefs.ts` | `DEFAULT_TOOLS` — 8 ta standart vosita (ilgari hammasi — 24) |
+| `placement.ts` | `TOP_RESERVED` — vidjet burchak tugmalari ostiga tushmaydi |
+| `TimerWidget.tsx` | halqa; keng taymerda halqa · raqam · tugma bir qatorda; asosiy tugma brend |
+| `ClockWidget.tsx` | soniyali soatda raqam kichrayadi (bir qatorda) |
+| `TrafficLightWidget.tsx` | toʻq korpus |
+| `CardWidget.tsx` | sarlavha butun kenglikda (tasma), tus namunasi — kartaning kichik nusxasi |
+| `TextWidget.tsx`, `registry.ts` | `paper` — yangi matn varaqda, sozlamada tumbler |
+| `WidgetEmpty.tsx` | ikona urgʻu rangida, matn qalin |
+| `scripts/doska-projector-check.mjs` | karta sarlavhasi va urgʻu (grafika: ≥ 3:1 / ≥ 2:1) — 65 juftlik yashil |
+| `messages/*.json`, `changelog-data.ts` | 7 tilda yangi matnlar; changelog `doska-yangi-korinish` |
+
+Tekshiruv: `tsc` va eslint toza, proyektor sinovi yashil; brauzerda
+1536 × 864 da yashil doska va oq taxtada koʻrildi (panel, burchaklar,
+kontekst panel, sozlama oynasi, ⋮ menyular, qalam paneli, karta tasmasi,
+matn varagʻi). `npm run build` — push oldidan.
+
+⚠️ Turbopack keshi eski `globals.css` ni berib turgan edi — `.next`
+tozalangach tuzaldi (loyihadagi maʼlum tuzoq).
+
+**Kod koʻrigi (xhigh, 15 topilma — hammasi tuzatildi):**
+
+- qalam rejimida ham bekor qilish va yigʻish bor — panelning oxirgi
+  ustuni umumiy komponent (`BarEndColumn`) va qoʻlyozma panelida ham
+  turadi;
+- «Karta»da `overflow-hidden` olib tashlandi («Doska» uslubida magnit
+  qirqilardi) — tasma burchaklari CSS da yumaloqlanadi;
+- eski ekranlar: bir martalik migratsiya (persist `version: 1`,
+  `liftBelowChrome`) — burchak tugmalari ostidagi vidjet pastga suriladi;
+- proyektor sinovi topilmagan tokenda yiqiladi (avval jim
+  «oʻtkazilardi»);
+- chap relsada yigʻish strelkasi chapga qaraydi;
+- sozlama oynasi tanlangan vidjetni yopsa — chapdan ochiladi;
+- «Kun rejasi» ulushlari 1280×720 ga moslandi (taymer kartalarga
+  kirmaydi; 1024×600 da avvalgidek sigʻmaydi);
+- «Tanlash» — rejim almashtirgich (qalam `aria-pressed=false`, tanlash
+  qalam rejimidan chiqaradi);
+- `B` burchak tugmalarini ham yashiradi;
+- «Matn» varagʻi — alohida `sheet` tusi (magnitsiz);
+- ⋮ menyular umumiy qolipda (`MenuPopover.tsx`: `MenuItem` + tugma +
+  oyna), z-qatlam `Z_MENU` — sozlama oynasidan yuqori;
+- burchak tugmalari oʻlchami `lib/doska/chrome.ts` da (`TOP_CHROME_PX`);
+- eskirgan izoh (`usePinnedPosition`) tuzatildi.
+
+---
+
+## 5. Keyingi referenslar
 
 Har yangi referens shu yerga «Referens N» boʻlimi boʻlib qoʻshiladi.
 Tuzilishi oldingilardek: nima koʻrildi → bizda bor → topilmalar →
-tartib. Keyingi raqam — **R455**. Xulosa jadvali (§0) ham har safar
+tartib. Keyingi raqam — **R468**. Xulosa jadvali (§0) ham har safar
 yangilanadi.

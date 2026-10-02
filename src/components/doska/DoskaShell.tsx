@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 
 import { cn } from "@/lib/utils";
@@ -17,19 +18,10 @@ import { DoskaGuestNote } from "./DoskaGuestNote";
 import { DoskaMenu } from "./DoskaMenu";
 import { DoskaNotice } from "./DoskaNotice";
 import { DoskaShortcuts } from "./DoskaShortcuts";
-import { BarDivider, BarGroup, BarIconButton } from "./BarGroup";
+import { BarGroup, BarIconButton } from "./BarGroup";
 import { DockContext, dockLayout } from "./dock";
 import { useDoskaShortcuts } from "./useDoskaShortcuts";
-import {
-  IconFullscreen,
-  IconAdd,
-  IconArrowLeft,
-  IconArrowRight,
-  IconChevronDown,
-  IconChevronUp,
-  IconRedo,
-  IconUndo,
-} from "./icons";
+import { IconFullscreen, IconAdd, IconArrowLeft, IconArrowRight, IconChevronUp, IconHome } from "./icons";
 
 /* ════════════════════════════════════════════════════════════════════
    DOSKA QOBIGʻI — toʻliq ekran + ustidagi boshqaruv qatlami.
@@ -38,15 +30,20 @@ import {
    Panel oqimda joy egallasa, doska panel balandligicha kichrayadi va
    vidjetni pastga qoʻyib boʻlmaydi.
 
-   ⚠️ BUTUN boshqaruv PASTDA yoki YON RELSADA, tepada hech narsa yoʻq:
-     chap past  — bekor qilish / qaytadan bajarish + «Qaytarish» xabari
+   JOYLASHUV (docs/doska-referens-koriklari.md §4 — referens koʻrinishi):
+     chap tepa   — bosh sahifa
+     oʻng tepa   — toʻliq ekran · menyu (har biri alohida idishda)
      vidjet paneli — «Panel joyi»ga koʻra: pastda markazda (standart)
-                     yoki chap / oʻng relsada, oʻrtadan pastda
-     oʻng past  — ekranlar (‹ n/N › +), toʻliq ekran, menyu
-   Asosiy qurilma — sensorli doska. 75″ panelning tepasi poldan ≈ 1,8 m,
-   86″ niki ≈ 1,9 m: u yerdagi tugmaga oʻqituvchi qoʻlini toʻliq choʻzib
-   yetadi, bola umuman yetmaydi (docs/doska-ux-tadqiqot.md R319, A6).
-   Bosh sahifa havolasi menyuda.
+                     yoki chap / oʻng relsada, oʻrtadan pastda; bekor
+                     qilish uning ⋮ menyusida va Ctrl+Z da
+     chap past   — «Qaytarish» xabari
+     oʻng past   — ekranlar (‹ n/N › +)
+
+   ⚠️ Ilgari tepada hech narsa yoʻq edi (docs/doska-ux-tadqiqot.md R319:
+   75″ panelning tepasi poldan ≈ 1,8 m, bola yetmaydi). Foydalanuvchi
+   referens joylashuvini tanladi (2026-10-02). Tepadagi uchala amal ham
+   oʻqituvchiniki va kamdan-kam bosiladi; dars davomida bosiladigan
+   hamma narsa (vidjetlar, qalam, ekranlar) pastda qoldi.
 
    USLUB (Sokin / Oʻyinchoq / Doska) — `<html data-doska-style>` va
    sahna shriftlari klasslari shu yerda qoʻyiladi, sahifadan chiqqanda
@@ -70,10 +67,6 @@ export function DoskaShell() {
   const index = useDoskaStore((s) => s.deck.screens.findIndex((x) => x.id === s.activeScreenId));
   const addScreen = useDoskaStore((s) => s.addScreen);
   const setActiveScreen = useDoskaStore((s) => s.setActiveScreen);
-  const undo = useDoskaStore((s) => s.undo);
-  const redo = useDoskaStore((s) => s.redo);
-  const canUndo = useDoskaStore((s) => s.past.length > 0);
-  const canRedo = useDoskaStore((s) => s.future.length > 0);
   const prefsReady = useDoskaPrefs((s) => s.hydrated);
   const dock = useDoskaPrefs((s) => s.dock);
   // Yozish rejimida vidjet paneli oʻrnini qoʻlyozma paneli egallaydi (InkBar).
@@ -148,57 +141,74 @@ export function DoskaShell() {
               panelning sakrashini koʻrardi. */}
           {prefsReady && (
             <>
+              {/* ── Yuqori burchaklar: bosh sahifa · toʻliq ekran, menyu ──
+                  Har biri alohida kichik idishda — bir-biriga bogʻliq
+                  boʻlmagan amallar. «Boshqaruvni yashirish» (`B`) ularni
+                  ham yashiradi: sinfga toza ekran koʻrsatiladi, ekranda
+                  faqat «Koʻrsatish» tugmasi qoladi. */}
+              {!barHidden && (
+                <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-2">
+                  <BarGroup>
+                    <BarIconButton label={t("home")} asChild>
+                      <Link href="/">
+                        <IconHome className="size-5" />
+                      </Link>
+                    </BarIconButton>
+                  </BarGroup>
+
+                  <div className="flex gap-2">
+                    <BarGroup>
+                      <BarIconButton label={t("fullscreen")} shortcut={["F"]} onClick={toggleFullscreen}>
+                        <IconFullscreen className="size-5" />
+                      </BarIconButton>
+                    </BarGroup>
+                    <BarGroup>
+                      <DoskaMenu onShowShortcuts={() => setShortcutsOpen(true)} />
+                    </BarGroup>
+                  </div>
+                </div>
+              )}
+
               {side && (
                 // Yon relsa — oʻrtadan pastda (yetish zonasi, R319): tepadan
                 // ekranning 18% i boʻsh, pastda esa pastki qatorga joy.
                 <div
                   className={cn(
-                    "pointer-events-none absolute top-[18%] bottom-24 flex min-h-0 flex-col items-center justify-center gap-2",
-                    dock === "left" ? "left-3" : "right-3",
+                    "pointer-events-none absolute top-[18%] bottom-16 flex min-h-0 flex-col items-center justify-center gap-2",
+                    dock === "left" ? "left-2" : "right-2",
                   )}
                 >
-                  {!barHidden && (inking ? <InkBar /> : <WidgetBar />)}
-                  <DockToggle dock={dock} hidden={barHidden} onToggle={() => setBarHidden((h) => !h)} />
+                  {barHidden ? (
+                    <DockToggle dock={dock} onShow={() => setBarHidden(false)} />
+                  ) : inking ? (
+                    <InkBar onHide={() => setBarHidden(true)} />
+                  ) : (
+                    <WidgetBar onHide={() => setBarHidden(true)} />
+                  )}
                 </div>
               )}
 
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end gap-2 p-3">
-                {/* ── Chap: bekor qilish ──
-                    Chap relsada xabar «Qaytarish» tugmasi YONIDA, ustida
-                    emas: yuqoridagi joy relsaniki, xabar uni yopib qoʻyardi. */}
-                <div
-                  className={cn(
-                    "flex min-w-0 grow basis-0 gap-2",
-                    dock === "left" ? "flex-row-reverse items-end justify-end" : "flex-col items-start",
-                  )}
-                >
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end gap-2 p-2">
+                {/* ── Chap: «Qaytarish» xabari ── */}
+                <div className="flex min-w-0 grow basis-0 flex-col items-start gap-2">
                   <DoskaNotice />
-
-                  {!barHidden && (
-                    <BarGroup layer="bar">
-                      <BarIconButton label={t("undo")} shortcut={["Mod", "Z"]} disabled={!canUndo} onClick={undo}>
-                        <IconUndo className="size-6" />
-                      </BarIconButton>
-                      <BarIconButton label={t("redo")} shortcut={["Mod", "Y"]} disabled={!canRedo} onClick={redo}>
-                        <IconRedo className="size-6" />
-                      </BarIconButton>
-                    </BarGroup>
-                  )}
                 </div>
 
                 {/* ── Markaz: vidjetlar (pastki panelda) ── */}
                 <div className="pointer-events-auto flex min-w-0 flex-col items-center gap-2">
                   {!barHidden && <DoskaGuestNote />}
 
-                  {!side && (
-                    <div className="flex max-w-full min-w-0 items-end gap-2">
-                      {!barHidden && (inking ? <InkBar /> : <WidgetBar />)}
-                      <DockToggle dock={dock} hidden={barHidden} onToggle={() => setBarHidden((h) => !h)} />
-                    </div>
-                  )}
+                  {!side &&
+                    (barHidden ? (
+                      <DockToggle dock={dock} onShow={() => setBarHidden(false)} />
+                    ) : inking ? (
+                      <InkBar onHide={() => setBarHidden(true)} />
+                    ) : (
+                      <WidgetBar onHide={() => setBarHidden(true)} />
+                    ))}
                 </div>
 
-                {/* ── Oʻng: ekranlar, toʻliq ekran, menyu ── */}
+                {/* ── Oʻng: ekranlar ── */}
                 <div className="flex min-w-0 grow basis-0 justify-end">
                   {!barHidden && (
                     <BarGroup layer="bar">
@@ -208,7 +218,7 @@ export function DoskaShell() {
                         disabled={index <= 0}
                         onClick={() => goTo(-1)}
                       >
-                        <IconArrowLeft className="size-6" />
+                        <IconArrowLeft className="size-5" />
                       </BarIconButton>
 
                       <ScreenCounter current={index + 1} total={screenCount} />
@@ -219,21 +229,12 @@ export function DoskaShell() {
                         disabled={index + 1 >= screenCount}
                         onClick={() => goTo(1)}
                       >
-                        <IconArrowRight className="size-6" />
+                        <IconArrowRight className="size-5" />
                       </BarIconButton>
 
                       <BarIconButton label={t("addScreen")} onClick={addScreen}>
-                        <IconAdd className="size-6" />
+                        <IconAdd className="size-5" />
                       </BarIconButton>
-
-                      {/* Toʻliq ekran va menyu bitta guruhda ekranlar bilan:
-                          hammasi butun doskaga tegishli amal. */}
-                      <BarDivider />
-
-                      <BarIconButton label={t("fullscreen")} shortcut={["F"]} onClick={toggleFullscreen}>
-                        <IconFullscreen className="size-6" />
-                      </BarIconButton>
-                      <DoskaMenu onShowShortcuts={() => setShortcutsOpen(true)} />
                     </BarGroup>
                   )}
                 </div>
@@ -250,25 +251,20 @@ export function DoskaShell() {
 }
 
 /**
- * Panelni yigʻish / ochish tugmasi — panel yonida turadi va yigʻilganda
- * oʻsha joyda qoladi: oʻqituvchi uni qayerda yashirgan boʻlsa, oʻsha
- * yerdan qaytaradi. Strelka panel ketadigan tomonga qaraydi.
+ * Yigʻilgan panel oʻrnidagi yakka «Koʻrsatish» tugmasi. Yigʻish
+ * tugmasining oʻzi panel ichida (oʻng ustun, `WidgetBar`); panel
+ * yigʻilganda shu tugma OʻSHA joyda paydo boʻladi — oʻqituvchi uni
+ * qayerda yashirgan boʻlsa, oʻsha yerdan qaytaradi. Strelka panel
+ * chiqadigan tomonga qaraydi.
  */
-function DockToggle({ dock, hidden, onToggle }: { dock: DockSide; hidden: boolean; onToggle: () => void }) {
+function DockToggle({ dock, onShow }: { dock: DockSide; onShow: () => void }) {
   const t = useTranslations("Doska.bar");
-  const Icon =
-    dock === "bottom"
-      ? hidden
-        ? IconChevronUp
-        : IconChevronDown
-      : (dock === "left") === hidden
-        ? IconArrowRight
-        : IconArrowLeft;
+  const Icon = dock === "bottom" ? IconChevronUp : dock === "left" ? IconArrowRight : IconArrowLeft;
 
   return (
     <BarGroup layer="bar" className="shrink-0">
-      <BarIconButton label={hidden ? t("showControls") : t("hideControls")} shortcut={["B"]} onClick={onToggle}>
-        <Icon className="size-6" />
+      <BarIconButton label={t("showControls")} shortcut={["B"]} onClick={onShow}>
+        <Icon className="size-5" />
       </BarIconButton>
     </BarGroup>
   );

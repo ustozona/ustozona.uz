@@ -2102,6 +2102,9 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "doska-yangi-korinish": {
+        "title": "Doskaning yangi koʻrinishi: har bir vidjet oq varaqda, panel yengil va ixcham, sozlamalar oʻngdan ochiladi"
+      },
       "doska-kun-rejasi": {
         "title": "Doskada «Kun rejasi» tayyor ekrani: bugungi kun oʻzi yangilanadi, yangi «Karta» va «Sana» vidjetlari, yumshoq fonlar"
       },
@@ -5224,7 +5227,8 @@
       "pin": "{widget} — barcha ekranlarda koʻrsatish",
       "pinShort": "Barcha ekranlarda",
       "unpin": "{widget} — faqat shu ekranda qoldirish",
-      "unpinShort": "Faqat shu ekranda"
+      "unpinShort": "Faqat shu ekranda",
+      "more": "{widget} — yana"
     },
     "bar": {
       "clear": "Tozalash",
@@ -5241,7 +5245,9 @@
       "redo": "Qaytadan bajarish",
       "screenNumber": "{n}-ekran",
       "menu": "Menyu",
-      "proFeature": "Pullik imkoniyat"
+      "proFeature": "Pullik imkoniyat",
+      "barMenu": "Panel menyusi",
+      "editBar": "Panelni tahrirlash"
     },
     "guestNote": {
       "text": "Ekran shu brauzerda saqlanadi. <link>Kirsangiz</link> sinf roʻyxatingiz ulanadi.",
@@ -5675,7 +5681,8 @@
         "green": "Yashil",
         "orange": "Toʻq sariq",
         "violet": "Binafsha"
-      }
+      },
+      "paper": "Oq varaqda"
     },
     "countdown": {
       "until": "{name}gacha",

@@ -5,16 +5,13 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { screenHasLocked, useDoskaStore } from "@/lib/doska/store";
 import { downloadScreenPng, exportFileName } from "@/lib/doska/export";
-import { barIconButtonClass } from "./BarGroup";
 import { DoskaAppearance } from "./DoskaAppearance";
 import { DoskaTemplates } from "./DoskaTemplates";
-import { ProBadge } from "./ProBadge";
+import { MenuItem, MenuPopover } from "./MenuPopover";
 import { playBell } from "./sounds";
 import {
-  IconMenu,
   IconTrash,
   IconAdd,
   IconHome,
@@ -31,7 +28,8 @@ import {
 } from "./icons";
 
 /* ════════════════════════════════════════════════════════════════════
-   DOSKA MENYUSI — pastki oʻng guruhdagi ⋮ tugmasi.
+   DOSKA MENYUSI — oʻng tepadagi ⋮ tugmasi (`DoskaShell`). Qolip —
+   `MenuPopover`.
 
    Tuzilma: sarlavha + holat belgisi → sinf eʼtibori (parda, qoʻngʻiroq)
    → «Koʻrinish» (uslub, panel joyi — menyu ichida ochiladi) → ekran
@@ -109,7 +107,8 @@ export function DoskaMenu({ onShowShortcuts }: { onShowShortcuts: () => void }) 
   };
 
   return (
-    <Popover
+    <MenuPopover
+      label={t("menu")}
       open={open}
       onOpenChange={(next) => {
         setOpen(next);
@@ -118,195 +117,126 @@ export function DoskaMenu({ onShowShortcuts }: { onShowShortcuts: () => void }) 
           if (exporting === "failed") setExporting("idle");
         }
       }}
+      side="bottom"
+      align="end"
+      className="max-h-[calc(100vh-6rem)] w-80 overflow-y-auto overscroll-contain"
     >
-      <PopoverTrigger asChild>
-        {/* Idish yoʻq — tugma `DoskaShell` dagi guruh ichida turadi. */}
-        <button type="button" aria-label={t("menu")} className={barIconButtonClass}>
-          <IconMenu className="size-6" />
-        </button>
-      </PopoverTrigger>
-
-      <PopoverContent
-        align="end"
-        side="top"
-        sideOffset={8}
-        collisionPadding={12}
-        className="doska-bar doska-sheet max-h-[calc(100vh-6rem)] w-80 overflow-y-auto overscroll-contain p-0"
-        style={{ zIndex: "var(--z-doska-context)" }}
-      >
-        {view === "appearance" ? (
-          <DoskaAppearance onBack={() => setView("main")} />
-        ) : view === "templates" ? (
-          <DoskaTemplates
-            onBack={() => setView("main")}
-            onDone={() => {
-              setOpen(false);
-              setView("main");
-            }}
-          />
-        ) : (
-          <>
-          {/* ── Sarlavha ── */}
-          <div className="flex flex-col gap-1.5 border-b px-4 py-3">
-            <div className="flex items-start justify-between gap-3">
-              <input
-                value={title}
-                onChange={(e) => renameDeck(e.target.value)}
-                aria-label={tm("deckName")}
-                className="focus-visible:ring-ring/50 -mx-1.5 min-w-0 flex-1 rounded-md px-1.5 py-0.5 text-sm font-medium focus-visible:ring-2 focus-visible:outline-none"
-              />
-              <span className="bg-warning/15 text-warning-foreground shrink-0 rounded-full px-2 py-0.5 text-tag font-medium">
-                {tm("unsaved")}
-              </span>
-            </div>
-            <p className="text-muted-foreground text-xs">{tm("localOnly", { n: screenCount })}</p>
+      {view === "appearance" ? (
+        <DoskaAppearance onBack={() => setView("main")} />
+      ) : view === "templates" ? (
+        <DoskaTemplates
+          onBack={() => setView("main")}
+          onDone={() => {
+            setOpen(false);
+            setView("main");
+          }}
+        />
+      ) : (
+        <>
+        {/* ── Sarlavha ── */}
+        <div className="flex flex-col gap-1.5 border-b px-4 py-3">
+          <div className="flex items-start justify-between gap-3">
+            <input
+              value={title}
+              onChange={(e) => renameDeck(e.target.value)}
+              aria-label={tm("deckName")}
+              className="focus-visible:ring-ring/50 -mx-1.5 min-w-0 flex-1 rounded-md px-1.5 py-0.5 text-sm font-medium focus-visible:ring-2 focus-visible:outline-none"
+            />
+            <span className="bg-warning/15 text-warning-foreground shrink-0 rounded-full px-2 py-0.5 text-tag font-medium">
+              {tm("unsaved")}
+            </span>
           </div>
+          <p className="text-muted-foreground text-xs">{tm("localOnly", { n: screenCount })}</p>
+        </div>
 
-          {/* ── Sinf eʼtibori ── */}
-          <div className="border-b py-1">
-            <MenuItem Icon={IconCurtain} shortcut="1" onClick={run(() => setCurtain(true))}>
-              {tm("curtain")}
-            </MenuItem>
-            <MenuItem Icon={IconBell} shortcut="2" onClick={() => playBell()}>
-              {tm("bell")}
-            </MenuItem>
-          </div>
+        {/* ── Sinf eʼtibori ── */}
+        <div className="border-b py-1">
+          <MenuItem Icon={IconCurtain} shortcut="1" onClick={run(() => setCurtain(true))}>
+            {tm("curtain")}
+          </MenuItem>
+          <MenuItem Icon={IconBell} shortcut="2" onClick={() => playBell()}>
+            {tm("bell")}
+          </MenuItem>
+        </div>
 
-          {/* ── Koʻrinish ── */}
-          <div className="border-b py-1">
-            <MenuItem Icon={IconPalette} next onClick={() => setView("appearance")}>
-              {tm("appearance")}
-            </MenuItem>
-            <MenuItem Icon={IconKeyboard} shortcut="K" onClick={run(onShowShortcuts)}>
-              {tm("shortcuts")}
-            </MenuItem>
-          </div>
+        {/* ── Koʻrinish ── */}
+        <div className="border-b py-1">
+          <MenuItem Icon={IconPalette} next onClick={() => setView("appearance")}>
+            {tm("appearance")}
+          </MenuItem>
+          <MenuItem Icon={IconKeyboard} shortcut="K" onClick={run(onShowShortcuts)}>
+            {tm("shortcuts")}
+          </MenuItem>
+        </div>
 
-          {/* ── Amallar ── */}
-          <div className="py-1">
-            <MenuItem Icon={IconAdd} onClick={run(addScreen)}>
-              {tm("newScreen")}
-            </MenuItem>
-            <MenuItem Icon={IconCatalog} next onClick={() => setView("templates")}>
-              {tm("templates")}
-            </MenuItem>
-            <MenuItem Icon={IconCopy} onClick={run(duplicateScreen)}>
-              {tm("duplicateScreen")}
-            </MenuItem>
-            {/* Tartib — dars bosqichlari ketma-ketligi (R399). Menyu ochiq
-                qoladi: oʻqituvchi ekranni bir necha qadam sura oladi. */}
-            {screenCount > 1 && (
-              <>
-                <MenuItem Icon={IconArrowLeft} disabled={screenIndex <= 0} onClick={() => moveScreen(-1)}>
-                  {tm("moveScreenEarlier")}
-                </MenuItem>
-                <MenuItem Icon={IconArrowRight} disabled={screenIndex >= screenCount - 1} onClick={() => moveScreen(1)}>
-                  {tm("moveScreenLater")}
-                </MenuItem>
-              </>
-            )}
-            <MenuItem
-              Icon={IconImageDownload}
-              disabled={exporting === "busy"}
-              hint={exporting === "busy" ? tm("savingImage") : exporting === "failed" ? tm("saveImageFailed") : undefined}
-              onClick={saveImage}
-            >
-              {tm("saveImage")}
-            </MenuItem>
-            <MenuItem Icon={IconUsers} pro>
-              {tm("connectClass")}
-            </MenuItem>
-            <MenuItem Icon={IconTrash} onClick={run(clearScreen)}>
-              {tm("clearScreen")}
-            </MenuItem>
-            {screenCount > 1 && (
-              <MenuItem
-                Icon={IconTrash}
-                disabled={screenLocked}
-                hint={screenLocked ? tm("removeScreenLocked") : undefined}
-                onClick={run(() => removeScreen(activeScreenId))}
-              >
-                {tm("removeScreen")}
+        {/* ── Amallar ── */}
+        <div className="py-1">
+          <MenuItem Icon={IconAdd} onClick={run(addScreen)}>
+            {tm("newScreen")}
+          </MenuItem>
+          <MenuItem Icon={IconCatalog} next onClick={() => setView("templates")}>
+            {tm("templates")}
+          </MenuItem>
+          <MenuItem Icon={IconCopy} onClick={run(duplicateScreen)}>
+            {tm("duplicateScreen")}
+          </MenuItem>
+          {/* Tartib — dars bosqichlari ketma-ketligi (R399). Menyu ochiq
+              qoladi: oʻqituvchi ekranni bir necha qadam sura oladi. */}
+          {screenCount > 1 && (
+            <>
+              <MenuItem Icon={IconArrowLeft} disabled={screenIndex <= 0} onClick={() => moveScreen(-1)}>
+                {tm("moveScreenEarlier")}
               </MenuItem>
-            )}
-
-            <hr className="mx-4 my-1" />
-
-            <MenuItem Icon={IconHome} href="/">
-              {t("home")}
+              <MenuItem Icon={IconArrowRight} disabled={screenIndex >= screenCount - 1} onClick={() => moveScreen(1)}>
+                {tm("moveScreenLater")}
+              </MenuItem>
+            </>
+          )}
+          <MenuItem
+            Icon={IconImageDownload}
+            disabled={exporting === "busy"}
+            hint={exporting === "busy" ? tm("savingImage") : exporting === "failed" ? tm("saveImageFailed") : undefined}
+            onClick={saveImage}
+          >
+            {tm("saveImage")}
+          </MenuItem>
+          <MenuItem Icon={IconUsers} pro>
+            {tm("connectClass")}
+          </MenuItem>
+          <MenuItem Icon={IconTrash} onClick={run(clearScreen)}>
+            {tm("clearScreen")}
+          </MenuItem>
+          {screenCount > 1 && (
+            <MenuItem
+              Icon={IconTrash}
+              disabled={screenLocked}
+              hint={screenLocked ? tm("removeScreenLocked") : undefined}
+              onClick={run(() => removeScreen(activeScreenId))}
+            >
+              {tm("removeScreen")}
             </MenuItem>
+          )}
+
+          <hr className="mx-4 my-1" />
+
+          <MenuItem Icon={IconHome} href="/">
+            {t("home")}
+          </MenuItem>
+        </div>
+
+        {/* ── Taklif ── */}
+        <div className="p-3 pt-1">
+          <div className="bg-accent flex flex-col gap-1.5 rounded-[calc(var(--radius)/1.4)] p-3">
+            <p className="text-accent-foreground text-sm font-medium">{tm("promoTitle")}</p>
+            <p className="text-accent-foreground/80 text-xs leading-relaxed">{tm("promoBody")}</p>
+            <Button asChild size="sm" className="mt-1.5 w-full">
+              <Link href="/register">{tm("promoCta")}</Link>
+            </Button>
           </div>
-
-          {/* ── Taklif ── */}
-          <div className="p-3 pt-1">
-            <div className="bg-accent flex flex-col gap-1.5 rounded-[calc(var(--radius)/1.4)] p-3">
-              <p className="text-accent-foreground text-sm font-medium">{tm("promoTitle")}</p>
-              <p className="text-accent-foreground/80 text-xs leading-relaxed">{tm("promoBody")}</p>
-              <Button asChild size="sm" className="mt-1.5 w-full">
-                <Link href="/register">{tm("promoCta")}</Link>
-              </Button>
-            </div>
-          </div>
-          </>
-        )}
-      </PopoverContent>
-    </Popover>
-  );
-}
-
-const ITEM_CLASS =
-  "hover:bg-muted flex min-h-11 w-full items-center gap-2 px-4 py-2 text-sm transition-colors " +
-  "disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-transparent";
-
-function MenuItem({
-  Icon,
-  children,
-  href,
-  pro = false,
-  shortcut,
-  hint,
-  next = false,
-  ...props
-}: React.ComponentProps<"button"> & {
-  Icon: React.ComponentType<{ className?: string }>;
-  href?: string;
-  /** Pullik imkoniyat — yonida yulduzcha koʻrinadi. */
-  pro?: boolean;
-  /** Klaviatura yorligʻi — faqat koʻrsatish uchun. */
-  shortcut?: string;
-  /** Band ostidagi izoh — masalan nega nofaol ekani. */
-  hint?: string;
-  /** Band menyu ichida yangi boʻlim ochadi — oʻngda strelka. */
-  next?: boolean;
-}) {
-  const inner = (
-    <>
-      <Icon className="text-muted-foreground size-4 shrink-0" />
-      <span className="flex-1 text-left">
-        {children}
-        {hint && <span className="text-muted-foreground block text-xs">{hint}</span>}
-      </span>
-      {pro && <ProBadge />}
-      {shortcut && (
-        <kbd className="text-muted-foreground rounded border px-1.5 font-mono text-xs leading-5">
-          {shortcut}
-        </kbd>
+        </div>
+        </>
       )}
-      {next && <IconArrowRight className="text-muted-foreground size-4 shrink-0" />}
-    </>
-  );
-
-  if (href) {
-    return (
-      <Link href={href} className={ITEM_CLASS}>
-        {inner}
-      </Link>
-    );
-  }
-
-  return (
-    <button type="button" className={ITEM_CLASS} {...props}>
-      {inner}
-    </button>
+    </MenuPopover>
   );
 }
+

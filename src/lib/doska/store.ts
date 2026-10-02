@@ -7,7 +7,7 @@ import type { DoskaDeck, DoskaScreen, DoskaWidget, InkStroke, WidgetKind } from 
 import { widgetMeta } from "./registry";
 import { visibleInk } from "./ink";
 import { DEFAULT_BACKGROUND_ID } from "./backgrounds";
-import { findFreeSpot, placeTemplateWidget, usableArea } from "./placement";
+import { findFreeSpot, liftBelowChrome, placeTemplateWidget, usableArea } from "./placement";
 import { useDoskaPrefs } from "./prefs";
 import type { DoskaTemplate } from "./templates";
 
@@ -1178,6 +1178,24 @@ export const useDoskaStore = create<DoskaState>()(
       name: STORAGE_KEY,
       storage: deferredLocalStorage(SAVE_DELAY_MS),
       partialize: (s): PersistedDoska => ({ deck: s.deck, activeScreenId: s.activeScreenId }),
+      /* 1 — tepada burchak tugmalari paydo boʻldi (docs/doska-referens-koriklari.md
+         §4.6): eski ekranlardagi vidjetlar ularning ostidan pastga suriladi. */
+      version: 1,
+      migrate: (persisted, version) => {
+        const state = persisted as PersistedDoska;
+        if (version < 1 && state?.deck?.screens) {
+          return {
+            ...state,
+            deck: {
+              ...state.deck,
+              screens: state.deck.screens.map((screen) =>
+                Array.isArray(screen.widgets) ? { ...screen, widgets: liftBelowChrome(screen.widgets) } : screen,
+              ),
+            },
+          };
+        }
+        return state;
+      },
       onRehydrateStorage: () => (state) => {
         if (state) state.hydrated = true;
       },

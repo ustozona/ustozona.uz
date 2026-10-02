@@ -3,11 +3,14 @@
 import * as React from "react";
 
 /* ════════════════════════════════════════════════════════════════════
-   SUZUVCHI ELEMENT JOYI — kontekst panel va sozlama kartasi uchun UMUMIY.
+   SUZUVCHI ELEMENT JOYI — vidjet ustidagi kontekst panel (`WidgetToolbar`).
 
-   Ikkalasining oʻlchami mazmunga bogʻliq (yozuvlar, til, sozlamalar) va
-   render paytida nomaʼlum. Shuning uchun joy DOM'da hisoblanadi va
-   to'g'ridan-to'g'ri `style` ga yoziladi — holat va qayta render yoʻq.
+   Ilgari sozlama kartasi ham shu hook bilan vidjet yoniga qoʻyilardi;
+   endi sozlama oynasi ekran chetida (`WidgetSettingsCard`), unga kerak emas.
+
+   Panel oʻlchami mazmunga bogʻliq (tugmalar soni, til) va render paytida
+   nomaʼlum. Shuning uchun joy DOMʼda hisoblanadi va toʻgʻridan-toʻgʻri
+   `style` ga yoziladi — holat va qayta render yoʻq.
 
    QACHON qayta hisoblanadi (va faqat shunda):
      • `key` oʻzgarganda — vidjetning oʻrni yoki oʻlchami (sudrash);

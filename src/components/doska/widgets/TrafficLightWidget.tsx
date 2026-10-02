@@ -35,7 +35,12 @@ export function TrafficLightWidget({ widget }: { widget: DoskaWidget }) {
 
   return (
     <div className="doska-card flex size-full flex-col items-center px-[8cqw] py-[6cqw]" data-card="slate">
-      <div className="flex min-h-0 w-full flex-1 flex-col items-center justify-around">
+      {/* Korpus — jismoniy svetofor kabi toʻq (`--doska-light-housing`):
+          oq varaqda oʻchiq chiroq faqat oʻz korpusida koʻrinadi. */}
+      <div
+        className="flex min-h-0 w-full flex-1 flex-col items-center justify-around rounded-[14cqw] py-[5cqw]"
+        style={{ background: "var(--doska-light-housing)" }}
+      >
         {LIGHTS.map((light) => {
           const on = active.id === light.id;
           return (
@@ -52,8 +57,8 @@ export function TrafficLightWidget({ widget }: { widget: DoskaWidget }) {
               className={cn(
                 // Oʻlcham balandlikdan: pastda yozuv turadi va uch chiroq
                 // qolgan joyga sigʻishi kerak. `min` — tor vidjetda eni ham.
-                "aspect-square h-[min(70cqw,28%)] rounded-full transition-opacity duration-300",
-                !on && "opacity-15",
+                "aspect-square h-[min(64cqw,27%)] rounded-full transition-opacity duration-300",
+                !on && "opacity-25",
               )}
               style={{
                 background: light.color,

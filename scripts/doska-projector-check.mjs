@@ -12,7 +12,9 @@
        `contrast(.6) brightness(1.25) saturate(.72)` bilan bir xil.
 
    Tekshiriladi: har vidjet tusining matni (`--doska-{tus}-fg` /
-   `-bg`), boshqaruv matni va yorliqlari, varaq matni (Sokinda u
+   `-bg`), urgʻu grafikasi varaq ustida (taymer halqasi — `-accent` /
+   `-bg`, grafika chegarasi: oddiy ≥ 3:1, proyektor ≥ 2:1), «Karta»
+   sarlavhasi tasmada (tasmali uslubda), boshqaruv matni va yorliqlari, varaq matni (Sokinda u
    temadan olinadi — oʻtkazib yuboriladi), idishsiz siyoh och doskada
    va boʻr toʻq doskada. Shaffof rang (`/ 0.94`) ostidagi rang ustiga
    qoʻyib hisoblanadi; shaffof fon — eng och va eng toʻq doskada.
@@ -56,6 +58,11 @@ if (Object.keys(SOFT_BLOBS).length === 0) {
 }
 
 const TINTS = ["blue", "amber", "slate", "teal", "note", "done"];
+
+/** Chegaralar: [oddiy ekran, proyektor]. Matn — WCAG 1.4.3 va yirik matn;
+    grafika — WCAG 1.4.11 (3:1) va proyektorda 2:1. */
+const TEXT = [4.5, 3];
+const GRAPHIC = [3, 2];
 
 // `parse` va `toSrgb` pastda (function hoisting) — ular shu yerda ham ishlaydi.
 const CANVASES = [LIGHT_BG, DARK_BG].map((v) => parse(v).rgb);
@@ -134,10 +141,33 @@ for (const [name, re] of Object.entries(STYLES)) {
     ...Object.entries(SOFT_BLOBS).map(([id, bg]) => [`siyoh · ${id}`, t["doska-ink"], bg]),
     // «Karta» vidjetining yozuv varagʻi (R447).
     ["karta yozuvi", t["doska-card-body-fg"], t["doska-card-body-bg"]],
+    // Sarlavha tasmasi — faqat tasmali uslubda (`--doska-card-title-band: 1`).
+    ...(t["doska-card-title-band"] === "1"
+      ? ["blue", "amber", "slate", "teal", "note"].map((tint) => [
+          `karta sarlavhasi · ${tint}`,
+          t["doska-card-title-fg"],
+          t[`doska-${tint}-mark`],
+        ])
+      : []),
+    // Urgʻu — grafika (halqa, ustun), matn emas: WCAG 1.4.11 chegarasi.
+    ...["blue", "amber", "slate", "teal"].map((tint) => [
+      `urgʻu · ${tint}`,
+      t[`doska-${tint}-accent`],
+      t[`doska-${tint}-bg`],
+      GRAPHIC,
+    ]),
   ];
 
   console.log(`\n${name}`);
-  for (const [label, fg, bg] of pairs) {
+  for (const [label, fg, bg, min = TEXT] of pairs) {
+    // Token umuman topilmadi — uslub bloki chala oʻqilgan (masalan izohdagi
+    // «}» regex qamrovini uzib qoʻygan) yoki token oʻchirilgan. Bu SINOV
+    // XATOSI: aks holda butun uslub jim «oʻtkazilib», skript yashil qolardi.
+    if (fg === undefined || bg === undefined) {
+      failed++;
+      console.log(`   ⛔  ${label.padEnd(20)} token topilmadi (${fg === undefined ? "matn" : "fon"})`);
+      continue;
+    }
     const F = parse(fg);
     const B = parse(bg);
     // `var(--popover)` kabi temadan olinadigan qiymat — bu yerda emas.
@@ -156,7 +186,7 @@ for (const [name, re] of Object.entries(STYLES)) {
       normal = Math.min(normal, contrast(front, back));
       proj = Math.min(proj, contrast(projector(front), projector(back)));
     }
-    const ok = normal >= 4.5 && proj >= 3;
+    const ok = normal >= min[0] && proj >= min[1];
     if (!ok) failed++;
     console.log(
       `   ${ok ? "✓" : "⛔"}  ${label.padEnd(20)} ${normal.toFixed(2).padStart(5)}:1   proyektor ${proj.toFixed(2).padStart(5)}:1`,
@@ -165,7 +195,7 @@ for (const [name, re] of Object.entries(STYLES)) {
 }
 
 if (failed > 0) {
-  console.error(`\n⛔ ${failed} ta juftlik chegaradan past (oddiy ≥ 4,5:1, proyektor ≥ 3:1).`);
+  console.error(`\n⛔ ${failed} ta juftlik chegaradan past (matn: oddiy ≥ 4,5:1, proyektor ≥ 3:1; grafika: ≥ 3:1 va ≥ 2:1).`);
   process.exit(1);
 }
-console.log(`\n✅ ${checked} ta juftlik — hammasi oddiy ekranda ≥ 4,5:1 va proyektorda ≥ 3:1.`);
+console.log(`\n✅ ${checked} ta juftlik — hammasi chegarada: matn oddiy ekranda ≥ 4,5:1, proyektorda ≥ 3:1; grafika ≥ 3:1 va ≥ 2:1.`);

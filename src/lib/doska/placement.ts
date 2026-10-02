@@ -7,10 +7,13 @@
    setka boʻylab chapdan oʻngga, tepadan pastga koʻriladi va hech qaysi
    vidjetga tegmaydigan birinchi joy olinadi.
 
-   Pastki qism (boshqaruv paneli) bandga hisoblanadi — vidjet panel
-   ostiga tushmasin. Panel chap yoki oʻng relsada boʻlsa, oʻsha chet ham
-   band (`dock`). Joy topilmasa — eski zinapoya joylashuvi.
+   Pastki qism (boshqaruv paneli) va tepadagi tor qator (burchak
+   tugmalari: bosh sahifa, toʻliq ekran, menyu) bandga hisoblanadi —
+   vidjet ularning ostiga tushmasin. Panel chap yoki oʻng relsada boʻlsa,
+   oʻsha chet ham band (`dock`). Joy topilmasa — eski zinapoya joylashuvi.
    ════════════════════════════════════════════════════════════════════ */
+
+import { TOP_CHROME_PX } from "./chrome";
 
 export type Rect = { x: number; y: number; w: number; h: number };
 
@@ -43,7 +46,17 @@ type Dock = "bottom" | "left" | "right";
 export function usableArea(canvas: { w: number; h: number }, dock: Dock = "bottom"): Rect {
   const left = MARGIN + (dock === "left" ? SIDE_RESERVED : 0);
   const right = MARGIN + (dock === "right" ? SIDE_RESERVED : 0);
-  return { x: left, y: MARGIN, w: canvas.w - left - right, h: canvas.h - MARGIN - BOTTOM_RESERVED };
+  return { x: left, y: TOP_CHROME_PX, w: canvas.w - left - right, h: canvas.h - TOP_CHROME_PX - BOTTOM_RESERVED };
+}
+
+/**
+ * Burchak tugmalari ostidagi vidjetni pastga suradi — tugmalar qatori
+ * paydo boʻlishidan oldin saqlangan ekranlar uchun (bir martalik
+ * migratsiya, `store.ts`). Faqat `y` oʻzgaradi: tugmalar vidjet ustida
+ * turadi va uning burchagini bosish bosh sahifaga olib ketardi.
+ */
+export function liftBelowChrome<T extends { y: number }>(widgets: readonly T[]): T[] {
+  return widgets.map((w) => (w.y < TOP_CHROME_PX ? { ...w, y: TOP_CHROME_PX } : w));
 }
 
 /** `[lo, hi]` oraligʻiga; oraliq teskari boʻlsa (`hi < lo`) — `lo`. */

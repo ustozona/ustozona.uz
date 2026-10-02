@@ -24,7 +24,7 @@ import { IconShape } from "./icons";
    haqiqatan ekranga chiqadigan figuraga teng boʻladi.
    ════════════════════════════════════════════════════════════════════ */
 
-export function ShapePicker({ active = false }: { active?: boolean }) {
+export function ShapePicker({ count }: { count: number }) {
   const addWidget = useDoskaStore((s) => s.addWidget);
   const { side } = useDockLayout();
   const t = useTranslations("Doska.widgets");
@@ -35,7 +35,7 @@ export function ShapePicker({ active = false }: { active?: boolean }) {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <BarButton label={t(meta.labelKey)} Icon={IconShape} tint={meta.tint} active={active} />
+        <BarButton label={t(meta.labelKey)} Icon={IconShape} tint={meta.tint} count={count} />
       </PopoverTrigger>
 
       <PopoverContent

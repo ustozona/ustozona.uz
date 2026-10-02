@@ -36,6 +36,13 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "doska-yangi-korinish",
+    date: "2026-10-02",
+    type: "yaxshilandi",
+    title: "Doskaning yangi koʻrinishi: har bir vidjet oq varaqda, panel yengil va ixcham, sozlamalar oʻngdan ochiladi",
+    href: "/doska",
+  },
+  {
     id: "doska-kun-rejasi",
     date: "2026-10-01",
     type: "yangi",

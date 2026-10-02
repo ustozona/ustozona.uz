@@ -32,8 +32,17 @@ import { WIDGET_ICONS } from "./widgets";
    Ikkalasi ≥ 44 px va hoverʼga bogʻliq emas (sensor birinchi, Q3).
    ════════════════════════════════════════════════════════════════════ */
 
-export function ToolCatalog({ onScreen }: { onScreen: ReadonlySet<string> }) {
-  const [open, setOpen] = React.useState(false);
+export function ToolCatalog({
+  onScreen,
+  open,
+  onOpenChange: setOpen,
+}: {
+  /** Ekrandagi vidjetlar soni, turi boʻyicha. */
+  onScreen: ReadonlyMap<string, number>;
+  /** Holat panelda: oyna panel menyusidagi «Panelni tahrirlash» dan ham ochiladi. */
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
   const { side } = useDockLayout();
   const tools = useDoskaPrefs((s) => s.tools);
   const togglePinned = useDoskaPrefs((s) => s.togglePinned);
@@ -44,9 +53,9 @@ export function ToolCatalog({ onScreen }: { onScreen: ReadonlySet<string> }) {
 
   const pinned = pinnedTools(tools);
   const full = pinned.length >= MAX_PINNED_TOOLS;
-  // Ekranda paneldan tashqaridagi vosita bor — «Hammasi» tugmasi ham
-  // «ekranda bor» belgisini oladi, aks holda u qayerdan kelgani yoʻqoladi.
-  const hiddenOnScreen = TOOL_ORDER.some((k) => onScreen.has(k) && !pinned.includes(k));
+  // Ekranda paneldan tashqaridagi vositalar bor — «Hammasi» tugmasi ham
+  // ularning sonicha nuqta oladi, aks holda ular qayerdan kelgani yoʻqoladi.
+  const hiddenOnScreen = TOOL_ORDER.reduce((n, k) => (pinned.includes(k) ? n : n + (onScreen.get(k) ?? 0)), 0);
 
   const add = (kind: WidgetKind) => {
     addWidget(kind);
@@ -63,7 +72,7 @@ export function ToolCatalog({ onScreen }: { onScreen: ReadonlySet<string> }) {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <BarButton label={t("open")} Icon={IconCatalog} active={hiddenOnScreen} />
+        <BarButton label={t("open")} Icon={IconCatalog} count={hiddenOnScreen} />
       </PopoverTrigger>
 
       <PopoverContent

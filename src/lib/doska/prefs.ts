@@ -57,8 +57,7 @@ type PrefsState = {
   dock: DockSide;
   /**
    * Paneldagi vositalar. `null` — oʻqituvchi hali tuzmagan, standart
-   * roʻyxat (`TOOL_ORDER`) koʻrinadi. Shunda keyin qoʻshilgan yangi
-   * vosita tuzmagan oʻqituvchining paneliga oʻzi chiqadi.
+   * roʻyxat (`DEFAULT_TOOLS`) koʻrinadi.
    */
   tools: WidgetKind[] | null;
   /**
@@ -130,10 +129,30 @@ export const useDoskaPrefs = create<PrefsState>()(
 );
 
 /**
- * Paneldagi vositalar. Tuzilmagan boʻlsa — `TOOL_ORDER` toʻliq: bugungi
- * panel bilan bir xil, yangilanishdan keyin oʻqituvchi tanish
- * vositalarini oʻz joyida topadi.
+ * Panelni tuzmagan oʻqituvchining standart vositalari — sinfni
+ * boshqarishda eng koʻp kerak boʻladiganlari (vaqt, jadval, eʼtibor,
+ * tasodif, ovoz berish, yozuv). Qolgani «Hammasi» oynasida.
+ *
+ * Ilgari standart `TOOL_ORDER` ning oʻzi edi. Vositalar 24 taga yetgach
+ * panel ekranga sigʻmay qoldi va gorizontal aylanadigan boʻldi —
+ * referensdagidek (docs/doska-referens-koriklari.md §4) panel bir qarashda
+ * oʻqiladigan 8 ta vosita bilan chiqadi. Chegara (`MAX_PINNED_TOOLS`) 9 —
+ * bitta joy boʻsh: oʻqituvchi «Hammasi» dan birinchi vositasini hech
+ * narsani olib tashlamasdan qadaydi.
  */
+export const DEFAULT_TOOLS: readonly WidgetKind[] = [
+  "clock.v1",
+  "timer.v1",
+  "today.v1",
+  "traffic-light.v1",
+  "wheel.v1",
+  "poll.v1",
+  "text.v1",
+  "card.v1",
+];
+
+/** Paneldagi vositalar, doim `TOOL_ORDER` tartibida. */
 export function pinnedTools(tools: WidgetKind[] | null): WidgetKind[] {
-  return tools ?? TOOL_ORDER;
+  const list = tools ?? DEFAULT_TOOLS;
+  return TOOL_ORDER.filter((k) => list.includes(k));
 }

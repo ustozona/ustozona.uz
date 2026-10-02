@@ -1,9 +1,19 @@
 # Doska dizayn tizimi
 
-> **Holat (2026-09-25):** §1–4 [doska-ux-tadqiqot.md](./doska-ux-tadqiqot.md)
-> qarorlari (Q1–Q3) asosida qayta yozildi — Doskada endi uchta vizual
-> uslub bor, oʻqituvchi tanlaydi. Tokenlar:
+> **Holat (2026-10-02):** standart uslub (Sokin) va butun qobiq
+> **referens koʻrinishiga** oʻtkazildi — foydalanuvchi qarori: «UI toʻliq
+> vidjetli sinf ekrani referensi asosida boʻlsin»
+> ([doska-referens-koriklari.md](./doska-referens-koriklari.md) §4).
+> Vidjet — oq varaq, boshqaruv — oq panel, 1 px och kulrang chegara,
+> soyasiz; rang faqat urgʻuda. Uch uslub arxitekturasi (faqat token
+> qatlami) oʻzgarmadi. Tokenlar:
 > [`src/styles/doska.css`](../src/styles/doska.css).
+>
+> **Holat (2026-09-25):** §1–4 [doska-ux-tadqiqot.md](./doska-ux-tadqiqot.md)
+> qarorlari (Q1–Q3) asosida qayta yozilgan edi. 2026-10-02 da ulardan
+> uchtasi referens qaroriga koʻra almashdi: sozlama vidjet yonida emas,
+> oʻngdan (Q2 → §2.6); tepada burchak tugmalari bor (R319 → §1.5);
+> kontekst panel ikonali (R322 → §2.5).
 
 > Ustozona Doska — sinf ekrani. Bu hujjat uning **vizual qoidalarini**
 > belgilaydi. Umumiy tizim (tokenlar, sirt/ohang oʻqlari) —
@@ -35,12 +45,12 @@ joylashuv va xatti-harakat esa hammada bir xil (doska-ux-tadqiqot.md Q1).
 
 | | Sokin (standart) | Oʻyinchoq | Doska |
 |---|---|---|---|
-| Gʻoya | grafit boshqaruv, toʻyingan bir tekis vidjet, oq matn | qalin siyoh kontur, qattiq soya, rangli plitkalar | oq qogʻoz vidjet + magnit; tus faqat magnitda |
-| Boshqaruv (`.doska-ctl`) | grafit, 1 px yorugʻ chiziq, yumshoq soya | oq patnis, 3 px siyoh, `0 5px 0` siyoh | toʻq relsa, 1 px yorugʻ chiziq |
-| Vidjet (`.doska-card`) | toʻyingan tus, oq matn, radius 18 | och tus, siyoh matn, 3 px kontur, radius 26 | qogʻoz, siyoh matn, magnit, radius 10 |
-| Varaq (`.doska-sheet`) | tema (`--popover`) | oq, 3 px siyoh | qogʻoz |
-| Tanlov | yaxlit chiziq | uzuq chiziq | uzuq chiziq, kvadrat tutqich |
-| Shrift | Onest | Nunito (800–900) | Rubik |
+| Gʻoya | **oq varaq**: oq panel va oq vidjet, rang faqat urgʻuda (brend) | qalin siyoh kontur, qattiq soya, rangli plitkalar | oq qogʻoz vidjet + magnit; tus faqat magnitda |
+| Boshqaruv (`.doska-ctl`) | oq, 1 px och kulrang chiziq, soyasiz, radius 10 | oq patnis, 3 px siyoh, `0 5px 0` siyoh | toʻq relsa, 1 px yorugʻ chiziq |
+| Vidjet (`.doska-card`) | oq, toʻq kulrang-koʻk matn, radius 8, chegara faqat och fonda | och tus, siyoh matn, 3 px kontur, radius 26 | qogʻoz, siyoh matn, magnit, radius 10 |
+| Varaq (`.doska-sheet`) | oq, 1 px och kulrang chiziq | oq, 3 px siyoh | qogʻoz |
+| Tanlov | 2 px brend chiziq vidjet chetida, oq doira tutqich | uzuq chiziq | uzuq chiziq, kvadrat tutqich |
+| Shrift | Nunito (yumaloq, kirill harflari bor) | Nunito (800–900) | Rubik |
 | Kimga | hammaga; proyektorda eng aniq | 1–6-sinf | yashil/qora doska |
 
 **Standart — Sokin.** Foydalanuvchilarning 5% dan kami sozlamani
@@ -117,9 +127,13 @@ da bitta komponent. Koʻrinishi — `.doska-ctl` materiali: ichidagi
 `text-foreground`, `hover:bg-muted`, `bg-primary` uslub tokenlariga
 qayta bogʻlangan.
 
-⚠️ Idish border **bilan ham**, shadow **bilan ham** chiziladi — bu
-`design-system.md` dagi «border YOKI shadow» qoidasidan **ataylab
-chetlashish**. U yerdagi qoida panel varaq ustida turishini nazarda
+**Standart uslubda** idish faqat 1 px och kulrang chegara bilan,
+soyasiz (referens koʻrinishi, 2026-10-02): oq panel toʻq fonda oʻzi
+ajraladi, och fonda chegara ushlaydi.
+
+⚠️ Oʻyinchoq va Doska uslublarida idish border **bilan ham**, shadow
+**bilan ham** chiziladi — bu `design-system.md` dagi «border YOKI
+shadow» qoidasidan **ataylab chetlashish**. U yerdagi qoida panel varaq ustida turishini nazarda
 tutadi; bu yerda fon ixtiyoriy rangda, och fonda chegara, toʻq fonda
 soya ushlab turadi. Bittasi yetmaydi.
 
@@ -136,9 +150,9 @@ soya ushlab turadi. Bittasi yetmaydi.
 
 | Element | Oʻlcham | Sabab |
 |---|---|---|
-| Ikonali tugma (`BarIconButton`) | 48 × 48 | ≥ 44 px, barmoq (R321) |
-| Yozuvli tugma (`BarTextButton`, kontekst panel) | balandlik 44 | ≥ 44 px |
-| Vosita (`BarButton`) | 64 px keng, BUTUN tugma bosiladi | panel nishoni ≥ 56 px (§3 UX yadrosi) |
+| Ikonali tugma (`BarIconButton`) | 36 × 36, ikona 20 px | loyiha standarti (DESIGN.md, 36 px boshqaruv) va referens koʻrinishi. Ilgari 48 px edi (R321, barmoq uchun ≥ 44) — 2026-10-02 foydalanuvchi qarori bilan |
+| Vosita (`BarButton`) | 64 px ustun: nuqtalar · 52 px plitka (ikona 36 px) · 11 px nom; BUTUN ustun bosiladi | panel nishoni ≥ 56 px (§3 UX yadrosi) |
+| Rejim tugmasi (qalam / tanlash) | 36 × 36, faol — och brend plitka (`--doska-ctl-active`) | referens |
 
 ### Tooltip
 
@@ -159,7 +173,39 @@ menyu, bekor qilish) — ularning ikonasi hamma joyda bir xil maʼnoda.
 **Kontekst panelda** (§2.5) nom doim koʻrinadi — `<BarTextButton>`:
 sensorli doskada hover yoʻq, tooltip chiqmaydi (doska-ux-tadqiqot.md R322).
 
-### Joylashuv — pastda yoki yon relsada, tepada hech narsa yoʻq
+### Joylashuv — referens koʻrinishi (2026-10-02)
+
+```
+[⌂]                                                        [⛶] [⋮]
+
+                  ┌────┬─────────────────────────────┬───┐
+                  │ ✎  │ Fon · vositalar · Hammasi   │ ⋮ │
+[Qaytarish xabari]│ ➤  │                             │ ⌄ │     [‹ 2/3 › +]
+                  └────┴─────────────────────────────┴───┘
+```
+
+- **Chap tepa** — bosh sahifa; **oʻng tepa** — toʻliq ekran va menyu,
+  har biri alohida kichik idishda.
+- **Pastda markazda** — vidjet paneli (§2); bekor qilish va qaytadan
+  bajarish uning ⋮ menyusida va `Ctrl+Z` / `Ctrl+Y` da. Doimiy
+  «↶ ↷» guruhi olib tashlandi: har oʻchirishdan keyin «Qaytarish»
+  xabari baribir chiqadi.
+- **Oʻng past** — ekranlar.
+- Vidjetlar tepadagi qatorga tushmaydi (`placement.ts` ← `TOP_CHROME_PX`,
+  `lib/doska/chrome.ts`); eski ekranlar bir martalik migratsiya bilan
+  pastga suriladi (`store.ts`, persist `version: 1`).
+- `B` («Boshqaruvni yashirish») panelni, ekranlarni VA burchak
+  tugmalarini yashiradi — ekranda faqat «Koʻrsatish» qoladi.
+- Panelning oxirgi ustuni (⋮ menyu: bekor qilish, qaytadan bajarish;
+  yigʻish) qoʻlyozma panelida ham bor (`BarEndColumn`) — sensorli
+  doskada qalam rejimidan chiqmasdan qaytarish mumkin.
+
+⚠️ Ilgari tepada hech narsa yoʻq edi: 75″ panelning tepasi poldan ≈ 1,8 m,
+bola yetmaydi (doska-ux-tadqiqot.md R319). Foydalanuvchi referens
+joylashuvini tanladi. Tepadagi uchala amal oʻqituvchiniki va kam
+bosiladi; dars davomida bosiladigani (vidjetlar, qalam, ekranlar) pastda.
+
+#### Avvalgi joylashuv (2026-09-25 — 2026-10-01, tarix uchun)
 
 ```
 Past (standart):
@@ -197,10 +243,22 @@ holatda ham chiqadi.
 ### Anatomiya
 
 ```
-┌──────────────────────────────────────────────────────────┐
-│ [qadalgan vositalar …]  │  [Hammasi] [Fon]              │
-└──────────────────────────────────────────────────────────┘
+┌────┬───────────────────────────────────────────┬───┐
+│ ✎  │ [Fon] [qadalgan vositalar …] [Hammasi]    │ ⋮ │
+│ ➤  │                                           │ ⌄ │
+└────┴───────────────────────────────────────────┴───┘
 ```
+
+- **Chap ustun — rejim:** qalam (qoʻlyozma paneli ochiladi) va tanlash
+  (oddiy holat — bu panelda doim faol, och brend plitka).
+- **Oʻrta — vositalar:** birinchi «Fon», oxirida «Hammasi».
+- **Oʻng ustun:** ⋮ panel menyusi (Bekor qilish · Qaytadan bajarish ·
+  Panelni tahrirlash → «Hammasi» oynasi) va yigʻish (`B`).
+
+Panelni tuzmagan oʻqituvchi 8 ta standart vositani koʻradi
+(`DEFAULT_TOOLS`, `prefs.ts`): soat, taymer, bugun, svetofor, gʻildirak,
+soʻrovnoma, matn, karta. Ilgari standart — barcha 24 vosita edi va panel
+gorizontal aylanardi. Chegara 9 — bitta joy boʻsh.
 
 Qaysi vosita panelda turishini **oʻqituvchi tanlaydi** — «Hammasi»
 oynasidagi qadash belgisi bilan (R132). Tartib esa doim `TOOL_ORDER`
@@ -212,11 +270,11 @@ xil; keyin qoʻshilgan yangi vosita unga oʻzi chiqadi (`tools: null`).
 ### Vosita tugmasi
 
 ```
-   ▁▁▁     ← 3 px «ekranda bor» belgisi (joyi doim band)
- ┌─────┐
- │ 28  │   ← 40 px plitka, ichida 28 px ikona
- └─────┘
-  Taymer   ← 12 px, bitta qator, 64 px kenglikda `truncate`
+   • • •    ← ekrandagi nusxalar soni (≤ 3 nuqta, joyi doim band)
+ ┌──────┐
+ │  36  │   ← 52 px plitka, ichida 36 px ikona
+ └──────┘
+  Taymer    ← 11 px, 600, bitta qator, 52 px da `truncate`
 ```
 
 BUTUN tugma bosiladi va yorishadi — ikona ham, nom ham. Ilgari faqat
@@ -236,7 +294,7 @@ matn shkalasini `desk` qiymatiga qaytaradi.
 | Normal | shaffof fon, ikona vidjet tusida (Oʻyinchoqda — rangli plitka) |
 | Hover | `--muted` (material ichida — uslubning hover rangi) |
 | Fokus | 2 px `--ring` halqa |
-| Ekranda bor | tepada 3 px `--primary` belgi; «Hammasi» ham belgi oladi, agar ekranda paneldan tashqaridagi vosita boʻlsa |
+| Ekranda bor | tepada nuqtalar — nechta nusxa (≤ 3); «Hammasi» paneldan tashqaridagi vositalar sonicha nuqta oladi |
 
 ### «Hammasi» oynasi
 
@@ -277,9 +335,13 @@ boshqaruvni topolmaydi va ilova buzilgan deb oʻylaydi.
 
 ## 2.5. Kontekst asboblar paneli
 
-Tanlangan vidjetning **ustida** suzadi va uning amallarini tutadi:
-Sozlash · Nusxa · Qulflash · Markazga │ Oʻchirish — har tugmada ikona
-**va yozuv**. «Oldinga» yoʻq: vidjetni bosishning oʻzi uni oldinga
+Tanlangan vidjetning **ustida** suzadi: Oʻchirish · Sozlash · ⋮ —
+ikonali tugmalar, nom tooltipʼda (referens koʻrinishi, 2026-10-02).
+⋮ menyusida kam ishlatiladiganlar — Nusxa · Qulflash · Barcha
+ekranlarda · Markazga — ikona **va** nom bilan. Ilgari har tugmada nom
+yozilgan edi (R322: sensorli doskada hover yoʻq, tooltip chiqmaydi);
+endi asosiy ikki amal umumiy maʼnoli ikona, qolgani menyuda yozuvi
+bilan. Quyidagi matn — avvalgi holat: «Oldinga» yoʻq: vidjetni bosishning oʻzi uni oldinga
 chiqaradi. Qulflangan vidjetda «Oʻchirish» koʻrinmaydi, «Qulflash» esa
 «Qulfni ochish» ga aylanadi
 ([`WidgetToolbar.tsx`](../src/components/doska/WidgetToolbar.tsx)).
@@ -317,7 +379,16 @@ vidjetni bosishning oʻzi uni oldinga chiqaradi.
 
 ---
 
-## 2.6. Sozlama kartasi
+## 2.6. Sozlama oynasi
+
+**2026-10-02 dan:** oʻngdan, butun balandlikda ochiladigan oyna
+(referens koʻrinishi): kenglik 448 px (`w-md`); odatda oʻngda, tanlangan
+vidjet oʻsha joyda boʻlsa — chapda (`drawerSide`); kulrang sarlavha qismi —
+vidjet ikonasi (tusida) · nom markazda · yumaloq «×»; z-qatlam
+`Z_SETTINGS` (`--z-doska-top` + 6) — oʻng tepadagi tugmalar ustida;
+telefonda (< 640 px) — pastki varaq. Maydonlar, darhol qoʻllanish va
+yopilish qoidalari oʻzgarmadi. Quyidagi jadval — avvalgi holat
+(doska-ux-tadqiqot.md Q2):
 
 Har vidjetning sozlamasi BIR joyda — vidjet yonidagi kartada
 ([`WidgetSettingsCard.tsx`](../src/components/doska/WidgetSettingsCard.tsx)).
@@ -360,18 +431,34 @@ qolgani uslubdan. Tuslar: `blue` (soat), `amber` (taymer), `slate`
 
 | Element | Token | Sokin | Oʻyinchoq | Doska |
 |---|---|---|---|---|
-| Fon / matn | `--doska-{tus}-bg` / `-fg` | toʻyingan / oq | och / siyoh | qogʻoz / siyoh |
-| Urgʻu | `--doska-{tus}-accent` → `--card-accent` | oq | siyoh | magnit tusi |
-| Radius | `--doska-card-radius` | 18 | 26 | 10 |
-| Kontur | `--doska-card-line(-width)` | 1 px yorugʻ | 3 px siyoh | 1 px siyoh/14% |
-| Soya | `--doska-card-shadow` | yumshoq | `0 6px 0` siyoh | yumshoq, chuqurroq |
+| Fon / matn | `--doska-{tus}-bg` / `-fg` | **oq / toʻq** (hamma tusda bir xil) | och / siyoh | qogʻoz / siyoh |
+| Urgʻu | `--doska-{tus}-accent` → `--card-accent` | **brend** (hamma tusda) | siyoh | magnit tusi |
+| Belgi rangi | `--doska-{tus}-mark` → `--card-mark` | toʻyingan tus («Karta» sarlavha tasmasi) | och tus | magnit tusi |
+| Radius | `--doska-card-radius` | 8 | 26 | 10 |
+| Kontur | `--doska-card-line(-width)` | yoʻq; **och fonda** 1 px kulrang (`-line-light`) | 3 px siyoh | 1 px siyoh/14% |
+| Soya | `--doska-card-shadow` | yoʻq | `0 6px 0` siyoh | yumshoq, chuqurroq |
+
+⭐ **Standart uslubda vidjet turi rang bilan emas, shakli bilan
+tanilib turadi** (referens, R456–R460): hamma vidjet oq varaq, urgʻu
+(taymer halqasi, asosiy tugma, tanlov) — bitta brend rangi. Rang
+fonni faqat HOLAT uchun egallaydi (taymer tugadi — qizil varaq).
+Oʻqituvchi rangni oʻzi tanlaydigan yagona joy — «Karta» (sarlavha
+tasmasi, `-mark`).
+
+Oq varaqning chegarasi faqat **och fonda** chiziladi
+(`[data-bg-tone="light"]`): chegarasiz oq karta 21 fonimizdan 13 tasida
+fonga qoʻshilib ketadi (R458). Toʻq fonda chegara yoʻq — referensdagidek.
 | Magnit | `--doska-card-magnet` | yoʻq | yoʻq | `::before`, `--card-accent` |
 
 - **Raqamlar** (taymer, soat) — `<Digits>`: uslub shriftida, har raqam
   `1ch` qutida. Uslub shriftlari proporsional va «1» torroq — busiz
   vaqt har soniya chayqalardi.
-- **Taymer diski** `--card-accent` bilan chiziladi: Sokinda oq,
-  Oʻyinchoqda siyoh, Doskada magnit tusi.
+- **Taymer halqasi** (ilgari toʻla disk) `--card-accent` bilan
+  chiziladi: standartda brend, Oʻyinchoqda siyoh, Doskada magnit tusi;
+  oxirgi soniyalarda qizil. Keng taymerda (eni ≥ 1,8 × boʻyi) halqa ·
+  raqam · asosiy tugma bir qatorda.
+- **Svetofor** — oq varaq ichida toʻq korpus (`--doska-light-housing`,
+  jismoniy rang).
 - **Idishsiz matn** (matn vidjeti, shakl) — `.doska-ink`: siyoh, toʻq
   fonda boʻr (§4); qalinlik `--doska-text-weight`.
 - **Yopishqoq qogʻoz** hamma uslubda qogʻoz (jismoniy narsa). Svetofor
