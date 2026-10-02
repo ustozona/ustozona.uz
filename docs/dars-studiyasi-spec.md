@@ -139,7 +139,13 @@ havola turadi, mazmun mavjud jadvallarda.
 Krossvord, Xotira, Qaysi katta) — fanga qarab tartib, «oʻz mazmuni».
 
 **Tashqi saytlar:** roʻyxat kodda YOʻQ (AGENTS.md — boshqa mahsulot nomi
-yozilmaydi). Loyiha egasi muhit sozlamasida beradi:
+yozilmaydi). Super-admin uni **`/admin/settings` → «Dars studiyasi —
+tashqi saytlar»** da tahrirlaydi: nom, qidiruv qolipi, tartib, «Sinash»
+(qolipni namunaviy mavzu bilan ochadi). Qiymat `app_settings` jadvalida
+(`studio.externalSites`, migratsiya `0051`), har oʻzgarish audit
+jurnalida, studiyada darhol koʻrinadi — deploy kerak emas.
+
+Bazada yozuv boʻlmasa — zaxira sifatida muhit sozlamasi:
 
 ```
 STUDIO_EXTERNAL_SITES='[{"name":"…","search":"https://…/search?q={q}"}]'
