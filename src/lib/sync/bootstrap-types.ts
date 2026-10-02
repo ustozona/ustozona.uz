@@ -79,5 +79,9 @@ export type DashboardBootstrap = {
 };
 
 /** Profil va sinflar mustaqil, tezkor soʻrovlarda keladi. Qolgan boʻlaklar
-    ularni kutdirib qoʻymasligi uchun alohida bootstrap javobida turadi. */
-export type DashboardBackground = Omit<DashboardBootstrap, "settings" | "grades">;
+    ularni kutdirib qoʻymasligi uchun alohida bootstrap javobida turadi.
+
+    Xulq ham alohida: uning javobi eng kattasi (yuzlab KB eventlar) va
+    qoʻshni boʻlaklar bilan pool'ni boʻlishganda Supavisor uni muntazam
+    yoʻqotardi — prodda har yuklanishda 15 s timeout (2026-10-02). */
+export type DashboardBackground = Omit<DashboardBootstrap, "settings" | "grades" | "behavior">;

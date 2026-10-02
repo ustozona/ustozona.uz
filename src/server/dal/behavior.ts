@@ -188,31 +188,34 @@ export async function getBehaviorPayload(): Promise<BehaviorPayload> {
   const teacher = await requireTeacher();
   const tid = teacher.id;
 
-  let [skillRows, rewardRows, eventRows, redemptionRows, deletionRows, autoRows] = await Promise.all([
-    db
-      .select()
-      .from(behaviorSkills)
-      .where(eq(behaviorSkills.teacherId, tid))
-      .orderBy(asc(behaviorSkills.sortOrder)),
-    db
-      .select()
-      .from(behaviorRewards)
-      .where(eq(behaviorRewards.teacherId, tid))
-      .orderBy(asc(behaviorRewards.sortOrder)),
-    db.select().from(behaviorEvents).where(eq(behaviorEvents.teacherId, tid)),
-    db
-      .select()
-      .from(behaviorRedemptions)
-      .where(eq(behaviorRedemptions.teacherId, tid)),
-    db
-      .select()
-      .from(behaviorDeletions)
-      .where(eq(behaviorDeletions.teacherId, tid)),
-    db
-      .select()
-      .from(behaviorAutoSettings)
-      .where(eq(behaviorAutoSettings.teacherId, tid)),
-  ]);
+  /* Soʻrovlar KETMA-KET (2026-10-02 prod hodisasi). Ilgari 6 tasi
+     Promise.all bilan ketardi — bootstrap'dagi qoʻshni boʻlaklar bilan
+     birga pool'dan (max 5) oshib, Supavisor bittasining javobini
+     yoʻqotardi va butun "behavior" boʻlagi 15 s timeout'ga tushardi.
+     Har biri bitta indeksli oʻqish — ketma-ketlik sezilmaydi. */
+  let skillRows = await db
+    .select()
+    .from(behaviorSkills)
+    .where(eq(behaviorSkills.teacherId, tid))
+    .orderBy(asc(behaviorSkills.sortOrder));
+  let rewardRows = await db
+    .select()
+    .from(behaviorRewards)
+    .where(eq(behaviorRewards.teacherId, tid))
+    .orderBy(asc(behaviorRewards.sortOrder));
+  const eventRows = await db.select().from(behaviorEvents).where(eq(behaviorEvents.teacherId, tid));
+  const redemptionRows = await db
+    .select()
+    .from(behaviorRedemptions)
+    .where(eq(behaviorRedemptions.teacherId, tid));
+  const deletionRows = await db
+    .select()
+    .from(behaviorDeletions)
+    .where(eq(behaviorDeletions.teacherId, tid));
+  let autoRows = await db
+    .select()
+    .from(behaviorAutoSettings)
+    .where(eq(behaviorAutoSettings.teacherId, tid));
 
   // Avto-sozlama qatori yoʻq — defaultlar bilan seed (sinceDate = bugun:
   // mavjud maʼlumotli userga ham langar deploy kunidan tushadi).
@@ -236,18 +239,16 @@ export async function getBehaviorPayload(): Promise<BehaviorPayload> {
     redemptionRows.length === 0
   ) {
     await seedDefaults(tid);
-    [skillRows, rewardRows] = await Promise.all([
-      db
-        .select()
-        .from(behaviorSkills)
-        .where(eq(behaviorSkills.teacherId, tid))
-        .orderBy(asc(behaviorSkills.sortOrder)),
-      db
-        .select()
-        .from(behaviorRewards)
-        .where(eq(behaviorRewards.teacherId, tid))
-        .orderBy(asc(behaviorRewards.sortOrder)),
-    ]);
+    skillRows = await db
+      .select()
+      .from(behaviorSkills)
+      .where(eq(behaviorSkills.teacherId, tid))
+      .orderBy(asc(behaviorSkills.sortOrder));
+    rewardRows = await db
+      .select()
+      .from(behaviorRewards)
+      .where(eq(behaviorRewards.teacherId, tid))
+      .orderBy(asc(behaviorRewards.sortOrder));
   }
 
   const eventsByClass: Record<string, BehaviorEvent[]> = {};

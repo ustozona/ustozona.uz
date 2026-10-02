@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { hydratedFromServer } from "@/hooks/useHydrateStore";
 import { deriveLessonDays } from "@/lib/attendance-data";
 import { todayDateKey } from "@/lib/behavior-data";
 import { inRange } from "@/lib/academic-calendar";
@@ -23,6 +24,11 @@ import { useTimetableStore } from "@/store/useTimetableStore";
    Xavfsizlik:
    - 5 store ham hydrate boʻlmaguncha ishlamaydi (aks holda boʻsh/default
      holat server maʼlumotidagi avto-eventlarni oʻchirib yuborar edi).
+     `_hasHydrated` yetmaydi — u fetch YIQILGANDA ham yoqiladi. Biror
+     store serverdan kelmagan boʻlsa (masalan "behavior" boʻlagi timeout)
+     umuman ishlamaymiz: standart autoSettings.attendanceSince = bugun,
+     boʻsh eventlar ustidan esa ekranda «bugundan boshlangan» soxta
+     ballar paydo boʻlardi (2026-10-02 prod hodisasi).
    - eventsByClass effekt dependency EMAS — oʻz yozuvimiz qayta tsikl
      qoʻzgʻatmaydi (loop qoʻriqchisi); joriy qiymat getState'dan olinadi.
    - Debounce ~800 ms — davomatni ketma-ket belgilashda bitta hisob.
@@ -36,7 +42,15 @@ export default function BehaviorAutoReconciler() {
   const calHydrated = useCalendarStore((s) => s._hasHydrated);
   const ttHydrated = useTimetableStore((s) => s._hasHydrated);
   const behHydrated = useBehaviorStore((s) => s._hasHydrated);
-  const allHydrated = attHydrated && gradesHydrated && calHydrated && ttHydrated && behHydrated;
+  const allHydrated =
+    attHydrated &&
+    gradesHydrated &&
+    calHydrated &&
+    ttHydrated &&
+    behHydrated &&
+    [useAttendanceStore, useGradesStore, useCalendarStore, useTimetableStore, useBehaviorStore].every(
+      hydratedFromServer
+    );
 
   const recordsByClass = useAttendanceStore((s) => s.recordsByClass);
   const classDataMap = useGradesStore((s) => s.classDataMap);

@@ -10,7 +10,6 @@ import { getRelations } from "@/server/dal/relations";
 import { getClassPrefs } from "@/server/dal/class-prefs";
 import { getNotificationsPayload } from "@/server/dal/notifications";
 import { getFeedbackPayload } from "@/server/dal/feedback";
-import { getBehaviorPayload } from "@/server/dal/behavior";
 import { getStudentNotesPayload } from "@/server/dal/student-notes";
 import { getTasksPayload } from "@/server/dal/tasks";
 import { activeYear } from "@/lib/academic-years";
@@ -21,7 +20,7 @@ import type {
 } from "@/lib/sync/bootstrap-types";
 
 /* ════════════════════════════════════════════════════════════════════
-   DASHBOARD BOOTSTRAP — ikkinchi darajali 13 boʻlak bitta soʻrovda.
+   DASHBOARD BOOTSTRAP — ikkinchi darajali 12 boʻlak bitta soʻrovda (xulq — alohida).
 
    Ilgari `dashboard/layout.tsx` dagi har `*ServerSync` mount'da oʻz
    `fetch*Action()` ini chaqirardi. Next Server Action'larni NAVBATGA
@@ -123,7 +122,6 @@ export async function fetchDashboardBackgroundAction(): Promise<DashboardBackgro
     settle("classPrefs", getClassPrefs),
     settle("notifications", getNotificationsPayload),
     settle("feedback", getFeedbackPayload),
-    settle("behavior", getBehaviorPayload),
     settle("studentNotes", getStudentNotesPayload),
     settle("tasks", getTasksPayload),
   ]);
