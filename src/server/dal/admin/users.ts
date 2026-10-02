@@ -355,69 +355,69 @@ export async function listUsersForAdmin(
     countQuery.leftJoin(act, eq(act.teacherId, user.id));
   }
 
-  const [baseRows, [{ total }]] = await Promise.all([
-    rowsQuery
-      .where(where)
-      .orderBy(...orderBy)
-      .limit(pageSize)
-      .offset((page - 1) * pageSize),
-    countQuery.where(where),
-  ]);
+  // Ketma-ket, `Promise.all` EMAS — sabab `getSignupTrends` izohida (Supavisor).
+  const baseRows = await rowsQuery
+    .where(where)
+    .orderBy(...orderBy)
+    .limit(pageSize)
+    .offset((page - 1) * pageSize);
+  const [{ total }] = await countQuery.where(where);
 
   const ids = baseRows.map((r) => r.id);
-  const [totals, lastSeens, activity, sessionStats] = ids.length
-    ? await Promise.all([
-        /* ⛔ SINF/O'QUVCHI SONI — `classes`/`students` dan EMAS.
+  const hasRows = ids.length > 0;
+  /* ⛔ SINF/O'QUVCHI SONI — `classes`/`students` dan EMAS.
 
-           Loyihada ma'lumot NUSXALANMAYDI: o'qituvchining ishi qaysi
-           tomonda yaratilgan bo'lsa, o'sha yerda qoladi va bog'lanish
-           orqali o'qiladi. Faqat `classes`/`students` sanalsa, bot
-           orqali ishlaydigan o'qituvchi panelda «0 sinf, 0 o'quvchi»
-           bo'lib ko'rinardi — 2026-08-08 da aynan shunday bo'ldi
-           (`ejavohirxon@gmail.com`: panelda 0/0, aslida 4 sinf va
-           102 o'quvchi) va bu «ma'lumot o'chib ketdi» deb tushunildi.
+     Loyihada ma'lumot NUSXALANMAYDI: o'qituvchining ishi qaysi
+     tomonda yaratilgan bo'lsa, o'sha yerda qoladi va bog'lanish
+     orqali o'qiladi. Faqat `classes`/`students` sanalsa, bot
+     orqali ishlaydigan o'qituvchi panelda «0 sinf, 0 o'quvchi»
+     bo'lib ko'rinardi — 2026-08-08 da aynan shunday bo'ldi
+     (`ejavohirxon@gmail.com`: panelda 0/0, aslida 4 sinf va
+     102 o'quvchi) va bu «ma'lumot o'chib ketdi» deb tushunildi.
 
-           `v_teacher_totals` ikkala tomonni DUBLIKATSIZ sanaydi:
-           bog'langan juftlik bir marta hisoblanadi. Ta'rif SQL'da —
-           admin paneli, hisobotlar va bot AYNAN bir xil raqamni
-           ko'rishi uchun (`account_unlink_impact` bilan bir xil
-           sabab). */
-        listTeacherTotals(ids),
-        db
-          .select({ userId: session.userId, last: max(session.updatedAt) })
-          .from(session)
-          .where(inArray(session.userId, ids))
-          .groupBy(session.userId),
-        /* Faollik qiymatlari SAHIFA qatorlari uchun alohida olinadi.
-           Join yuqorida faqat filtr/sort uchun kerak edi; qiymatlarni
-           shu yerdan olish ikkala tarmoq (koʻrinish bor/yoʻq) uchun
-           bitta yigʻish kodini saqlab qoladi. */
-        activityAvailable
-          ? db
-              .select({
-                teacherId: act.teacherId,
-                lastAt: act.lastAt,
-                lastArea: act.lastArea,
-                lastAction: act.lastAction,
-                activeDaysTotal: act.activeDaysTotal,
-                activeDays30d: act.activeDays30d,
-                areas30d: act.areas30d,
-              })
-              .from(act)
-              .where(inArray(act.teacherId, ids))
-          : Promise.resolve([]),
-        activityAvailable
-          ? db
-              .select({
-                teacherId: teacherSessionStats.teacherId,
-                sessions30d: teacherSessionStats.sessions30d,
-                medianMinutes30d: teacherSessionStats.medianMinutes30d,
-              })
-              .from(teacherSessionStats)
-              .where(inArray(teacherSessionStats.teacherId, ids))
-          : Promise.resolve([]),
-      ])
-    : [[], [], [], []];
+     `v_teacher_totals` ikkala tomonni DUBLIKATSIZ sanaydi:
+     bog'langan juftlik bir marta hisoblanadi. Ta'rif SQL'da —
+     admin paneli, hisobotlar va bot AYNAN bir xil raqamni
+     ko'rishi uchun (`account_unlink_impact` bilan bir xil
+     sabab). */
+  const totals = hasRows ? await listTeacherTotals(ids) : [];
+  const lastSeens = hasRows
+    ? await db
+        .select({ userId: session.userId, last: max(session.updatedAt) })
+        .from(session)
+        .where(inArray(session.userId, ids))
+        .groupBy(session.userId)
+    : [];
+  /* Faollik qiymatlari SAHIFA qatorlari uchun alohida olinadi.
+     Join yuqorida faqat filtr/sort uchun kerak edi; qiymatlarni
+     shu yerdan olish ikkala tarmoq (koʻrinish bor/yoʻq) uchun
+     bitta yigʻish kodini saqlab qoladi. */
+  const activity =
+    hasRows && activityAvailable
+      ? await db
+          .select({
+            teacherId: act.teacherId,
+            lastAt: act.lastAt,
+            lastArea: act.lastArea,
+            lastAction: act.lastAction,
+            activeDaysTotal: act.activeDaysTotal,
+            activeDays30d: act.activeDays30d,
+            areas30d: act.areas30d,
+          })
+          .from(act)
+          .where(inArray(act.teacherId, ids))
+      : [];
+  const sessionStats =
+    hasRows && activityAvailable
+      ? await db
+          .select({
+            teacherId: teacherSessionStats.teacherId,
+            sessions30d: teacherSessionStats.sessions30d,
+            medianMinutes30d: teacherSessionStats.medianMinutes30d,
+          })
+          .from(teacherSessionStats)
+          .where(inArray(teacherSessionStats.teacherId, ids))
+      : [];
 
   const classMap = new Map(totals.map((t) => [t.teacherId, t.classCount]));
   const studentMap = new Map(totals.map((t) => [t.teacherId, t.studentCount]));
@@ -564,33 +564,32 @@ export async function getUserDetailForAdmin(
   const activityAvailable = await hasActivityViews();
   const act = teacherActivitySummary;
 
-  const [totals, sessions, activity, sessionStats] = await Promise.all([
-    // Ro'yxat bilan AYNI manba — aks holda jadval va tafsilot
-    // bir-biriga zid raqam ko'rsatardi (`listTeacherTotals` izohi).
-    listTeacherTotals([userId]),
-    db
-      .select({
-        id: session.id,
-        updatedAt: session.updatedAt,
-        ipAddress: session.ipAddress,
-        userAgent: session.userAgent,
-      })
-      .from(session)
-      .where(eq(session.userId, userId))
-      .orderBy(desc(session.updatedAt))
-      .limit(10),
-    // Faollik ham roʻyxat bilan AYNI koʻrinishdan — ikki ekran bir xil
-    // raqam koʻrsatishi uchun (avval ular ajralib ketgan edi).
-    activityAvailable
-      ? db.select().from(act).where(eq(act.teacherId, userId))
-      : Promise.resolve([]),
-    activityAvailable
-      ? db
-          .select()
-          .from(teacherSessionStats)
-          .where(eq(teacherSessionStats.teacherId, userId))
-      : Promise.resolve([]),
-  ]);
+  // Ketma-ket, `Promise.all` EMAS — sabab `getSignupTrends` izohida (Supavisor).
+  // Ro'yxat bilan AYNI manba — aks holda jadval va tafsilot
+  // bir-biriga zid raqam ko'rsatardi (`listTeacherTotals` izohi).
+  const totals = await listTeacherTotals([userId]);
+  const sessions = await db
+    .select({
+      id: session.id,
+      updatedAt: session.updatedAt,
+      ipAddress: session.ipAddress,
+      userAgent: session.userAgent,
+    })
+    .from(session)
+    .where(eq(session.userId, userId))
+    .orderBy(desc(session.updatedAt))
+    .limit(10);
+  // Faollik ham roʻyxat bilan AYNI koʻrinishdan — ikki ekran bir xil
+  // raqam koʻrsatishi uchun (avval ular ajralib ketgan edi).
+  const activity = activityAvailable
+    ? await db.select().from(act).where(eq(act.teacherId, userId))
+    : [];
+  const sessionStats = activityAvailable
+    ? await db
+        .select()
+        .from(teacherSessionStats)
+        .where(eq(teacherSessionStats.teacherId, userId))
+    : [];
 
   const a = activity[0];
   const s = sessionStats[0];

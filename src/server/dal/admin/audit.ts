@@ -67,16 +67,15 @@ export async function listAuditLogs(params: {
   if (params.action) conditions.push(eq(adminAuditLogs.action, params.action));
   const where = conditions.length ? and(...conditions) : undefined;
 
-  const [items, total] = await Promise.all([
-    db
-      .select()
-      .from(adminAuditLogs)
-      .where(where)
-      .orderBy(desc(adminAuditLogs.createdAt))
-      .limit(pageSize)
-      .offset((page - 1) * pageSize),
-    db.$count(adminAuditLogs, where),
-  ]);
+  // Ketma-ket, `Promise.all` EMAS — sabab `getSignupTrends` izohida (Supavisor).
+  const items = await db
+    .select()
+    .from(adminAuditLogs)
+    .where(where)
+    .orderBy(desc(adminAuditLogs.createdAt))
+    .limit(pageSize)
+    .offset((page - 1) * pageSize);
+  const total = await db.$count(adminAuditLogs, where);
 
   return { items, total, page, pageSize };
 }

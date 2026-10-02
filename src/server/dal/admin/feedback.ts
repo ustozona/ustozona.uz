@@ -48,32 +48,31 @@ export async function listAllFeedback(params: {
   if (params.category) conditions.push(eq(feedback.category, params.category));
   const where = conditions.length ? and(...conditions) : undefined;
 
-  const [rows, total] = await Promise.all([
-    db
-      .select({
-        id: feedback.id,
-        teacherId: feedback.teacherId,
-        teacherName: teachers.name,
-        teacherEmail: teachers.email,
-        teacherAvatarUrl: teachers.avatarUrl,
-        status: feedback.status,
-        category: feedback.category,
-        updatedAt: feedback.updatedAt,
-        data: feedback.data,
-      })
-      .from(feedback)
-      .innerJoin(teachers, eq(teachers.id, feedback.teacherId))
-      .where(where)
-      // Yopilganlar (bajarildi/rad) pastga; qolganlar eng yangisi tepada.
-      // updatedAt emas, yaratilgan vaqt — reaksiya/javob tartibni siljitmasin.
-      .orderBy(
-        sql`(${feedback.status} in ('bajarildi', 'rad'))`,
-        sql`(${feedback.data}->>'createdAt') desc`,
-      )
-      .limit(pageSize)
-      .offset((page - 1) * pageSize),
-    db.$count(feedback, where),
-  ]);
+  // Ketma-ket, `Promise.all` EMAS — sabab `getSignupTrends` izohida (Supavisor).
+  const rows = await db
+    .select({
+      id: feedback.id,
+      teacherId: feedback.teacherId,
+      teacherName: teachers.name,
+      teacherEmail: teachers.email,
+      teacherAvatarUrl: teachers.avatarUrl,
+      status: feedback.status,
+      category: feedback.category,
+      updatedAt: feedback.updatedAt,
+      data: feedback.data,
+    })
+    .from(feedback)
+    .innerJoin(teachers, eq(teachers.id, feedback.teacherId))
+    .where(where)
+    // Yopilganlar (bajarildi/rad) pastga; qolganlar eng yangisi tepada.
+    // updatedAt emas, yaratilgan vaqt — reaksiya/javob tartibni siljitmasin.
+    .orderBy(
+      sql`(${feedback.status} in ('bajarildi', 'rad'))`,
+      sql`(${feedback.data}->>'createdAt') desc`,
+    )
+    .limit(pageSize)
+    .offset((page - 1) * pageSize);
+  const total = await db.$count(feedback, where);
 
   return {
     items: rows.map((r) => ({

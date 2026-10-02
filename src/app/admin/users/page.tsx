@@ -63,21 +63,20 @@ export default async function AdminUsersPage({
     : undefined;
   const dir = first(sp.dir) === "asc" ? "asc" : "desc";
 
-  const [data, planOptions] = await Promise.all([
-    listUsersForAdmin({
-      search,
-      role,
-      plan,
-      banned,
-      status,
-      area,
-      sort,
-      dir,
-      page,
-      pageSize: 25,
-    }),
-    listPlanOptions(),
-  ]);
+  // Ketma-ket, `Promise.all` EMAS — sabab `getSignupTrends` izohida (Supavisor).
+  const data = await listUsersForAdmin({
+    search,
+    role,
+    plan,
+    banned,
+    status,
+    area,
+    sort,
+    dir,
+    page,
+    pageSize: 25,
+  });
+  const planOptions = await listPlanOptions();
 
   return (
     <div className="p-5">
