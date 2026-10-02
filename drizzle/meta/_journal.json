@@ -358,6 +358,13 @@
       "when": 1790940824713,
       "tag": "0050_sinf_savat",
       "breakpoints": true
+    },
+    {
+      "idx": 51,
+      "version": "7",
+      "when": 1790960755124,
+      "tag": "0051_ilova_sozlamalari",
+      "breakpoints": true
     }
   ]
 }

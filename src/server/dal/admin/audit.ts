@@ -23,7 +23,8 @@ export type AdminAuditAction =
   | "school.create"
   | "school.update"
   | "school.delete"
-  | "school.assign_teacher";
+  | "school.assign_teacher"
+  | "settings.update";
 
 export async function writeAuditLog(
   actor: AdminActor,

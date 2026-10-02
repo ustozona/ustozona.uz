@@ -93,6 +93,11 @@ boʻyicha» sifatida qoldi.
 - Kanal ommaviy (`private: false`), himoya — mavzuning tasodifiyligi.
   Kanal faqat navigatsiya buyrugʻi tashiydi; kelgan har buyruq
   `parseRemoteCommand` bilan tekshiriladi.
+- Prod Supabase'da ommaviy kanalga mijozdan yozish ochiq — 2026-10-02 da
+  ikki mijoz bilan tekshirilgan (anon va publishable kalit, ikki
+  tomonga: buyruq → Doska, holat → telefon). Loyiha sozlamasida
+  «faqat yopiq kanallar» yoqilsa pult ulanmaydi — oʻshanda kanalni
+  `private: true` + RLS siyosatiga oʻtkazish kerak.
 - «Yangi QR» yangi kanal ochadi — eski chipta Doskani boshqara olmaydi.
 
 ## 5. QR'siz ulanish (`/pult`)

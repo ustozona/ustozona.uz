@@ -45,6 +45,7 @@ const ACTION_LABELS: Record<AdminAuditAction, string> = {
   "school.update": "Maktab yangilandi",
   "school.delete": "Maktab oʻchirildi",
   "school.assign_teacher": "Oʻqituvchi biriktirildi",
+  "settings.update": "Sozlama oʻzgartirildi",
 };
 
 /** Bazadagi eski yoki notanish amal — xom kalit bilan koʻrsatiladi. */

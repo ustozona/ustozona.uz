@@ -25,6 +25,7 @@ import {
   MessagesSquare,
   ScrollText,
   Bot,
+  Settings,
   Undo2,
   type LucideIcon,
 } from "lucide-react";
@@ -38,6 +39,7 @@ const navItems: NavItem[] = [
   { href: "/admin/feedback", label: "Fikrlar", icon: MessagesSquare },
   { href: "/admin/ai", label: "Ustozona AI", icon: Bot },
   { href: "/admin/audit", label: "Audit jurnali", icon: ScrollText },
+  { href: "/admin/settings", label: "Sozlamalar", icon: Settings },
 ];
 
 function isActivePath(pathname: string, href: string) {

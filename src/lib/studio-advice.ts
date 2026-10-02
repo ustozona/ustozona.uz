@@ -138,32 +138,47 @@ export function adviseGames(
 
 /* ── Tashqi saytlar ─────────────────────────────────────────────────
    Roʻyxat KODDA YOʻQ (AGENTS.md: boshqa mahsulot nomlari kodda
-   yozilmaydi) — loyiha egasi uni muhit sozlamasida beradi
-   (`STUDIO_EXTERNAL_SITES`, `actions/studio-sites.ts`). Har sayt —
-   nom va qidiruv qolipi (`{q}` — mavzu). */
+   yozilmaydi) — super-admin uni `/admin/settings` da tahrirlaydi
+   (`app_settings`, `dal/app-settings.ts`); bazada yozuv boʻlmasa —
+   muhit sozlamasi `STUDIO_EXTERNAL_SITES`. Har sayt — nom va qidiruv
+   qolipi (`{q}` — mavzu). */
 
 export type ExternalSite = { name: string; search: string };
+
+export const MAX_EXTERNAL_SITES = 8;
+
+/** Bitta sayt yaroqlimi: nom bor, qolip https va `{q}` ni oʻz ichiga oladi. */
+export function externalSiteProblem(name: string, search: string): "name" | "query" | "url" | null {
+  if (!name.trim()) return "name";
+  if (!search.includes("{q}")) return "query";
+  try {
+    const url = new URL(search.trim().replace("{q}", "x"));
+    if (url.protocol !== "https:") return "url";
+  } catch {
+    return "url";
+  }
+  return null;
+}
+
+/** Roʻyxatni tozalaydi (bazadagi JSONB ham, muhit sozlamasi ham shu yoʻldan). */
+export function normalizeExternalSites(list: unknown): ExternalSite[] {
+  if (!Array.isArray(list)) return [];
+  return list
+    .map((x) => {
+      if (typeof x !== "object" || x === null) return null;
+      const { name, search } = x as Record<string, unknown>;
+      if (typeof name !== "string" || typeof search !== "string") return null;
+      if (externalSiteProblem(name, search)) return null;
+      return { name: name.trim().slice(0, 40), search: search.trim() };
+    })
+    .filter((x): x is ExternalSite => !!x)
+    .slice(0, MAX_EXTERNAL_SITES);
+}
 
 export function parseExternalSites(raw: string | undefined): ExternalSite[] {
   if (!raw?.trim()) return [];
   try {
-    const list = JSON.parse(raw) as unknown;
-    if (!Array.isArray(list)) return [];
-    return list
-      .map((x) => {
-        if (typeof x !== "object" || x === null) return null;
-        const { name, search } = x as Record<string, unknown>;
-        if (typeof name !== "string" || typeof search !== "string" || !search.includes("{q}")) return null;
-        try {
-          const url = new URL(search.replace("{q}", "x"));
-          if (url.protocol !== "https:") return null;
-        } catch {
-          return null;
-        }
-        return { name: name.trim().slice(0, 40), search: search.trim() };
-      })
-      .filter((x): x is ExternalSite => !!x && !!x.name)
-      .slice(0, 8);
+    return normalizeExternalSites(JSON.parse(raw) as unknown);
   } catch {
     return [];
   }
