@@ -20,6 +20,19 @@ type HydratableStore<S> = {
   setState: (partial: Partial<S>) => void;
 };
 
+/* `_hasHydrated` yiqilganda ham yoqiladi (UI qotmasin), shuning uchun u
+   «maʼlumot serverdan keldi» degani EMAS. Store'dan hosila yozadigan
+   kodga (masalan xulq avto-ball reconcileri) haqiqiy belgi kerak: boʻsh
+   standart holatdan hisoblangan farq serverdagi qatorlarni oʻchirib
+   yoki «bugundan» boshlangan soxta ballar bilan almashtirib yuboradi
+   (2026-10-02 prod hodisasi — "behavior" boʻlagi timeout'ga tushgan). */
+const loadedOk = new WeakSet<object>();
+
+/** Store serverdan MUVAFFAQIYATLI hydrate boʻlganmi (yiqilgan fetch — yoʻq). */
+export function hydratedFromServer(store: object): boolean {
+  return loadedOk.has(store);
+}
+
 export function useHydrateStore<S extends { _hasHydrated: boolean }>(
   store: HydratableStore<S>,
   fetchPayload: () => Promise<Partial<S> | null | undefined>
@@ -46,6 +59,8 @@ export function useHydrateStore<S extends { _hasHydrated: boolean }>(
         ok = false;
         console.error("[hydrate] server payload olinmadi:", err);
       }
+      // `_hasHydrated` dan OLDIN — unga obuna boʻlganlar belgini koʻrsin.
+      if (ok) loadedOk.add(store);
       // `_hasHydrated` yiqilganda HAM yoqiladi — UI qotib qolmasligi
       // uchun (mount-gate'lar shunga qaraydi).
       store.setState({ _hasHydrated: true } as Partial<S>);

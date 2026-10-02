@@ -6,7 +6,7 @@ import { useHydrateStore } from "@/hooks/useHydrateStore";
 import { createServerSync } from "@/lib/sync/create-server-sync";
 import { bootstrapSlice } from "@/lib/sync/bootstrap-client";
 import { diffBehavior, type BehaviorSnapshot } from "@/lib/sync/behavior-sync";
-import { syncBehaviorAction } from "@/server/actions/behavior";
+import { fetchBehaviorAction, syncBehaviorAction } from "@/server/actions/behavior";
 
 /* Behavior store ↔ server koʻprigi (renderi yoʻq).
    Dashboard layoutda turadi: mount → hydration → sync.
@@ -27,7 +27,18 @@ function selectSnapshot(s: BehaviorState): BehaviorSnapshot {
 }
 
 /** Mount hydration umumiy bootstrap javobidan oʻqiladi (bitta soʻrov). */
-const fetchSlice = bootstrapSlice("behavior");
+const bootstrapBehavior = bootstrapSlice("behavior");
+
+/* Boʻlak yiqilsa (pool osilishi → 15 s timeout) alohida amal bilan BIR
+   marta qayta oʻqiladi — u yangi soʻrov, qoʻshni boʻlaklarsiz. Faqat
+   oʻqish: ikkinchisi ham yiqilsa xato useHydrateStore'ga oʻtadi va sync
+   boshlanmaydi. Aks holda butun sessiya boʻsh ballar bilan qolardi
+   (2026-10-02 prod hodisasi). */
+const fetchSlice = () =>
+  bootstrapBehavior().catch((err) => {
+    console.warn("[behavior] bootstrap boʻlagi yiqildi, qayta oʻqilmoqda:", err);
+    return fetchBehaviorAction();
+  });
 
 export default function BehaviorServerSync() {
   const hydrated = useHydrateStore(useBehaviorStore, fetchSlice);
