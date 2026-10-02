@@ -41,6 +41,7 @@ import {
   Home,
   Target,
   BookMarked,
+  Newspaper,
   MessagesSquare,
   Megaphone,
   CircleHelp,
@@ -58,6 +59,8 @@ type NavItem = {
   labelKey: string;
   icon: LucideIcon;
   badgeKey?: "changelog";
+  /** Faqat telefonda (`< md`) koʻrinadi — kattaroq ekranda header'da bor. */
+  mobileOnly?: boolean;
 };
 
 type NavGroup = {
@@ -110,10 +113,15 @@ const navGroups: NavGroup[] = [
 
 /* Pastki qator — ish kuni davomida kam kerak boʻladigan havolalar bitta
    gorizontal piktogramma qatorida turadi, nomi tooltip'da. Asosiy roʻyxatdan
-   joy olmaydi. Blog alohida mahsulot sifatida header'ga koʻchgan
-   (`HeaderToolLinks`, Doska va Oʻyinlar yonida). */
+   joy olmaydi.
+
+   Blog — /dashboard ICHIDA EMAS (alohida mahsulot). `md+` da header'da,
+   Doska va Oʻyinlar yonida (`HeaderToolLinks`); u yerdagi tugmalar
+   telefonda yashirin, shuning uchun telefonda Blog shu qatorga qaytadi.
+   `isMobile` chegarasi ham `md` — ikki joyda bir vaqtda koʻrinmaydi. */
 const footerItems: NavItem[] = [
   { href: "/dashboard/changelog", labelKey: "changelog", icon: Megaphone, badgeKey: "changelog" },
+  { href: "/blog", labelKey: "blog", icon: Newspaper, mobileOnly: true },
   { href: "/help", labelKey: "help", icon: CircleHelp },
   { href: "/dashboard/feedback", labelKey: "feedback", icon: MessagesSquare },
   { href: "/dashboard/settings", labelKey: "settings", icon: Settings },
@@ -252,7 +260,7 @@ function SidebarFooterLinks({ changelogCount }: { changelogCount: number }) {
 
   return (
     <SidebarMenu className={cn("gap-0.5", !iconOnly && "flex-row")}>
-      {footerItems.map((item) => {
+      {footerItems.filter((item) => isMobile || !item.mobileOnly).map((item) => {
         const label = t(item.labelKey);
         const showPing = item.badgeKey === "changelog" && changelogCount > 0;
         return (
