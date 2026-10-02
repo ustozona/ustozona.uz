@@ -47,6 +47,9 @@ export type StreamChatArgs = {
   signal: AbortSignal;
   /** Hujjat rejimi (darslik/PDF) — Gemini Files API'dagi fayl. Faqat Gemini qoʻllaydi. */
   doc?: { uri: string; mimeType: string };
+  /** Rasm (base64) — oxirgi user xabariga biriktiriladi. Faqat Gemini koʻradi
+      (tezkor tekshirish: qoʻlda yozilgan javob varagʻi). */
+  image?: { data: string; mimeType: string };
   /** Tool-calling (hozircha faqat Gemini). Tool qoʻllamaydigan provayderlar
       uchun `fallbackContext` system promptga qoʻshiladi. */
   tools?: {
@@ -124,6 +127,9 @@ async function* streamGemini(args: StreamChatArgs): AsyncGenerator<string> {
         parts.unshift({
           file_data: { file_uri: args.doc.uri, mime_type: args.doc.mimeType },
         });
+      }
+      if (args.image && m.role === "user" && i === args.messages.length - 1) {
+        parts.unshift({ inline_data: { mime_type: args.image.mimeType, data: args.image.data } });
       }
       return { role: m.role === "assistant" ? "model" : "user", parts };
     }
@@ -287,7 +293,8 @@ export async function* streamChat(args: StreamChatArgs): AsyncGenerator<string> 
   const base =
     args.chainOverride?.filter((p) => !!process.env[PROVIDER_KEYS[p]]) ??
     configuredProviders();
-  const providers = args.doc ? base.filter((p) => p === "gemini") : base;
+  // Rasmni ham faqat Gemini koʻradi — boshqasi rasmsiz «javob» toʻqib bermasin.
+  const providers = args.doc || args.image ? base.filter((p) => p === "gemini") : base;
   if (!providers.length) {
     throw new Error(
       "Ustozona AI sozlanmagan: GEMINI_API_KEY, GROQ_API_KEY yoki OPENROUTER_API_KEY kerak."

@@ -3,7 +3,8 @@
 import * as React from "react";
 import { useTranslations } from "next-intl";
 import {
-  ChevronLeft, ChevronRight, Eye, EyeOff, FileText, IdCard, Loader2, MonitorUp, Presentation, ScanLine, Smartphone, X,
+  ChevronLeft, ChevronRight, Eye, EyeOff, FileText, IdCard, LayoutTemplate, Loader2, MonitorUp, PenLine, Presentation, ScanLine,
+  Smartphone, X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -31,7 +32,7 @@ import { remoteScanTicketAction } from "@/server/actions/doska-remote";
 
 const HELLO_MS = 20_000;
 
-type ScanMode = "cards" | "sheets";
+type ScanMode = "cards" | "sheets" | "quick";
 type ScanInfo = Extract<Awaited<ReturnType<typeof remoteScanTicketAction>>, { ok: true }>;
 
 export function RemotePhone({ ticket, topic, config }: { ticket: string; topic: string; config: RealtimeConfig }) {
@@ -212,6 +213,18 @@ export function RemotePhone({ ticket, topic, config }: { ticket: string; topic: 
             <Button variant="outline" className="h-14 justify-start gap-2 shadow-none" disabled={!!scanBusy} onClick={() => void openScanner("sheets")}>
               {scanBusy === "sheets" ? <Loader2 className="size-5 animate-spin" /> : <FileText className="size-5" />}
               {t("scanSheets")}
+            </Button>
+            <Button variant="outline" className="h-14 justify-start gap-2 shadow-none" disabled={!!scanBusy} onClick={() => void openScanner("quick")}>
+              {scanBusy === "quick" ? <Loader2 className="size-5 animate-spin" /> : <PenLine className="size-5" />}
+              {t("scanQuick")}
+            </Button>
+            <Button
+              variant="outline"
+              className="h-14 justify-start gap-2 shadow-none"
+              onClick={() => command({ type: "template", count: pres.mcqCount })}
+            >
+              <LayoutTemplate className="size-5" />
+              {t("showTemplate")}
             </Button>
           </div>
           {scanError && <p className="text-caption text-destructive">{scanError}</p>}

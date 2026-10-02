@@ -5924,7 +5924,8 @@
       "loggedInHint": "Signed in on your phone? Open ustozona.uz/pult — no QR needed.",
       "scanned": "From the phone: {added} students, {answers} answers saved",
       "newQr": "New QR",
-      "disconnect": "Disconnect"
+      "disconnect": "Disconnect",
+      "templateName": "Name Surname"
     }
   },
   "LessonPlanWizard": {
@@ -6337,6 +6338,8 @@
     "entryTitle": "Teacher remote",
     "entryNoBoard": "No open board found. Open the board on your computer and press Phone remote — this page connects on its own.",
     "entryLogin": "Scan the QR on the board or sign in to Ustozona — once signed in, no QR needed.",
-    "login": "Sign in"
+    "login": "Sign in",
+    "scanQuick": "Handwritten",
+    "showTemplate": "Template to board"
   }
 }

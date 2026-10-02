@@ -27,6 +27,8 @@ export type RemoteCommand =
   | { type: "step"; to: "next" | "prev" }
   | { type: "reveal" }
   | { type: "curtain" }
+  /** Tezkor tekshirish: javob shablonini yangi ekranga chiqarish (savollar soni). */
+  | { type: "template"; count: number }
   | { type: "scanned"; added: number; answers: number };
 
 /** Doska ekranining telefonda koʻrinadigan qisqa tavsifi. */
@@ -87,6 +89,10 @@ export function parseRemoteCommand(raw: unknown): RemoteCommand | null {
     case "screen":
     case "step":
       return raw.to === "next" || raw.to === "prev" ? { type: raw.type, to: raw.to } : null;
+    case "template": {
+      const count = Math.round(Number(raw.count));
+      return count >= 1 && count <= 100 ? { type: "template", count } : null;
+    }
     case "screen-goto":
       return typeof raw.id === "string" && raw.id.length <= 100 ? { type: "screen-goto", id: raw.id } : null;
     case "scanned": {
