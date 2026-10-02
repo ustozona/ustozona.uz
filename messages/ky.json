@@ -30,7 +30,8 @@
     "fullscreen": "Толук экран",
     "exitFullscreen": "Толук экрандан чыгуу",
     "doska": "Доска",
-    "games": "Оюндар"
+    "games": "Оюндар",
+    "blog": "Блог"
   },
   "RouteLabels": {
     "home": "Башкы бет",

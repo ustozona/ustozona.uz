@@ -21,14 +21,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { AccountAvatar, useAccountIdentity } from "@/components/AccountAvatar";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ScrollFade } from "@/components/ui/scroll-fade";
 import { useChangelogUnseenCount } from "@/hooks/useChangelogSeen";
 import { BrandWordmark } from "@/assets/logo/brand-wordmark";
@@ -58,7 +51,6 @@ import {
   ListTodo,
   Gamepad2,
   ChevronDown,
-  ChevronsUpDown,
   type LucideIcon,
 } from "lucide-react";
 
@@ -67,6 +59,8 @@ type NavItem = {
   labelKey: string;
   icon: LucideIcon;
   badgeKey?: "changelog";
+  /** Faqat telefonda (`< md`) koʻrinadi — kattaroq ekranda header'da bor. */
+  mobileOnly?: boolean;
 };
 
 type NavGroup = {
@@ -117,16 +111,17 @@ const navGroups: NavGroup[] = [
 ];
 
 
-/* Pastki menyu — profil qatori bosilganda ochiladi (ish kuni davomida
-   kam kerak boʻladigan havolalar asosiy roʻyxatdan joy olmasin).
-   Sozlamalar oxirida, ajratgich ortida turadi.
+/* Pastki qator — ish kuni davomida kam kerak boʻladigan havolalar bitta
+   gorizontal piktogramma qatorida turadi, nomi tooltip'da. Asosiy roʻyxatdan
+   joy olmaydi.
 
-   Blog — /dashboard ICHIDA EMAS (bu EMS funksiyasi emas, alohida mahsulot;
-   lesson-editor bilan bir xil sabab). Sidebar ochiq /blog'ga olib boradi;
-   yozish esa oʻsha yerdagi "Yozish" tugmasi orqali /blog/studio'ga. */
+   Blog — /dashboard ICHIDA EMAS (alohida mahsulot). `md+` da header'da,
+   Doska va Oʻyinlar yonida (`HeaderToolLinks`); u yerdagi tugmalar
+   telefonda yashirin, shuning uchun telefonda Blog shu qatorga qaytadi.
+   `isMobile` chegarasi ham `md` — ikki joyda bir vaqtda koʻrinmaydi. */
 const footerItems: NavItem[] = [
   { href: "/dashboard/changelog", labelKey: "changelog", icon: Megaphone, badgeKey: "changelog" },
-  { href: "/blog", labelKey: "blog", icon: Newspaper },
+  { href: "/blog", labelKey: "blog", icon: Newspaper, mobileOnly: true },
   { href: "/help", labelKey: "help", icon: CircleHelp },
   { href: "/dashboard/feedback", labelKey: "feedback", icon: MessagesSquare },
   { href: "/dashboard/settings", labelKey: "settings", icon: Settings },
@@ -166,6 +161,19 @@ function isActivePath(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(href + "/");
 }
 
+const ACTIVE_ITEM_CLASS =
+  "data-[active=true]:bg-sidebar-primary data-[active=true]:text-sidebar-primary-foreground data-[active=true]:hover:bg-sidebar-primary data-[active=true]:hover:text-sidebar-primary-foreground data-[active=true]:[&>svg]:text-sidebar-primary-foreground";
+
+/** Koʻrilmagan yangilanish signali — ikonka burchagida pulslanuvchi nuqta. */
+function PingDot() {
+  return (
+    <span className="absolute -right-0.5 -top-0.5 flex size-1.5">
+      <span className="absolute inline-flex size-full animate-ping rounded-full bg-sidebar-primary opacity-75" />
+      <span className="relative inline-flex size-1.5 rounded-full bg-sidebar-primary" />
+    </span>
+  );
+}
+
 function NavMenuItem({ item, badge }: { item: NavItem; badge?: number }) {
   const t = useTranslations("AppSidebar");
   const pathname = usePathname();
@@ -181,17 +189,12 @@ function NavMenuItem({ item, badge }: { item: NavItem; badge?: number }) {
         asChild
         isActive={active}
         tooltip={label}
-        className="data-[active=true]:bg-sidebar-primary data-[active=true]:text-sidebar-primary-foreground data-[active=true]:hover:bg-sidebar-primary data-[active=true]:hover:text-sidebar-primary-foreground data-[active=true]:[&>svg]:text-sidebar-primary-foreground"
+        className={ACTIVE_ITEM_CLASS}
       >
         <Link href={item.href}>
           <span className="relative inline-flex size-4 shrink-0">
             <item.icon className="size-4 shrink-0" />
-            {showPing && (
-              <span className="absolute -right-0.5 -top-0.5 flex size-1.5">
-                <span className="absolute inline-flex size-full animate-ping rounded-full bg-sidebar-primary opacity-75" />
-                <span className="relative inline-flex size-1.5 rounded-full bg-sidebar-primary" />
-              </span>
-            )}
+            {showPing && <PingDot />}
           </span>
           <span>{label}</span>
         </Link>
@@ -245,72 +248,46 @@ function CollapsibleNavGroup({
   );
 }
 
-/** Yon panel pastidagi profil qatori. Bosilganda yuqoriga menyu ochiladi:
-    Yangilanishlar, Blog, Yordam, Fikr-mulohaza va Sozlamalar. Koʻrilmagan
-    yangilanish boʻlsa, avatar burchagida nuqta pulslanadi — menyu yopiq
-    turganda ham signal yoʻqolmaydi. Profil, mavzu, til va chiqish header
-    menyusida qoladi. */
-function SidebarAccountMenu({ changelogCount }: { changelogCount: number }) {
+/** Yon panel pastidagi piktogramma qatori. Nom faqat tooltip'da, ekran
+    oʻqigich uchun esa `sr-only` matnda. Ikonka rejimida panel tor
+    boʻlgani uchun qator ustunga aylanadi va tooltip oʻngga ochiladi. */
+function SidebarFooterLinks({ changelogCount }: { changelogCount: number }) {
   const t = useTranslations("AppSidebar");
   const pathname = usePathname();
   const { state, isMobile } = useSidebar();
-  const identity = useAccountIdentity();
-  const active = footerItems.some((item) => isActivePath(pathname, item.href));
-  const hasNews = changelogCount > 0;
-
-  const renderItem = (item: NavItem) => (
-    <DropdownMenuItem key={item.href} asChild>
-      <Link href={item.href}>
-        <item.icon />
-        <span className="flex-1">{t(item.labelKey)}</span>
-        {item.badgeKey === "changelog" && hasNews && (
-          <span className="rounded-md bg-sidebar-primary/10 px-1.5 text-xs font-medium tabular-nums text-sidebar-primary">
-            {changelogCount > 9 ? "9+" : changelogCount}
-          </span>
-        )}
-      </Link>
-    </DropdownMenuItem>
-  );
+  const iconOnly = state === "collapsed" && !isMobile;
+  const badge = changelogCount > 9 ? "9+" : String(changelogCount);
 
   return (
-    <SidebarMenu>
-      <SidebarMenuItem>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <SidebarMenuButton
-              size="lg"
-              isActive={active}
-              tooltip={identity.name}
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-            >
-              <span className="relative inline-flex shrink-0">
-                <AccountAvatar identity={identity} />
-                {hasNews && (
-                  <span className="absolute -right-0.5 -top-0.5 flex size-2">
-                    <span className="absolute inline-flex size-full animate-ping rounded-full bg-sidebar-primary opacity-75" />
-                    <span className="relative inline-flex size-2 rounded-full bg-sidebar-primary ring-2 ring-sidebar" />
-                  </span>
-                )}
-              </span>
-              <span className="grid min-w-0 flex-1 text-left leading-tight">
-                <span className="truncate font-medium">{identity.name}</span>
-                <span className="truncate text-xs text-muted-foreground">{identity.email}</span>
-              </span>
-              <ChevronsUpDown className="ml-auto size-4 text-muted-foreground" />
-            </SidebarMenuButton>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            side={isMobile || state === "expanded" ? "top" : "right"}
-            align={isMobile || state === "expanded" ? "start" : "end"}
-            sideOffset={6}
-            className="w-(--radix-dropdown-menu-trigger-width) min-w-56"
-          >
-            {footerItems.filter((item) => item.labelKey !== "settings").map(renderItem)}
-            <DropdownMenuSeparator />
-            {footerItems.filter((item) => item.labelKey === "settings").map(renderItem)}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </SidebarMenuItem>
+    <SidebarMenu className={cn("gap-0.5", !iconOnly && "flex-row")}>
+      {footerItems.filter((item) => isMobile || !item.mobileOnly).map((item) => {
+        const label = t(item.labelKey);
+        const showPing = item.badgeKey === "changelog" && changelogCount > 0;
+        return (
+          <SidebarMenuItem key={item.href} className="flex-1">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActivePath(pathname, item.href)}
+                  className={cn("justify-center text-sidebar-foreground/70", ACTIVE_ITEM_CLASS)}
+                >
+                  <Link href={item.href}>
+                    <span className="relative inline-flex size-[18px] shrink-0">
+                      <item.icon className="size-[18px]" />
+                      {showPing && <PingDot />}
+                    </span>
+                    <span className="sr-only">{showPing ? `${label} (${badge})` : label}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </TooltipTrigger>
+              <TooltipContent side={iconOnly ? "right" : "top"}>
+                {showPing ? `${label} · ${badge}` : label}
+              </TooltipContent>
+            </Tooltip>
+          </SidebarMenuItem>
+        );
+      })}
     </SidebarMenu>
   );
 }
@@ -388,7 +365,7 @@ export function AppSidebar({ workspaces = [] }: { workspaces?: WorkspaceOption[]
       </div>
 
       <SidebarFooter className="border-t border-sidebar-border">
-        <SidebarAccountMenu changelogCount={changelogCount} />
+        <SidebarFooterLinks changelogCount={changelogCount} />
       </SidebarFooter>
 
       <SidebarRail />

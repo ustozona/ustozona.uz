@@ -30,7 +30,8 @@
     "fullscreen": "Toʻliq ekran",
     "exitFullscreen": "Toʻliq ekrandan chiqish",
     "doska": "Doska",
-    "games": "Oʻyinlar"
+    "games": "Oʻyinlar",
+    "blog": "Blog"
   },
   "RouteLabels": {
     "home": "Bosh sahifa",

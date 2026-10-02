@@ -10,7 +10,7 @@ import {
   PRODUCT_ICON_STYLE,
 } from "@/components/shadcn-space/blocks/hero-01/product-icons";
 
-/* Doska va Oʻyinlar — headerdagi ikkita yozuvli kirish tugmasi.
+/* Doska, Oʻyinlar va Blog — headerdagi yozuvli kirish tugmalari.
 
    Rang va ikona — mahsulotning OʻZ manbasidan: landing menyusi bilan bir
    xil (`PRODUCT_ICON_STYLE` tus, `PRODUCT_ICONS` Solar duotone). Yangi
@@ -25,7 +25,9 @@ import {
    Doska — `/dashboard` dan TASHQARIDAGI alohida mahsulot (toʻliq ekran),
    shuning uchun yangi tabda ochiladi: dashboard holati (fokus taymeri,
    bildirishnomalar) joyida qoladi. Oʻyinlar dashboard ICHIDA ochiladi,
-   shu sabab oddiy `Link`.
+   shu sabab oddiy `Link`. Blog ham alohida mahsulot (/dashboard'dan
+   tashqarida, ochiq sahifa), lekin oddiy oʻqish sahifasi — avval yon
+   panelda ham shunday, shu tabda ochilardi.
 
    ⚠️ Hover klasslari toʻliq yozilgan (`hover:bg-emerald-200`), birlashtirib
    yasalmagan: Tailwind dinamik nomlarni koʻrmaydi. Ular `ghost`
@@ -36,12 +38,15 @@ const HOVER = {
     "hover:bg-emerald-200 hover:text-emerald-700 active:bg-emerald-300 dark:hover:bg-emerald-500/25 dark:hover:text-emerald-400 dark:active:bg-emerald-500/35",
   games:
     "hover:bg-orange-200 hover:text-orange-700 active:bg-orange-300 dark:hover:bg-orange-500/25 dark:hover:text-orange-400 dark:active:bg-orange-500/35",
+  blog:
+    "hover:bg-slate-200 hover:text-slate-800 active:bg-slate-300 dark:hover:bg-slate-500/25 dark:hover:text-slate-200 dark:active:bg-slate-500/35",
 } as const;
 
 export default function HeaderToolLinks() {
   const t = useTranslations("Header");
   const DoskaIcon = PRODUCT_ICONS.doska;
   const GamesIcon = PRODUCT_ICONS.games;
+  const BlogIcon = PRODUCT_ICONS.blog;
 
   return (
     <div className="hidden items-center gap-1 md:flex">
@@ -65,6 +70,17 @@ export default function HeaderToolLinks() {
         <Link href="/dashboard/games" title={t("games")}>
           <GamesIcon className="size-4" />
           <span className="sr-only lg:not-sr-only">{t("games")}</span>
+        </Link>
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        className={cn(PRODUCT_ICON_STYLE.blog, HOVER.blog)}
+        asChild
+      >
+        <Link href="/blog" title={t("blog")}>
+          <BlogIcon className="size-4" />
+          <span className="sr-only lg:not-sr-only">{t("blog")}</span>
         </Link>
       </Button>
       <Separator orientation="vertical" className="mx-1 !h-6" />

@@ -30,7 +30,8 @@
     "fullscreen": "На весь экран",
     "exitFullscreen": "Выйти из полноэкранного режима",
     "doska": "Доска",
-    "games": "Игры"
+    "games": "Игры",
+    "blog": "Блог"
   },
   "RouteLabels": {
     "home": "Главная",
