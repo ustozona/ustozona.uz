@@ -7,6 +7,7 @@ import {
   parseAiMaterial,
   type AiMaterialError,
 } from "@/lib/ai-materials";
+import { buildStudioPrompt, normalizeStudioRequest, parseAiStudio } from "@/lib/ai-studio";
 
 /**
  * Ustozona AI — tayyor material generatsiyasi («+ Yaratish» → Tezkor yaratish).
@@ -15,6 +16,10 @@ import {
  * Javob: `{ material, remaining }` — JSON, streaming EMAS: natija toʻplam
  * muharririga bir butun boʻlib tushadi, yarim test hech kimga kerak emas.
  * Xato: `{ error: AiMaterialError }` — matnni mijoz oʻz tilida koʻrsatadi.
+ *
+ * `kind: "studio"` — Dars studiyasi (Topshiriqlar): dars rejasi va
+ * ssenariy (`lib/ai-studio.ts`). Javob: `{ studio, remaining }`. Kvota va
+ * provayder yoʻli aynan shu — bitta reja ham bitta xabar krediti.
  *
  * Kvota va provayder zanjiri dars muharririning AI yordamchisi bilan
  * BIR XIL (`consumeAiMessage`, `streamChat`): bitta generatsiya — bitta
@@ -48,13 +53,14 @@ export async function POST(req: Request) {
   } catch {
     return fail("bad_request", 400);
   }
-  const request = normalizeMaterialRequest(body);
-  if (!request) return fail("bad_request", 400);
+  const studioRequest = normalizeStudioRequest(body);
+  const request = studioRequest ? null : normalizeMaterialRequest(body);
+  if (!studioRequest && !request) return fail("bad_request", 400);
 
   const quota = await consumeAiMessage(teacher.id, teacher.plan);
   if (!quota.allowed) return fail("quota", 429);
 
-  const { system, prompt } = buildMaterialPrompt(request);
+  const { system, prompt } = studioRequest ? buildStudioPrompt(studioRequest) : buildMaterialPrompt(request!);
   const abort = new AbortController();
   const timer = setTimeout(() => abort.abort(), GENERATION_TIMEOUT_MS);
   // Oʻqituvchi «Bekor qilish» ni bossa — provayderni ham toʻxtatamiz.
@@ -83,10 +89,22 @@ export async function POST(req: Request) {
     clearTimeout(timer);
   }
 
-  const material = parseAiMaterial(request, text);
+  if (studioRequest) {
+    const studio = parseAiStudio(studioRequest, text);
+    if (!studio) {
+      console.warn(`[ustozona-ai/generate] reja oʻqilmadi (${text.length} belgi):`, text.slice(0, 300));
+      return fail("unreadable", 502);
+    }
+    return Response.json(
+      { studio, remaining: Math.max(0, quota.credit - quota.used) },
+      { headers: { "Cache-Control": "no-store" } },
+    );
+  }
+
+  const material = parseAiMaterial(request!, text);
   if (!material) {
     console.warn(
-      `[ustozona-ai/generate] javob oʻqilmadi (${request.kind}, ${text.length} belgi):`,
+      `[ustozona-ai/generate] javob oʻqilmadi (${request!.kind}, ${text.length} belgi):`,
       text.slice(0, 300),
     );
     return fail("unreadable", 502);

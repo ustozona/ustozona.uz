@@ -66,6 +66,11 @@ Oqibati — oʻqituvchi tilida:
 
 ## 3. Sahifa tuzilishi
 
+> **2026-10-02:** sahifaning standart koʻrinishi endi **Dars studiyasi**
+> (reja → ssenariy → tavsiyalar, `dars-studiyasi-spec.md`); sinflar chap
+> ustundan yuqori qatorga koʻchdi. Quyidagi roʻyxat oʻzgarmagan holda
+> «Barcha ishlar» koʻrinishida turadi.
+
 ```
 Topshiriqlar (sinf tanlangan)
 ├── Sarlavha: [Test banki]  [+ Yaratish]  [⋯ LessonLab'dan olish]

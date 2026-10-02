@@ -125,7 +125,7 @@ const TOUR_STRUCTURE: readonly TourStructure[] = [
     id: "assignments",
     route: "/dashboard/assignments",
     steps: [
-      { target: '[data-tour="assignments-classes"]', placement: "right" },
+      { target: '[data-tour="assignments-classes"]', placement: "bottom" },
       { target: '[data-tour="assignments-list"]', placement: "left" },
       { target: '[data-tour="assignments-create"]', placement: "bottom", align: "end" },
     ],

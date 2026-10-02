@@ -1,3 +1,5 @@
+import type { LessonStudio } from "@/lib/lesson-studio";
+
 export type Unit = {
   id: string;
   classId: string;
@@ -80,6 +82,12 @@ export type Lesson = {
       qadalgan darsni surmaydi va uning slotini band deb chetlab oʻtadi.
       `lessons.data` JSONB ichida, migratsiyasiz. */
   pinnedByClass?: Record<string, boolean>;
+  /** Sinf → dars studiyasi: reja bosqichlari va dars ssenariysi
+      (Topshiriqlar sahifasi, `@/lib/lesson-studio`). Sinf boʻyicha, chunki
+      sharoit (telefon, printer, smartdoska) sinfga qarab farq qiladi.
+      `lessons.data` JSONB ichida, migratsiyasiz — oʻqishda
+      `normalizeStudio()` bilan tekshiriladi. */
+  studioByClass?: Record<string, LessonStudio>;
   /** Oxirgi tahrir vaqti (ISO) — muharrir headerida nisbiy koʻrsatiladi. */
   updatedAt?: string;
 };

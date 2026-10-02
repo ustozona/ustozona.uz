@@ -12,8 +12,8 @@ import { cn } from "@/lib/utils";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useClassIdParam } from "@/hooks/useClassIdParam";
-import ClassListPanel from "@/components/ClassListPanel";
-import { DashboardColumns, DashboardColumn, panelHeaderClass, panelCardContentClass } from "@/components/DashboardPage";
+import { panelHeaderClass, panelCardContentClass } from "@/components/DashboardPage";
+import { useLiveClasses, useLiveClassesHydrated } from "@/hooks/useLiveClasses";
 import {
   TOPIC_COLOR_HEX, assignmentGroupKey, classColor,
   type Assignment, type TopicColor,
@@ -68,6 +68,11 @@ import { TourDemoBanner } from "@/components/tour/TourDemoBanner";
 import {
   makeAssignmentsTourDemoClassData, makeAssignmentsTourDemoClasses, ASSIGNMENTS_TOUR_DEMO_CLASS_ID,
 } from "@/components/tour/assignments-tour-demo";
+import { LessonStudio } from "./_components/studio/LessonStudio";
+import { AssignmentsTopBar, type AssignmentsView } from "./_components/studio/AssignmentsTopBar";
+
+/** Oxirgi tanlangan koʻrinish — faqat shu brauzer uchun qulaylik. */
+const VIEW_KEY = "ustozona-assignments-view";
 
 /** "Other" (Toifasiz) chelagi uchun sentinel — DB qatori emas, faqat guruhlash kaliti. */
 const OTHER_GROUP = "__other__";
@@ -116,6 +121,40 @@ export default function AssignmentsPage() {
     [isDemoMode]
   );
   const effectiveClassId = isDemoMode ? ASSIGNMENTS_TOUR_DEMO_CLASS_ID : selectedClassId;
+
+  /* ── SINFLAR (yuqori qator) va KOʻRINISH ─────────────────────────────
+     Sinflar chap ustundan yuqori qatorga koʻchdi — chap ustun endi Dars
+     studiyasining rejasi (docs/dars-studiyasi-spec.md §3). Saqlangan
+     sinf arxivlangan/oʻchirilgan boʻlsa — birinchi faol sinf tanlanadi,
+     aks holda sahifa «sinf tanlanmagan» boʻlib qolardi. */
+  const liveClasses = useLiveClasses();
+  const classesHydrated = useLiveClassesHydrated();
+  const barClasses = isDemoMode ? makeAssignmentsTourDemoClasses() : liveClasses;
+  useEffect(() => {
+    if (isDemoMode || !classesHydrated || !liveClasses.length) return;
+    if (!selectedClassId || !liveClasses.some((c) => c.id === selectedClassId)) {
+      handleSelectClass(liveClasses[0].id);
+    }
+  }, [isDemoMode, classesHydrated, liveClasses, selectedClassId, handleSelectClass]);
+
+  const [storedView, setStoredView] = useState<AssignmentsView>("studio");
+  useEffect(() => {
+    try {
+      if (localStorage.getItem(VIEW_KEY) === "all") setStoredView("all");
+    } catch {
+      /* saqlanmasa — standart koʻrinish */
+    }
+  }, []);
+  const changeView = (v: AssignmentsView) => {
+    setStoredView(v);
+    try {
+      localStorage.setItem(VIEW_KEY, v);
+    } catch {
+      /* saqlanmasa ham ishlaydi */
+    }
+  };
+  // Tanishtiruv turi roʻyxat elementlariga ishora qiladi — u vaqtda roʻyxat koʻrinadi.
+  const view: AssignmentsView = tourActive ? "all" : storedView;
   const classData = isDemoMode ? demoClassData! : (effectiveClassId ? classDataMap[effectiveClassId] : undefined);
 
   /* ── TUZILGAN, LEKIN HALI JURNALGA CHIQMAGAN TESTLAR ──────────────
@@ -460,22 +499,31 @@ export default function AssignmentsPage() {
   }
 
   const noClass = !effectiveClassId;
-  const columnsTemplate = "minmax(0,1fr) minmax(0,3fr)";
+  const openRunsCount = runs.length;
 
   return (
     <div className="flex flex-col flex-1 min-w-0 gap-4 p-4 md:p-6 max-lg:min-h-full lg:h-full lg:min-h-0">
       <TourDemoBanner tourId="assignments" active={isDemoMode} />
-      <DashboardColumns template={columnsTemplate} className="lg:h-full lg:overflow-hidden">
-        <DashboardColumn hideBelow="lg" mobile="self" data-tour="assignments-classes">
-          <ClassListPanel
-            page="assignments"
-            selectedClassId={effectiveClassId ?? ""}
-            onSelect={handleSelectClass}
-            demoClasses={isDemoMode ? makeAssignmentsTourDemoClasses() : undefined}
-          />
-        </DashboardColumn>
-
-        <div data-tour="assignments-list" className="flex min-w-0 min-h-0 flex-col overflow-hidden rounded-xl border border-border bg-card lg:h-full max-lg:min-h-[60svh]">
+      {barClasses.length > 0 && (
+        <AssignmentsTopBar
+          classes={barClasses}
+          selectedId={effectiveClassId}
+          onSelect={handleSelectClass}
+          view={view}
+          onView={changeView}
+          openRuns={openRunsCount}
+        />
+      )}
+      {view === "studio" && !isDemoMode && selectedClassId ? (
+        <LessonStudio
+          key={selectedClassId}
+          classId={selectedClassId}
+          onLaunch={(preset) => launchFlow.openLaunch(selectedClassId, preset)}
+          onOpenBank={() => setBankOpen(true)}
+          onSetsChanged={() => setBankVersion((v) => v + 1)}
+        />
+      ) : (
+        <div data-tour="assignments-list" className="flex min-w-0 min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card max-lg:min-h-[60svh]">
           {noClass ? (
             <Empty className="h-full border-0">
               <EmptyHeader>
@@ -1099,7 +1147,7 @@ export default function AssignmentsPage() {
             </>
           )}
         </div>
-      </DashboardColumns>
+      )}
 
       {/* LessonLab test banki — tayyor testni shu sinfga berish. */}
       {bankOpen && selectedClassId && (

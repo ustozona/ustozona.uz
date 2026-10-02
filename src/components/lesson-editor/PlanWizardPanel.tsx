@@ -15,9 +15,10 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { EditorSidePanelHeader } from "@/components/ui/editor-side-panel";
 import {
-  LESSON_MODELS, EMPTY_CLASS_ENV, buildPlanPrompt, lessonModel, selectModel, skeletonHtml, stagePlan,
+  LESSON_MODELS, buildPlanPrompt, lessonModel, selectModel, skeletonHtml, stagePlan,
   type ClassEnvironment,
 } from "@/lib/lesson-models";
+import { useClassEnv } from "@/hooks/useClassEnv";
 
 /* ════════════════════════════════════════════════════════════════════
    REJA USTASI — «Mavzu markazi» (LessonLab Planner'dan koʻchirilgan).
@@ -39,23 +40,12 @@ import {
    «Darsga qoʻshish» oʻsha yerda allaqachon bor — ikkinchi AI yoʻli
    ochilmaydi.
 
-   Sinf holati HOZIRCHA brauzerda (localStorage, sinf boʻyicha): u kichik,
-   faqat AI soʻrovi uchun kerak, va sinf sozlamalari hujjati
-   (`teachers.prefs.classPrefs`) markaziy store orqali sinxronlanadi —
-   unga maydon qoʻshish jamoa bilan kelishilgan alohida ish.
+   Sinf holati — «sinf pasporti» (`useClassEnv`, server:
+   `teachers.prefs.classEnv`). Topshiriqlardagi Dars studiyasi ham
+   aynan shuni oʻqiydi: bu yerda oʻzgartirilgan sharoit u yerda ham
+   koʻrinadi. Ilgari faqat brauzerda edi — eski yozuv bir marta
+   serverga koʻchiriladi.
    ════════════════════════════════════════════════════════════════════ */
-
-const ENV_KEY = (classId: string) => `ustozona-class-env:${classId}`;
-
-function readEnv(classId: string | undefined): ClassEnvironment {
-  if (!classId) return EMPTY_CLASS_ENV;
-  try {
-    const raw = localStorage.getItem(ENV_KEY(classId));
-    return raw ? { ...EMPTY_CLASS_ENV, ...(JSON.parse(raw) as Partial<ClassEnvironment>) } : EMPTY_CLASS_ENV;
-  } catch {
-    return EMPTY_CLASS_ENV;
-  }
-}
 
 type Way = "quick" | "goal" | "self";
 
@@ -96,30 +86,19 @@ export default function PlanWizardPanel({
   const [duration, setDuration] = useState(defaultDuration);
   const [way, setWay] = useState<Way>("quick");
   const [goal, setGoal] = useState("");
-  const [env, setEnv] = useState<ClassEnvironment>(EMPTY_CLASS_ENV);
+  const { env, save: patchEnv } = useClassEnv(classId);
   const [reflectionDraft, setReflectionDraft] = useState(reflection);
 
   // Mavzu oʻzgarsa, oʻqituvchi hali qoʻlda tanlamagan boʻlsa — tavsiya yangilanadi.
   useEffect(() => {
     if (!touchedModel) setModelKey(recommended.key);
   }, [recommended.key, touchedModel]);
-  useEffect(() => setEnv(readEnv(classId)), [classId]);
   useEffect(() => setReflectionDraft(reflection), [reflection]);
   useEffect(() => setDuration(defaultDuration), [defaultDuration]);
 
   const model = lessonModel(modelKey) ?? LESSON_MODELS[0];
   const reason = modelKey === recommended.key ? recommended.reason : t("teacherChoice");
   const safeDuration = Math.min(180, Math.max(10, Number.isFinite(duration) ? duration : 45));
-
-  function patchEnv(patch: Partial<ClassEnvironment>) {
-    setEnv((cur) => {
-      const next = { ...cur, ...patch };
-      if (classId) {
-        try { localStorage.setItem(ENV_KEY(classId), JSON.stringify(next)); } catch { /* saqlanmasa ham soʻrovda ishlaydi */ }
-      }
-      return next;
-    });
-  }
 
   function run() {
     if (way === "self") {
@@ -275,6 +254,9 @@ export default function PlanWizardPanel({
               ["projector", t("env.projector")],
               ["movement", t("env.movement")],
               ["phones", t("env.phones")],
+              ["printer", t("env.printer")],
+              ["pult", t("env.pult")],
+              ["internet", t("env.internet")],
             ] as const
           ).map(([key, label]) => (
             <label key={key} className="flex items-center justify-between gap-3 text-body text-foreground">
