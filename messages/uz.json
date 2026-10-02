@@ -5778,6 +5778,31 @@
       "showYear": "Yil",
       "showHoliday": "Bayram va taʼtil nomi",
       "holidayHint": "Bayram va taʼtil — oʻquv kalendaringizdan."
+    },
+    "remote": {
+      "button": "Telefon pult",
+      "buttonConnected": "Telefon pult — ulangan",
+      "title": "Telefon pult",
+      "description": "Darsni telefoningizdan boshqaring — sinf oldida, doskaga qaytmasdan.",
+      "close": "Yopish",
+      "features": {
+        "f1": "Slaydlar va savollar: keyingi, oldingi, «Javobni ochish» — doskada darhol",
+        "f2": "Ekranlarni almashtirish va pardani yopish",
+        "f3": "Shu testni QR-kartalar yoki varaq skaneri bilan telefon kamerasida tekshirish",
+        "f4": "Natija Topshiriqlarda — jurnalga bitta tugma bilan"
+      },
+      "connect": "Telefonni ulash",
+      "connecting": "Tayyorlanmoqda…",
+      "errorRealtime": "Jonli ulanish sozlanmagan — administratorga xabar bering",
+      "errorLogin": "Ulanib boʻlmadi. Ustozona'ga kirganingizni tekshiring",
+      "statusOnline": "Telefon ulangan",
+      "statusWaiting": "Telefon kutilmoqda — QR ni skanerlang",
+      "statusOffline": "Ulanmoqda…",
+      "scanHint": "Telefon kamerasini shu QR ga tuting. Kirish shart emas.",
+      "loggedInHint": "Telefonda Ustozona'ga kirgan boʻlsangiz — ustozona.uz/pult ni oching, QR kerak emas.",
+      "scanned": "Telefondan: {added} oʻquvchi, {answers} javob yozildi",
+      "newQr": "Yangi QR",
+      "disconnect": "Uzish"
     }
   },
   "LessonPlanWizard": {
@@ -6141,7 +6166,55 @@
       "pickGame": "Avval oʻyinni tanlang",
       "gameNeedsTest": "Bu oʻyin test bilan oʻynaladi — testni ulang",
       "prepareFirst": "Avval materialni tayyorlang",
-      "oralHint": "Ogʻzaki tekshiruv — savollarni yoʻriqnomaga yozing va sinfdan soʻrang"
+      "oralHint": "Ogʻzaki tekshiruv — savollarni yoʻriqnomaga yozing va sinfdan soʻrang",
+      "doskaFailed": "Doskaga uzatib boʻlmadi — brauzer xotirasi yopiq"
+    },
+    "startList": "Kompyuterda roʻyxat boʻyicha",
+    "doska": {
+      "shellHint": "Oʻyinni Topshiriqlar → «Hozir oʻtkazish» orqali boshlang — natija jurnalga tushadi.",
+      "homeworkHint": "Topshiriqlar → «Uyga berish»: havola va QR, muddat bilan."
     }
+  },
+  "Remote": {
+    "title": "Ustoz pulti",
+    "connected": "Doskaga ulangan",
+    "waitingBoard": "Doska javobini kutyapmiz…",
+    "connecting": "Ulanmoqda…",
+    "curtainOn": "Parda",
+    "curtainOff": "Ochish",
+    "waitingHint": "Doskada «Telefon pult» oynasi ochiq boʻlsin. Ulanish bir necha soniya oladi.",
+    "stepSlide": "Slayd",
+    "stepQuestion": "Savol",
+    "live": "PIN {code} · {joined} qoʻshildi",
+    "revealAnswer": "Javobni ochish",
+    "hideAnswer": "Javobni yashirish",
+    "prevStep": "Oldingi qadam",
+    "nextStep": "Keyingi",
+    "noPresentation": "Bu ekranda taqdimot yoʻq — pastda ekranni almashtiring.",
+    "checkTitle": "Tekshirish — shu test",
+    "scanCards": "QR-kartalar",
+    "scanSheets": "Varaq (OMR)",
+    "checkHint": "Kamera ochiladi. Natija avval roʻyxatda koʻrinadi — «Jurnalga kiritish» ni bosgandagina yoziladi.",
+    "screens": "Ekranlar",
+    "screenEmpty": "Boʻsh ekran",
+    "prevScreen": "Oldingi ekran",
+    "nextScreen": "Keyingi ekran",
+    "back": "Pultga qaytish",
+    "questionCount": "{count} savol",
+    "errors": {
+      "expired": "Pult havolasi eskirgan — Doskadagi QR ni qayta skanerlang",
+      "notFound": "Test yoki sinf topilmadi",
+      "engine": "Varaq skaneri hozircha sozlanmagan — QR-kartalardan foydalaning",
+      "network": "Internet aloqasini tekshiring"
+    },
+    "expiredTitle": "Havola eskirgan",
+    "expiredHint": "Doskadagi «Telefon pult» tugmasini bosib, yangi QR ni skanerlang.",
+    "unavailableTitle": "Pult hozircha ishlamaydi",
+    "unavailableHint": "Jonli ulanish sozlanmagan. Administratorga xabar bering.",
+    "tryLoggedIn": "Ustozona'ga kirgan boʻlsangiz — QR'siz ulanish",
+    "entryTitle": "Ustoz pulti",
+    "entryNoBoard": "Ochiq Doska topilmadi. Kompyuterda Doskani oching va tepadagi «Telefon pult» tugmasini bosing — shu sahifa oʻzi ulanadi.",
+    "entryLogin": "Doskadagi QR ni skanerlang yoki Ustozona'ga kiring — kirgan boʻlsangiz QR kerak emas.",
+    "login": "Kirish"
   }
 }

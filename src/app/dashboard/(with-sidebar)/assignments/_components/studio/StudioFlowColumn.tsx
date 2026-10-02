@@ -39,6 +39,7 @@ export function StudioFlowColumn({
   onChange,
   onRun,
   onStart,
+  onStartList,
 }: {
   studio: LessonStudio | null;
   selectedId: string | null;
@@ -47,7 +48,10 @@ export function StudioFlowColumn({
   onSelect: (id: string) => void;
   onChange: (next: LessonStudio) => void;
   onRun: (block: StudioBlock) => void;
+  /** Doska dars rejimi + telefon pult. */
   onStart: () => void;
+  /** Kompyuterdagi roʻyxat (dars pulti) — Doskasiz. */
+  onStartList: () => void;
 }) {
   const t = useTranslations("LessonStudio");
   const gameLabel = useGameLabel();
@@ -215,9 +219,12 @@ export function StudioFlowColumn({
           </section>
         ))}
       </PanelBody>
-      <PanelFooter>
+      <PanelFooter className="flex flex-col gap-2">
         <Button className="w-full gap-1.5" onClick={onStart}>
           <Play className="size-4" /> {t("startLesson")}
+        </Button>
+        <Button variant="ghost" className="w-full gap-1.5 text-muted-foreground" onClick={onStartList}>
+          <ListOrdered className="size-4" /> {t("startList")}
         </Button>
       </PanelFooter>
     </Panel>

@@ -21,6 +21,9 @@ import { DoskaShortcuts } from "./DoskaShortcuts";
 import { BarGroup, BarIconButton } from "./BarGroup";
 import { DockContext, dockLayout } from "./dock";
 import { useDoskaShortcuts } from "./useDoskaShortcuts";
+import { DoskaRemote, requestOpenRemote } from "./remote/DoskaRemote";
+import { DEFAULT_BACKGROUND_ID } from "@/lib/doska/backgrounds";
+import { setLessonTitle, takeLessonHandoff } from "@/lib/doska/lesson-handoff";
 import { IconFullscreen, IconAdd, IconArrowLeft, IconArrowRight, IconChevronUp, IconHome } from "./icons";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -110,6 +113,7 @@ export function DoskaShell() {
   useDoskaStyle();
   useNoTranslate();
   useOpenSetFromUrl();
+  useOpenLessonFromUrl();
 
   const toggleFullscreen = () => {
     if (document.fullscreenElement) void document.exitFullscreen();
@@ -157,6 +161,10 @@ export function DoskaShell() {
                   </BarGroup>
 
                   <div className="flex gap-2">
+                    {/* Ustoz pulti — telefon QR bilan ulanadi (docs/ustoz-pulti-spec.md). */}
+                    <BarGroup>
+                      <DoskaRemote />
+                    </BarGroup>
                     <BarGroup>
                       <BarIconButton label={t("fullscreen")} shortcut={["F"]} onClick={toggleFullscreen}>
                         <IconFullscreen className="size-5" />
@@ -411,5 +419,42 @@ function useOpenSetFromUrl() {
     url.searchParams.delete("classId");
     url.searchParams.delete("live");
     window.history.replaceState(window.history.state, "", url.pathname + url.search + url.hash);
+  }, [hydrated]);
+}
+
+/**
+ * `/doska?lesson=1` — Topshiriqlar → Dars studiyasi → «▶ Darsni boshlash»
+ * (docs/ustoz-pulti-spec.md §3). Ssenariy `localStorage` orqali keladi
+ * (`lib/doska/lesson-handoff.ts`): har blok — yangi ekran, mavjud
+ * vidjetlardan (`addTemplateScreen`). Oldingi ekranlar OʻCHIRILMAYDI —
+ * dars ekranlari ularning oxiriga qoʻshiladi va birinchisi ochiladi.
+ *
+ * Soʻng pult oynasi oʻzi ochiladi: darsni telefondan boshqarish — dars
+ * rejimining asosiy yoʻli.
+ */
+function useOpenLessonFromUrl() {
+  const hydrated = useDoskaStore((s) => s.hydrated);
+  const done = React.useRef(false);
+
+  React.useEffect(() => {
+    if (!hydrated || done.current) return;
+    done.current = true;
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("lesson") !== "1") return;
+    url.searchParams.delete("lesson");
+    window.history.replaceState(window.history.state, "", url.pathname + url.search + url.hash);
+
+    const handoff = takeLessonHandoff();
+    if (!handoff || handoff.screens.length === 0) return;
+    const store = useDoskaStore.getState();
+    const before = new Set(store.deck.screens.map((s) => s.id));
+    const background = store.deck.screens.find((s) => s.id === store.activeScreenId)?.background ?? DEFAULT_BACKGROUND_ID;
+    handoff.screens.forEach((screen, i) =>
+      store.addTemplateScreen({ id: `lesson-${i}`, background, widgets: screen.widgets }),
+    );
+    const first = useDoskaStore.getState().deck.screens.find((s) => !before.has(s.id));
+    if (first) useDoskaStore.getState().setActiveScreen(first.id);
+    setLessonTitle(handoff.title);
+    requestOpenRemote();
   }, [hydrated]);
 }

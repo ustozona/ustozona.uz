@@ -28,6 +28,7 @@ import {
   type LessonStudio as Studio, type StudioBlock,
 } from "@/lib/lesson-studio";
 import { envHint } from "@/lib/studio-advice";
+import { buildLessonHandoff, writeLessonHandoff } from "@/lib/doska/lesson-handoff";
 import type { AiMaterial, AiMaterialError, AiMaterialKind } from "@/lib/ai-materials";
 import type { LaunchPreset } from "@/components/launch/LaunchDialog";
 import { launchSetInfoAction } from "@/server/actions/assess-runs";
@@ -329,8 +330,12 @@ export function LessonStudio({
 
   /* ── Blokni ishga tushirish ── */
   const openUrl = useCallback((url: string) => {
-    const opened = window.open(url, "_blank", "noopener");
-    if (!opened) window.location.assign(url);
+    // ⚠️ `window.open(…, "noopener")` spetsifikatsiya boʻyicha DOIM `null`
+    // qaytaradi — «bloklandi» deb oʻylab joriy sahifa ham koʻchib ketardi.
+    // Shuning uchun oddiy ochamiz va bogʻlanishni oʻzimiz uzamiz.
+    const opened = window.open(url, "_blank");
+    if (opened) opened.opener = null;
+    else window.location.assign(url);
   }, []);
 
   const openDoska = useCallback(
@@ -379,6 +384,32 @@ export function LessonStudio({
     },
     [lesson?.title, onLaunch, openDoska, openUrl, hint.phones, hint.screen, t],
   );
+
+  /* ── «▶ Darsni boshlash» — Doska dars rejimi (docs/ustoz-pulti-spec.md §3) ──
+     Ssenariy Doskaga beriladi: har blok — bitta ekran; Doska pult oynasini
+     oʻzi ochadi, oʻqituvchi telefonini QR bilan ulaydi. */
+  const startOnDoska = useCallback(() => {
+    if (!studio || !lesson) return;
+    const handoff = buildLessonHandoff(studio, {
+      title: lesson.title || t("untitledLesson"),
+      classId,
+      className: cls?.name ?? "",
+      env: hint,
+      origin: window.location.origin,
+      texts: {
+        kind: (k) => t(`kind.${k}`),
+        gameName: (b) =>
+          b.game?.type === "shell" ? t(`game.${b.game.id}`) : b.game?.type === "practice" ? t(`game.${b.game.file}`) : b.game?.label ?? "",
+        shellHint: t("doska.shellHint"),
+        homeworkHint: t("doska.homeworkHint"),
+      },
+    });
+    if (!writeLessonHandoff(handoff)) {
+      toast.error(t("toast.doskaFailed"));
+      return;
+    }
+    openUrl(`/doska?lesson=1`);
+  }, [studio, lesson, classId, cls?.name, hint, openUrl, t]);
 
   /* ── Oynalar ── */
   const [envOpen, setEnvOpen] = useState(false);
@@ -488,7 +519,7 @@ export function LessonStudio({
             <Settings2 className="size-4" />
             <span className="hidden sm:inline">{t("envButton")}</span>
           </Button>
-          <Button onClick={() => setConductorOpen(true)} disabled={!studio} className="gap-1.5">
+          <Button onClick={startOnDoska} disabled={!studio} className="gap-1.5">
             <Play className="size-4" />
             {t("startLesson")}
           </Button>
@@ -527,7 +558,8 @@ export function LessonStudio({
           onSelect={setSelectedId}
           onChange={saveStudio}
           onRun={runBlock}
-          onStart={() => setConductorOpen(true)}
+          onStart={startOnDoska}
+          onStartList={() => setConductorOpen(true)}
         />
         <StudioAdviceColumn
           studio={studio}
