@@ -30,7 +30,8 @@
     "fullscreen": "Fullscreen",
     "exitFullscreen": "Exit fullscreen",
     "doska": "Board",
-    "games": "Games"
+    "games": "Games",
+    "blog": "Blog"
   },
   "RouteLabels": {
     "home": "Home",
