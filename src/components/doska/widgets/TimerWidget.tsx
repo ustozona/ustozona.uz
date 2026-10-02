@@ -203,6 +203,9 @@ function CountdownView({ widget }: { widget: DoskaWidget }) {
   const showDigits = shown !== "disk";
 
   const primaryLabel = finished ? t("reset") : running ? t("pause") : t("start");
+  /* Keng taymer (referens koʻrinishi): halqa · raqam · asosiy tugma bir
+     qatorda. Tor yoki baland taymerda — tugma pastda. */
+  const wide = widget.w >= widget.h * 1.8;
 
   return (
     // Tugaganda karta «done» tusiga oʻtadi (qizil + oq matn) — lekin
@@ -212,11 +215,16 @@ function CountdownView({ widget }: { widget: DoskaWidget }) {
       data-card={finished ? "done" : "amber"}
       data-warn={warning ? "" : undefined}
     >
-      <div className="flex size-full flex-col items-center justify-center gap-[2.5cqw] p-[4cqw]">
+      <div
+        className={cn(
+          "flex size-full items-center justify-center",
+          wide ? "flex-row gap-[4cqw] px-[5cqw] py-[4cqw]" : "flex-col gap-[2.5cqw] p-[4cqw]",
+        )}
+      >
         <span
           role="timer"
           aria-label={format(remainingSec)}
-          className="flex min-h-0 w-full flex-1 items-center justify-center gap-[5cqw]"
+          className="flex min-h-0 w-full flex-1 items-center justify-center gap-[5cqw] self-stretch"
         >
           {showDisk && <TimerDisk fraction={fraction} large={!showDigits} />}
           {showDigits && (
@@ -227,7 +235,7 @@ function CountdownView({ widget }: { widget: DoskaWidget }) {
           )}
         </span>
 
-        <span className="flex items-center gap-[3cqw]">
+        <span className={cn("flex items-center gap-[3cqw]", wide && "flex-col-reverse")}>
           {repeat > 0 && !finished && (
             <span className="tabular-nums opacity-70" style={{ fontSize: "clamp(0.75rem, 5cqw, 2.5rem)" }}>
               {t("round", { n: Math.min(round + 1, repeat + 1), total: repeat + 1 })}
@@ -242,9 +250,10 @@ function CountdownView({ widget }: { widget: DoskaWidget }) {
               koʻp bosiladigan nishon (R320–R321). */}
           <WidgetButton
             shape="round"
+            tone={finished ? "neutral" : "primary"}
             label={primaryLabel}
             onClick={onPrimary}
-            className="size-[clamp(2.75rem,15cqw,8rem)]"
+            className={wide ? "size-[clamp(2.75rem,11cqw,7rem)]" : "size-[clamp(2.75rem,15cqw,8rem)]"}
           >
             {finished ? <IconRestart /> : running ? <IconPause /> : <IconPlay />}
           </WidgetButton>
@@ -309,29 +318,51 @@ function useTabTitle(active: boolean, text: string) {
 }
 
 /**
- * Disk — qolgan vaqt sektori, soat mili yoʻnalishida kamayadi.
- * Rang kartaning urgʻu rangidan (`--card-accent`): Sokinda oq, Oʻyinchoqda
- * siyoh, Doskada magnit tusi. Tugagan holat ham avtomatik ishlaydi.
+ * Halqa — qolgan vaqt yoyi, 12 dan soat mili yoʻnalishida, vaqt
+ * kamaygani sari orqaga qisqaradi (docs/doska-referens-koriklari.md R460:
+ * urgʻu kichik maydonda — halqa, butun disk emas). Ostida xira toʻliq
+ * halqa — «qancha boʻlgan edi».
+ *
+ * Rang kartaning urgʻu rangidan (`--card-accent`): standart uslubda
+ * brend, Oʻyinchoqda siyoh, Doskada magnit tusi; oxirgi soniyalarda
+ * (`data-warn`) qizil. Tugagan holat ham avtomatik ishlaydi.
+ *
+ * Qalinlik — diametrning ~8% i: ingichka chiziq proyektorda yuviladi
+ * (R324), shuning uchun referensdagidan sal qalinroq.
  */
-function TimerDisk({ fraction, large }: { fraction: number; large: boolean }) {
-  const r = 46;
-  const angle = fraction * 2 * Math.PI;
-  const x = 50 + r * Math.sin(angle);
-  const y = 50 - r * Math.cos(angle);
-  const largeArc = fraction > 0.5 ? 1 : 0;
+const RING_R = 44;
+const RING_LEN = 2 * Math.PI * RING_R;
 
+function TimerDisk({ fraction, large }: { fraction: number; large: boolean }) {
   return (
     <svg
       viewBox="0 0 100 100"
       aria-hidden="true"
-      className={cn("aspect-square shrink-0", large ? "h-[92%]" : "h-[78%]")}
+      className={cn("aspect-square shrink-0 -rotate-90", large ? "h-[92%]" : "h-[78%]")}
     >
-      <circle cx="50" cy="50" r="48" fill="currentColor" opacity=".14" />
-      {fraction >= 0.999 ? (
-        <circle cx="50" cy="50" r={r} fill="var(--card-accent, currentColor)" />
-      ) : fraction > 0 ? (
-        <path d={`M50 50 L50 ${50 - r} A${r} ${r} 0 ${largeArc} 1 ${x} ${y} Z`} fill="var(--card-accent, currentColor)" />
-      ) : null}
+      <circle
+        cx="50"
+        cy="50"
+        r={RING_R}
+        fill="none"
+        stroke="var(--card-accent, currentColor)"
+        strokeOpacity=".16"
+        strokeWidth="8"
+      />
+      {fraction > 0 && (
+        <circle
+          cx="50"
+          cy="50"
+          r={RING_R}
+          fill="none"
+          stroke="var(--card-accent, currentColor)"
+          strokeWidth="8"
+          strokeLinecap="round"
+          strokeDasharray={RING_LEN}
+          strokeDashoffset={RING_LEN * (1 - fraction)}
+          className="transition-[stroke-dashoffset] duration-1000 ease-linear"
+        />
+      )}
     </svg>
   );
 }

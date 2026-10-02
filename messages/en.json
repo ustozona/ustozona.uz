@@ -2102,6 +2102,9 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "doska-yangi-korinish": {
+        "title": "A fresh look for the board: every widget sits on a white card, a lighter compact bar, and settings open on the right"
+      },
       "doska-kun-rejasi": {
         "title": "“Day plan” ready-made screen on the board: today's date updates itself, new “Card” and “Date” widgets, soft backgrounds"
       },
@@ -5346,7 +5349,8 @@
       "pin": "{widget} — show on all screens",
       "pinShort": "On all screens",
       "unpin": "{widget} — keep on this screen only",
-      "unpinShort": "This screen only"
+      "unpinShort": "This screen only",
+      "more": "{widget} — more"
     },
     "bar": {
       "clear": "Clear",
@@ -5363,7 +5367,9 @@
       "redo": "Redo",
       "screenNumber": "Screen {n}",
       "menu": "Menu",
-      "proFeature": "Paid feature"
+      "proFeature": "Paid feature",
+      "barMenu": "Bar menu",
+      "editBar": "Edit widget bar"
     },
     "guestNote": {
       "text": "This screen is saved in this browser. <link>Sign in</link> to connect your class list.",
@@ -5797,7 +5803,8 @@
         "green": "Green",
         "orange": "Orange",
         "violet": "Violet"
-      }
+      },
+      "paper": "On a white card"
     },
     "countdown": {
       "until": "Until {name}",

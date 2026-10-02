@@ -32,10 +32,12 @@ export function WidgetEmpty({
       className="doska-card flex size-full flex-col items-center justify-center gap-[3cqw] p-[6cqw] text-center"
       data-card={card}
     >
-      <span aria-hidden="true" className="opacity-60" style={{ width: "clamp(1.5rem, 14cqw, 5rem)" }}>
+      {/* Ikona urgʻu rangida, matn toʻq va qalin — oq varaqda boʻsh holat
+          «xira» emas, aniq taklif boʻlib oʻqilsin (referens koʻrinishi). */}
+      <span aria-hidden="true" style={{ width: "clamp(1.5rem, 14cqw, 5rem)", color: "var(--card-accent)" }}>
         <Icon className="size-full" />
       </span>
-      <p className="leading-snug opacity-80" style={{ fontSize: "clamp(0.8rem, 5cqw, 1.6rem)" }}>
+      <p className="leading-snug font-semibold" style={{ fontSize: "clamp(0.8rem, 5cqw, 1.6rem)" }}>
         {text}
       </p>
       {action && onAction && (

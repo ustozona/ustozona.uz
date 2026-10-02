@@ -5,8 +5,9 @@
    §3 (vidjet kartasi); qarorlar — docs/doska-ux-tadqiqot.md Q1.
 
    UCH USLUB, oʻqituvchi tanlaydi (`lib/doska/prefs.ts`):
-     • Sokin    — standart. Grafit boshqaruv, toʻyingan bir tekis vidjet,
-                  oq matn. Proyektorda eng aniq.
+     • Sokin    — standart, «Varaq»: oq boshqaruv, oq vidjet, rang faqat
+                  urgʻuda (docs/doska-referens-koriklari.md §4).
+                  Proyektorda eng aniq.
      • Oʻyinchoq — qalin siyoh kontur, qattiq soya, rangli plitkalar.
                   «Panel jim» qoidasini ATAYLAB buzadi — oʻqituvchi oʻzi
                   tanlaydi (1–6-sinf).
@@ -40,93 +41,126 @@
    `node scripts/doska-projector-check.mjs`.
    ════════════════════════════════════════════════════════════════════ */
 
-/* ── SOKIN — standart ──────────────────────────────────────────────
+/* ── SOKIN — standart: «Varaq» (docs/doska-referens-koriklari.md §4) ──
    `<html>` da atribut boʻlmasa ham shu uslub: server HTML, mehmon va
-   sozlamani hech qachon ochmagan 95% oʻqituvchi (R329). */
+   sozlamani hech qachon ochmagan 95% oʻqituvchi (R329).
+
+   Hamma narsa OQ yuzada: boshqaruv — oq, 1 px och kulrang chegara,
+   soyasiz; vidjet — oq varaq, 8 px radius, toʻq kulrang-koʻk matn. Rang
+   faqat URGʻUDA (taymer halqasi, asosiy tugma, tanlov) va u hamma
+   vidjetda bitta — brend (R456, R460). Vidjet turi rang bilan emas,
+   shakli bilan tanilib turadi.
+
+   Oq varaqning chegarasi faqat OCH fonda chiziladi
+   (`--doska-card-line-light*`, pastda «Boʻr rejimi» yonida): toʻq fonda
+   varaq oʻzi ajraladi, och fonda esa chegarasiz oq karta fonga qoʻshilib
+   ketadi — 21 fondan 13 tasida (R458). */
 html[data-product="doska"],
 [data-doska-style="sokin"] {
-  --doska-font: var(--font-stage-onest, var(--font-sans));
+  /* Yumaloq geometrik shrift. Kirill harflari bor (rus va oʻzbek-kirill
+     interfeysi) — shuning uchun Nunito. */
+  --doska-font: var(--font-stage-nunito, var(--font-sans));
   --doska-display-weight: 700;
   --doska-text-weight: 600;
-  --doska-label-weight: 500;
+  --doska-label-weight: 600;
   --doska-ease: cubic-bezier(0.2, 0, 0, 1);
 
   /* Idishsiz matn (matn vidjeti, shakl) — och fonda siyoh, toʻqda boʻr. */
-  --doska-ink: oklch(0.26 0.02 260);
+  --doska-ink: oklch(0.21 0.034 265);
   --doska-chalk: oklch(0.97 0.01 260);
   --doska-chalk-shadow: none;
 
-  /* Vidjet kartasi — toʻyingan bir tekis blok, ingichka yorugʻ chiziq
-     (toʻq fonda toʻq svetofor ham ajralib tursin), yumshoq soya. */
-  --doska-card-radius: 18px;
-  --doska-card-line-width: 1px;
-  --doska-card-line: oklch(1 0 0 / 0.16);
-  --doska-card-shadow: 0 12px 28px -14px oklch(0 0 0 / 0.55);
+  /* Vidjet — oq varaq. Chegara va soya YOʻQ; och fonda chegara —
+     `--doska-card-line-light*`. */
+  --doska-card-radius: 8px;
+  --doska-card-line-width: 0px;
+  --doska-card-line: transparent;
+  --doska-card-line-light-width: 1px;
+  --doska-card-line-light: oklch(0.872 0.01 258);
+  --doska-card-shadow: 0 0 0 0 transparent;
   --doska-card-magnet: none;
-  /* «Karta» vidjeti (R447): tusli ramka ichida oq varaq, sarlavha ostida
-     chiziq yoʻq — ramkaning oʻzi tus. */
-  --doska-card-body-bg: oklch(0.99 0 0);
-  --doska-card-body-fg: oklch(0.26 0.02 260);
+  /* «Karta» vidjeti (R447): sarlavha tusli tasmada (oʻqituvchi tanlagan
+     tus — tusning `-mark` tokeni), yozuv oq varaqda. */
+  --doska-card-body-bg: oklch(1 0 0);
+  --doska-card-body-fg: oklch(0.21 0.034 265);
   --doska-card-body-line-width: 0px;
   --doska-card-body-line: transparent;
   --doska-card-rule-width: 0px;
+  --doska-card-title-band: 1;
+  --doska-card-title-fg: oklch(0.99 0 0);
 
-  --doska-blue-bg: oklch(0.52 0.16 255);
-  --doska-blue-fg: oklch(0.99 0 0);
-  --doska-blue-accent: oklch(0.99 0 0);
-  --doska-amber-bg: oklch(0.57 0.16 45);
-  --doska-amber-fg: oklch(0.99 0 0);
-  --doska-amber-accent: oklch(0.99 0 0);
-  --doska-slate-bg: oklch(0.27 0.02 260);
-  --doska-slate-fg: oklch(0.97 0.01 260);
-  --doska-slate-accent: oklch(0.97 0.01 260);
-  --doska-teal-bg: oklch(0.52 0.1 192);
-  --doska-teal-fg: oklch(0.99 0 0);
-  --doska-teal-accent: oklch(0.99 0 0);
+  /* Har tusda varaq bir xil — oq; urgʻu — brend. Tus nomlari (`blue`,
+     `amber` …) qoladi: boshqa uslublar va keyingi vidjet mavzulari
+     ularga tayanadi. */
+  --doska-blue-bg: oklch(1 0 0);
+  --doska-blue-fg: oklch(0.21 0.034 265);
+  --doska-blue-accent: oklch(0.55 0.13 186);
+  /* Belgi rangi — oʻqituvchi tusni oʻzi tanlaydigan joyda («Karta»
+     sarlavhasi). Oq matn ostida ≥ 4,5:1 (proyektor sinovi). */
+  --doska-blue-mark: oklch(0.52 0.16 255);
+  --doska-amber-mark: oklch(0.57 0.16 45);
+  --doska-slate-mark: oklch(0.27 0.02 260);
+  --doska-teal-mark: oklch(0.52 0.1 192);
+  --doska-note-mark: oklch(0.52 0.18 350);
+  --doska-amber-bg: oklch(1 0 0);
+  --doska-amber-fg: oklch(0.21 0.034 265);
+  --doska-amber-accent: oklch(0.55 0.13 186);
+  --doska-slate-bg: oklch(1 0 0);
+  --doska-slate-fg: oklch(0.21 0.034 265);
+  --doska-slate-accent: oklch(0.55 0.13 186);
+  --doska-teal-bg: oklch(1 0 0);
+  --doska-teal-fg: oklch(0.21 0.034 265);
+  --doska-teal-accent: oklch(0.55 0.13 186);
   /* Yopishqoq qogʻoz — hamma uslubda QOGʻOZ (jismoniy narsa). */
   --doska-note-bg: oklch(0.91 0.07 350);
   --doska-note-fg: oklch(0.32 0.1 350);
   --doska-note-accent: oklch(0.32 0.1 350);
-  /* Tugagan taymer — rang + soʻz (R326). */
+  /* Tugagan taymer — butun varaq qizil (holat), rang + soʻz (R326). */
   --doska-done-bg: oklch(0.55 0.21 27);
   --doska-done-fg: oklch(0.99 0 0);
   --doska-done-accent: oklch(0.99 0 0);
 
-  /* Boshqaruv materiali — grafit, butun boshqaruvda bitta. */
-  --doska-ctl-bg: oklch(0.22 0.012 250 / 0.94);
-  --doska-ctl-fg: oklch(0.99 0 0);
-  --doska-ctl-muted: oklch(0.8 0.01 250);
-  --doska-ctl-hover: oklch(1 0 0 / 0.1);
-  --doska-ctl-line: oklch(1 0 0 / 0.1);
+  /* Boshqaruv materiali — oq, 1 px och kulrang chegara, soyasiz. */
+  --doska-ctl-bg: oklch(1 0 0);
+  --doska-ctl-fg: oklch(0.373 0.034 260);
+  --doska-ctl-muted: oklch(0.52 0.023 264);
+  --doska-ctl-hover: oklch(0.967 0.003 265);
+  --doska-ctl-line: oklch(0.928 0.006 265);
   --doska-ctl-line-width: 1px;
-  --doska-ctl-shadow: 0 10px 28px -8px oklch(0 0 0 / 0.45);
-  --doska-ctl-radius: 16px;
-  --doska-ctl-accent: oklch(0.78 0.12 186);
-  --doska-ctl-accent-fg: oklch(0.2 0.03 186);
-  --doska-ctl-danger: oklch(0.78 0.15 25);
-  /* Panel tugmasidagi plitka — Sokinda yoʻq, ikona oʻz tusida. */
+  --doska-ctl-shadow: 0 0 0 0 transparent;
+  --doska-ctl-radius: 10px;
+  --doska-ctl-accent: oklch(0.55 0.13 186);
+  --doska-ctl-accent-fg: oklch(0.99 0 0);
+  /* Faol vosita orqasidagi och plitka (qalam / tanlash). */
+  --doska-ctl-active: oklch(0.955 0.03 186);
+  --doska-ctl-danger: oklch(0.577 0.215 27);
+  /* Panel tugmasidagi plitka — yoʻq, ikona oʻz tusida. */
   --doska-tile-fill: 0;
   --doska-tile-line-width: 0px;
   --doska-tile-icon: initial;
 
-  /* Varaq — sozlama kartasi, menyu, tanlash oynalari. Tema bilan. */
-  --doska-sheet-bg: var(--popover);
-  --doska-sheet-fg: var(--popover-foreground);
-  --doska-sheet-muted: var(--muted-foreground);
-  --doska-sheet-hover: var(--muted);
-  --doska-sheet-divider: var(--border);
-  --doska-sheet-input: var(--input);
-  --doska-sheet-edge: var(--border);
+  /* Varaq — sozlama oynasi, menyu, tanlash oynalari. Oq, mavzudan
+     mustaqil: doska har doim yorugʻ boshqaruv bilan. */
+  --doska-sheet-bg: oklch(1 0 0);
+  --doska-sheet-fg: oklch(0.21 0.034 265);
+  --doska-sheet-muted: oklch(0.446 0.026 257);
+  --doska-sheet-hover: oklch(0.967 0.003 265);
+  --doska-sheet-divider: oklch(0.928 0.006 265);
+  --doska-sheet-input: oklch(0.872 0.01 258);
+  --doska-sheet-edge: oklch(0.872 0.01 258);
   --doska-sheet-line-width: 1px;
-  --doska-sheet-shadow: 0 18px 44px -12px oklch(0 0 0 / 0.42);
-  --doska-sheet-radius: 16px;
+  --doska-sheet-shadow: 0 10px 15px -3px oklch(0 0 0 / 0.1), 0 4px 6px -4px oklch(0 0 0 / 0.1);
+  --doska-sheet-radius: 12px;
 
-  /* Tanlov — brend rangi; och va toʻq fonda ham koʻrinadi. */
-  --doska-sel-color: oklch(0.72 0.13 186);
+  /* Tanlov — brend rangida, vidjet chetida 2 px chiziq; tutqich — oq
+     doira, brend chegara. */
+  --doska-sel-color: oklch(0.55 0.13 186);
   --doska-sel-style: solid;
-  --doska-sel-offset: 4px;
+  --doska-sel-width: 2px;
+  --doska-sel-offset: 0px;
   --doska-handle-bg: oklch(1 0 0);
   --doska-handle-line: oklch(0.55 0.13 186);
+  --doska-handle-width: 2px;
   --doska-handle-radius: 50%;
 }
 
@@ -148,6 +182,8 @@ html[data-product="doska"][data-doska-style="oyinchoq"],
   --doska-card-radius: 26px;
   --doska-card-line-width: 3px;
   --doska-card-line: oklch(0.24 0.03 265);
+  --doska-card-line-light-width: 3px;
+  --doska-card-line-light: oklch(0.24 0.03 265);
   --doska-card-shadow: 0 6px 0 0 oklch(0.24 0.03 265);
   --doska-card-magnet: none;
   /* Varaq ham siyoh kontur bilan chizilgan — kartaning oʻzi kabi. */
@@ -156,6 +192,14 @@ html[data-product="doska"][data-doska-style="oyinchoq"],
   --doska-card-body-line-width: 2.5px;
   --doska-card-body-line: oklch(0.24 0.03 265);
   --doska-card-rule-width: 0px;
+  /* Sarlavha kartaning oʻz tusida — tasma yoʻq. */
+  --doska-card-title-band: 0;
+  --doska-card-title-fg: currentColor;
+  --doska-blue-mark: oklch(0.82 0.1 240);
+  --doska-amber-mark: oklch(0.85 0.15 82);
+  --doska-slate-mark: oklch(0.3 0.03 265);
+  --doska-teal-mark: oklch(0.85 0.1 178);
+  --doska-note-mark: oklch(0.88 0.09 350);
 
   --doska-blue-bg: oklch(0.82 0.1 240);
   --doska-blue-fg: oklch(0.24 0.03 265);
@@ -187,6 +231,7 @@ html[data-product="doska"][data-doska-style="oyinchoq"],
   --doska-ctl-accent: oklch(0.55 0.13 186);
   --doska-ctl-accent-fg: oklch(0.99 0 0);
   --doska-ctl-danger: oklch(0.55 0.21 27);
+  --doska-ctl-active: oklch(0.95 0.05 95);
   /* Rangli plitka + siyoh ikona. Oq ikona och tusda (sariq, yashil)
      oʻqilmasdi — siyoh har tusda aniq. */
   --doska-tile-fill: 1;
@@ -206,9 +251,11 @@ html[data-product="doska"][data-doska-style="oyinchoq"],
 
   --doska-sel-color: oklch(0.55 0.13 186);
   --doska-sel-style: dashed;
+  --doska-sel-width: 3px;
   --doska-sel-offset: 8px;
   --doska-handle-bg: oklch(0.99 0 0);
   --doska-handle-line: oklch(0.24 0.03 265);
+  --doska-handle-width: 3px;
   --doska-handle-radius: 50%;
 }
 
@@ -231,6 +278,8 @@ html[data-product="doska"][data-doska-style="doska"],
   --doska-card-radius: 10px;
   --doska-card-line-width: 1px;
   --doska-card-line: oklch(0.25 0.02 260 / 0.14);
+  --doska-card-line-light-width: 1px;
+  --doska-card-line-light: oklch(0.25 0.02 260 / 0.14);
   --doska-card-shadow: 0 10px 22px -6px oklch(0 0 0 / 0.45);
   --doska-card-magnet: block;
   /* Karta — qogʻoz, tusi qayerdadir koʻrinishi kerak: magnitdan tashqari
@@ -240,13 +289,21 @@ html[data-product="doska"][data-doska-style="doska"],
   --doska-card-body-line-width: 1px;
   --doska-card-body-line: oklch(0.25 0.02 260 / 0.12);
   --doska-card-rule-width: 5px;
+  /* Tus magnit va sarlavha ostidagi chiziqda — tasma yoʻq. */
+  --doska-card-title-band: 0;
+  --doska-card-title-fg: currentColor;
+  --doska-blue-mark: oklch(0.6 0.16 255);
+  --doska-amber-mark: oklch(0.7 0.17 55);
+  --doska-slate-mark: oklch(0.5 0.02 260);
+  --doska-teal-mark: oklch(0.62 0.11 190);
+  --doska-note-mark: oklch(0.62 0.2 350);
 
   --doska-blue-bg: oklch(0.975 0.012 90);
   --doska-blue-fg: oklch(0.25 0.02 260);
   --doska-blue-accent: oklch(0.6 0.16 255);
   --doska-amber-bg: oklch(0.975 0.012 90);
   --doska-amber-fg: oklch(0.25 0.02 260);
-  --doska-amber-accent: oklch(0.7 0.17 55);
+  --doska-amber-accent: oklch(0.6 0.16 50);
   --doska-slate-bg: oklch(0.975 0.012 90);
   --doska-slate-fg: oklch(0.25 0.02 260);
   --doska-slate-accent: oklch(0.5 0.02 260);
@@ -271,6 +328,7 @@ html[data-product="doska"][data-doska-style="doska"],
   --doska-ctl-accent: oklch(0.78 0.12 186);
   --doska-ctl-accent-fg: oklch(0.2 0.03 186);
   --doska-ctl-danger: oklch(0.8 0.14 25);
+  --doska-ctl-active: oklch(1 0 0 / 0.14);
   --doska-tile-fill: 0;
   --doska-tile-line-width: 0px;
   --doska-tile-icon: initial;
@@ -288,9 +346,11 @@ html[data-product="doska"][data-doska-style="doska"],
 
   --doska-sel-color: oklch(0.72 0.13 186);
   --doska-sel-style: dashed;
+  --doska-sel-width: 3px;
   --doska-sel-offset: 8px;
   --doska-handle-bg: oklch(0.975 0.012 90);
   --doska-handle-line: oklch(0.25 0.02 260);
+  --doska-handle-width: 3px;
   --doska-handle-radius: 4px;
 }
 
@@ -309,6 +369,8 @@ html[data-doska-style] {
   --doska-light-red: oklch(0.62 0.23 27);
   --doska-light-amber: oklch(0.8 0.16 80);
   --doska-light-green: oklch(0.68 0.19 145);
+  /* Svetofor korpusi — oq varaq ichida ham, rangli kartada ham toʻq. */
+  --doska-light-housing: oklch(0.3 0.02 260);
 
   --doska-wheel-ink: oklch(0.26 0.02 260);
   --doska-wheel-rim: oklch(0.99 0 0);
@@ -352,6 +414,28 @@ html[data-doska-style] {
   --doska-pen-green: oklch(0.8 0.17 148);
   --doska-pen-orange: oklch(0.8 0.15 60);
   --doska-pen-violet: oklch(0.74 0.15 305);
+}
+
+/* Varaqdagi rangli matn — fon toʻq boʻlsa ham varaq OCH (oq, qogʻoz),
+   shuning uchun matn vidjeti varaqda boʻlsa qalam ranglari och fon
+   qiymatlariga qaytadi. Pen rangini faqat matn vidjeti ishlatadi. */
+[data-bg-tone="dark"] .doska-card {
+  --doska-pen-red: oklch(0.58 0.22 27);
+  --doska-pen-blue: oklch(0.55 0.19 258);
+  --doska-pen-green: oklch(0.6 0.17 148);
+  --doska-pen-orange: oklch(0.68 0.18 50);
+  --doska-pen-violet: oklch(0.55 0.2 305);
+}
+
+/* ── Och fon — varaq chegarasi (docs/doska-referens-koriklari.md R458) ──
+   Standart uslubda vidjet oq varaq, chegarasiz. Och fonda (oq taxta,
+   katak, yumshoq sahna…) u fonga qoʻshilib ketadi va ustma-ust turgan
+   ikki vidjet bitta dogʻga aylanadi — shuning uchun faqat shu yerda
+   ingichka chegara oladi. Boshqa uslublarda «light» qiymati odatdagi
+   chegarasi bilan bir xil — ular oʻzgarmaydi. */
+[data-bg-tone="light"] {
+  --doska-card-line-width: var(--doska-card-line-light-width);
+  --doska-card-line: var(--doska-card-line-light);
 }
 
 /* ── Doska ikonalari — IERARXIK ranglash ──
@@ -443,11 +527,19 @@ html[data-doska-style] {
   box-shadow: var(--doska-sheet-shadow);
 }
 
-/* Telefonda sozlama kartasi pastki varaqqa aylanadi (Q2) — pastki
-   burchaklar ekran chetiga tegadi. */
-.doska-sheet[data-sheet] {
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
+/* Sozlama oynasi — oʻngdan butun balandlikda: burchaksiz, chegara faqat
+   chap tomonda. Telefonda pastki varaq — tepa burchaklari yumaloq,
+   chegara faqat tepada. */
+.doska-sheet[data-drawer] {
+  border-radius: 0;
+  border-width: 0 0 0 var(--doska-sheet-line-width);
+}
+
+@media (width < 40rem) {
+  .doska-sheet[data-drawer] {
+    border-radius: var(--doska-sheet-radius) var(--doska-sheet-radius) 0 0;
+    border-width: var(--doska-sheet-line-width) 0 0;
+  }
 }
 
 /* ── Panel tugmasi (vosita) ──
@@ -486,6 +578,7 @@ html[data-doska-style] {
   --card-bg: var(--doska-slate-bg);
   --card-fg: var(--doska-slate-fg);
   --card-accent: var(--doska-slate-accent);
+  --card-mark: var(--doska-slate-mark);
 
   background: var(--card-bg);
   color: var(--card-fg);
@@ -499,21 +592,25 @@ html[data-doska-style] {
   --card-bg: var(--doska-blue-bg);
   --card-fg: var(--doska-blue-fg);
   --card-accent: var(--doska-blue-accent);
+  --card-mark: var(--doska-blue-mark);
 }
 .doska-card[data-card="amber"] {
   --card-bg: var(--doska-amber-bg);
   --card-fg: var(--doska-amber-fg);
   --card-accent: var(--doska-amber-accent);
+  --card-mark: var(--doska-amber-mark);
 }
 .doska-card[data-card="teal"] {
   --card-bg: var(--doska-teal-bg);
   --card-fg: var(--doska-teal-fg);
   --card-accent: var(--doska-teal-accent);
+  --card-mark: var(--doska-teal-mark);
 }
 .doska-card[data-card="note"] {
   --card-bg: var(--doska-note-bg);
   --card-fg: var(--doska-note-fg);
   --card-accent: var(--doska-note-accent);
+  --card-mark: var(--doska-note-mark);
 }
 .doska-card[data-card="done"] {
   --card-bg: var(--doska-done-bg);
@@ -555,10 +652,24 @@ html[data-doska-style] {
    Sarlavha kartaning oʻz rangida; «Doska» uslubida ostida tus chizigʻi
    (`--doska-card-rule-width`, boshqa uslublarda 0). Varaq — uslubdan. */
 .doska-card-title {
+  position: relative;
+  isolation: isolate;
+  color: var(--doska-card-title-fg);
   font-weight: var(--doska-display-weight);
   line-height: 1.15;
-  padding-bottom: 0.15em;
   border-bottom: var(--doska-card-rule-width) solid var(--card-accent);
+}
+
+/* Tasma — standart uslubda sarlavha oʻqituvchi tanlagan tusda toʻladi.
+   Psevdo-elementda: `--card-mark` kartada eʼlon qilingan, uslub blokida
+   ishlatib boʻlmaydi (qoida 3); `--doska-card-title-band` esa 0 yoki 1. */
+.doska-card-title::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--card-mark);
+  opacity: var(--doska-card-title-band);
 }
 
 .doska-card-body {
@@ -595,13 +706,13 @@ html[data-doska-style] {
 /* ── Tanlov chegarasi va tutqichlar ── */
 .doska-selection {
   border-radius: var(--doska-card-radius);
-  outline: 3px var(--doska-sel-style) var(--doska-sel-color);
+  outline: var(--doska-sel-width) var(--doska-sel-style) var(--doska-sel-color);
   outline-offset: var(--doska-sel-offset);
 }
 
 .doska-handle {
   background: var(--doska-handle-bg);
-  border: 3px solid var(--doska-handle-line);
+  border: var(--doska-handle-width) solid var(--doska-handle-line);
   border-radius: var(--doska-handle-radius);
 }
 

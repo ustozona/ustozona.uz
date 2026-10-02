@@ -43,7 +43,7 @@ tavsifi — `docs/doska-referens-koriklari.md` (R-raqamlar).
 
 | Ish | Gʻoya | Boshlandi | Kim |
 |---|---|---|---|
-| — | | | |
+| R455–R467 Doska UI referens koʻrinishida: oq panel va oq varaq, burchak tugmalari, uch ustunli panel, ikonali kontekst panel, oʻngdan sozlama oynasi, «Karta» tasmasi, «Matn» varaqda, taymer halqasi | 2026-10-01, 2-referens vizual koʻrigi; qaror 2026-10-02 (`doska-referens-koriklari.md` §4.5–4.6) | 2026-10-02, branch `maxdum/doska-referens-ui` | maxdum + Claude |
 
 ## 5. Tugadi
 

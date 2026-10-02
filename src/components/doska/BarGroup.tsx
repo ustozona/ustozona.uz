@@ -14,17 +14,18 @@ import { ShortcutKeys } from "./ShortcutKeys";
    yuza, chegara, soya, oʻz z-qatlami.
 
    Koʻrinish — `.doska-ctl` materiali (src/styles/doska.css): Sokinda
-   grafit, Oʻyinchoqda oq patnis va siyoh kontur, Doskada toʻq relsa.
+   oq, 1 px och kulrang chegara, soyasiz (referens koʻrinishi);
+   Oʻyinchoqda oq patnis va siyoh kontur, Doskada toʻq relsa.
    Komponent uslubni BILMAYDI — material ichidagi `text-foreground`,
    `hover:bg-muted`, `bg-primary` uslub tokenlariga qayta bogʻlangan. Bu klass satri ilgari
    `DoskaShell` da uch marta va `DoskaMenu` da toʻrtinchi marta qoʻlda
    yozilgan edi — biri oʻzgarsa qolgani ortda qolardi.
 
-   ⚠️ Panel border BILAN ham, shadow BILAN ham chiziladi va bu
-   `docs/design-system.md` dagi «border YOKI shadow» qoidasidan ATAYLAB
-   chetlashish. Sabab: u yerdagi qoida panel varaq ustida turishini
-   nazarda tutadi, bu yerda esa fon ixtiyoriy rangda — och fonda
-   chegara, toʻq fonda soya ushlab turadi. Bittasi yetmaydi.
+   Chegara va soya — uslubdan. Standart uslubda faqat 1 px och kulrang
+   chegara, soyasiz (referens koʻrinishi): oq panel toʻq fonda oʻzi
+   ajraladi, och fonda chegara ushlaydi. Oʻyinchoq va Doskada chegara
+   BILAN ham, soya BILAN ham — `docs/design-system.md` dagi «border YOKI
+   shadow» qoidasidan ataylab chetlashish (fon ixtiyoriy rangda).
 
    IKKI TUR, chunki ular haqiqatan boshqacha ishlaydi:
 
@@ -97,8 +98,10 @@ export function BarSeparator({ vertical = false }: { vertical?: boolean }) {
 }
 
 /**
- * Guruh ichidagi yakka ikonali tugma — 48×48 (docs/doska-ux-tadqiqot.md
- * §3: bosish maydoni ≥ 44 px, sensorli doskada barmoq uchun).
+ * Guruh ichidagi yakka ikonali tugma — 36×36, ichida 20 px ikona
+ * (loyiha standarti — DESIGN.md, 36 px boshqaruv; koʻrinish —
+ * docs/doska-referens-koriklari.md §4). Ilgari 48 px edi (R321, barmoq
+ * uchun ≥ 44): foydalanuvchi referens oʻlchamini tanladi (2026-10-02).
  *
  * `BarButton` dan farqi: unda yorliq bor va u vidjet qoʻyadi; bu esa
  * amal bajaradi va nomini faqat tooltipʼda aytadi.
@@ -117,7 +120,7 @@ export function BarSeparator({ vertical = false }: { vertical?: boolean }) {
  * kerak emas — u bosilganda mazmuni oʻzini tanishtiradi.
  */
 export const barIconButtonClass =
-  "text-foreground/85 hover:bg-muted hover:text-foreground grid size-12 shrink-0 place-items-center transition-colors " +
+  "text-muted-foreground hover:bg-muted hover:text-foreground grid size-9 shrink-0 place-items-center transition-colors " +
   "focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none focus-visible:-outline-offset-2 " +
   "disabled:pointer-events-none disabled:opacity-30";
 

@@ -183,8 +183,9 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
     // sinf ekranidan oʻqib boʻlmaydi.
     defaultSize: { w: 460, h: 180 },
     minSize: { w: 160, h: 72 },
-    initialState: { text: "" },
-    remember: ["color", "bold"],
+    // Yangi matn — oq varaqda (referens koʻrinishi); sozlamada oʻchiriladi.
+    initialState: { text: "", paper: true },
+    remember: ["color", "bold", "paper"],
     editable: true,
   },
   "sticky-note.v1": {

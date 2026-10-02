@@ -16,6 +16,13 @@
 
 /** Chetga qoʻyilgan vidjetlar tugmalari — vidjetlar ustida, pardadan past. */
 export const Z_PARKED = "calc(var(--z-doska-top) + 5)";
+
+/**
+ * Sozlama oynasi — oʻngdan butun balandlikda, shuning uchun oʻng tepadagi
+ * burchak tugmalaridan (`--z-doska-top`) YUQORI: aks holda ular oyna
+ * sarlavhasi va «Yopish» tugmasi ustida qolardi. «Markazga» dan past.
+ */
+export const Z_SETTINGS = "calc(var(--z-doska-top) + 6)";
 export const Z_SPOTLIGHT_SCRIM = "calc(var(--z-doska-top) + 10)";
 export const Z_SPOTLIGHT_WIDGET = "calc(var(--z-doska-top) + 11)";
 export const Z_SPOTLIGHT_EXIT = "calc(var(--z-doska-top) + 12)";

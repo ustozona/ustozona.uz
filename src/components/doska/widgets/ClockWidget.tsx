@@ -103,7 +103,16 @@ export function ClockWidget({ widget }: { widget: DoskaWidget }) {
     <div className="doska-card flex size-full flex-col items-center justify-center gap-[2cqw] px-4" data-card="blue" data-warn={warning ? "" : undefined}>
       {/* Yuqori chegara katta: «Markazga» rejimida soat butun ekranga
           kattalashadi va raqam u bilan oʻsishi kerak. */}
-      <Digits text={text} style={{ fontSize: status ? "clamp(1.75rem, 21cqw, 24rem)" : "clamp(2rem, 26cqw, 30rem)" }} />
+      {/* Soniya bilan matn 8 belgi (5 emas) — oʻlcham shunga mos kichrayadi,
+          aks holda keng shriftda soniya ikkinchi qatorga tushadi. */}
+      <Digits
+        text={text}
+        style={{
+          fontSize: status
+            ? `clamp(1.5rem, ${text.length > 5 ? 14 : 21}cqw, 24rem)`
+            : `clamp(1.75rem, ${text.length > 5 ? 17 : 26}cqw, 30rem)`,
+        }}
+      />
       {status && (
         <p
           aria-live="polite"

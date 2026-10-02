@@ -12,6 +12,7 @@ import { barIconButtonClass } from "./BarGroup";
 import { DoskaAppearance } from "./DoskaAppearance";
 import { DoskaTemplates } from "./DoskaTemplates";
 import { ProBadge } from "./ProBadge";
+import { ShortcutKeys } from "./ShortcutKeys";
 import { playBell } from "./sounds";
 import {
   IconMenu,
@@ -122,13 +123,13 @@ export function DoskaMenu({ onShowShortcuts }: { onShowShortcuts: () => void }) 
       <PopoverTrigger asChild>
         {/* Idish yoʻq — tugma `DoskaShell` dagi guruh ichida turadi. */}
         <button type="button" aria-label={t("menu")} className={barIconButtonClass}>
-          <IconMenu className="size-6" />
+          <IconMenu className="size-5" />
         </button>
       </PopoverTrigger>
 
       <PopoverContent
         align="end"
-        side="top"
+        side="bottom"
         sideOffset={8}
         collisionPadding={12}
         className="doska-bar doska-sheet max-h-[calc(100vh-6rem)] w-80 overflow-y-auto overscroll-contain p-0"
@@ -258,7 +259,7 @@ const ITEM_CLASS =
   "hover:bg-muted flex min-h-11 w-full items-center gap-2 px-4 py-2 text-sm transition-colors " +
   "disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-transparent";
 
-function MenuItem({
+export function MenuItem({
   Icon,
   children,
   href,
@@ -272,8 +273,8 @@ function MenuItem({
   href?: string;
   /** Pullik imkoniyat — yonida yulduzcha koʻrinadi. */
   pro?: boolean;
-  /** Klaviatura yorligʻi — faqat koʻrsatish uchun. */
-  shortcut?: string;
+  /** Klaviatura yorligʻi — faqat koʻrsatish uchun. Massiv — `ShortcutKeys` (`["Mod", "Z"]`). */
+  shortcut?: string | readonly string[];
   /** Band ostidagi izoh — masalan nega nofaol ekani. */
   hint?: string;
   /** Band menyu ichida yangi boʻlim ochadi — oʻngda strelka. */
@@ -287,11 +288,13 @@ function MenuItem({
         {hint && <span className="text-muted-foreground block text-xs">{hint}</span>}
       </span>
       {pro && <ProBadge />}
-      {shortcut && (
+      {typeof shortcut === "string" ? (
         <kbd className="text-muted-foreground rounded border px-1.5 font-mono text-xs leading-5">
           {shortcut}
         </kbd>
-      )}
+      ) : shortcut ? (
+        <ShortcutKeys keys={shortcut} />
+      ) : null}
       {next && <IconArrowRight className="text-muted-foreground size-4 shrink-0" />}
     </>
   );
