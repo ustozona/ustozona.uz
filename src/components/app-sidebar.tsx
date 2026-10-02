@@ -41,7 +41,7 @@ import {
   Home,
   Target,
   BookMarked,
-  Newspaper,
+  BookOpenText,
   MessagesSquare,
   Megaphone,
   CircleHelp,
@@ -121,7 +121,7 @@ const navGroups: NavGroup[] = [
    `isMobile` chegarasi ham `md` — ikki joyda bir vaqtda koʻrinmaydi. */
 const footerItems: NavItem[] = [
   { href: "/dashboard/changelog", labelKey: "changelog", icon: Megaphone, badgeKey: "changelog" },
-  { href: "/blog", labelKey: "blog", icon: Newspaper, mobileOnly: true },
+  { href: "/blog", labelKey: "blog", icon: BookOpenText, mobileOnly: true },
   { href: "/help", labelKey: "help", icon: CircleHelp },
   { href: "/dashboard/feedback", labelKey: "feedback", icon: MessagesSquare },
   { href: "/dashboard/settings", labelKey: "settings", icon: Settings },
