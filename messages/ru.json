@@ -5992,7 +5992,13 @@
       "scanned": "С телефона: {added} учеников, {answers} ответов",
       "newQr": "Новый QR",
       "disconnect": "Отключить",
-      "templateName": "Имя Фамилия"
+      "templateName": "Имя Фамилия",
+      "tgSend": "Отправить в Telegram",
+      "tgSending": "Отправляем…",
+      "tg_sent": "Отправлено — нажмите «Pultni ochish» в Telegram на телефоне.",
+      "tg_bot": "Telegram-бот не настроен.",
+      "tg_not_linked": "Telegram не привязан — Настройки → Telegram.",
+      "tg_failed": "Не удалось отправить — используйте QR."
     }
   },
   "LessonPlanWizard": {
@@ -6407,6 +6413,10 @@
     "entryLogin": "Отсканируйте QR на доске или войдите в Ustozona — после входа QR не нужен.",
     "login": "Войти",
     "scanQuick": "Написано от руки",
-    "showTemplate": "Шаблон на доску"
+    "showTemplate": "Шаблон на доску",
+    "scanPult": "Пульты (радио)",
+    "pultAnswered": "Ответили {answered} из {total}",
+    "pultNotConnected": "Приёмник не подключён — один раз нажмите «Подключить приёмник» на компьютере, дальше он подключится сам.",
+    "pultSaveHint": "В конце нажмите «Завершить и сохранить» на компьютере — ответы попадут в Задания."
   }
 }

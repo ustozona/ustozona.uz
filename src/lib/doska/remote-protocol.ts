@@ -27,6 +27,8 @@ export type RemoteCommand =
   | { type: "step"; to: "next" | "prev" }
   | { type: "reveal" }
   | { type: "curtain" }
+  /** Radio pult rejimini Doskada ochish (joriy taqdimot testi bilan). */
+  | { type: "pult" }
   /** Tezkor tekshirish: javob shablonini yangi ekranga chiqarish (savollar soni). */
   | { type: "template"; count: number }
   | { type: "scanned"; added: number; answers: number };
@@ -70,6 +72,16 @@ export type RemoteState = {
   lessonTitle: string | null;
   /** Parda (ekran yopiq) yoqilganmi. */
   curtain: boolean;
+  /** Radio pult rejimi ochiq boʻlsa — qadam va javob unga yuboriladi. */
+  pult: {
+    title: string;
+    index: number;
+    total: number;
+    answered: number;
+    rosterSize: number;
+    revealed: boolean;
+    connected: boolean;
+  } | null;
   sentAt: number;
 };
 
@@ -85,6 +97,7 @@ export function parseRemoteCommand(raw: unknown): RemoteCommand | null {
     case "hello":
     case "reveal":
     case "curtain":
+    case "pult":
       return { type: raw.type };
     case "screen":
     case "step":

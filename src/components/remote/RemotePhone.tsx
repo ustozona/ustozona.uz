@@ -4,7 +4,7 @@ import * as React from "react";
 import { useTranslations } from "next-intl";
 import {
   ChevronLeft, ChevronRight, Eye, EyeOff, FileText, IdCard, LayoutTemplate, Loader2, MonitorUp, PenLine, Presentation, ScanLine,
-  Smartphone, X,
+  RadioReceiver, Smartphone, X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -155,8 +155,52 @@ export function RemotePhone({ ticket, topic, config }: { ticket: string; topic: 
         </section>
       )}
 
+      {/* Radio pult rejimi — Doskada ochiq boʻlsa qadam unga boradi */}
+      {state?.pult && (
+        <section className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4">
+          <div className="flex items-center gap-2">
+            <RadioReceiver className="size-4 shrink-0 text-muted-foreground" />
+            <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{state.pult.title}</span>
+            <span className="shrink-0 font-mono text-sm tabular-nums text-muted-foreground">
+              {state.pult.total ? state.pult.index + 1 : 0} / {state.pult.total}
+            </span>
+          </div>
+          <p className="text-body text-foreground">
+            {t("pultAnswered", { answered: state.pult.answered, total: state.pult.rosterSize })}
+          </p>
+          {!state.pult.connected && <p className="text-caption text-warning">{t("pultNotConnected")}</p>}
+          <Button
+            variant="secondary"
+            className="h-12 w-full gap-2 text-base"
+            disabled={state.pult.revealed}
+            onClick={() => command({ type: "reveal" })}
+          >
+            <Eye className="size-5" /> {t("revealAnswer")}
+          </Button>
+          <div className="grid grid-cols-[1fr_2fr] gap-2">
+            <Button
+              variant="outline"
+              className="h-16 shadow-none"
+              disabled={state.pult.index <= 0}
+              onClick={() => command({ type: "step", to: "prev" })}
+              aria-label={t("prevStep")}
+            >
+              <ChevronLeft className="size-6" />
+            </Button>
+            <Button
+              className="h-16 gap-1 text-lg"
+              disabled={state.pult.index >= state.pult.total - 1}
+              onClick={() => command({ type: "step", to: "next" })}
+            >
+              {t("nextStep")} <ChevronRight className="size-6" />
+            </Button>
+          </div>
+          <p className="text-caption text-muted-foreground">{t("pultSaveHint")}</p>
+        </section>
+      )}
+
       {/* Taqdimot — joriy qadam */}
-      {state && pres && (
+      {state && pres && !state.pult && (
         <section className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4">
           <div className="flex items-center gap-2">
             <Presentation className="size-4 shrink-0 text-muted-foreground" />
@@ -217,6 +261,15 @@ export function RemotePhone({ ticket, topic, config }: { ticket: string; topic: 
             <Button variant="outline" className="h-14 justify-start gap-2 shadow-none" disabled={!!scanBusy} onClick={() => void openScanner("quick")}>
               {scanBusy === "quick" ? <Loader2 className="size-5 animate-spin" /> : <PenLine className="size-5" />}
               {t("scanQuick")}
+            </Button>
+            <Button
+              variant="outline"
+              className="h-14 justify-start gap-2 shadow-none"
+              disabled={Boolean(state.pult)}
+              onClick={() => command({ type: "pult" })}
+            >
+              <RadioReceiver className="size-5" />
+              {t("scanPult")}
             </Button>
             <Button
               variant="outline"

@@ -10,6 +10,9 @@ import { signScanTicket } from "@/server/baholash/scan-ticket";
 import { isConfigured } from "@/server/lessonlab/baholash";
 import { newRemoteTicket, verifyRemoteTicket } from "@/server/remote/remote-ticket";
 import { saveActiveRemote } from "@/server/dal/doska-remote";
+import { activeChatFor } from "@/server/telegram/bot";
+import { isTelegramBotEnabled } from "@/server/telegram/config";
+import { sendMessage } from "@/server/telegram/api";
 
 /* ════════════════════════════════════════════════════════════════════
    USTOZ PULTI — server amallari (docs/ustoz-pulti-spec.md).
@@ -103,4 +106,32 @@ export async function remoteScanTicketAction(input: z.infer<typeof scanSchema>) 
     engineReady: isConfigured(),
     plan: { testRef: plan.testRef, questionCount: plan.questionCount, roster: plan.roster },
   };
+}
+
+/**
+ * Doska: pult havolasini oʻqituvchining Telegramiga yuborish.
+ *
+ * QR skanerlashdan ham tezroq: telefonda bildirishnoma keladi, bitta
+ * bosish — pult ochiladi (kirish shart emas, chipta havolada). Havola
+ * mijozdan OLINMAYDI — serverdagi oxirgi chiptadan quriladi, shuning
+ * uchun bu amal orqali ixtiyoriy havola yuborib boʻlmaydi.
+ */
+export async function sendRemoteToTelegramAction() {
+  const teacher = await requireTeacher();
+  if (!isTelegramBotEnabled()) return { ok: false as const, reason: "bot" as const };
+  const ticket = await myActiveRemoteAction();
+  if (!ticket) return { ok: false as const, reason: "no_remote" as const };
+  const chatId = await activeChatFor(teacher.id);
+  if (!chatId) return { ok: false as const, reason: "not_linked" as const };
+  const url = `${await originFromHeaders()}/pult/${ticket}`;
+  try {
+    await sendMessage(
+      chatId,
+      "📱 <b>Doska pulti</b>\nTugmani bosing — darsni telefondan boshqarasiz: slaydlar, «Javobni ochish», QR-karta va varaq skaneri.",
+      { inline_keyboard: [[{ text: "Pultni ochish", url }]] },
+    );
+  } catch {
+    return { ok: false as const, reason: "send" as const };
+  }
+  return { ok: true as const };
 }

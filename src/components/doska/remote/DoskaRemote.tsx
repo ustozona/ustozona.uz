@@ -9,7 +9,8 @@ import { Dialog, DialogDescription, DialogOverlay, DialogPortal, DialogTitle } f
 import { Z_SHORTCUTS, Z_SHORTCUTS_SCRIM } from "@/lib/doska/layers";
 import { useDoskaStore } from "@/lib/doska/store";
 import { widgetMeta } from "@/lib/doska/registry";
-import { presentationEntry, subscribePresentations } from "@/lib/doska/remote-bus";
+import { presentationEntry, pultEntry, subscribePresentations } from "@/lib/doska/remote-bus";
+import { PultRunner } from "@/components/launch/PultRunner";
 import { lessonTitle } from "@/lib/doska/lesson-handoff";
 import { quickTemplateText } from "@/lib/quick-check";
 import {
@@ -17,7 +18,7 @@ import {
 } from "@/lib/doska/remote-protocol";
 import type { RealtimeConfig } from "@/lib/live-session";
 import { useRealtimeChannel } from "@/hooks/useRealtimeChannel";
-import { startDoskaRemoteAction } from "@/server/actions/doska-remote";
+import { sendRemoteToTelegramAction, startDoskaRemoteAction } from "@/server/actions/doska-remote";
 import { BarIconButton } from "../BarGroup";
 import { IconClose, IconPhone } from "../icons";
 
@@ -92,6 +93,20 @@ export function DoskaRemote() {
   const [phoneSeen, setPhoneSeen] = React.useState(0);
   const [lastScan, setLastScan] = React.useState<{ added: number; answers: number; at: number } | null>(null);
   const [now, setNow] = React.useState(0);
+  /** Radio pult rejimi — telefondan ochiladi, kompyuterda Web Serial. */
+  const [pultFor, setPultFor] = React.useState<{ setId: string; classId: string } | null>(null);
+  /** «Telegramga yuborish» natijasi — oynada bir qator. */
+  const [tg, setTg] = React.useState<"sending" | "sent" | "bot" | "not_linked" | "failed" | null>(null);
+
+  async function sendToTelegram() {
+    setTg("sending");
+    try {
+      const res = await sendRemoteToTelegramAction();
+      setTg(res.ok ? "sent" : res.reason === "bot" || res.reason === "not_linked" ? res.reason : "failed");
+    } catch {
+      setTg("failed");
+    }
+  }
 
   React.useEffect(() => setSession(readSession()), []);
 
@@ -180,6 +195,7 @@ export function DoskaRemote() {
       presentation: entry && pres ? { widgetId: pres.id, ...entry.status } : null,
       lessonTitle: lessonTitle(),
       curtain,
+      pult: pultEntry()?.status ?? null,
       sentAt: 0,
     };
   }, [screensSig, busVersion, activeId, curtain, tw]);
@@ -218,7 +234,8 @@ export function DoskaRemote() {
         return;
       case "step":
       case "reveal": {
-        const entry = pres ? presentationEntry(pres.widgetId) : undefined;
+        // Pult rejimi ochiq boʻlsa — buyruq unga (taqdimot orqada qoladi).
+        const entry = pultEntry() ?? (pres ? presentationEntry(pres.widgetId) : undefined);
         if (!entry) return;
         if (cmd.type === "reveal") entry.control.reveal();
         else if (cmd.to === "next") entry.control.next();
@@ -227,6 +244,9 @@ export function DoskaRemote() {
       }
       case "curtain":
         store.setCurtain(!store.curtain);
+        return;
+      case "pult":
+        if (pres?.classId) setPultFor({ setId: pres.setId, classId: pres.classId });
         return;
       case "template": {
         // Tezkor tekshirish: oʻquvchi shu shablonni qogʻozga koʻchiradi.
@@ -276,6 +296,15 @@ export function DoskaRemote() {
           />
         )}
       </BarIconButton>
+
+      {pultFor && (
+        <PultRunner
+          setId={pultFor.setId}
+          classId={pultFor.classId}
+          onClose={() => setPultFor(null)}
+          onSaved={() => setPultFor(null)}
+        />
+      )}
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogPortal>
@@ -332,6 +361,20 @@ export function DoskaRemote() {
                   </p>
                   <p className="text-muted-foreground text-xs leading-relaxed">{t("scanHint")}</p>
                   <p className="text-muted-foreground text-xs leading-relaxed">{t("loggedInHint")}</p>
+                  {/* Telegram — QR'dan ham tez: telefonda bildirishnoma, bitta bosish. */}
+                  <button
+                    type="button"
+                    disabled={tg === "sending"}
+                    onClick={() => void sendToTelegram()}
+                    className="hover:bg-muted h-10 w-full rounded-lg border px-3 text-sm font-medium transition-colors disabled:opacity-60"
+                  >
+                    {tg === "sending" ? t("tgSending") : t("tgSend")}
+                  </button>
+                  {tg && tg !== "sending" && (
+                    <p className={cn("text-xs", tg === "sent" ? "text-success" : "text-muted-foreground")}>
+                      {t(`tg_${tg}`)}
+                    </p>
+                  )}
                   {scanFresh && (
                     <p className="bg-muted rounded-md px-3 py-1.5 text-xs">
                       {t("scanned", { added: lastScan!.added, answers: lastScan!.answers })}

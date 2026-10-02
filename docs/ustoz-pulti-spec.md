@@ -128,11 +128,32 @@ Maxsus varaq chop etish shart emas:
 Provayder: `StreamChatArgs.image` (faqat Gemini; rasm boʻlsa zanjir
 Gemini bilan cheklanadi — boshqa model rasmsiz javob toʻqimasin).
 
-## 8. Keyingi bosqichlar
+## 8. Radio pult (3-bosqich)
 
-1. **Pult (radio)** — Doska dars rejimida qabul qilgichni ulash, telefon
-   — boshqaruv.
-2. **Kartani savolga bogʻlash** — QR-karta skaneri Doskadagi joriy savol
+- Telefonda **«Pult (radio)»** → Doskada joriy taqdimot testi bilan pult
+  rejimi ochiladi (mavjud `PultRunner`, Topshiriqlardagi bilan bir yoʻl).
+- **Bosishsiz qayta ulanish:** brauzer qabul qilgichga ilgari ruxsat
+  bergan boʻlsa (`navigator.serial.getPorts()`), port tanlash oynasisiz
+  ulanadi. Birinchi ruxsat — baribir kompyuterda bir marta (brauzer
+  qoidasi, chetlab boʻlmaydi).
+- Pult ochiq boʻlsa telefondagi «Keyingi» / «Javobni koʻrsatish» unga
+  boradi (`remote-bus` → `publishPult`), telefonda «N / M javob berdi».
+- Saqlash — kompyuterda «Tugatish va saqlash» (avvalgidek).
+
+## 9. Telegram va Ustozona ilovasi (4-bosqich)
+
+- **Telegramga yuborish** — Doskadagi pult oynasida tugma: bot
+  oʻqituvchining Telegramiga «Pultni ochish» tugmali xabar yuboradi
+  (`sendRemoteToTelegramAction`). Havola mijozdan olinmaydi — serverdagi
+  oxirgi chiptadan quriladi. Telegram bogʻlanmagan boʻlsa — aniq sabab.
+- **Ilova** — `GET /api/mobile/v1/remote` (Bearer): oxirgi Doskaning pult
+  havolasi. Ilova uni brauzerda ochadi — brauzerda kirish shart emas.
+  Ilova tomoni (LessonLab repo, `mobile/`) — Skaner boʻlimida
+  «Doska pulti».
+
+## 10. Keyingi bosqichlar
+
+1. **Kartani savolga bogʻlash** — QR-karta skaneri Doskadagi joriy savol
    bilan sinxron (hozir skaner savollarni oʻzi sanaydi).
-3. **Ustozona ilovasi** — Skaner boʻlimida «Pult» → `/pult` (ilova
-   ichida, kirish bilan); **bot** — `/pult` havolasi.
+2. **Ilova ichida native kamera** — QR-karta skanerini WebView'siz,
+   ilovaning oʻz kamerasi bilan (hozir brauzer sahifasi).

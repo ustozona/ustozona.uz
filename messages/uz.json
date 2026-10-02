@@ -5803,7 +5803,13 @@
       "scanned": "Telefondan: {added} oʻquvchi, {answers} javob yozildi",
       "newQr": "Yangi QR",
       "disconnect": "Uzish",
-      "templateName": "Ism Familiya"
+      "templateName": "Ism Familiya",
+      "tgSend": "Telegramga yuborish",
+      "tgSending": "Yuborilmoqda…",
+      "tg_sent": "Yuborildi — telefoningizdagi Telegramda «Pultni ochish» ni bosing.",
+      "tg_bot": "Telegram bot sozlanmagan.",
+      "tg_not_linked": "Telegram hisobingiz bogʻlanmagan — Sozlamalar → Telegram.",
+      "tg_failed": "Yuborib boʻlmadi — QR dan foydalaning."
     }
   },
   "LessonPlanWizard": {
@@ -6218,6 +6224,10 @@
     "entryLogin": "Doskadagi QR ni skanerlang yoki Ustozona'ga kiring — kirgan boʻlsangiz QR kerak emas.",
     "login": "Kirish",
     "scanQuick": "Qoʻlda yozilgan",
-    "showTemplate": "Shablon doskaga"
+    "showTemplate": "Shablon doskaga",
+    "scanPult": "Pult (radio)",
+    "pultAnswered": "{answered} / {total} oʻquvchi javob berdi",
+    "pultNotConnected": "Qabul qilgich ulanmagan — kompyuterda «Qabul qilgichni ulash» ni bir marta bosing, keyingi safar oʻzi ulanadi.",
+    "pultSaveHint": "Oxirida kompyuterda «Tugatish va saqlash» — javoblar Topshiriqlarga yoziladi."
   }
 }

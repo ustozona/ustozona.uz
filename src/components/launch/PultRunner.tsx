@@ -28,6 +28,7 @@ import {
 import { cn } from "@/lib/utils";
 import type { PultPlan } from "@/lib/launch-types";
 import { pultPlanAction } from "@/server/actions/assess-runs";
+import { publishPult, unpublishPult } from "@/lib/doska/remote-bus";
 
 /* ════════════════════════════════════════════════════════════════════
    PULT REJIMI — radio pultlar bilan test, natija Ustozona jurnaliga.
@@ -61,7 +62,11 @@ type SerialPortLike = {
   readable: ReadableStream<Uint8Array> | null;
   writable: WritableStream<Uint8Array> | null;
 };
-type SerialLike = { requestPort(): Promise<SerialPortLike> };
+type SerialLike = {
+  requestPort(): Promise<SerialPortLike>;
+  /** Ilgari ruxsat berilgan portlar — bosishsiz qayta ulanish uchun. */
+  getPorts?(): Promise<SerialPortLike[]>;
+};
 
 function serialApi(): SerialLike | null {
   if (typeof navigator === "undefined") return null;
@@ -217,7 +222,7 @@ export function PultRunner({
 
   useEffect(() => () => void disconnect(), [disconnect]);
 
-  async function connect() {
+  async function connect(given?: SerialPortLike) {
     const serial = serialApi();
     if (!serial) {
       setConn("error");
@@ -226,7 +231,7 @@ export function PultRunner({
     }
     setConn("connecting");
     try {
-      const port = await serial.requestPort();
+      const port = given ?? (await serial.requestPort());
       await port.open({ baudRate: 9600 });
       portRef.current = port;
       // O'rganish rejimida qolib ketgan boʻlsa — sinf rejimiga.
@@ -360,6 +365,52 @@ export function PultRunner({
       onClose();
     }
   }
+
+  /* Bosishsiz qayta ulanish: brauzer qabul qilgichga ilgari ruxsat bergan
+     boʻlsa (`getPorts`), port tanlash oynasisiz ulanadi. Birinchi marta
+     ruxsat — baribir «Qurilmani ulash» bilan (brauzer qoidasi). Doskadan
+     telefon orqali ochilganda oʻqituvchi kompyuterga qaytmasligi uchun. */
+  const connectRef = useRef<((port: SerialPortLike) => Promise<void>) | null>(null);
+  useEffect(() => {
+    connectRef.current = connect;
+  });
+  const autoTried = useRef(false);
+  useEffect(() => {
+    if (autoTried.current) return;
+    autoTried.current = true;
+    const serial = serialApi();
+    serial
+      ?.getPorts?.()
+      .then((ports) => {
+        if (ports[0]) void connectRef.current?.(ports[0]);
+      })
+      .catch(() => {});
+  }, []);
+
+  /* Ustoz pulti — telefon savolni oʻtkazadi va javobni ochadi
+     (`lib/doska/remote-bus.ts`). Klaviatura bilan bir xil amallar. */
+  useEffect(() => {
+    if (!plan) return;
+    publishPult(
+      {
+        next: () => setQIndex((i) => Math.min(i + 1, Math.max(questions.length - 1, 0))),
+        prev: () => setQIndex((i) => Math.max(i - 1, 0)),
+        reveal: () => {
+          if (question && !revealed.includes(question.no)) setRevealed((prev) => [...prev, question.no]);
+        },
+      },
+      {
+        title: plan.title,
+        index: qIndex,
+        total: questions.length,
+        answered: answeredCount,
+        rosterSize: available.length,
+        revealed: isRevealed,
+        connected: conn === "connected",
+      },
+    );
+  });
+  useEffect(() => () => unpublishPult(), []);
 
   // Klaviatura: ← → savollar, Space — javobni koʻrsatish.
   useEffect(() => {
