@@ -19,6 +19,8 @@ import {
   Copy,
   Trash2,
   SlidersHorizontal,
+  PanelLeftClose,
+  PanelLeftOpen,
   Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -206,6 +208,63 @@ export default function AssignmentEditorOverlay({
   const patchDraft = useAssignmentEditorStore((s) => s.patchDraft);
 
   const [panelOpen, setPanelOpen] = useState(true);
+  const [toolsOpen, setToolsOpen] = useState(true);
+  const [toolsWidth, setToolsWidth] = useState(310);
+  const [customDetailsWidth, setCustomDetailsWidth] = useState<number | null>(null);
+  const workspaceRef = useRef<HTMLDivElement>(null);
+  const [workspaceWidth, setWorkspaceWidth] = useState(0);
+  const detailsWidth = customDetailsWidth ?? detailsPanelWidth;
+  const toolsPanelWidth = toolsOpen ? toolsWidth : 56;
+  const detailsWidthShown = panelOpen ? detailsWidth : 0;
+  const resizeStart = useRef<{ side: "tools" | "details"; x: number; width: number } | null>(null);
+
+  useEffect(() => {
+    const workspace = workspaceRef.current;
+    if (!workspace) return;
+    const observer = new ResizeObserver(() => setWorkspaceWidth(workspace.clientWidth));
+    observer.observe(workspace);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!workspaceWidth || workspaceWidth < 1024) return;
+    const available = workspaceWidth - 56 - 16 - 320;
+    const nextTools = toolsOpen ? Math.min(toolsWidth, Math.max(210, available - (panelOpen ? 240 : 0))) : 56;
+    const nextDetails = panelOpen ? Math.min(detailsWidth, Math.max(240, available - nextTools)) : 0;
+    if (toolsOpen && nextTools !== toolsWidth) setToolsWidth(nextTools);
+    if (panelOpen && nextDetails !== detailsWidth) setCustomDetailsWidth(nextDetails);
+  }, [workspaceWidth, toolsOpen, panelOpen, toolsWidth, detailsWidth]);
+
+  function resizeLimit(side: "tools" | "details", next: number) {
+    const available = (workspaceWidth || window.innerWidth) - 56 - 16 - 320;
+    const other = side === "tools" ? detailsWidthShown : toolsPanelWidth;
+    const minimum = side === "tools" ? 210 : 240;
+    return Math.max(minimum, Math.min(next, Math.max(minimum, available - other)));
+  }
+
+  function startResize(side: "tools" | "details", event: React.PointerEvent<HTMLDivElement>) {
+    if (event.button !== 0) return;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    resizeStart.current = { side, x: event.clientX, width: side === "tools" ? toolsWidth : detailsWidth };
+    event.preventDefault();
+  }
+
+  function moveResize(event: React.PointerEvent<HTMLDivElement>) {
+    const start = resizeStart.current;
+    if (!start) return;
+    const delta = (event.clientX - start.x) * (start.side === "tools" ? 1 : -1);
+    const next = resizeLimit(start.side, start.width + delta);
+    if (start.side === "tools") setToolsWidth(next);
+    else setCustomDetailsWidth(next);
+  }
+
+  function keyboardResize(side: "tools" | "details", event: React.KeyboardEvent<HTMLDivElement>) {
+    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+    event.preventDefault();
+    const delta = (event.key === "ArrowRight" ? 24 : -24) * (side === "tools" ? 1 : -1);
+    if (side === "tools") setToolsWidth((width) => resizeLimit(side, width + delta));
+    else setCustomDetailsWidth(resizeLimit(side, detailsWidth + delta));
+  }
   const [confirmDelete, setConfirmDelete] = useState(false);
   /* Biriktirilgan toʻplam pasporti (nom · savol soni · maks. ball).
      Toʻplamning butun qoralamasi kerak emas — shuning uchun yengil amal. */
@@ -908,14 +967,27 @@ export default function AssignmentEditorOverlay({
         </div>
 
         {/* Vositalar · materiallar ketma-ketligi · tafsilotlar. */}
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
-          <aside className="shrink-0 border-b border-border bg-muted/10 p-4 lg:w-[310px] lg:overflow-y-auto lg:border-b-0 lg:border-r">
+        <div ref={workspaceRef} className="flex min-h-0 flex-1 flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
+          <aside
+            className="shrink-0 border-b border-border bg-muted/10 p-4 lg:w-[var(--tools-width)] lg:overflow-y-auto lg:border-b-0 lg:p-0"
+            style={{ "--tools-width": `${toolsPanelWidth}px` } as CSSProperties}
+          >
             <button type="button" className="flex w-full items-center justify-between text-sm font-semibold lg:hidden" onClick={() => setPaletteOpen((open) => !open)} aria-expanded={paletteOpen}>
               {t("sequenceTools")}
               <ChevronDown className={cn("size-4 transition-transform", paletteOpen && "rotate-180")} />
             </button>
-            <div className={cn("mt-4 lg:mt-0", !paletteOpen && "hidden lg:block")}>
-              <h2 className="mb-4 hidden text-sm font-semibold text-foreground lg:block">{t("sequenceTools")}</h2>
+            {!toolsOpen && (
+              <button type="button" className="hidden size-14 items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground lg:flex" onClick={() => setToolsOpen(true)} aria-label={t("expandTools")} title={t("expandTools")}>
+                <PanelLeftOpen className="size-5" />
+              </button>
+            )}
+            <div className={cn("mt-4 lg:m-0 lg:p-4", !paletteOpen && "hidden lg:block", !toolsOpen && "lg:hidden")}>
+              <div className="mb-4 hidden items-center justify-between gap-2 lg:flex">
+                <h2 className="min-w-0 truncate text-sm font-semibold text-foreground">{t("sequenceTools")}</h2>
+                <button type="button" className="flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground" onClick={() => setToolsOpen(false)} aria-label={t("collapseTools")} title={t("collapseTools")}>
+                  <PanelLeftClose className="size-4" />
+                </button>
+              </div>
               {isDraft && (
                 <details className="mb-4 rounded-xl border border-border bg-card p-3">
                   <summary className="cursor-pointer text-sm font-medium text-foreground">{t("sequencePlan")}</summary>
@@ -947,6 +1019,11 @@ export default function AssignmentEditorOverlay({
               />
             </div>
           </aside>
+          {toolsOpen && (
+            <div role="separator" aria-orientation="vertical" aria-label={t("resizeTools")} aria-valuemin={210} aria-valuemax={Math.max(210, workspaceWidth - 56 - 16 - 320 - detailsWidthShown)} aria-valuenow={toolsWidth} tabIndex={0} onPointerDown={(event) => startResize("tools", event)} onPointerMove={moveResize} onPointerUp={() => { resizeStart.current = null; }} onPointerCancel={() => { resizeStart.current = null; }} onLostPointerCapture={() => { resizeStart.current = null; }} onKeyDown={(event) => keyboardResize("tools", event)} className="group relative hidden w-2 shrink-0 cursor-col-resize touch-none items-center justify-center border-x border-border/70 hover:bg-primary/10 focus-visible:outline-2 focus-visible:outline-primary lg:flex">
+              <span className="h-9 w-0.5 rounded-full bg-border group-hover:bg-primary group-focus-visible:bg-primary" />
+            </div>
+          )}
           <div className="min-w-0 flex-1 p-4 lg:min-h-0 lg:overflow-y-auto lg:scrollbar-thin lg:p-6">
             <div className="mx-auto flex max-w-2xl flex-col gap-6">
               <div className="flex flex-col gap-1.5">
@@ -991,16 +1068,20 @@ export default function AssignmentEditorOverlay({
             </div>
           </div>
 
+          {panelOpen && (
+            <div role="separator" aria-orientation="vertical" aria-label={t("resizeDetails")} aria-valuemin={240} aria-valuemax={Math.max(240, workspaceWidth - 56 - 16 - 320 - toolsPanelWidth)} aria-valuenow={detailsWidth} tabIndex={0} onPointerDown={(event) => startResize("details", event)} onPointerMove={moveResize} onPointerUp={() => { resizeStart.current = null; }} onPointerCancel={() => { resizeStart.current = null; }} onLostPointerCapture={() => { resizeStart.current = null; }} onKeyDown={(event) => keyboardResize("details", event)} className="group relative hidden w-2 shrink-0 cursor-col-resize touch-none items-center justify-center border-x border-border/70 hover:bg-primary/10 focus-visible:outline-2 focus-visible:outline-primary lg:flex">
+              <span className="h-9 w-0.5 rounded-full bg-border group-hover:bg-primary group-focus-visible:bg-primary" />
+            </div>
+          )}
           <aside
             className={cn(
               "shrink-0 overflow-hidden border-t border-border bg-card lg:w-[var(--panel-width)] lg:border-l lg:border-t-0",
-              "lg:transition-[width] lg:duration-200 lg:ease-out",
               !panelOpen && "hidden lg:block",
             )}
-            style={{ "--panel-width": `${panelOpen ? detailsPanelWidth : 0}px`, "--inner-width": `${detailsPanelWidth}px` } as CSSProperties}
+            style={{ "--panel-width": `${detailsWidthShown}px` } as CSSProperties}
           >
             <div
-              className="flex flex-col lg:h-full lg:w-[var(--inner-width)]"
+              className="flex flex-col lg:h-full lg:w-full"
             >
               <EditorSidePanelHeader
                 icon={<SlidersHorizontal />}
