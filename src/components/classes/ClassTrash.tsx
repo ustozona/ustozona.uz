@@ -13,7 +13,7 @@ import {
   trashClassesAction,
 } from "@/server/actions/class-trash";
 import { TRASH_DAYS, type ClassTrashPreview, type TrashedClass } from "@/lib/class-trash";
-import { reloadGradesFromServer } from "@/components/sync/GradesServerSync";
+import { flushGradesToServer, reloadGradesFromServer } from "@/components/sync/GradesServerSync";
 import { useGradesStore } from "@/store/useGradesStore";
 import { classColor, type ClassData } from "@/lib/grades-data";
 import { CLASS_COLOR_HEX, type ClassColor } from "@/lib/class-colors";
@@ -90,7 +90,10 @@ export function TrashClassDialog({
     setPreview(null);
     if (!targets || targets.length === 0) return;
     let alive = true;
-    previewClassTrashAction({ classIds: targets.map((c) => c.id) })
+    /* Avval kutilayotgan tahrirlar (masalan hozirgina bosilgan «Arxivlash»)
+       serverga yetsin — aks holda server sinfni hali faol deb biladi. */
+    flushGradesToServer()
+      .then(() => previewClassTrashAction({ classIds: targets.map((c) => c.id) }))
       .then((r) => alive && setPreview(unwrap(r)))
       .catch(() => {
         if (!alive) return;
@@ -106,6 +109,7 @@ export function TrashClassDialog({
   const leave = preview?.filter((p) => p.mode === "leave") ?? [];
   const sum = (k: "students" | "grades" | "attendance") => trash.reduce((s, p) => s + p[k], 0);
   const coTeachers = [...new Set(trash.flatMap((p) => p.otherTeachers))];
+  const notArchived = preview?.filter((p) => p.mode === "not_archived") ?? [];
   const onlyLeave = !!preview && trash.length === 0 && leave.length > 0;
 
   const confirm = async () => {
@@ -114,6 +118,8 @@ export function TrashClassDialog({
     if (ids.length === 0) return onClose();
     setBusy(true);
     try {
+      // Yuborilmagan tahrir qolmasin: pastdagi reload ularni ustidan yozardi.
+      await flushGradesToServer();
       const res = unwrap(await trashClassesAction({ classIds: ids }));
       await reloadGradesFromServer();
       if (res.trashed > 0) {
@@ -167,6 +173,9 @@ export function TrashClassDialog({
                     </div>
                   )}
                   {coTeachers.length > 0 && <p>{t("trashCoTeachers", { names: coTeachers.join(", ") })}</p>}
+                  {notArchived.length > 0 && (
+                    <p>{t("trashNotArchived", { names: notArchived.map((p) => p.name).join(", ") })}</p>
+                  )}
                   {leave.length > 0 && (
                     <p>
                       {leave.length === 1

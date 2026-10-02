@@ -1252,6 +1252,7 @@
     "leaveConfirm": "Sabaqtan shıǵıw",
     "leaveToast": "{count} klasstan shıqtıńız",
     "trashExport": "Jurnaldı Excel'ge júklep alıw",
+    "trashNotArchived": "Aktiv klasstı óshiriw múmkin emes — aldın arxivleń: {names}. Házir ǵana arxivlegen bolsańız, azǵana kútip qaytadan urınıp kóriń.",
     "trashLoading": "Tekserilmekte…",
     "trashToast": "«{name}» sebetke taslandı — {days} kún ishinde tiklew múmkin",
     "trashBulkToast": "{count} klass sebetke taslandı — {days} kún ishinde tiklew múmkin",

@@ -1252,6 +1252,7 @@
     "leaveConfirm": "Darsdan chiqish",
     "leaveToast": "{count} ta sinfdan chiqdingiz",
     "trashExport": "Jurnalni Excel'ga yuklab olish",
+    "trashNotArchived": "Faol sinfni oʻchirib boʻlmaydi — avval arxivlang: {names}. Hozirgina arxivlagan boʻlsangiz, bir oz kutib qayta urinib koʻring.",
     "trashLoading": "Tekshirilmoqda…",
     "trashToast": "«{name}» savatga tashlandi — {days} kun ichida tiklash mumkin",
     "trashBulkToast": "{count} ta sinf savatga tashlandi — {days} kun ichida tiklash mumkin",

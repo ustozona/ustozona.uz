@@ -332,24 +332,33 @@ export async function restoreClasses(classIds: string[]): Promise<number> {
 /** Muddatini kutmasdan butunlay oʻchirish — faqat savatdagi sinf. */
 export async function purgeClassesNow(classIds: string[]): Promise<number> {
   const { ctx, allowed } = await manageableTrashed(classIds);
+  let purged = 0;
   for (const a of allowed) {
-    // Audit OLDIN: keyin nom ham, qator ham qolmaydi.
+    // Audit KEYIN: oʻchmagan (oraliqda tiklangan) sinf «oʻchirildi» deb yozilmasin.
+    if (!(await hardDeleteClass(a.id))) continue;
+    purged += 1;
     await writeWorkspaceAudit(ctx, {
       action: "class.purge",
       targetType: "class",
       targetId: a.id,
       targetLabel: a.name,
     }).catch(() => {});
-    await hardDeleteClass(a.id);
   }
-  return allowed.length;
+  return purged;
 }
 
 /**
  * Muddati oʻtgan savatni tozalaydi — cron chaqiradi (sessiyasiz).
  * Bir chaqiruvda koʻpi bilan `limit` ta sinf: qolgani keyingi safar.
+ *
+ * ⚠️ Har sinf ALOHIDA try/catch'da. Aks holda bitta yiqiladigan sinf
+ * (masalan prod'dagi DELETE triggeri xato bersa) butun chaqiruvni
+ * toʻxtatardi va u `deleted_at` boʻyicha birinchi turgani uchun keyingi
+ * har kuni ham aynan shu yerda toʻxtab, savat abadiy tozalanmasdi.
  */
-export async function purgeExpiredClasses(limit = 100): Promise<{ purged: number }> {
+export async function purgeExpiredClasses(
+  limit = 100
+): Promise<{ purged: number; failed: number }> {
   const cutoff = new Date(Date.now() - TRASH_DAYS * 24 * 60 * 60 * 1000);
   const rows = await db
     .select({ id: classes.id, name: classes.name, workspaceId: classes.workspaceId })
@@ -358,7 +367,18 @@ export async function purgeExpiredClasses(limit = 100): Promise<{ purged: number
     .orderBy(asc(classes.deletedAt))
     .limit(limit);
 
+  let purged = 0;
+  let failed = 0;
   for (const r of rows) {
+    try {
+      if (!(await hardDeleteClass(r.id))) continue;
+    } catch (err) {
+      failed += 1;
+      console.error("[purge-classes] sinf oʻchmadi:", r.id, err);
+      continue;
+    }
+    purged += 1;
+    // Audit faqat haqiqatan oʻchgandan KEYIN — qayta urinishda takrorlanmaydi.
     await db
       .insert(workspaceAuditLogs)
       .values({
@@ -373,9 +393,8 @@ export async function purgeExpiredClasses(limit = 100): Promise<{ purged: number
         meta: { auto: true, days: TRASH_DAYS },
       })
       .catch(() => {});
-    await hardDeleteClass(r.id);
   }
-  return { purged: rows.length };
+  return { purged, failed };
 }
 
 /**
@@ -384,9 +403,11 @@ export async function purgeExpiredClasses(limit = 100): Promise<{ purged: number
  * Cascade: baho, davomat, xulq, yozilish va davrlar, jonli sessiyalar.
  * FK'siz `class_notes` qoʻlda tozalanadi. `units`/`lessons` ATAYLAB
  * qoladi — dars rejasi boshqa sinfda qayta ishlatiladi (schema/planning.ts).
+ *
+ * @returns sinf haqiqatan oʻchdimi (oraliqda tiklangan boʻlsa — false).
  */
-async function hardDeleteClass(classId: string): Promise<void> {
-  await db.transaction(async (tx) => {
+async function hardDeleteClass(classId: string): Promise<boolean> {
+  return db.transaction(async (tx) => {
     const roster = await tx
       .selectDistinct({ id: enrollments.studentId })
       .from(enrollments)
@@ -397,7 +418,7 @@ async function hardDeleteClass(classId: string): Promise<void> {
       .delete(classes)
       .where(and(eq(classes.id, classId), isNotNull(classes.deletedAt)))
       .returning({ id: classes.id });
-    if (gone.length === 0) return; // oraliqda tiklangan
+    if (gone.length === 0) return false; // oraliqda tiklangan
 
     /* Sinfsiz qolgan bola — u ham ketadi. Boshqa sinfda HAR QANDAY
        yozilishi (yopilgani ham) bor bola saqlanadi. */
@@ -412,5 +433,6 @@ async function hardDeleteClass(classId: string): Promise<void> {
           )
         );
     }
+    return true;
   });
 }

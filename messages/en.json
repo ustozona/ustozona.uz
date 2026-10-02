@@ -1252,6 +1252,7 @@
     "leaveConfirm": "Leave class",
     "leaveToast": "You left {count} classes",
     "trashExport": "Download gradebook (Excel)",
+    "trashNotArchived": "An active class can’t be deleted — archive it first: {names}. If you just archived it, wait a moment and try again.",
     "trashLoading": "Checking…",
     "trashToast": "“{name}” moved to the trash — restorable for {days} days",
     "trashBulkToast": "{count} classes moved to the trash — restorable for {days} days",
