@@ -113,7 +113,7 @@ function CompactGroup({ entries, typeLabels }: { entries: ChangelogEntry[]; type
   const t = useTranslations("Changelog");
   const [open, setOpen] = useState(true);
   return (
-    <div className="rounded-xl bg-muted/40 px-3.5 py-3">
+    <div className="rounded-xl bg-muted/40 px-4 py-3">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
