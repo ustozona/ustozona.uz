@@ -33,19 +33,17 @@ export function IconClipboard({ className }: IconProps) {
   );
 }
 
-/** solar:notebook-bold-duotone — Blog */
-export function IconNotebook({ className }: IconProps) {
+/** Ochiq kitob (duotone, shu toʻplam uslubida) — Blog. Ilgari daftar edi:
+    tepadagi halqalar sabab kichik oʻlchamda kalendarga oʻxshardi. */
+export function IconBookOpen({ className }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" className={cn("size-5", className)} aria-hidden="true">
       <g fill="currentColor">
         <path
-          d="M6 3.25C4.48122 3.25 3.25 4.48122 3.25 6V18C3.25 19.5188 4.48122 20.75 6 20.75H18C19.5188 20.75 20.75 19.5188 20.75 18V6C20.75 4.48122 19.5188 3.25 18 3.25H6Z"
+          d="M2 5.6c3-1.35 6.3-1.25 9.25.55V20.4C8.3 18.75 5 18.65 2 19.95V5.6Z"
           opacity=".5"
         />
-        <path d="M8.25 2.5C8.25 2.08579 7.91421 1.75 7.5 1.75C7.08579 1.75 6.75 2.08579 6.75 2.5V5.5C6.75 5.91421 7.08579 6.25 7.5 6.25C7.91421 6.25 8.25 5.91421 8.25 5.5V2.5Z" />
-        <path d="M8 9.25C7.58579 9.25 7.25 9.58579 7.25 10C7.25 10.4142 7.58579 10.75 8 10.75H16C16.4142 10.75 16.75 10.4142 16.75 10C16.75 9.58579 16.4142 9.25 16 9.25H8Z" />
-        <path d="M8 13.25C7.58579 13.25 7.25 13.5858 7.25 14C7.25 14.4142 7.58579 14.75 8 14.75H13C13.4142 14.75 13.75 14.4142 13.75 14C13.75 13.5858 13.4142 13.25 13 13.25H8Z" />
-        <path d="M17.25 2.5C17.25 2.08579 16.9142 1.75 16.5 1.75C16.0858 1.75 15.75 2.08579 15.75 2.5V5.5C15.75 5.91421 16.0858 6.25 16.5 6.25C16.9142 6.25 17.25 5.91421 17.25 5.5V2.5Z" />
+        <path d="M22 5.6c-3-1.35-6.3-1.25-9.25.55V20.4c2.95-1.65 6.25-1.75 9.25-.45V5.6Z" />
       </g>
     </svg>
   );
@@ -147,7 +145,7 @@ export function IconBuildings({ className }: IconProps) {
    ════════════════════════════════════════════════════════════════════ */
 
 export const PRODUCT_ICONS: Record<Product["slug"], typeof IconChartSquare> = {
-  blog: IconNotebook,
+  blog: IconBookOpen,
   games: IconGamepad,
   baholash: IconChartSquare,
   doska: IconBoard,

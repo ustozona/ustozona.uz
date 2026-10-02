@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useTranslations, useMessages } from "next-intl";
 import {
   BookOpen, CalendarDays, ChevronDown, ChevronUp, FileText, LayoutGrid, ListFilter, Megaphone,
-  MessageSquare, Newspaper, NotebookText, Settings, type LucideIcon,
+  BookOpenText, MessageSquare, NotebookText, Settings, type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -48,7 +48,7 @@ function TypePill({ type, label }: { type: ChangelogEntry["type"]; label: string
 /** Havola tugmasidagi ikonka — yoʻl boshiga qarab. */
 const ROUTE_ICONS: [string, LucideIcon][] = [
   ["/help", BookOpen],
-  ["/blog", Newspaper],
+  ["/blog", BookOpenText],
   ["/dashboard/classes", LayoutGrid],
   ["/dashboard/lessons", NotebookText],
   ["/dashboard/timetable", CalendarDays],
