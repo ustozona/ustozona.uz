@@ -108,13 +108,31 @@ Joriy ekrandagi taqdimot testi uchun: **QR-kartalar** va **Varaq (OMR)**
 avval roʻyxatda, «Jurnalga kiritish» bilan `responses` ga; jurnal ustuni —
 kompyuterda bitta tugma (oʻzgarmadi). Telefon ekrani oʻchmaydi (Wake Lock).
 
-## 7. Keyingi bosqichlar
+## 7. Tezkor tekshirish (2-bosqich)
 
-1. **Tezkor tekshirish** — oʻquvchi qogʻozga yozgan javob kaliti
-   rasmdan (AI koʻrish), kalit shablonini Doskaga chiqarish bilan.
-2. **Pult (radio)** — Doska dars rejimida qabul qilgichni ulash, telefon
+Maxsus varaq chop etish shart emas:
+
+1. Telefonda **«Shablon doskaga»** — Doskada yangi ekran: «Ism Familiya:
+   ___» va «1) ___ 2) ___ …» (savollar soni — testdagi variantli
+   savollar). Joriy ekranga tegilmaydi.
+2. Oʻquvchi oddiy qogʻozga ismini va javoblarini yozadi.
+3. Telefonda **«Qoʻlda yozilgan»** → surat → `POST /api/baholash/quick-check`
+   (cookie yoki skaner chiptasi, `/api/baholash/scan` bilan bir qoida).
+   AI (Gemini, rasm) FAQAT oʻqiydi: ism va harflar; toʻgʻri javob unga
+   berilmaydi, ball serverda. Bitta surat — bitta AI krediti.
+4. Ism sinf roʻyxatiga moslanadi (`lib/quick-check.ts`: kirill → lotin,
+   apostroflar, qisqartma, 1–2 harf xato). Ikki oʻquvchi deyarli teng mos
+   kelsa — tanlanmaydi, oʻqituvchi tanlaydi. AI ishonchsiz harf — sariq.
+5. Natija QR-karta va OMR bilan BIR roʻyxatga tushadi → «Jurnalga kiritish».
+
+Provayder: `StreamChatArgs.image` (faqat Gemini; rasm boʻlsa zanjir
+Gemini bilan cheklanadi — boshqa model rasmsiz javob toʻqimasin).
+
+## 8. Keyingi bosqichlar
+
+1. **Pult (radio)** — Doska dars rejimida qabul qilgichni ulash, telefon
    — boshqaruv.
-3. **Kartani savolga bogʻlash** — QR-karta skaneri Doskadagi joriy savol
+2. **Kartani savolga bogʻlash** — QR-karta skaneri Doskadagi joriy savol
    bilan sinxron (hozir skaner savollarni oʻzi sanaydi).
-4. **Ustozona ilovasi** — Skaner boʻlimida «Pult» → `/pult` (ilova
+3. **Ustozona ilovasi** — Skaner boʻlimida «Pult» → `/pult` (ilova
    ichida, kirish bilan); **bot** — `/pult` havolasi.
