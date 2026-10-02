@@ -36,4 +36,5 @@ export const ROUTE_LABEL_KEYS: Record<string, string> = {
   "/admin/feedback": "adminFeedback",
   "/admin/audit": "adminAudit",
   "/admin/ai": "adminAi",
+  "/admin/settings": "adminSettings",
 };
