@@ -18,10 +18,17 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-  SidebarSeparator,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { AccountAvatar, useAccountIdentity } from "@/components/AccountAvatar";
 import { ScrollFade } from "@/components/ui/scroll-fade";
 import { useChangelogUnseenCount } from "@/hooks/useChangelogSeen";
 import { BrandWordmark } from "@/assets/logo/brand-wordmark";
@@ -51,6 +58,7 @@ import {
   ListTodo,
   Gamepad2,
   ChevronDown,
+  ChevronsUpDown,
   type LucideIcon,
 } from "lucide-react";
 
@@ -109,7 +117,11 @@ const navGroups: NavGroup[] = [
 ];
 
 
-/* Blog — /dashboard ICHIDA EMAS (bu EMS funksiyasi emas, alohida mahsulot;
+/* Pastki menyu — profil qatori bosilganda ochiladi (ish kuni davomida
+   kam kerak boʻladigan havolalar asosiy roʻyxatdan joy olmasin).
+   Sozlamalar oxirida, ajratgich ortida turadi.
+
+   Blog — /dashboard ICHIDA EMAS (bu EMS funksiyasi emas, alohida mahsulot;
    lesson-editor bilan bir xil sabab). Sidebar ochiq /blog'ga olib boradi;
    yozish esa oʻsha yerdagi "Yozish" tugmasi orqali /blog/studio'ga. */
 const footerItems: NavItem[] = [
@@ -233,6 +245,76 @@ function CollapsibleNavGroup({
   );
 }
 
+/** Yon panel pastidagi profil qatori. Bosilganda yuqoriga menyu ochiladi:
+    Yangilanishlar, Blog, Yordam, Fikr-mulohaza va Sozlamalar. Koʻrilmagan
+    yangilanish boʻlsa, avatar burchagida nuqta pulslanadi — menyu yopiq
+    turganda ham signal yoʻqolmaydi. Profil, mavzu, til va chiqish header
+    menyusida qoladi. */
+function SidebarAccountMenu({ changelogCount }: { changelogCount: number }) {
+  const t = useTranslations("AppSidebar");
+  const pathname = usePathname();
+  const { state, isMobile } = useSidebar();
+  const identity = useAccountIdentity();
+  const active = footerItems.some((item) => isActivePath(pathname, item.href));
+  const hasNews = changelogCount > 0;
+
+  const renderItem = (item: NavItem) => (
+    <DropdownMenuItem key={item.href} asChild>
+      <Link href={item.href}>
+        <item.icon />
+        <span className="flex-1">{t(item.labelKey)}</span>
+        {item.badgeKey === "changelog" && hasNews && (
+          <span className="rounded-md bg-sidebar-primary/10 px-1.5 text-xs font-medium tabular-nums text-sidebar-primary">
+            {changelogCount > 9 ? "9+" : changelogCount}
+          </span>
+        )}
+      </Link>
+    </DropdownMenuItem>
+  );
+
+  return (
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <SidebarMenuButton
+              size="lg"
+              isActive={active}
+              tooltip={identity.name}
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+            >
+              <span className="relative inline-flex shrink-0">
+                <AccountAvatar identity={identity} />
+                {hasNews && (
+                  <span className="absolute -right-0.5 -top-0.5 flex size-2">
+                    <span className="absolute inline-flex size-full animate-ping rounded-full bg-sidebar-primary opacity-75" />
+                    <span className="relative inline-flex size-2 rounded-full bg-sidebar-primary ring-2 ring-sidebar" />
+                  </span>
+                )}
+              </span>
+              <span className="grid min-w-0 flex-1 text-left leading-tight">
+                <span className="truncate font-medium">{identity.name}</span>
+                <span className="truncate text-xs text-muted-foreground">{identity.email}</span>
+              </span>
+              <ChevronsUpDown className="ml-auto size-4 text-muted-foreground" />
+            </SidebarMenuButton>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            side={isMobile || state === "expanded" ? "top" : "right"}
+            align={isMobile || state === "expanded" ? "start" : "end"}
+            sideOffset={6}
+            className="w-(--radix-dropdown-menu-trigger-width) min-w-56"
+          >
+            {footerItems.filter((item) => item.labelKey !== "settings").map(renderItem)}
+            <DropdownMenuSeparator />
+            {footerItems.filter((item) => item.labelKey === "settings").map(renderItem)}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SidebarMenuItem>
+    </SidebarMenu>
+  );
+}
+
 function SidebarBrandHeader() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
@@ -305,17 +387,8 @@ export function AppSidebar({ workspaces = [] }: { workspaces?: WorkspaceOption[]
         <ScrollFade position="bottom" className="from-sidebar" />
       </div>
 
-      <SidebarFooter>
-        <SidebarSeparator className="mb-1" />
-        <SidebarMenu className="gap-0.5">
-          {footerItems.map((item) => (
-            <NavMenuItem
-              key={item.href}
-              item={item}
-              badge={item.badgeKey ? badgeCounts[item.badgeKey] : undefined}
-            />
-          ))}
-        </SidebarMenu>
+      <SidebarFooter className="border-t border-sidebar-border">
+        <SidebarAccountMenu changelogCount={changelogCount} />
       </SidebarFooter>
 
       <SidebarRail />

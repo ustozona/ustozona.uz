@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import { Settings, LogOut, ChevronDown, Moon, Sun, Check, ShieldCheck, UserRound } from "lucide-react";
+import { Settings, LogOut, ChevronDown, Moon, Sun, Check, ShieldCheck } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,27 +17,16 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { AccountAvatar, useAccountIdentity } from "@/components/AccountAvatar";
 import { Badge } from "@/components/ui/badge";
 import { AppleEmoji } from "@/components/ui/apple-emoji";
 import { KarakalpakFlag } from "@/components/ui/karakalpak-flag";
 import { useSettingsStore } from "@/store/useSettingsStore";
-import { CLASS_COLOR_HEX, type ClassColor } from "@/lib/class-colors";
 import { LANGUAGES } from "@/lib/languages";
 import { LOCALE_COOKIE, isLocale } from "@/i18n/config";
 import { authClient } from "@/lib/auth-client";
 import { isSuperAdmin } from "@/lib/auth-roles";
-import { displayEmail } from "@/lib/placeholder-email";
 
-function initialsOf(name: string) {
-  return name
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    // `Array.from` — kod nuqtasi boʻyicha: `w[0]` emojining yarmini olib `�` chiqarardi.
-    .map((w) => Array.from(w)[0]?.toUpperCase() ?? "")
-    .join("");
-}
 
 /* Faqat super_admin'ga koʻrinadi (kosmetik — haqiqiy gate server'da). */
 function AdminPanelItem() {
@@ -57,9 +46,8 @@ function AdminPanelItem() {
 export default function HeaderAccountMenu() {
   const t = useTranslations("HeaderAccountMenu");
   const router = useRouter();
-  const profile = useSettingsStore((s) => s.profile);
-  const hydrated = useSettingsStore((s) => s._hasHydrated);
-  const { data: session } = authClient.useSession();
+  const identity = useAccountIdentity();
+  const { name, email } = identity;
   const language = useSettingsStore((s) => s.language);
   const setLanguage = useSettingsStore((s) => s.setLanguage);
   const activeLang = LANGUAGES.find((l) => l.value === language);
@@ -76,39 +64,17 @@ export default function HeaderAccountMenu() {
   const [mounted, setMounted] = React.useState(false);
   React.useEffect(() => setMounted(true), []);
   const isDark = mounted && resolvedTheme === "dark";
-  // Sessiya GET soʻrovi 13 ta fon boʻlagini kutmaydi. Settings kelgach
-  // ustozning tahrirlangan ismi/rasmi ustun turadi; sessiya faqat shu
-  // akkauntning xavfsiz vaqtinchalik pasporti. Hech qachon boshqa
-  // foydalanuvchining lokal profilini taxmin qilib koʻrsatmaymiz.
-  const name = (hydrated && profile.name) || session?.user.name || t("defaultUserName");
-  const email = displayEmail((hydrated && profile.email) || session?.user.email);
-  const avatarUrl = (hydrated && profile.avatarUrl) || session?.user.image || "";
-  const initials = initialsOf(name);
-  const unknown = !(hydrated && profile.name) && !session?.user.name;
-  const avatarHex = hydrated
-    ? CLASS_COLOR_HEX[(profile.avatarColor as ClassColor) ?? "orange"] ?? CLASS_COLOR_HEX.orange
-    : undefined;
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="flex items-center gap-1.5 rounded-lg px-1.5 py-1 transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
-        <Avatar size="sm">
-          {avatarUrl && <AvatarImage src={avatarUrl} alt={name} />}
-          <AvatarFallback style={avatarHex ? { background: avatarHex, color: "white" } : undefined}>
-            {unknown ? <UserRound className="size-4" aria-hidden="true" /> : initials}
-          </AvatarFallback>
-        </Avatar>
+        <AccountAvatar identity={identity} />
         <ChevronDown className="hidden size-3.5 text-muted-foreground sm:block" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuItem asChild className="cursor-pointer">
           <Link href="/dashboard/settings?section=profil" className="flex items-center gap-3 py-2">
-            <Avatar size="sm">
-              {avatarUrl && <AvatarImage src={avatarUrl} alt={name} />}
-              <AvatarFallback style={avatarHex ? { background: avatarHex, color: "white" } : undefined}>
-                {unknown ? <UserRound className="size-4" aria-hidden="true" /> : initials}
-              </AvatarFallback>
-            </Avatar>
+            <AccountAvatar identity={identity} />
             <div className="flex min-w-0 flex-col items-start gap-0.5">
               <span className="truncate text-sm font-medium">{name}</span>
               <span className="truncate text-xs font-normal text-muted-foreground">
