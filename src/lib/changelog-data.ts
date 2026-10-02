@@ -5,12 +5,16 @@ import { MONTHS_UZ } from "@/lib/localization";
 
    YOZUV QOIDALARI (majburiy):
    - Yangi yozuv DOIM massiv BOSHIGA qoʻshiladi (unseen hisoblagichi shunga
-     tayanadi — sana taqqoslanmaydi, uzunlik farqi sanaladi).
+     tayanadi — oxirgi koʻrilgan yozuvdan oldingilar sanaladi).
    - Matn foyda-markazli oʻqituvchi tilida: qanday qurilgani emas, oʻqituvchi
      endi nima qila olishi. Dev-jargon taqiq.
    - "tuzatildi" yozuvida qaysi ogʻriq ketgani yoziladi, texnik sabab emas.
    - body 1–3 qisqa gap; mayda oʻzgarishlarda body tashlab ketiladi —
      yozuv bir qatorli kompakt koʻrinishda chiqadi.
+   - Bir modulda bir kunda 5+ mayda oʻzgarish boʻlsa, ularni alohida
+     yozmang — 3–5 ta mavzuli yozuvga (har biri body bilan) jamlang.
+     Masalan 2026-10-01 dagi doska: vidjetlar / darslar bilan bogʻlanish /
+     ekranlar va fonlar / vositalar / ekranlar bilan ishlash.
    - Apostroflar faqat ʻ (U+02BB) va ʼ (U+02BC), ASCII ' ishlatilmaydi.
    - Commit ≠ yozuv: bitta feature'ning bir necha commiti bitta yozuv boʻladi;
      hujjat/ichki-refactor/build-tuzatish commitlari kirmaydi. */
@@ -43,213 +47,48 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     href: "/doska",
   },
   {
-    id: "doska-kun-rejasi",
+    id: "doska-yangi-vidjetlar",
     date: "2026-10-01",
     type: "yangi",
-    title: "Doskada «Kun rejasi» tayyor ekrani: bugungi kun oʻzi yangilanadi, yangi «Karta» va «Sana» vidjetlari, yumshoq fonlar",
+    title: "Doskada oʻndan ortiq yangi vidjet: kamera, shovqin, hisob, ovoz berish, guruhlar va boshqalar",
+    body:
+      "«Kamera» daftar yoki tajribani butun sinfga koʻrsatadi, «Shovqin» sinf ovozini oʻlchaydi, «Hisob» jamoalar ochkosini sanaydi, «Ovoz berish» esa telefonsiz chiqish chiptasi. «Guruhlar» roʻyxatni bir bosishda tasodifiy guruhlarga boʻladi, «Zar» son, harf yoki tanga tashlaydi. Yana: «Stiker», «QR kod», «Video», «Havola», «Sayt», «Karta» va «Sana».",
     href: "/doska",
   },
   {
-    id: "doska-tayyor-ekranlar",
+    id: "doska-darslar-bilan",
     date: "2026-10-01",
     type: "yangi",
-    title: "Doska menyusida «Tayyor ekranlar»: dars boshi, guruh ishi, savol-javob va dars yakuni bir bosishda",
+    title: "Doska darslaringizni biladi: bugungi darslar, qoʻngʻiroq jadvali, davomat va oʻquv kalendari",
+    body:
+      "«Bugun» vidjeti jadvaldagi darslarni mavzusi bilan chiqaradi, bosqichlarni esa dars rejasi sarlavhalaridan oladi. Soat qoʻngʻiroq jadvalini biladi («3-soat · tugashiga 12 daq»), «Voqea sanogʻi» esa taʼtil va bayramlarni oʻquv kalendaringizdan oladi. Gʻildirak va «Guruhlar» (Pro) sinfga ulansa, bugun kelmaganlar davomatdan oʻzi chiqarib tashlanadi.",
     href: "/doska",
   },
   {
-    id: "doska-video-havola-sayt",
+    id: "doska-tayyor-ekranlar-fonlar",
     date: "2026-10-01",
     type: "yangi",
-    title: "Doskada «Video», «Havola» va «Sayt» vidjetlari — video, sahifa yoki havolani ekranga chiqarish",
+    title: "Tayyor ekranlar va yangi fonlar: dars boshi, guruh ishi, savol-javob, kun rejasi",
+    body:
+      "Doska menyusidagi «Tayyor ekranlar» kerakli vidjetlarni bir bosishda joylaydi, «Kun rejasi» ekranida esa bugungi sana oʻzi yangilanadi. Fonlarga bayramlar (Oʻqituvchilar kuni, Navroʻz, Mustaqillik), fasllar va nota chizigʻi qoʻshildi — «Bugunga mos» qatori mos fonni oʻzi taklif qiladi. Matnga rang va qalinlik berish mumkin.",
     href: "/doska",
   },
   {
-    id: "doska-bayram-fonlari",
-    date: "2026-10-01",
-    type: "yangi",
-    title: "Doskada bayram fonlari: Oʻqituvchilar kuni, Navroʻz, Mustaqillik va boshqalar — fon tanlashda «Bugunga mos» qatori",
-    href: "/doska",
-  },
-  {
-    id: "doska-gildirak-davomat",
-    date: "2026-10-01",
-    type: "yangi",
-    title: "Doska gʻildiragi bugun kelmaganlarni oʻzi chiqarib tashlaydi — davomatdan, ulangan sinfda",
-    href: "/doska",
-  },
-  {
-    id: "doska-guruhlar-sinf",
-    date: "2026-10-01",
-    type: "yangi",
-    title: "«Guruhlar»ga sinf roʻyxatini ulang (Pro): bugun kelmaganlar davomatdan oʻzi chiqarib tashlanadi",
-    href: "/doska",
-  },
-  {
-    id: "doska-bugun-reja",
-    date: "2026-10-01",
-    type: "yangi",
-    title: "«Bugun» vidjeti dars rejangizni koʻradi: darslar yonida mavzu, bosqichlar esa reja sarlavhalaridan avtomatik",
-    href: "/doska",
-  },
-  {
-    id: "doska-bugun",
-    date: "2026-10-01",
-    type: "yangi",
-    title: "Doskada «Bugun»: bugungi darslaringiz jadvaldan avtomatik yoki dars bosqichlari belgilanadigan roʻyxat",
-    href: "/doska",
-  },
-  {
-    id: "doska-soat-qongiroq",
-    date: "2026-10-01",
-    type: "yangi",
-    title: "Doskadagi soatda qoʻngʻiroq jadvali: «3-soat · tugashiga 12 daq», oxirgi daqiqalarda ogohlantirish va ixtiyoriy qoʻngʻiroq",
-    href: "/doska",
-  },
-  {
-    id: "doska-voqea-sanogi",
-    date: "2026-10-01",
-    type: "yangi",
-    title: "Doskada «Voqea sanogʻi»: «Kuzgi taʼtilgacha 12 kun» — voqealar oʻquv kalendaringizdan, qoʻlda kiritmasdan",
-    href: "/doska",
-  },
-  {
-    id: "doska-sekundomer",
-    date: "2026-10-01",
-    type: "yangi",
-    title: "Taymerda sekundomer rejimi: vaqtni oldinga sanang, 5 tagacha oraliq belgilang",
-    href: "/doska",
-  },
-  {
-    id: "doska-matn-rang",
-    date: "2026-10-01",
-    type: "yangi",
-    title: "Doskada matn rangi va qalinligi: siyoh, qizil, koʻk, yashil, toʻq sariq, binafsha",
-    href: "/doska",
-  },
-  {
-    id: "doska-fonlar-mavsum",
-    date: "2026-10-01",
-    type: "yangi",
-    title: "Doskada yangi fonlar: nota chizigʻi (musiqa darsi), kuz, bahor va qish",
-    href: "/doska",
-  },
-  {
-    id: "doska-kamera",
-    date: "2026-10-01",
-    type: "yangi",
-    title: "Doskada «Kamera»: daftar, kitob yoki tajribani butun sinfga koʻrsating — kadrni toʻxtatib, ustidan yozish mumkin",
-    href: "/doska",
-  },
-  {
-    id: "doska-shovqin",
-    date: "2026-10-01",
-    type: "yangi",
-    title: "Doskada «Shovqin»: sinf ovozini mikrofon orqali koʻring — chegaradan oshsa ustun qizaradi, xohlasangiz qoʻngʻiroq chaladi",
-    href: "/doska",
-  },
-  {
-    id: "doska-hisob",
-    date: "2026-10-01",
-    type: "yangi",
-    title: "Doskada «Hisob»: 2–6 jamoa, katta raqam va +/− — viktorina va guruh ishida ochko sanash",
-    href: "/doska",
-  },
-  {
-    id: "doska-ovoz",
-    date: "2026-10-01",
-    type: "yangi",
-    title: "Doskada «Ovoz berish»: oʻquvchilar doskaga chiqib smaylik, «ha/yoʻq» yoki A–E ni bosadi — telefonsiz chiqish chiptasi",
-    href: "/doska",
-  },
-  {
-    id: "doska-guruhlar",
-    date: "2026-10-01",
-    type: "yangi",
-    title: "Doskada «Guruhlar»: roʻyxatni bir bosishda tasodifiy guruhlarga boʻling — guruhlar soni yoki guruhdagi odam soni boʻyicha",
-    href: "/doska",
-  },
-  {
-    id: "doska-oxirgi-sozlama",
-    date: "2026-10-01",
-    type: "yangi",
-    title: "Doska oxirgi sozlamani eslab qoladi: yangi taymer, gʻildirak va zar siz tanlagan vaqt va rejim bilan chiqadi",
-    href: "/doska",
-  },
-  {
-    id: "doska-ekranlar-nusxa",
-    date: "2026-10-01",
-    type: "yangi",
-    title: "Doskada vidjetni boshqa ekranga koʻchiring: Ctrl+C va Ctrl+V — masalan taymerni keyingi ekranga",
-    href: "/doska",
-  },
-  {
-    id: "doska-chetga-qoyish",
-    date: "2026-10-01",
-    type: "yangi",
-    title: "Doskada vidjetni ekran chetiga surib yashiring — chetda tugmasi qoladi, bosilsa joyiga qaytadi",
-    href: "/doska",
-  },
-  {
-    id: "doska-ism-korinishi",
-    date: "2026-10-01",
-    type: "yangi",
-    title: "Tasodifiy ism endi bitta katta ism koʻrinishida ham — orqa partadan oʻqiladi; tayyor roʻyxatlar: 1–30 va alifbo",
-    href: "/doska",
-  },
-  {
-    id: "doska-stiker",
-    date: "2026-10-01",
-    type: "yangi",
-    title: "Doskada «Stiker»: yulduzcha, «barakalla», strelka, fan belgilari — katta va proyektorda tiniq",
-    href: "/doska",
-  },
-  {
-    id: "doska-qr",
-    date: "2026-10-01",
-    type: "yangi",
-    title: "Doskada «QR kod»: havola yoki matnni ekranga chiqaring — oʻquvchilar telefon bilan skanerlaydi",
-    href: "/doska",
-  },
-  {
-    id: "doska-bosh-joy",
+    id: "doska-vositalar-qulayroq",
     date: "2026-10-01",
     type: "yaxshilandi",
-    title: "Doska: yangi vosita boshqalarining ustiga emas, ekrandagi boʻsh joyga tushadi",
+    title: "Taymer, tasodifiy ism va zar qulayroq: sekundomer, takrorlash, katta ism",
+    body:
+      "Taymerda sekundomer (5 tagacha oraliq) va guruhlar aylanishi uchun takrorlash bor; oxirgi soniyalarda qizilga oʻtadi, qolgan vaqt brauzer yorligʻida koʻrinadi. Tasodifiy ism bitta katta ism koʻrinishida orqa partadan ham oʻqiladi, tayyor roʻyxatlar: 1–30 va alifbo. Doska oxirgi sozlamani eslab qoladi, yangi vosita esa ekrandagi boʻsh joyga tushadi.",
     href: "/doska",
   },
   {
-    id: "doska-zar",
-    date: "2026-10-01",
-    type: "yangi",
-    title: "Doskada yangi «Zar» vositasi: 1–3 zar, oraliqdan tasodifiy son, oʻzbek alifbosidan harf yoki tanga",
-    href: "/doska",
-  },
-  {
-    id: "doska-taymer-takrorlash",
+    id: "doska-ekranlar-boshqaruv",
     date: "2026-10-01",
     type: "yaxshilandi",
-    title: "Doska taymeri: guruhlar aylanishi uchun takrorlanadi, oxirgi soniyalarda qizilga oʻtadi, qolgan vaqt brauzer yorligʻida koʻrinadi",
-    href: "/doska",
-  },
-  {
-    id: "doska-ekran-tartibi",
-    date: "2026-10-01",
-    type: "yaxshilandi",
-    title: "Doska: ekrandan nusxa oling va ekranlar tartibini menyudan oʻzgartiring",
-    href: "/doska",
-  },
-  {
-    id: "doska-barcha-ekranlarda",
-    date: "2026-10-01",
-    type: "yangi",
-    title: "Doska: vidjetni «Barcha ekranlarda» qiling — taymer, soat va jadval ekran almashganda ham joyida qoladi",
-    href: "/doska",
-  },
-  {
-    id: "doska-yorliqlar",
-    date: "2026-10-01",
-    type: "yaxshilandi",
-    title: "Doska: «K» tugmasi barcha tezkor tugmalarni koʻrsatadi, ular rus klaviaturasida ham ishlaydi, pult bilan ekran almashadi",
+    title: "Ekranlar bilan ishlash osonlashdi: nusxa, tartib, «Barcha ekranlarda» va tezkor tugmalar",
+    body:
+      "Vidjetni Ctrl+C / Ctrl+V bilan boshqa ekranga koʻchiring yoki «Barcha ekranlarda» qiling — taymer va soat ekran almashganda joyida qoladi. Ekrandan nusxa olish va ekranlar tartibi menyuda, vidjetni chetga surib yashirish ham mumkin. «K» tugmasi barcha tezkor tugmalarni koʻrsatadi — ular rus klaviaturasida ham ishlaydi, pult bilan ekran almashadi.",
     href: "/doska",
   },
   {
@@ -1351,11 +1190,17 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   },
 ];
 
-/** Koʻrilmagan yozuvlar soni. Hisoblagich usuli: localStorage'da oxirgi
-    koʻrilgan yozuvlar SONI saqlanadi — bir kunda ikki reliz chiqsa ham
-    ikkinchisi yoʻqolmaydi (sana taqqoslashda yoʻqolardi). */
-export function unseenChangelogCount(seenCount: number | null): number {
-  if (seenCount === null) return CHANGELOG_ENTRIES.length;
+/** Koʻrilmagan yozuvlar soni. Asosiy usul — oxirgi koʻrilgan yozuv ID'si:
+    massiv boshidan shu yozuvgacha boʻlganlar yangi. Faqat SON saqlansa,
+    mayda yozuvlarni birlashtirish (massiv qisqarishi) keyingi yangiliklarni
+    yashirib qoʻyardi. ID topilmasa (yozuv birlashtirilgan/oʻchirilgan) yoki
+    eski brauzerda faqat son boʻlsa — sonli hisobga qaytiladi. */
+export function unseenChangelogCount(seenId: string | null, seenCount: number | null): number {
+  if (seenId !== null) {
+    const idx = CHANGELOG_ENTRIES.findIndex((e) => e.id === seenId);
+    if (idx >= 0) return idx;
+  }
+  if (seenCount === null) return seenId === null ? CHANGELOG_ENTRIES.length : 0;
   return Math.max(0, CHANGELOG_ENTRIES.length - seenCount);
 }
 

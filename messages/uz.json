@@ -2119,95 +2119,25 @@
       "doska-yangi-korinish": {
         "title": "Doskaning yangi koʻrinishi: har bir vidjet oq varaqda, panel yengil va ixcham, sozlamalar oʻngdan ochiladi"
       },
-      "doska-kun-rejasi": {
-        "title": "Doskada «Kun rejasi» tayyor ekrani: bugungi kun oʻzi yangilanadi, yangi «Karta» va «Sana» vidjetlari, yumshoq fonlar"
+      "doska-yangi-vidjetlar": {
+        "title": "Doskada oʻndan ortiq yangi vidjet: kamera, shovqin, hisob, ovoz berish, guruhlar va boshqalar",
+        "body": "«Kamera» daftar yoki tajribani butun sinfga koʻrsatadi, «Shovqin» sinf ovozini oʻlchaydi, «Hisob» jamoalar ochkosini sanaydi, «Ovoz berish» esa telefonsiz chiqish chiptasi. «Guruhlar» roʻyxatni bir bosishda tasodifiy guruhlarga boʻladi, «Zar» son, harf yoki tanga tashlaydi. Yana: «Stiker», «QR kod», «Video», «Havola», «Sayt», «Karta» va «Sana»."
       },
-      "doska-tayyor-ekranlar": {
-        "title": "Doska menyusida «Tayyor ekranlar»: dars boshi, guruh ishi, savol-javob va dars yakuni bir bosishda"
+      "doska-darslar-bilan": {
+        "title": "Doska darslaringizni biladi: bugungi darslar, qoʻngʻiroq jadvali, davomat va oʻquv kalendari",
+        "body": "«Bugun» vidjeti jadvaldagi darslarni mavzusi bilan chiqaradi, bosqichlarni esa dars rejasi sarlavhalaridan oladi. Soat qoʻngʻiroq jadvalini biladi («3-soat · tugashiga 12 daq»), «Voqea sanogʻi» esa taʼtil va bayramlarni oʻquv kalendaringizdan oladi. Gʻildirak va «Guruhlar» (Pro) sinfga ulansa, bugun kelmaganlar davomatdan oʻzi chiqarib tashlanadi."
       },
-      "doska-video-havola-sayt": {
-        "title": "Doskada «Video», «Havola» va «Sayt» vidjetlari — video, sahifa yoki havolani ekranga chiqarish"
+      "doska-tayyor-ekranlar-fonlar": {
+        "title": "Tayyor ekranlar va yangi fonlar: dars boshi, guruh ishi, savol-javob, kun rejasi",
+        "body": "Doska menyusidagi «Tayyor ekranlar» kerakli vidjetlarni bir bosishda joylaydi, «Kun rejasi» ekranida esa bugungi sana oʻzi yangilanadi. Fonlarga bayramlar (Oʻqituvchilar kuni, Navroʻz, Mustaqillik), fasllar va nota chizigʻi qoʻshildi — «Bugunga mos» qatori mos fonni oʻzi taklif qiladi. Matnga rang va qalinlik berish mumkin."
       },
-      "doska-bayram-fonlari": {
-        "title": "Doskada bayram fonlari: Oʻqituvchilar kuni, Navroʻz, Mustaqillik va boshqalar — fon tanlashda «Bugunga mos» qatori"
+      "doska-vositalar-qulayroq": {
+        "title": "Taymer, tasodifiy ism va zar qulayroq: sekundomer, takrorlash, katta ism",
+        "body": "Taymerda sekundomer (5 tagacha oraliq) va guruhlar aylanishi uchun takrorlash bor; oxirgi soniyalarda qizilga oʻtadi, qolgan vaqt brauzer yorligʻida koʻrinadi. Tasodifiy ism bitta katta ism koʻrinishida orqa partadan ham oʻqiladi, tayyor roʻyxatlar: 1–30 va alifbo. Doska oxirgi sozlamani eslab qoladi, yangi vosita esa ekrandagi boʻsh joyga tushadi."
       },
-      "doska-gildirak-davomat": {
-        "title": "Doska gʻildiragi bugun kelmaganlarni oʻzi chiqarib tashlaydi — davomatdan, ulangan sinfda"
-      },
-      "doska-guruhlar-sinf": {
-        "title": "«Guruhlar»ga sinf roʻyxatini ulang (Pro): bugun kelmaganlar davomatdan oʻzi chiqarib tashlanadi"
-      },
-      "doska-bugun-reja": {
-        "title": "«Bugun» vidjeti dars rejangizni koʻradi: darslar yonida mavzu, bosqichlar esa reja sarlavhalaridan avtomatik"
-      },
-      "doska-bugun": {
-        "title": "Doskada «Bugun»: bugungi darslaringiz jadvaldan avtomatik yoki dars bosqichlari belgilanadigan roʻyxat"
-      },
-      "doska-soat-qongiroq": {
-        "title": "Doskadagi soatda qoʻngʻiroq jadvali: «3-soat · tugashiga 12 daq», oxirgi daqiqalarda ogohlantirish va ixtiyoriy qoʻngʻiroq"
-      },
-      "doska-voqea-sanogi": {
-        "title": "Doskada «Voqea sanogʻi»: «Kuzgi taʼtilgacha 12 kun» — voqealar oʻquv kalendaringizdan, qoʻlda kiritmasdan"
-      },
-      "doska-sekundomer": {
-        "title": "Taymerda sekundomer rejimi: vaqtni oldinga sanang, 5 tagacha oraliq belgilang"
-      },
-      "doska-matn-rang": {
-        "title": "Doskada matn rangi va qalinligi: siyoh, qizil, koʻk, yashil, toʻq sariq, binafsha"
-      },
-      "doska-fonlar-mavsum": {
-        "title": "Doskada yangi fonlar: nota chizigʻi (musiqa darsi), kuz, bahor va qish"
-      },
-      "doska-kamera": {
-        "title": "Doskada «Kamera»: daftar, kitob yoki tajribani butun sinfga koʻrsating — kadrni toʻxtatib, ustidan yozish mumkin"
-      },
-      "doska-shovqin": {
-        "title": "Doskada «Shovqin»: sinf ovozini mikrofon orqali koʻring — chegaradan oshsa ustun qizaradi, xohlasangiz qoʻngʻiroq chaladi"
-      },
-      "doska-hisob": {
-        "title": "Doskada «Hisob»: 2–6 jamoa, katta raqam va +/− — viktorina va guruh ishida ochko sanash"
-      },
-      "doska-ovoz": {
-        "title": "Doskada «Ovoz berish»: oʻquvchilar doskaga chiqib smaylik, «ha/yoʻq» yoki A–E ni bosadi — telefonsiz chiqish chiptasi"
-      },
-      "doska-guruhlar": {
-        "title": "Doskada «Guruhlar»: roʻyxatni bir bosishda tasodifiy guruhlarga boʻling — guruhlar soni yoki guruhdagi odam soni boʻyicha"
-      },
-      "doska-oxirgi-sozlama": {
-        "title": "Doska oxirgi sozlamani eslab qoladi: yangi taymer, gʻildirak va zar siz tanlagan vaqt va rejim bilan chiqadi"
-      },
-      "doska-ekranlar-nusxa": {
-        "title": "Doskada vidjetni boshqa ekranga koʻchiring: Ctrl+C va Ctrl+V — masalan taymerni keyingi ekranga"
-      },
-      "doska-chetga-qoyish": {
-        "title": "Doskada vidjetni ekran chetiga surib yashiring — chetda tugmasi qoladi, bosilsa joyiga qaytadi"
-      },
-      "doska-ism-korinishi": {
-        "title": "Tasodifiy ism endi bitta katta ism koʻrinishida ham — orqa partadan oʻqiladi; tayyor roʻyxatlar: 1–30 va alifbo"
-      },
-      "doska-stiker": {
-        "title": "Doskada «Stiker»: yulduzcha, «barakalla», strelka, fan belgilari — katta va proyektorda tiniq"
-      },
-      "doska-qr": {
-        "title": "Doskada «QR kod»: havola yoki matnni ekranga chiqaring — oʻquvchilar telefon bilan skanerlaydi"
-      },
-      "doska-bosh-joy": {
-        "title": "Doska: yangi vosita boshqalarining ustiga emas, ekrandagi boʻsh joyga tushadi"
-      },
-      "doska-zar": {
-        "title": "Doskada yangi «Zar» vositasi: 1–3 zar, oraliqdan tasodifiy son, oʻzbek alifbosidan harf yoki tanga"
-      },
-      "doska-taymer-takrorlash": {
-        "title": "Doska taymeri: guruhlar aylanishi uchun takrorlanadi, oxirgi soniyalarda qizilga oʻtadi, qolgan vaqt brauzer yorligʻida koʻrinadi"
-      },
-      "doska-ekran-tartibi": {
-        "title": "Doska: ekrandan nusxa oling va ekranlar tartibini menyudan oʻzgartiring"
-      },
-      "doska-barcha-ekranlarda": {
-        "title": "Doska: vidjetni «Barcha ekranlarda» qiling — taymer, soat va jadval ekran almashganda ham joyida qoladi"
-      },
-      "doska-yorliqlar": {
-        "title": "Doska: «K» tugmasi barcha tezkor tugmalarni koʻrsatadi, ular rus klaviaturasida ham ishlaydi, pult bilan ekran almashadi"
+      "doska-ekranlar-boshqaruv": {
+        "title": "Ekranlar bilan ishlash osonlashdi: nusxa, tartib, «Barcha ekranlarda» va tezkor tugmalar",
+        "body": "Vidjetni Ctrl+C / Ctrl+V bilan boshqa ekranga koʻchiring yoki «Barcha ekranlarda» qiling — taymer va soat ekran almashganda joyida qoladi. Ekrandan nusxa olish va ekranlar tartibi menyuda, vidjetni chetga surib yashirish ham mumkin. «K» tugmasi barcha tezkor tugmalarni koʻrsatadi — ular rus klaviaturasida ham ishlaydi, pult bilan ekran almashadi."
       },
       "darslar-oqimi-vizual": {
         "title": "Darslar oqimini koʻring: zanjir, yillik yoʻl xaritasi va «sigʻmaydi» ogohlantirishi",
