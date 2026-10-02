@@ -19,6 +19,10 @@ qilinsa Vercel deploy qilmay qoladi). Shuning uchun tartib qat'iy:
    Branch nomi **oʻz ismingiz** bilan boshlanadi — hamma bitta GitHub
    akkauntdan push qilgani uchun branch nomi kim ishlaganini koʻrsatuvchi
    yagona belgi. Masalan `otabek/baholash-guruh`, `behroz/jurnal-filtr`.
+
+   Sessiya oʻzi avtomatik ochgan `claude/<tasodifiy-nom>` kabi branch'da
+   ishlamang — push oldidan qayta nomlang: `git branch -m <ism>/<tavsif>`.
+   Kimning nomidan ishlayotganingiz nomaʼlum boʻlsa — foydalanuvchidan soʻrang.
 2. **`main` ga TO'G'RIDAN-TO'G'RI push YO'Q.** Faqat o'z branch'ingga,
    qo'shilishi esa Pull Request orqali.
 3. **Push oldidan main'ni tortib ol:** `git fetch origin && git rebase origin/main`
@@ -105,6 +109,47 @@ baza va kalitlar topilmaydi).
 
 Bitta sessiya ishlayotgan boʻlsa worktree KERAK EMAS — qoʻshimcha papka
 va ikkinchi `node_modules` bekorga joy oladi.
+
+## Commit xabari — Conventional Commits
+
+Format: `<tur>(<soha>): <qisqa tavsif>`
+
+| Tur | Qachon |
+|---|---|
+| `feat` | yangi imkoniyat |
+| `fix` | xato tuzatish |
+| `refactor` | xatti-harakat oʻzgarmaydi, kod qayta tuziladi |
+| `perf` | tezlik |
+| `style` | faqat koʻrinish/format, mantiq oʻzgarmaydi |
+| `docs` | hujjat (`AGENTS.md`, `docs/`) |
+| `test` | testlar |
+| `chore` | sozlama, paketlar, build, skriptlar |
+| `revert` | avvalgi commit'ni qaytarish |
+
+- **Soha** — modul yoki sahifa nomi: `(jadval)`, `(baholash)`, `(sidebar)`,
+  `(topshiriqlar)`. Tarixda ishlatilgan nomni takrorlang, yangisini toʻqimang.
+- **Sarlavha** oʻzbekcha (lotin), natijani tasvirlaydi, ~72 belgigacha,
+  oxirida nuqta yoʻq.
+  - ✅ `fix(sidebar): telefonda Blog pastki qatorga qaytadi`
+  - ❌ `fixed bug`, `oʻzgarishlar`, `update`
+- **Tana** (kerak boʻlsa, boʻsh qatordan keyin) — NIMA va NEGA. «Qanday» kodda
+  koʻrinadi, uni qayta aytmang.
+- **Bitta commit = bitta mantiqiy oʻzgarish.** Katta ishni bosqichlarga
+  boʻling: masalan avval sxema/migratsiya, keyin server amali, keyin UI.
+  Aloqasiz tuzatishni alohida commit qiling.
+- AI yordamida yozilgan commit oxirida `Co-Authored-By:` qatori boʻladi.
+
+## Pull Request
+
+- **Sarlavha** — asosiy commit formatida: `feat(topshiriqlar): Dars studiyasi`.
+- **Tavsif** boʻlimlari:
+  - `## Nima oʻzgardi` — 2–5 band;
+  - `## Nega` — muammo yoki talab;
+  - `## Tekshirish` — qanday sinaldi (`tsc`, `build`, qoʻlda nima bosildi);
+  - `## Diqqat` — migratsiya, markaziy fayllar, prodga taʼsir (boʻlsa).
+- **Bitta PR = bitta mavzu.** Aloqasiz oʻzgarish — boshqa PR'ga.
+- CI tekshiruvlari yashil boʻlmaguncha merge qilinmaydi.
+- Merge'dan keyin: `git checkout main && git pull && git branch -d <branch>`.
 
 ## ⚠️ 1- va 3-qoidada `main` — QAYSI main
 
