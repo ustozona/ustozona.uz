@@ -19,6 +19,12 @@
    (tiplar) shu yerdan oladi.
    ════════════════════════════════════════════════════════════════════ */
 
+import { isTestLetter, type ClassTestPhase, type ClassTestSource } from "@/lib/class-test";
+
+/** Sinf testi boshqaruvi (docs/sinf-testi-spec.md). */
+export type ClassTestAction = "start" | "reveal" | "next" | "prev" | "finish" | "save" | "close";
+const TEST_ACTIONS: readonly ClassTestAction[] = ["start", "reveal", "next", "prev", "finish", "save", "close"];
+
 /** Telefon → Doska. */
 export type RemoteCommand =
   | { type: "hello" }
@@ -29,6 +35,13 @@ export type RemoteCommand =
   | { type: "curtain" }
   /** Radio pult rejimini Doskada ochish (joriy taqdimot testi bilan). */
   | { type: "pult" }
+  /** QR-karta testini Doskada ochish (joriy taqdimot testi bilan). */
+  | { type: "cards" }
+  /** Ochiq sinf testini boshqarish. */
+  | { type: "test"; action: ClassTestAction }
+  /** Telefon kamerasi tasdiqlagan karta: `q` — savol raqami (0 — roʻyxatda
+      «keldi» belgisi), `no` — oʻquvchi tartib raqami, `letter: null` — oʻchirish. */
+  | { type: "card"; q: number; no: number; letter: string | null }
   /** Tezkor tekshirish: javob shablonini yangi ekranga chiqarish (savollar soni). */
   | { type: "template"; count: number }
   | { type: "scanned"; added: number; answers: number };
@@ -63,6 +76,30 @@ export type RemotePresentation = {
   mcqCount: number;
 };
 
+/** Doskadagi sinf testining telefonga koʻrinadigan holati. Toʻgʻri javob
+    va kim nima belgilagani YOʻQ — faqat sanoq. */
+export type ClassTestStatus = {
+  source: ClassTestSource;
+  /** Telefon sinf roʻyxatini (ismlar) skaner chiptasi bilan oladi. */
+  setId: string;
+  classId: string;
+  title: string;
+  className: string;
+  phase: ClassTestPhase;
+  /** Joriy savol tartibi (0..total-1) va uning varaqdagi raqami. */
+  index: number;
+  questionNo: number;
+  total: number;
+  /** Joriy savolga javob berganlar (lobby'da — «keldi» belgilanganlar). */
+  answered: number;
+  rosterSize: number;
+  revealed: boolean;
+  /** Pult — qabul qilgich ulanganmi; karta — doim `true`. */
+  connected: boolean;
+  saving: boolean;
+  saved: boolean;
+};
+
 /** Doska → telefon. */
 export type RemoteState = {
   screens: RemoteScreen[];
@@ -72,16 +109,8 @@ export type RemoteState = {
   lessonTitle: string | null;
   /** Parda (ekran yopiq) yoqilganmi. */
   curtain: boolean;
-  /** Radio pult rejimi ochiq boʻlsa — qadam va javob unga yuboriladi. */
-  pult: {
-    title: string;
-    index: number;
-    total: number;
-    answered: number;
-    rosterSize: number;
-    revealed: boolean;
-    connected: boolean;
-  } | null;
+  /** Sinf testi (QR-karta yoki radio pult) ochiq boʻlsa — qadam va javob unga. */
+  test: ClassTestStatus | null;
   sentAt: number;
 };
 
@@ -98,7 +127,20 @@ export function parseRemoteCommand(raw: unknown): RemoteCommand | null {
     case "reveal":
     case "curtain":
     case "pult":
+    case "cards":
       return { type: raw.type };
+    case "test":
+      return TEST_ACTIONS.includes(raw.action as ClassTestAction)
+        ? { type: "test", action: raw.action as ClassTestAction }
+        : null;
+    case "card": {
+      const q = Number(raw.q);
+      const no = Number(raw.no);
+      if (!Number.isInteger(q) || q < 0 || q > 500 || !Number.isInteger(no) || no < 1 || no > 500) return null;
+      const letter = raw.letter === null ? null : isTestLetter(raw.letter) ? raw.letter : undefined;
+      if (letter === undefined) return null;
+      return { type: "card", q, no, letter };
+    }
     case "screen":
     case "step":
       return raw.to === "next" || raw.to === "prev" ? { type: raw.type, to: raw.to } : null;

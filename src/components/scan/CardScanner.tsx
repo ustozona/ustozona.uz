@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { Check, ChevronRight, Flashlight, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CvImage } from "@/lib/omr/cv";
@@ -33,6 +33,15 @@ import type { CardAnswer } from "@/lib/cards/marker";
 
    ⚠️ BAHO BU YERDA HISOBLANMAYDI. Toʻgʻri javob brauzerga
    yuborilmaydi; ekranda faqat «kim javob berdi» koʻrinadi.
+
+   ── JONLI REJIM (`live`) — Doskadagi sinf testi ────────────────────
+
+   Savolni telefon emas, DOSKA boshqaradi (docs/sinf-testi-spec.md):
+   skaner `live.question` ga ergashadi, har tasdiqlangan javob darhol
+   `live.onConfirm` bilan Doskaga ketadi (ustoz pulti kanali). Bola
+   kartani burab javobini oʻzgartirsa — yangi javob ham yuboriladi
+   (javob ochilguncha Doska qabul qiladi). `question = 0` — kutish
+   zali: kartalar oʻqilishini tekshirish («keldi»).
    ════════════════════════════════════════════════════════════════════ */
 
 export type CardCapture = {
@@ -46,23 +55,36 @@ type Props = {
   nameByRef: Map<number, string>;
   onFinish: (capture: CardCapture) => void;
   onClose: () => void;
+  /** Doskadagi sinf testi: savol tashqaridan, javob darhol yuboriladi. */
+  live?: {
+    /** Savol raqami (varaq raqami); 0 — kutish zali (kartalarni tekshirish). */
+    question: number;
+    /** Sarlavha («Savol 3 / 10» yoki «Kartalarni tekshirish»). */
+    title: string;
+    onConfirm: (studentNo: number, answer: CardAnswer) => void;
+    /** Pastdagi tugmalar oʻrniga (masalan, «Javobni koʻrsatish»). */
+    actions?: ReactNode;
+  };
 };
 
 /** Ishlov beriladigan kadr eni. Kartalar kichik boʻlgani uchun
     varaq skaneridan yuqoriroq — 720 px da 30 ta karta ajraladi. */
 const PROCESS_W = 720;
 const CONFIRM_FRAMES = 2;
+const EMPTY: Map<number, CardAnswer> = new Map();
 const FRAME_INTERVAL = 60;
 
-export default function CardScanner({ questionCount, nameByRef, onFinish, onClose }: Props) {
+export default function CardScanner({ questionCount, nameByRef, onFinish, onClose, live }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [question, setQuestion] = useState(1);
+  const [ownQuestion, setQuestion] = useState(1);
+  const question = live ? live.question : ownQuestion;
   const [status, setStatus] = useState("Kamera ochilmoqda...");
   const [fatal, setFatal] = useState<string | null>(null);
   const [hasTorch, setHasTorch] = useState(false);
   const [torchOn, setTorchOn] = useState(false);
-  /** Shu savolda tasdiqlangan javoblar — ekranni yangilash uchun. */
-  const [confirmed, setConfirmed] = useState<Map<number, CardAnswer>>(new Map());
+  /** Tasdiqlangan javoblar (savol → oʻquvchi → javob) — ekran uchun nusxa. */
+  const [captures, setCaptures] = useState<Map<number, Map<number, CardAnswer>>>(new Map());
+  const confirmed = captures.get(question) ?? EMPTY;
   const [seenNow, setSeenNow] = useState(0);
 
   const trackRef = useRef<MediaStreamTrack | null>(null);
@@ -71,8 +93,14 @@ export default function CardScanner({ questionCount, nameByRef, onFinish, onClos
   const captureRef = useRef<Map<number, Map<number, CardAnswer>>>(new Map());
   /** Tasdiqlanmagan kuzatuvlar: oʻquvchi → {javob, necha kadr}. */
   const pendingRef = useRef<Map<number, { answer: CardAnswer; count: number }>>(new Map());
-  const questionRef = useRef(1);
+  const questionRef = useRef(question);
   questionRef.current = question;
+  /** Savol tashqaridan almashsa — tasdiqlanmagan kuzatuvlar tashlanadi. */
+  const lastQuestionRef = useRef(question);
+  const onConfirmRef = useRef(live?.onConfirm);
+  useEffect(() => {
+    onConfirmRef.current = live?.onConfirm;
+  });
 
   /** Joriy savolning tasdiqlangan javoblari. */
   const answersFor = useCallback((q: number) => {
@@ -120,6 +148,10 @@ export default function CardScanner({ questionCount, nameByRef, onFinish, onClos
       setSeenNow(found.length);
 
       const pending = pendingRef.current;
+      if (lastQuestionRef.current !== questionRef.current) {
+        lastQuestionRef.current = questionRef.current;
+        pending.clear();
+      }
       const current = answersFor(questionRef.current);
       const nowSeen = new Set<number>();
       let changed = false;
@@ -133,6 +165,7 @@ export default function CardScanner({ questionCount, nameByRef, onFinish, onClos
           if (prev.count >= CONFIRM_FRAMES && current.get(studentNo) !== answer) {
             current.set(studentNo, answer);
             changed = true;
+            onConfirmRef.current?.(studentNo, answer);
           }
         } else {
           // Javob oʻzgardi (bola kartani burayapti) — sanoq boshidan.
@@ -145,7 +178,11 @@ export default function CardScanner({ questionCount, nameByRef, onFinish, onClos
         if (!nowSeen.has(key)) pending.delete(key);
       }
 
-      if (changed) setConfirmed(new Map(current));
+      if (changed) {
+        const snapshot = new Map<number, Map<number, CardAnswer>>();
+        for (const [q, answers] of captureRef.current) snapshot.set(q, new Map(answers));
+        setCaptures(snapshot);
+      }
     }
 
     function loop(ts: number) {
@@ -214,9 +251,7 @@ export default function CardScanner({ questionCount, nameByRef, onFinish, onClos
 
   function nextQuestion() {
     pendingRef.current.clear();
-    const next = Math.min(question + 1, questionCount);
-    setQuestion(next);
-    setConfirmed(new Map(answersFor(next)));
+    setQuestion(Math.min(question + 1, questionCount));
   }
 
   function finish() {
@@ -236,7 +271,7 @@ export default function CardScanner({ questionCount, nameByRef, onFinish, onClos
     onFinish({ byStudent });
   }
 
-  const totalCaptured = [...captureRef.current.values()].reduce((n, m) => n + m.size, 0);
+  const totalCaptured = [...captures.values()].reduce((n, m) => n + m.size, 0);
 
   return (
     <div className="fixed inset-0 z-[60] bg-black">
@@ -251,7 +286,7 @@ export default function CardScanner({ questionCount, nameByRef, onFinish, onClos
       <div className="absolute inset-x-0 top-0 flex items-center justify-between gap-3 bg-gradient-to-b from-black/70 to-transparent px-4 py-3">
         <div className="flex flex-col">
           <span className="text-sm font-semibold text-white">
-            Savol {question}/{questionCount}
+            {live ? live.title : `Savol ${question}/${questionCount}`}
           </span>
           <span className="text-xs text-white/60">
             {confirmed.size} javob · kadrda {seenNow} karta
@@ -309,19 +344,23 @@ export default function CardScanner({ questionCount, nameByRef, onFinish, onClos
         ) : (
           <p className="text-center text-sm text-white/80">{status}</p>
         )}
-        <div className="flex items-center justify-center gap-2">
-          <Button
-            size="lg"
-            variant="secondary"
-            disabled={question >= questionCount}
-            onClick={nextQuestion}
-          >
-            Keyingi savol <ChevronRight className="size-4" />
-          </Button>
-          <Button size="lg" disabled={totalCaptured === 0} onClick={finish}>
-            <Check className="size-4" /> Tugatish
-          </Button>
-        </div>
+        {live ? (
+          <div className="flex flex-wrap items-center justify-center gap-2">{live.actions}</div>
+        ) : (
+          <div className="flex items-center justify-center gap-2">
+            <Button
+              size="lg"
+              variant="secondary"
+              disabled={question >= questionCount}
+              onClick={nextQuestion}
+            >
+              Keyingi savol <ChevronRight className="size-4" />
+            </Button>
+            <Button size="lg" disabled={totalCaptured === 0} onClick={finish}>
+              <Check className="size-4" /> Tugatish
+            </Button>
+          </div>
+        )}
       </div>
 
       {!fatal && status === "Kamera ochilmoqda..." && (

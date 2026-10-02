@@ -108,8 +108,15 @@ ilovasi) `/pult` ni ochsa — oxirgi Doskaga yoʻnaltiriladi.
 
 ## 6. Telefonda tekshirish
 
-Joriy ekrandagi taqdimot testi uchun: **QR-kartalar** va **Varaq (OMR)**
-— mavjud `ScanPanel` (Topshiriqlardagi bilan aynan bir yoʻl). Natija
+**QR-kartalar** endi Doskada **sinf testi** sahnasini ochadi
+([`sinf-testi-spec.md`](./sinf-testi-spec.md)). Sahna LessonLab botidagi
+smart doska kabi: kutish zali → savol → savol natijasi → yakuniy
+natijalar. Telefon kamera boʻladi va Doskadagi joriy savolga ergashadi.
+Doskasiz eski yoʻl ham qoldi («Doskasiz: kartalarni faqat telefonda
+yigʻish»).
+
+Joriy ekrandagi taqdimot testi uchun **Varaq (OMR)** va doskasiz karta —
+mavjud `ScanPanel` (Topshiriqlardagi bilan aynan bir yoʻl). Natija
 avval roʻyxatda, «Jurnalga kiritish» bilan `responses` ga; jurnal ustuni —
 kompyuterda bitta tugma (oʻzgarmadi). Telefon ekrani oʻchmaydi (Wake Lock).
 
@@ -136,14 +143,19 @@ Gemini bilan cheklanadi — boshqa model rasmsiz javob toʻqimasin).
 ## 8. Radio pult (3-bosqich)
 
 - Telefonda **«Pult (radio)»** → Doskada joriy taqdimot testi bilan pult
-  rejimi ochiladi (mavjud `PultRunner`, Topshiriqlardagi bilan bir yoʻl).
+  rejimi ochiladi (`PultRunner`, Topshiriqlardagi bilan bir yoʻl). Endi bu
+  ham **sinf testi** sahnasi (`sinf-testi-spec.md`), QR-karta bilan bir
+  xil koʻrinishda.
 - **Bosishsiz qayta ulanish:** brauzer qabul qilgichga ilgari ruxsat
   bergan boʻlsa (`navigator.serial.getPorts()`), port tanlash oynasisiz
   ulanadi. Birinchi ruxsat — baribir kompyuterda bir marta (brauzer
   qoidasi, chetlab boʻlmaydi).
-- Pult ochiq boʻlsa telefondagi «Keyingi» / «Javobni koʻrsatish» unga
-  boradi (`remote-bus` → `publishPult`), telefonda «N / M javob berdi».
-- Saqlash — kompyuterda «Tugatish va saqlash» (avvalgidek).
+- Sinf testi ochiq boʻlsa telefon uni boshqaradi (`remote-bus` →
+  `publishClassTest`, buyruq `{type:"test", action}`):
+  - boshlash, «Javobni koʻrsatish», keyingi va oldingi savol;
+  - telefonda «N / M javob berdi» koʻrinadi.
+- Saqlash — yakuniy ekranda «Jurnalga saqlash». Uni kompyuterda ham,
+  telefonda ham bosish mumkin.
 
 ## 9. Telegram va Ustozona ilovasi (4-bosqich)
 
@@ -158,7 +170,7 @@ Gemini bilan cheklanadi — boshqa model rasmsiz javob toʻqimasin).
 
 ## 10. Keyingi bosqichlar
 
-1. **Kartani savolga bogʻlash** — QR-karta skaneri Doskadagi joriy savol
-   bilan sinxron (hozir skaner savollarni oʻzi sanaydi).
+1. ~~**Kartani savolga bogʻlash**~~ — bajarildi: sinf testi
+   (`sinf-testi-spec.md`).
 2. **Ilova ichida native kamera** — QR-karta skanerini WebView'siz,
    ilovaning oʻz kamerasi bilan (hozir brauzer sahifasi).

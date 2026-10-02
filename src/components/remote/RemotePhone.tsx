@@ -9,6 +9,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import ScanPanel from "@/components/scan/ScanPanel";
+import { RemoteClassTest } from "./RemoteClassTest";
 import type { RealtimeConfig } from "@/lib/live-session";
 import { REMOTE_EVENTS, parseRemoteState, type RemoteCommand, type RemoteState } from "@/lib/doska/remote-protocol";
 import { useRealtimeChannel } from "@/hooks/useRealtimeChannel";
@@ -155,52 +156,11 @@ export function RemotePhone({ ticket, topic, config }: { ticket: string; topic: 
         </section>
       )}
 
-      {/* Radio pult rejimi — Doskada ochiq boʻlsa qadam unga boradi */}
-      {state?.pult && (
-        <section className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4">
-          <div className="flex items-center gap-2">
-            <RadioReceiver className="size-4 shrink-0 text-muted-foreground" />
-            <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{state.pult.title}</span>
-            <span className="shrink-0 font-mono text-sm tabular-nums text-muted-foreground">
-              {state.pult.total ? state.pult.index + 1 : 0} / {state.pult.total}
-            </span>
-          </div>
-          <p className="text-body text-foreground">
-            {t("pultAnswered", { answered: state.pult.answered, total: state.pult.rosterSize })}
-          </p>
-          {!state.pult.connected && <p className="text-caption text-warning">{t("pultNotConnected")}</p>}
-          <Button
-            variant="secondary"
-            className="h-12 w-full gap-2 text-base"
-            disabled={state.pult.revealed}
-            onClick={() => command({ type: "reveal" })}
-          >
-            <Eye className="size-5" /> {t("revealAnswer")}
-          </Button>
-          <div className="grid grid-cols-[1fr_2fr] gap-2">
-            <Button
-              variant="outline"
-              className="h-16 shadow-none"
-              disabled={state.pult.index <= 0}
-              onClick={() => command({ type: "step", to: "prev" })}
-              aria-label={t("prevStep")}
-            >
-              <ChevronLeft className="size-6" />
-            </Button>
-            <Button
-              className="h-16 gap-1 text-lg"
-              disabled={state.pult.index >= state.pult.total - 1}
-              onClick={() => command({ type: "step", to: "next" })}
-            >
-              {t("nextStep")} <ChevronRight className="size-6" />
-            </Button>
-          </div>
-          <p className="text-caption text-muted-foreground">{t("pultSaveHint")}</p>
-        </section>
-      )}
+      {/* Sinf testi (QR-karta / radio pult) — Doskada ochiq boʻlsa boshqaruv unga */}
+      {state?.test && <RemoteClassTest status={state.test} ticket={ticket} command={command} />}
 
       {/* Taqdimot — joriy qadam */}
-      {state && pres && !state.pult && (
+      {state && pres && !state.test && (
         <section className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4">
           <div className="flex items-center gap-2">
             <Presentation className="size-4 shrink-0 text-muted-foreground" />
@@ -250,8 +210,14 @@ export function RemotePhone({ ticket, topic, config }: { ticket: string; topic: 
         <section className="flex flex-col gap-2">
           <span className="text-label text-muted-foreground">{t("checkTitle")}</span>
           <div className="grid grid-cols-2 gap-2">
-            <Button variant="outline" className="h-14 justify-start gap-2 shadow-none" disabled={!!scanBusy} onClick={() => void openScanner("cards")}>
-              {scanBusy === "cards" ? <Loader2 className="size-5 animate-spin" /> : <IdCard className="size-5" />}
+            {/* QR-kartalar — Doskada sinf testi (bot oynasidek), telefon kamera boʻladi. */}
+            <Button
+              variant="outline"
+              className="h-14 justify-start gap-2 shadow-none"
+              disabled={Boolean(state.test)}
+              onClick={() => command({ type: "cards" })}
+            >
+              <IdCard className="size-5" />
               {t("scanCards")}
             </Button>
             <Button variant="outline" className="h-14 justify-start gap-2 shadow-none" disabled={!!scanBusy} onClick={() => void openScanner("sheets")}>
@@ -265,7 +231,7 @@ export function RemotePhone({ ticket, topic, config }: { ticket: string; topic: 
             <Button
               variant="outline"
               className="h-14 justify-start gap-2 shadow-none"
-              disabled={Boolean(state.pult)}
+              disabled={Boolean(state.test)}
               onClick={() => command({ type: "pult" })}
             >
               <RadioReceiver className="size-5" />
@@ -281,6 +247,16 @@ export function RemotePhone({ ticket, topic, config }: { ticket: string; topic: 
             </Button>
           </div>
           {scanError && <p className="text-caption text-destructive">{scanError}</p>}
+          {/* Doskasiz yoʻl: kartalarni faqat telefonda yigʻib, roʻyxatdan kiritish (avvalgidek). */}
+          <button
+            type="button"
+            disabled={!!scanBusy}
+            onClick={() => void openScanner("cards")}
+            className="flex items-center gap-2 self-start text-caption text-muted-foreground underline-offset-4 hover:underline disabled:opacity-60"
+          >
+            {scanBusy === "cards" && <Loader2 className="size-3.5 animate-spin" />}
+            {t("scanCardsPhoneOnly")}
+          </button>
           <p className="flex gap-2 text-caption text-muted-foreground">
             <ScanLine className="mt-0.5 size-3.5 shrink-0" /> {t("checkHint")}
           </p>

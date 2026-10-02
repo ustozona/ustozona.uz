@@ -9,8 +9,9 @@ import { Dialog, DialogDescription, DialogOverlay, DialogPortal, DialogTitle } f
 import { Z_SHORTCUTS, Z_SHORTCUTS_SCRIM } from "@/lib/doska/layers";
 import { useDoskaStore } from "@/lib/doska/store";
 import { widgetMeta } from "@/lib/doska/registry";
-import { presentationEntry, pultEntry, subscribePresentations } from "@/lib/doska/remote-bus";
-import { PultRunner } from "@/components/launch/PultRunner";
+import { classTestEntry, presentationEntry, subscribePresentations } from "@/lib/doska/remote-bus";
+import { onClassTestRequest, takeClassTestRequest, type ClassTestRequest } from "@/lib/doska/class-test-request";
+import { ClassTestRunner } from "@/components/class-test/ClassTestRunner";
 import { lessonTitle } from "@/lib/doska/lesson-handoff";
 import { quickTemplateText } from "@/lib/quick-check";
 import {
@@ -31,7 +32,10 @@ import { IconClose, IconPhone } from "../icons";
      • ekranlarni almashtiradi;
      • taqdimotda keyingi/oldingi qadam, «Javobni ochish»;
      • pardani yopadi/ochadi;
-     • shu testni QR-karta / varaq skaneri bilan tekshiradi.
+     • shu testni QR-karta / varaq skaneri bilan tekshiradi;
+     • sinf testini (QR-karta yoki radio pult) Doskada oʻtkazadi —
+       sahna shu yerda chiziladi, karta javoblari telefondan keladi
+       (docs/sinf-testi-spec.md).
 
    HOKIMIYAT — DOSKA: holat shu yerda hisoblanadi va kanalga eʼlon
    qilinadi; telefon faqat buyruq yuboradi. Buyruqlar Doskaning
@@ -93,8 +97,18 @@ export function DoskaRemote() {
   const [phoneSeen, setPhoneSeen] = React.useState(0);
   const [lastScan, setLastScan] = React.useState<{ added: number; answers: number; at: number } | null>(null);
   const [now, setNow] = React.useState(0);
-  /** Radio pult rejimi — telefondan ochiladi, kompyuterda Web Serial. */
-  const [pultFor, setPultFor] = React.useState<{ setId: string; classId: string } | null>(null);
+  /** Sinf testi sahnasi — QR-karta (javob telefondan) yoki radio pult (Web Serial). */
+  const [testFor, setTestFor] = React.useState<ClassTestRequest | null>(null);
+
+  // Taqdimot vidjeti yoki `?mode=cards` havolasidan kelgan soʻrov.
+  React.useEffect(() => {
+    const onRequest = () => {
+      const req = takeClassTestRequest();
+      if (req) setTestFor(req);
+    };
+    onRequest();
+    return onClassTestRequest(onRequest);
+  }, []);
   /** «Telegramga yuborish» natijasi — oynada bir qator. */
   const [tg, setTg] = React.useState<"sending" | "sent" | "bot" | "not_linked" | "failed" | null>(null);
 
@@ -195,7 +209,7 @@ export function DoskaRemote() {
       presentation: entry && pres ? { widgetId: pres.id, ...entry.status } : null,
       lessonTitle: lessonTitle(),
       curtain,
-      pult: pultEntry()?.status ?? null,
+      test: classTestEntry()?.status ?? null,
       sentAt: 0,
     };
   }, [screensSig, busVersion, activeId, curtain, tw]);
@@ -234,8 +248,8 @@ export function DoskaRemote() {
         return;
       case "step":
       case "reveal": {
-        // Pult rejimi ochiq boʻlsa — buyruq unga (taqdimot orqada qoladi).
-        const entry = pultEntry() ?? (pres ? presentationEntry(pres.widgetId) : undefined);
+        // Sinf testi ochiq boʻlsa — buyruq unga (taqdimot orqada qoladi).
+        const entry = classTestEntry() ?? (pres ? presentationEntry(pres.widgetId) : undefined);
         if (!entry) return;
         if (cmd.type === "reveal") entry.control.reveal();
         else if (cmd.to === "next") entry.control.next();
@@ -246,7 +260,17 @@ export function DoskaRemote() {
         store.setCurtain(!store.curtain);
         return;
       case "pult":
-        if (pres?.classId) setPultFor({ setId: pres.setId, classId: pres.classId });
+      case "cards":
+        if (classTestEntry()) return;
+        if (pres?.classId) setTestFor({ source: cmd.type, setId: pres.setId, classId: pres.classId });
+        return;
+      case "test": {
+        const entry = classTestEntry();
+        if (entry) entry.control[cmd.action]();
+        return;
+      }
+      case "card":
+        classTestEntry()?.control.receive(cmd.no, cmd.letter, cmd.q);
         return;
       case "template": {
         // Tezkor tekshirish: oʻquvchi shu shablonni qogʻozga koʻchiradi.
@@ -297,12 +321,14 @@ export function DoskaRemote() {
         )}
       </BarIconButton>
 
-      {pultFor && (
-        <PultRunner
-          setId={pultFor.setId}
-          classId={pultFor.classId}
-          onClose={() => setPultFor(null)}
-          onSaved={() => setPultFor(null)}
+      {testFor && (
+        <ClassTestRunner
+          key={`${testFor.source}:${testFor.setId}:${testFor.classId}`}
+          source={testFor.source}
+          setId={testFor.setId}
+          classId={testFor.classId}
+          phone={{ online: phoneOnline, qrSvg: session?.qrSvg ?? null, busy, onConnect: () => void connect() }}
+          onClose={() => setTestFor(null)}
         />
       )}
 
