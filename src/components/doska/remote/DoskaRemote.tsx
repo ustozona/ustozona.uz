@@ -18,7 +18,7 @@ import {
 } from "@/lib/doska/remote-protocol";
 import type { RealtimeConfig } from "@/lib/live-session";
 import { useRealtimeChannel } from "@/hooks/useRealtimeChannel";
-import { startDoskaRemoteAction } from "@/server/actions/doska-remote";
+import { sendRemoteToTelegramAction, startDoskaRemoteAction } from "@/server/actions/doska-remote";
 import { BarIconButton } from "../BarGroup";
 import { IconClose, IconPhone } from "../icons";
 
@@ -95,6 +95,18 @@ export function DoskaRemote() {
   const [now, setNow] = React.useState(0);
   /** Radio pult rejimi — telefondan ochiladi, kompyuterda Web Serial. */
   const [pultFor, setPultFor] = React.useState<{ setId: string; classId: string } | null>(null);
+  /** «Telegramga yuborish» natijasi — oynada bir qator. */
+  const [tg, setTg] = React.useState<"sending" | "sent" | "bot" | "not_linked" | "failed" | null>(null);
+
+  async function sendToTelegram() {
+    setTg("sending");
+    try {
+      const res = await sendRemoteToTelegramAction();
+      setTg(res.ok ? "sent" : res.reason === "bot" || res.reason === "not_linked" ? res.reason : "failed");
+    } catch {
+      setTg("failed");
+    }
+  }
 
   React.useEffect(() => setSession(readSession()), []);
 
@@ -349,6 +361,20 @@ export function DoskaRemote() {
                   </p>
                   <p className="text-muted-foreground text-xs leading-relaxed">{t("scanHint")}</p>
                   <p className="text-muted-foreground text-xs leading-relaxed">{t("loggedInHint")}</p>
+                  {/* Telegram — QR'dan ham tez: telefonda bildirishnoma, bitta bosish. */}
+                  <button
+                    type="button"
+                    disabled={tg === "sending"}
+                    onClick={() => void sendToTelegram()}
+                    className="hover:bg-muted h-10 w-full rounded-lg border px-3 text-sm font-medium transition-colors disabled:opacity-60"
+                  >
+                    {tg === "sending" ? t("tgSending") : t("tgSend")}
+                  </button>
+                  {tg && tg !== "sending" && (
+                    <p className={cn("text-xs", tg === "sent" ? "text-success" : "text-muted-foreground")}>
+                      {t(`tg_${tg}`)}
+                    </p>
+                  )}
                   {scanFresh && (
                     <p className="bg-muted rounded-md px-3 py-1.5 text-xs">
                       {t("scanned", { added: lastScan!.added, answers: lastScan!.answers })}

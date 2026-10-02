@@ -5755,7 +5755,13 @@
       "scanned": "Телефондан: {added} ўқувчи, {answers} жавоб ёзилди",
       "newQr": "Янги QR",
       "disconnect": "Узиш",
-      "templateName": "Исм Фамилия"
+      "templateName": "Исм Фамилия",
+      "tgSend": "Telegramга юбориш",
+      "tgSending": "Юборилмоқда…",
+      "tg_sent": "Юборилди — телефонингиздаги Telegramда «Pultni ochish» ни босинг.",
+      "tg_bot": "Telegram бот созланмаган.",
+      "tg_not_linked": "Telegram ҳисобингиз боғланмаган — Созламалар → Telegram.",
+      "tg_failed": "Юбориб бўлмади — QR дан фойдаланинг."
     }
   },
   "GamesPage": {

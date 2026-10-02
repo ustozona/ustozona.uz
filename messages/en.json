@@ -5925,7 +5925,13 @@
       "scanned": "From the phone: {added} students, {answers} answers saved",
       "newQr": "New QR",
       "disconnect": "Disconnect",
-      "templateName": "Name Surname"
+      "templateName": "Name Surname",
+      "tgSend": "Send to Telegram",
+      "tgSending": "Sending…",
+      "tg_sent": "Sent — tap «Pultni ochish» in Telegram on your phone.",
+      "tg_bot": "Telegram bot isn't configured.",
+      "tg_not_linked": "Telegram isn't linked — Settings → Telegram.",
+      "tg_failed": "Couldn't send — use the QR."
     }
   },
   "LessonPlanWizard": {
