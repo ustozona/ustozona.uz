@@ -86,6 +86,9 @@ const AUDIT_LABEL: Record<string, string> = {
   "member.remove": "aʼzoni jamoadan chiqardi",
   "member.leave": "jamoadan chiqdi",
   "class.set_parent": "guruhni maʼmuriy sinfga ulash oʻzgardi",
+  "class.trash": "sinfni savatga tashladi",
+  "class.restore": "sinfni savatdan tikladi",
+  "class.purge": "sinfni butunlay oʻchirdi",
 };
 
 type AuditItem = {

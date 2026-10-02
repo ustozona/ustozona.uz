@@ -1,6 +1,6 @@
 import "server-only";
 import { cache } from "react";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, isNull } from "drizzle-orm";
 import { db } from "./db/client";
 import {
   classTeachers,
@@ -208,14 +208,20 @@ export async function listWorkspaceRoster(): Promise<
       name: students.name,
       initials: students.initials,
       className: classes.name,
+      trashed: classes.deletedAt,
     })
     .from(students)
     .leftJoin(enrollments, eq(enrollments.studentId, students.id))
     .leftJoin(classes, eq(classes.id, enrollments.classId))
     .where(and(eq(students.workspaceId, ctx.workspaceId), eq(students.status, "active")));
 
+  /* Faqat savatdagi sinfda turgan bola roʻyxatda chiqmaydi — u sinf
+     bilan birga savatda (tiklansa qaytadi, muddat oʻtsa oʻchadi). */
+  const live = new Set(rows.filter((r) => !r.trashed).map((r) => r.id));
   const byId = new Map<string, { id: string; name: string; initials: string; classNames: string[] }>();
   for (const r of rows) {
+    if (!live.has(r.id)) continue;
+    if (r.trashed) continue;
     const prev = byId.get(r.id);
     if (prev) {
       if (r.className) prev.classNames.push(r.className);
@@ -310,7 +316,7 @@ export async function visibleClassIds(purpose: VisibilityPurpose): Promise<strin
     const rows = await db
       .select({ id: classes.id })
       .from(classes)
-      .where(eq(classes.workspaceId, ctx.workspaceId));
+      .where(and(eq(classes.workspaceId, ctx.workspaceId), isNull(classes.deletedAt)));
     return rows.map((r) => r.id);
   }
 
@@ -336,7 +342,9 @@ export async function taughtClassIds(ctx?: WorkspaceContext): Promise<string[]> 
     .where(
       and(
         eq(classTeachers.teacherId, scope.teacherId),
-        eq(classes.workspaceId, scope.workspaceId)
+        eq(classes.workspaceId, scope.workspaceId),
+        // Savatdagi sinf — yozish ham, koʻrish ham yoʻq (dal/class-trash.ts).
+        isNull(classes.deletedAt)
       )
     );
   return rows.map((r) => r.id);

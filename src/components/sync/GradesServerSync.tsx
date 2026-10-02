@@ -32,6 +32,17 @@ export async function reloadGradesFromServer(): Promise<void> {
   active?.rebase();
 }
 
+/**
+ * Kutilayotgan (debounce oynasidagi) oʻzgarishlarni HOZIR yuboradi.
+ *
+ * OʻZ server amalidan oldin chaqiriladi: amal serverdagi holatga
+ * tayanadi (masalan sinf arxivdami), keyingi `reloadGradesFromServer`
+ * esa yuborilmagan tahrirlarni ustidan yozib yuborardi.
+ */
+export async function flushGradesToServer(): Promise<void> {
+  await active?.flush();
+}
+
 /** Mount hydration umumiy bootstrap javobidan oʻqiladi (bitta soʻrov). */
 const fetchSlice = bootstrapSlice("grades");
 

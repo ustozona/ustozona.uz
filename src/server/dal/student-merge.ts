@@ -1,5 +1,5 @@
 import "server-only";
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import { classes, enrollmentPeriods, enrollments, students } from "@/server/db/schema";
 import { mergePeriods } from "@/lib/membership";
@@ -115,7 +115,7 @@ export async function findDuplicateStudents(): Promise<DuplicateGroup[]> {
     })
     .from(students)
     .leftJoin(enrollments, eq(enrollments.studentId, students.id))
-    .leftJoin(classes, eq(classes.id, enrollments.classId))
+    .leftJoin(classes, and(eq(classes.id, enrollments.classId), isNull(classes.deletedAt)))
     .where(and(eq(students.workspaceId, ctx.workspaceId), eq(students.status, "active")));
 
   const byId = new Map<string, DuplicateGroup["students"][number]>();
