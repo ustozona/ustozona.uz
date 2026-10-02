@@ -4,18 +4,17 @@ import * as React from "react";
 import { useTranslations } from "next-intl";
 
 import { cn } from "@/lib/utils";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useDoskaStore, useActiveWidgets } from "@/lib/doska/store";
 import { widgetMeta } from "@/lib/doska/registry";
 import { pinnedTools, useDoskaPrefs } from "@/lib/doska/prefs";
 import { useInkTool } from "@/lib/doska/ink-tool";
 import { BackgroundPicker } from "./BackgroundPicker";
 import { BarButton } from "./BarButton";
-import { BarGroup, BarIconButton, barIconButtonClass } from "./BarGroup";
-import { MenuItem } from "./DoskaMenu";
+import { BarColumn, BarEndColumn } from "./BarEndColumn";
+import { BarGroup, BarIconButton } from "./BarGroup";
 import { useDockLayout } from "./dock";
 import { ShapePicker } from "./ShapePicker";
-import { IconCatalog, IconChevronDown, IconCursor, IconMenu, IconPen, IconRedo, IconUndo } from "./icons";
+import { IconCursor, IconPen } from "./icons";
 import { ToolCatalog } from "./ToolCatalog";
 import { WIDGET_ICONS } from "./widgets";
 
@@ -41,7 +40,7 @@ import { WIDGET_ICONS } from "./widgets";
      tanlaydi (`lib/doska/prefs.ts`, R132); tartib doim `TOOL_ORDER`.
      Har plitka tepasida ekrandagi nusxalar soni (nuqtalar).
    • Oʻng ustun — panel menyusi (bekor qilish, qaytadan bajarish, panelni
-     tahrirlash) va yigʻish (`B`).
+     tahrirlash) va yigʻish (`B`) — `BarEndColumn`, qoʻlyozma panelida ham.
 
    «Tozalash» bu yerda YOʻQ — u asosiy menyuda (`DoskaMenu`). Qoʻshish
    tugmalari qatorida turgan buzuvchi tugma bir notoʻgʻri bosishda butun
@@ -55,7 +54,6 @@ export function WidgetBar({ onHide }: { onHide: () => void }) {
   const { orientation } = useDockLayout();
   const t = useTranslations("Doska.widgets");
   const tInk = useTranslations("Doska.ink");
-  const tBar = useTranslations("Doska.bar");
   const setInkMode = useInkTool((s) => s.setMode);
   const [catalogOpen, setCatalogOpen] = React.useState(false);
 
@@ -83,18 +81,22 @@ export function WidgetBar({ onHide }: { onHide: () => void }) {
       )}
     >
       <BarColumn vertical={vertical}>
+        {/* Rejim almashtirgich — ikki tugma, bittasi bosilgan. Bu panel
+            koʻrinib turgan paytda rejim doim «tanlash»: qalam bosilsa panel
+            oʻrnini qoʻlyozma paneli egallaydi. */}
         <BarIconButton
           label={tInk("pen")}
           shortcut={["P"]}
+          aria-pressed={false}
           onClick={() => setInkMode(useInkTool.getState().lastTool)}
           className="rounded-md"
         >
           <IconPen className="size-5" />
         </BarIconButton>
-        {/* Tanlash — shu panel koʻrinib turgan paytdagi holat. */}
         <BarIconButton
           label={tInk("select")}
           aria-pressed
+          onClick={() => setInkMode(null)}
           className="text-primary hover:text-primary rounded-md bg-[var(--doska-ctl-active)] hover:bg-[var(--doska-ctl-active)]"
         >
           <IconCursor className="size-5" />
@@ -138,92 +140,8 @@ export function WidgetBar({ onHide }: { onHide: () => void }) {
         <ToolCatalog onScreen={onScreen} open={catalogOpen} onOpenChange={setCatalogOpen} />
       </div>
 
-      <BarColumn vertical={vertical} className={vertical ? "pt-0" : "pl-0"}>
-        <BarMenu onEditBar={() => setCatalogOpen(true)} />
-        <BarIconButton label={tBar("hideControls")} shortcut={["B"]} onClick={onHide} className="rounded-md">
-          <IconChevronDown className={cn("size-5", vertical && "-rotate-90")} />
-        </BarIconButton>
-      </BarColumn>
+      <BarEndColumn vertical={vertical} onHide={onHide} onEditBar={() => setCatalogOpen(true)} />
     </BarGroup>
   );
 }
 
-/** Panelning chekka ustuni — rejim tugmalari yoki menyu va yigʻish. */
-function BarColumn({
-  vertical,
-  className,
-  children,
-}: {
-  vertical: boolean;
-  className?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div
-      className={cn(
-        "flex shrink-0 justify-between gap-2 p-2",
-        vertical ? "flex-row" : "flex-col",
-        className,
-      )}
-    >
-      {children}
-    </div>
-  );
-}
-
-/**
- * Panel menyusi (⋮) — bekor qilish, qaytadan bajarish, panelni tahrirlash.
- *
- * Bekor qilish shu yerda va `Ctrl+Z` da; har oʻchirishdan keyin pastda
- * «Qaytarish» xabari ham chiqadi (`DoskaNotice`) — shuning uchun alohida
- * doimiy tugma kerak emas.
- *
- * ⚠️ Tugma `<BarIconButton>` ga OʻRALMAYDI — u `PopoverTrigger asChild`
- * ning bolasi, zanjir esa `asChild` → `<Tooltip>` (DOM element emas)
- * boʻlib uzilardi (`DoskaMenu` dagi bilan bir xil sabab).
- */
-function BarMenu({ onEditBar }: { onEditBar: () => void }) {
-  const undo = useDoskaStore((s) => s.undo);
-  const redo = useDoskaStore((s) => s.redo);
-  const canUndo = useDoskaStore((s) => s.past.length > 0);
-  const canRedo = useDoskaStore((s) => s.future.length > 0);
-  const { side } = useDockLayout();
-  const t = useTranslations("Doska.bar");
-  const [open, setOpen] = React.useState(false);
-
-  const run = (fn: () => void) => () => {
-    fn();
-    setOpen(false);
-  };
-
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <button type="button" aria-label={t("barMenu")} className={cn(barIconButtonClass, "rounded-md")}>
-          <IconMenu className="size-5" />
-        </button>
-      </PopoverTrigger>
-
-      <PopoverContent
-        side={side}
-        align="end"
-        sideOffset={12}
-        collisionPadding={12}
-        className="doska-bar doska-sheet w-60 p-0 py-1"
-        style={{ zIndex: "var(--z-doska-context)" }}
-      >
-        {/* Menyu ochiq qoladi: oʻqituvchi bir necha qadam orqaga qaytishi mumkin. */}
-        <MenuItem Icon={IconUndo} shortcut={["Mod", "Z"]} disabled={!canUndo} onClick={undo}>
-          {t("undo")}
-        </MenuItem>
-        <MenuItem Icon={IconRedo} shortcut={["Mod", "Y"]} disabled={!canRedo} onClick={redo}>
-          {t("redo")}
-        </MenuItem>
-        <hr className="mx-4 my-1" />
-        <MenuItem Icon={IconCatalog} onClick={run(onEditBar)}>
-          {t("editBar")}
-        </MenuItem>
-      </PopoverContent>
-    </Popover>
-  );
-}

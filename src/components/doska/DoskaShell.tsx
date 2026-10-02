@@ -143,28 +143,31 @@ export function DoskaShell() {
             <>
               {/* ── Yuqori burchaklar: bosh sahifa · toʻliq ekran, menyu ──
                   Har biri alohida kichik idishda — bir-biriga bogʻliq
-                  boʻlmagan amallar. Yigʻilgan holatda ham qoladi: ular
-                  burchakda, mazmunga xalaqit bermaydi. */}
-              <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-2">
-                <BarGroup>
-                  <BarIconButton label={t("home")} asChild>
-                    <Link href="/">
-                      <IconHome className="size-5" />
-                    </Link>
-                  </BarIconButton>
-                </BarGroup>
-
-                <div className="flex gap-2">
+                  boʻlmagan amallar. «Boshqaruvni yashirish» (`B`) ularni
+                  ham yashiradi: sinfga toza ekran koʻrsatiladi, ekranda
+                  faqat «Koʻrsatish» tugmasi qoladi. */}
+              {!barHidden && (
+                <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-2">
                   <BarGroup>
-                    <BarIconButton label={t("fullscreen")} shortcut={["F"]} onClick={toggleFullscreen}>
-                      <IconFullscreen className="size-5" />
+                    <BarIconButton label={t("home")} asChild>
+                      <Link href="/">
+                        <IconHome className="size-5" />
+                      </Link>
                     </BarIconButton>
                   </BarGroup>
-                  <BarGroup>
-                    <DoskaMenu onShowShortcuts={() => setShortcutsOpen(true)} />
-                  </BarGroup>
+
+                  <div className="flex gap-2">
+                    <BarGroup>
+                      <BarIconButton label={t("fullscreen")} shortcut={["F"]} onClick={toggleFullscreen}>
+                        <IconFullscreen className="size-5" />
+                      </BarIconButton>
+                    </BarGroup>
+                    <BarGroup>
+                      <DoskaMenu onShowShortcuts={() => setShortcutsOpen(true)} />
+                    </BarGroup>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {side && (
                 // Yon relsa — oʻrtadan pastda (yetish zonasi, R319): tepadan
@@ -178,7 +181,7 @@ export function DoskaShell() {
                   {barHidden ? (
                     <DockToggle dock={dock} onShow={() => setBarHidden(false)} />
                   ) : inking ? (
-                    <InkBar />
+                    <InkBar onHide={() => setBarHidden(true)} />
                   ) : (
                     <WidgetBar onHide={() => setBarHidden(true)} />
                   )}
@@ -199,7 +202,7 @@ export function DoskaShell() {
                     (barHidden ? (
                       <DockToggle dock={dock} onShow={() => setBarHidden(false)} />
                     ) : inking ? (
-                      <InkBar />
+                      <InkBar onHide={() => setBarHidden(true)} />
                     ) : (
                       <WidgetBar onHide={() => setBarHidden(true)} />
                     ))}

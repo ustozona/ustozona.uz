@@ -191,7 +191,14 @@ sensorli doskada hover yoʻq, tooltip chiqmaydi (doska-ux-tadqiqot.md R322).
   «↶ ↷» guruhi olib tashlandi: har oʻchirishdan keyin «Qaytarish»
   xabari baribir chiqadi.
 - **Oʻng past** — ekranlar.
-- Vidjetlar tepadagi qatorga tushmaydi (`placement.ts`, `TOP_RESERVED`).
+- Vidjetlar tepadagi qatorga tushmaydi (`placement.ts` ← `TOP_CHROME_PX`,
+  `lib/doska/chrome.ts`); eski ekranlar bir martalik migratsiya bilan
+  pastga suriladi (`store.ts`, persist `version: 1`).
+- `B` («Boshqaruvni yashirish») panelni, ekranlarni VA burchak
+  tugmalarini yashiradi — ekranda faqat «Koʻrsatish» qoladi.
+- Panelning oxirgi ustuni (⋮ menyu: bekor qilish, qaytadan bajarish;
+  yigʻish) qoʻlyozma panelida ham bor (`BarEndColumn`) — sensorli
+  doskada qalam rejimidan chiqmasdan qaytarish mumkin.
 
 ⚠️ Ilgari tepada hech narsa yoʻq edi: 75″ panelning tepasi poldan ≈ 1,8 m,
 bola yetmaydi (doska-ux-tadqiqot.md R319). Foydalanuvchi referens
@@ -375,7 +382,8 @@ vidjetni bosishning oʻzi uni oldinga chiqaradi.
 ## 2.6. Sozlama oynasi
 
 **2026-10-02 dan:** oʻngdan, butun balandlikda ochiladigan oyna
-(referens koʻrinishi): kenglik 448 px (`w-md`); kulrang sarlavha qismi —
+(referens koʻrinishi): kenglik 448 px (`w-md`); odatda oʻngda, tanlangan
+vidjet oʻsha joyda boʻlsa — chapda (`drawerSide`); kulrang sarlavha qismi —
 vidjet ikonasi (tusida) · nom markazda · yumaloq «×»; z-qatlam
 `Z_SETTINGS` (`--z-doska-top` + 6) — oʻng tepadagi tugmalar ustida;
 telefonda (< 640 px) — pastki varaq. Maydonlar, darhol qoʻllanish va

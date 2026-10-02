@@ -535,6 +535,11 @@ html[data-doska-style] {
   border-width: 0 0 0 var(--doska-sheet-line-width);
 }
 
+/* Tanlangan vidjet oʻngda boʻlsa oyna chapda — chegara oʻng tomonda. */
+.doska-sheet[data-drawer="left"] {
+  border-width: 0 var(--doska-sheet-line-width) 0 0;
+}
+
 @media (width < 40rem) {
   .doska-sheet[data-drawer] {
     border-radius: var(--doska-sheet-radius) var(--doska-sheet-radius) 0 0;
@@ -612,6 +617,22 @@ html[data-doska-style] {
   --card-accent: var(--doska-note-accent);
   --card-mark: var(--doska-note-mark);
 }
+/* Varaq — matn vidjeti «Oq varaqda». Har uslubda OCH yuza («Karta»ning
+   yozuv varagʻi bilan bir xil: standartda oq, Doskada qogʻoz, Oʻyinchoqda
+   oq + siyoh kontur) — rangli matn qalam ranglarining och fon
+   qiymatlarida qoladi. Tus yoʻq, shuning uchun magnit ham yoʻq. */
+.doska-card[data-card="sheet"] {
+  --card-bg: var(--doska-card-body-bg);
+  --card-fg: var(--doska-card-body-fg);
+  box-shadow:
+    inset 0 0 0 var(--doska-card-body-line-width) var(--doska-card-body-line),
+    inset 0 0 0 var(--doska-card-line-width) var(--doska-card-line),
+    var(--doska-card-shadow);
+}
+.doska-card[data-card="sheet"]::before {
+  display: none;
+}
+
 .doska-card[data-card="done"] {
   --card-bg: var(--doska-done-bg);
   --card-fg: var(--doska-done-fg);
@@ -668,6 +689,9 @@ html[data-doska-style] {
   position: absolute;
   inset: 0;
   z-index: -1;
+  /* Tasma kartaning yuqori chetida — burchaklari kartanikidek. Karta
+     `overflow: hidden` bilan qirqilmaydi: magnit chetdan tashqarida. */
+  border-radius: var(--doska-card-radius) var(--doska-card-radius) 0 0;
   background: var(--card-mark);
   opacity: var(--doska-card-title-band);
 }

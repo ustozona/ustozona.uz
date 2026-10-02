@@ -48,10 +48,10 @@ export function TextWidget({ widget }: { widget: DoskaWidget }) {
   return (
     <div
       className={paper ? "doska-card size-full px-[3cqw] py-[2cqw]" : "size-full px-[3cqw] py-[2cqw]"}
-      // `blue` — har uslubda OCH varaq (standartda oq, Doskada qogʻoz,
-      // Oʻyinchoqda och koʻk): rangli matn qalam ranglarining och fon
-      // qiymatlarida qoladi (doska.css, «Varaqdagi rangli matn»).
-      data-card={paper ? "blue" : undefined}
+      // `sheet` — har uslubda OCH varaq, tussiz va magnitsiz (doska.css):
+      // rangli matn qalam ranglarining och fon qiymatlarida qoladi
+      // («Varaqdagi rangli matn»).
+      data-card={paper ? "sheet" : undefined}
     >
       <EditableText
         widget={widget}

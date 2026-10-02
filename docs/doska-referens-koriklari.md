@@ -2071,6 +2071,30 @@ matn varagʻi). `npm run build` — push oldidan.
 ⚠️ Turbopack keshi eski `globals.css` ni berib turgan edi — `.next`
 tozalangach tuzaldi (loyihadagi maʼlum tuzoq).
 
+**Kod koʻrigi (xhigh, 15 topilma — hammasi tuzatildi):**
+
+- qalam rejimida ham bekor qilish va yigʻish bor — panelning oxirgi
+  ustuni umumiy komponent (`BarEndColumn`) va qoʻlyozma panelida ham
+  turadi;
+- «Karta»da `overflow-hidden` olib tashlandi («Doska» uslubida magnit
+  qirqilardi) — tasma burchaklari CSS da yumaloqlanadi;
+- eski ekranlar: bir martalik migratsiya (persist `version: 1`,
+  `liftBelowChrome`) — burchak tugmalari ostidagi vidjet pastga suriladi;
+- proyektor sinovi topilmagan tokenda yiqiladi (avval jim
+  «oʻtkazilardi»);
+- chap relsada yigʻish strelkasi chapga qaraydi;
+- sozlama oynasi tanlangan vidjetni yopsa — chapdan ochiladi;
+- «Kun rejasi» ulushlari 1280×720 ga moslandi (taymer kartalarga
+  kirmaydi; 1024×600 da avvalgidek sigʻmaydi);
+- «Tanlash» — rejim almashtirgich (qalam `aria-pressed=false`, tanlash
+  qalam rejimidan chiqaradi);
+- `B` burchak tugmalarini ham yashiradi;
+- «Matn» varagʻi — alohida `sheet` tusi (magnitsiz);
+- ⋮ menyular umumiy qolipda (`MenuPopover.tsx`: `MenuItem` + tugma +
+  oyna), z-qatlam `Z_MENU` — sozlama oynasidan yuqori;
+- burchak tugmalari oʻlchami `lib/doska/chrome.ts` da (`TOP_CHROME_PX`);
+- eskirgan izoh (`usePinnedPosition`) tuzatildi.
+
 ---
 
 ## 5. Keyingi referenslar

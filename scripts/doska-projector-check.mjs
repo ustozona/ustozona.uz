@@ -160,6 +160,14 @@ for (const [name, re] of Object.entries(STYLES)) {
 
   console.log(`\n${name}`);
   for (const [label, fg, bg, min = TEXT] of pairs) {
+    // Token umuman topilmadi — uslub bloki chala oʻqilgan (masalan izohdagi
+    // «}» regex qamrovini uzib qoʻygan) yoki token oʻchirilgan. Bu SINOV
+    // XATOSI: aks holda butun uslub jim «oʻtkazilib», skript yashil qolardi.
+    if (fg === undefined || bg === undefined) {
+      failed++;
+      console.log(`   ⛔  ${label.padEnd(20)} token topilmadi (${fg === undefined ? "matn" : "fon"})`);
+      continue;
+    }
     const F = parse(fg);
     const B = parse(bg);
     // `var(--popover)` kabi temadan olinadigan qiymat — bu yerda emas.

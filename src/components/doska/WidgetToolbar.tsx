@@ -3,14 +3,12 @@
 import * as React from "react";
 import { useTranslations } from "next-intl";
 
-import { cn } from "@/lib/utils";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useDoskaStore } from "@/lib/doska/store";
 import { widgetMeta } from "@/lib/doska/registry";
 import type { DoskaWidget } from "@/lib/doska/types";
-import { BarGroup, BarIconButton, barIconButtonClass } from "./BarGroup";
-import { MenuItem } from "./DoskaMenu";
-import { IconCopy, IconLock, IconMenu, IconPin, IconSettings, IconSpotlight, IconTrash, IconUnlock } from "./icons";
+import { BarGroup, BarIconButton } from "./BarGroup";
+import { MenuItem, MenuPopover } from "./MenuPopover";
+import { IconCopy, IconLock, IconPin, IconSettings, IconSpotlight, IconTrash, IconUnlock } from "./icons";
 import { clamp, usePinnedPosition } from "./usePinnedPosition";
 import { hasSettings } from "./widgets";
 
@@ -133,11 +131,7 @@ export function WidgetToolbar({ widget }: { widget: DoskaWidget }) {
 
 /**
  * ⋮ — kam ishlatiladigan amallar: nusxa, qulf, barcha ekranlarda, markazga.
- *
- * ⚠️ Tugma `<BarIconButton>` ga OʻRALMAYDI — `PopoverTrigger asChild`
- * zanjiri `<Tooltip>` da uzilardi (`DoskaMenu` dagi bilan bir xil sabab).
- * Menyu `body` ga chiqadi — kanvasdan tashqarida, shuning uchun uning
- * bandlariga `data-doska-no-drag` kerak emas.
+ * Qolip — `MenuPopover` (tugma, oyna, z-qatlam).
  */
 function MoreMenu({ widget, name }: { widget: DoskaWidget; name: string }) {
   const duplicateWidget = useDoskaStore((s) => s.duplicateWidget);
@@ -155,40 +149,30 @@ function MoreMenu({ widget, name }: { widget: DoskaWidget; name: string }) {
   };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          aria-label={t("more", { widget: name })}
-          data-doska-no-drag=""
-          className={cn(barIconButtonClass, open && "bg-muted text-foreground")}
-        >
-          <IconMenu className="size-5" />
-        </button>
-      </PopoverTrigger>
-
-      <PopoverContent
-        side="bottom"
-        align="start"
-        sideOffset={6}
-        collisionPadding={12}
-        className="doska-bar doska-sheet w-60 p-0 py-1"
-        style={{ zIndex: "var(--z-doska-context)" }}
-      >
-        <MenuItem Icon={IconCopy} shortcut={["Mod", "D"]} onClick={run(() => duplicateWidget(widget.id))}>
-          {t("duplicateShort")}
-        </MenuItem>
-        <MenuItem Icon={locked ? IconUnlock : IconLock} onClick={run(() => toggleLock(widget.id))}>
-          {locked ? t("unlockShort") : t("lockShort")}
-        </MenuItem>
-        {/* Barcha ekranlarda (R398) — taymer va jadval ekran almashganda qoladi. */}
-        <MenuItem Icon={IconPin} onClick={run(() => togglePin(widget.id))}>
-          {pinned ? t("unpinShort") : t("pinShort")}
-        </MenuItem>
-        <MenuItem Icon={IconSpotlight} onClick={run(() => setSpotlight(widget.id))}>
-          {t("spotlightShort")}
-        </MenuItem>
-      </PopoverContent>
-    </Popover>
+    <MenuPopover
+      label={t("more", { widget: name })}
+      open={open}
+      onOpenChange={setOpen}
+      side="bottom"
+      align="start"
+      sideOffset={6}
+      // Kontekst panel kanvas ICHIDA — busiz tugmani bosish vidjetni sudrardi.
+      triggerProps={{ "data-doska-no-drag": "" } as React.ComponentProps<"button">}
+      className="w-60 py-1"
+    >
+      <MenuItem Icon={IconCopy} shortcut={["Mod", "D"]} onClick={run(() => duplicateWidget(widget.id))}>
+        {t("duplicateShort")}
+      </MenuItem>
+      <MenuItem Icon={locked ? IconUnlock : IconLock} onClick={run(() => toggleLock(widget.id))}>
+        {locked ? t("unlockShort") : t("lockShort")}
+      </MenuItem>
+      {/* Barcha ekranlarda (R398) — taymer va jadval ekran almashganda qoladi. */}
+      <MenuItem Icon={IconPin} onClick={run(() => togglePin(widget.id))}>
+        {pinned ? t("unpinShort") : t("pinShort")}
+      </MenuItem>
+      <MenuItem Icon={IconSpotlight} onClick={run(() => setSpotlight(widget.id))}>
+        {t("spotlightShort")}
+      </MenuItem>
+    </MenuPopover>
   );
 }

@@ -119,6 +119,8 @@ export function BarSeparator({ vertical = false }: { vertical?: boolean }) {
  * element EMAS) boʻlib uzilardi. Menyu tugmasiga tooltip baribir
  * kerak emas — u bosilganda mazmuni oʻzini tanishtiradi.
  */
+// ⚠️ `size-9` = `CHROME_BUTTON_PX` (`lib/doska/chrome.ts`): vidjet joylashuvi
+// burchak tugmalari balandligini shundan hisoblaydi — biri oʻzgarsa ikkalasi.
 export const barIconButtonClass =
   "text-muted-foreground hover:bg-muted hover:text-foreground grid size-9 shrink-0 place-items-center transition-colors " +
   "focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none focus-visible:-outline-offset-2 " +

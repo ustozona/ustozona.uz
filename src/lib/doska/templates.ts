@@ -49,17 +49,22 @@ export const DOSKA_TEMPLATES: DoskaTemplate[] = [
      * yangilanadi) va taymer; ostida teng uch ustun — bugungi darslar
      * (jadvaldan oʻzi) va toʻrtta karta. Bitta ekran har kuni toʻgʻri
      * kunni koʻrsatadi — kunlar uchun alohida ekran kerak emas.
+     *
+     * Ulushlar 1280×720 ga moslangan: maydon balandligi 542 px (tepada
+     * burchak tugmalari, pastda panel — `placement.ts`), taymerning eng
+     * kichik balandligi 180 px = 0,33 — shuning uchun ikkinchi qator 0,355
+     * dan boshlanadi va taymer kartalarga kirmaydi.
      */
     id: "day-plan",
     background: "soft-warm",
     widgets: [
-      { kind: "date.v1", at: { x: 0, y: 0, w: 0.7, h: 0.27 } },
-      { kind: "timer.v1", initial: minutes(5), at: { x: 0.72, y: 0, w: 0.28, h: 0.27 } },
-      { kind: "today.v1", initial: { view: "lessons" }, at: { x: 0, y: 0.3, w: 0.3, h: 0.7 } },
-      { kind: "card.v1", initial: card("goal", "blue"), at: { x: 0.32, y: 0.3, w: 0.33, h: 0.335 } },
-      { kind: "card.v1", initial: card("homework", "teal"), at: { x: 0.67, y: 0.3, w: 0.33, h: 0.335 } },
-      { kind: "card.v1", initial: card("materials", "amber"), at: { x: 0.32, y: 0.665, w: 0.33, h: 0.335 } },
-      { kind: "card.v1", initial: card("earlyFinish", "note"), at: { x: 0.67, y: 0.665, w: 0.33, h: 0.335 } },
+      { kind: "date.v1", at: { x: 0, y: 0, w: 0.7, h: 0.31 } },
+      { kind: "timer.v1", initial: minutes(5), at: { x: 0.72, y: 0, w: 0.28, h: 0.31 } },
+      { kind: "today.v1", initial: { view: "lessons" }, at: { x: 0, y: 0.355, w: 0.3, h: 0.645 } },
+      { kind: "card.v1", initial: card("goal", "blue"), at: { x: 0.32, y: 0.355, w: 0.33, h: 0.315 } },
+      { kind: "card.v1", initial: card("homework", "teal"), at: { x: 0.67, y: 0.355, w: 0.33, h: 0.315 } },
+      { kind: "card.v1", initial: card("materials", "amber"), at: { x: 0.32, y: 0.685, w: 0.33, h: 0.315 } },
+      { kind: "card.v1", initial: card("earlyFinish", "note"), at: { x: 0.67, y: 0.685, w: 0.33, h: 0.315 } },
     ],
   },
   {

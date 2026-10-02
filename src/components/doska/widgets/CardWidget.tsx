@@ -54,7 +54,11 @@ export function CardWidget({ widget }: { widget: DoskaWidget }) {
     // Sarlavha butun kenglikda (standart uslubda — tusli tasma), yozuv
     // varagʻi ostida chekinish bilan. Boshqa uslublarda tasma yoʻq va
     // koʻrinish avvalgidek: sarlavha kartada, yozuv oq varaqda.
-    <div className="doska-card flex size-full flex-col gap-[3cqw] overflow-hidden" data-card={tint}>
+    //
+    // ⚠️ `overflow-hidden` YOʻQ: «Doska» uslubidagi magnit (`::before`)
+    // karta chetidan tashqarida turadi va qirqilib qolardi. Tasma
+    // burchaklari CSS da yumaloqlanadi (`.doska-card-title::before`).
+    <div className="doska-card flex size-full flex-col gap-[3cqw]" data-card={tint}>
       {/* Sarlavhasiz kartada «Sarlavha» faqat oʻqituvchiga — tanlanganda.
           Sinf xira yozuvni chala vidjet deb koʻradi. Joy esa saqlanadi
           (`invisible`): tanlov almashganda yozuv sakramasin. */}

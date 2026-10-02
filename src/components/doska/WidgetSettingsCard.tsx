@@ -31,14 +31,30 @@ import { WIDGET_ICONS, WIDGET_SETTINGS } from "./widgets";
 
    ⚠️ Ilgari karta vidjet YONIDA ochilardi (docs/doska-ux-tadqiqot.md Q2:
    75″ doskada koʻz va qoʻl vidjet oldida). Foydalanuvchi referens
-   joylashuvini tanladi (2026-10-02). Oyna har doim bir joyda — oʻqituvchi
-   uni qidirmaydi; vidjet oyna ostida qolsa, uni chetga surish mumkin.
+   joylashuvini tanladi (2026-10-02). Oyna odatda oʻngda; tanlangan vidjet
+   oʻng tomonda turib oyna ostida qolsa — chapda (`drawerSide`). Aks holda
+   oʻqituvchi oʻzgarishni koʻrmasdi, vidjetning kontekst paneli (oʻchirish,
+   «yana») esa oyna ostida qolardi.
 
    Ekran 640 px dan tor (telefon) — pastki varaq, mazmun oʻsha.
 
    Oʻzgarish darhol qoʻllanadi, «Saqlash» yoʻq. Boʻsh kanvas yoki boshqa
    vidjet bosilsa oyna yopiladi (store: `select`).
    ════════════════════════════════════════════════════════════════════ */
+
+/** Oyna kengligi (`w-md`) va vidjetdan qoldiriladigan boʻshliq (piksel). */
+const DRAWER_W = 448;
+const DRAWER_GAP = 16;
+
+/**
+ * Oyna qaysi chetda: odatda oʻngda. Vidjet oʻng chetdagi oyna egallaydigan
+ * joyga kirsa va chapda unga joy boʻlsa — chapda.
+ */
+function drawerSide(widget: DoskaWidget, viewport: number): "left" | "right" {
+  const coversWidget = widget.x + widget.w > viewport - DRAWER_W - DRAWER_GAP;
+  const leftIsFree = widget.x >= DRAWER_W + DRAWER_GAP;
+  return coversWidget && leftIsFree ? "left" : "right";
+}
 
 export function WidgetSettingsCard({ widget }: { widget: DoskaWidget }) {
   const Settings = WIDGET_SETTINGS[widget.kind];
@@ -48,6 +64,9 @@ export function WidgetSettingsCard({ widget }: { widget: DoskaWidget }) {
   const meta = widgetMeta(widget.kind);
   const name = tWidget(meta.labelKey);
   const Icon = WIDGET_ICONS[widget.kind];
+  // Komponent faqat brauzerda chiziladi (tanlov — mijoz holati), `window` bor.
+  // Oyna oʻlchami oʻzgarsa keyingi renderda (vidjet koʻchganda) hisoblanadi.
+  const side = drawerSide(widget, window.innerWidth);
 
   if (!Settings) return null;
 
@@ -60,11 +79,12 @@ export function WidgetSettingsCard({ widget }: { widget: DoskaWidget }) {
         e.stopPropagation();
         close();
       }}
-      data-drawer=""
+      data-drawer={side}
       className={cn(
         // Idish (fon, chegara, soya) — uslubdan: `.doska-sheet[data-drawer]`.
         "doska-bar doska-sheet pointer-events-auto absolute flex flex-col",
-        "inset-y-0 right-0 w-md max-w-full",
+        "inset-y-0 w-md max-w-full",
+        side === "left" ? "left-0" : "right-0",
         "max-sm:inset-x-0 max-sm:top-auto max-sm:max-h-[60vh] max-sm:w-full",
       )}
       style={{ zIndex: Z_SETTINGS }}
