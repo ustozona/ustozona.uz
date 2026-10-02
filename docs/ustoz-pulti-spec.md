@@ -128,11 +128,21 @@ Maxsus varaq chop etish shart emas:
 Provayder: `StreamChatArgs.image` (faqat Gemini; rasm boʻlsa zanjir
 Gemini bilan cheklanadi — boshqa model rasmsiz javob toʻqimasin).
 
-## 8. Keyingi bosqichlar
+## 8. Radio pult (3-bosqich)
 
-1. **Pult (radio)** — Doska dars rejimida qabul qilgichni ulash, telefon
-   — boshqaruv.
-2. **Kartani savolga bogʻlash** — QR-karta skaneri Doskadagi joriy savol
+- Telefonda **«Pult (radio)»** → Doskada joriy taqdimot testi bilan pult
+  rejimi ochiladi (mavjud `PultRunner`, Topshiriqlardagi bilan bir yoʻl).
+- **Bosishsiz qayta ulanish:** brauzer qabul qilgichga ilgari ruxsat
+  bergan boʻlsa (`navigator.serial.getPorts()`), port tanlash oynasisiz
+  ulanadi. Birinchi ruxsat — baribir kompyuterda bir marta (brauzer
+  qoidasi, chetlab boʻlmaydi).
+- Pult ochiq boʻlsa telefondagi «Keyingi» / «Javobni koʻrsatish» unga
+  boradi (`remote-bus` → `publishPult`), telefonda «N / M javob berdi».
+- Saqlash — kompyuterda «Tugatish va saqlash» (avvalgidek).
+
+## 9. Keyingi bosqichlar
+
+1. **Kartani savolga bogʻlash** — QR-karta skaneri Doskadagi joriy savol
    bilan sinxron (hozir skaner savollarni oʻzi sanaydi).
-3. **Ustozona ilovasi** — Skaner boʻlimida «Pult» → `/pult` (ilova
+2. **Ustozona ilovasi** — Skaner boʻlimida «Pult» → `/pult` (ilova
    ichida, kirish bilan); **bot** — `/pult` havolasi.
