@@ -34,6 +34,7 @@ import {
 } from "@/server/actions/assess-live";
 import { useLiveNudge } from "@/hooks/useLiveNudge";
 import { publishPresentation, unpublishPresentation } from "@/lib/doska/remote-bus";
+import { requestClassTest } from "@/lib/doska/class-test-request";
 import { ClassList } from "../ClassList";
 import {
   ChoiceGrid,
@@ -567,6 +568,15 @@ function Player({
         >
           {teams ? "Jamoalarni yopish" : "Jamoalar"}
         </NavButton>
+        {/* QR-karta sinf testi — butun sinf, telefon kamera boʻladi
+            (docs/sinf-testi-spec.md). Jonli sessiyada emas: oʻquvchilar
+            oʻz qurilmasidan javob berib turibdi. */}
+        {!live && steps.some((q) => q.shape === "mcq") && (
+          <CardsStarter
+            classId={classId}
+            onStart={(cls) => requestClassTest({ source: "cards", setId, classId: cls })}
+          />
+        )}
         <NavButton onClick={toggleFullscreen}>
           {fullscreen ? "Ekrandan chiqish" : "Toʻliq ekran"}
         </NavButton>
@@ -854,6 +864,52 @@ function LiveStarter({
             loadingText="Yuklanmoqda…"
             emptyText="Sinf topilmadi"
             onPick={(classId) => void start(classId)}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** QR-karta testini boshlash — sinf maʼlum boʻlsa darhol, aks holda tanlash. */
+function CardsStarter({ classId, onStart }: { classId: string | null; onStart: (classId: string) => void }) {
+  const [open, setOpen] = React.useState(false);
+  const [classes, setClasses] = React.useState<{ id: string; name: string }[] | null>(null);
+  const [error, setError] = React.useState<string | null>(null);
+
+  function click() {
+    if (classId) {
+      onStart(classId);
+      return;
+    }
+    const next = !open;
+    setOpen(next);
+    if (next && classes === null) {
+      listLiveClassesAction()
+        .then(setClasses)
+        .catch(() => setError("Hisobingizga kiring"));
+    }
+  }
+
+  return (
+    <div className="relative">
+      <NavButton onClick={click}>QR-kartalar</NavButton>
+      {open && (
+        <div
+          data-doska-no-drag=""
+          className="absolute bottom-full left-0 z-10 mb-2 flex max-h-64 w-56 flex-col gap-1 overflow-y-auto rounded-lg bg-card p-2 text-card-foreground shadow-lg"
+        >
+          <ClassList
+            title="Qaysi sinf?"
+            classes={classes}
+            error={error}
+            busy={false}
+            loadingText="Yuklanmoqda…"
+            emptyText="Sinf topilmadi"
+            onPick={(id) => {
+              setOpen(false);
+              onStart(id);
+            }}
           />
         </div>
       )}

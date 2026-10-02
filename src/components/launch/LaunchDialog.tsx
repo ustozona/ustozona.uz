@@ -220,10 +220,13 @@ export function LaunchDialog({
     }
   }
 
-  function openDoska(live: boolean) {
+  /** `cards` — QR-karta sinf testi sahnasi Doskada darhol ochiladi
+      (docs/sinf-testi-spec.md); `live` — jonli sessiya. */
+  function openDoska(live: boolean, mode?: "cards") {
     if (!setId || !classId) return;
     const q = new URLSearchParams({ setId, classId });
     if (live) q.set("live", "1");
+    if (mode) q.set("mode", mode);
     const url = `/doska?${q.toString()}`;
     if (sameTab) {
       onClose();
@@ -410,7 +413,7 @@ export function LaunchDialog({
               info={info}
               setId={setId}
               classId={classId}
-              onShowOnBoard={() => openDoska(false)}
+              onShowOnBoard={() => openDoska(false, step === "cards" ? "cards" : undefined)}
               onApplied={(sessionId) => onOfflineApplied?.(sessionId)}
             />
           )}

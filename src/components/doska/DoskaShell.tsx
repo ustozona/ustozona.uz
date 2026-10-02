@@ -24,6 +24,7 @@ import { useDoskaShortcuts } from "./useDoskaShortcuts";
 import { DoskaRemote, requestOpenRemote } from "./remote/DoskaRemote";
 import { DEFAULT_BACKGROUND_ID } from "@/lib/doska/backgrounds";
 import { setLessonTitle, takeLessonHandoff } from "@/lib/doska/lesson-handoff";
+import { requestClassTest } from "@/lib/doska/class-test-request";
 import { IconFullscreen, IconAdd, IconArrowLeft, IconArrowRight, IconChevronUp, IconHome } from "./icons";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -415,9 +416,17 @@ function useOpenSetFromUrl() {
     if (existing) patchWidgetState(existing.id, state);
     else addWidget("presentation.v1", undefined, state);
 
+    /* `mode=cards` — Topshiriqlar → QR-kartalar → «Doskaga chiqarish»:
+       sinf testi sahnasi darhol ochiladi (docs/sinf-testi-spec.md). */
+    if (url.searchParams.get("mode") === "cards" && classId) {
+      // Telefonni ulash QR'i sahnaning kutish zalida (pult oynasi sahna ostida qolardi).
+      requestClassTest({ source: "cards", setId, classId });
+    }
+
     url.searchParams.delete("setId");
     url.searchParams.delete("classId");
     url.searchParams.delete("live");
+    url.searchParams.delete("mode");
     window.history.replaceState(window.history.state, "", url.pathname + url.search + url.hash);
   }, [hydrated]);
 }

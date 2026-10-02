@@ -1,5 +1,7 @@
 "use client";
 
+import type { ClassTestStatus } from "@/lib/doska/remote-protocol";
+
 /* ════════════════════════════════════════════════════════════════════
    TAQDIMOT ↔ PULT KOʻPRIGI (Doska ichida, xotirada).
 
@@ -64,34 +66,37 @@ export function subscribePresentations(cb: () => void): () => void {
   return () => listeners.delete(cb);
 }
 
-/* ── Radio pult (PultRunner) — Doskada ochiq boʻlsa, telefon qadam va
-   «Javobni koʻrsatish» ni unga yuboradi (taqdimot oʻrniga). ── */
+/* ── Sinf testi (QR-karta yoki radio pult, `ClassTestRunner`) — Doskada
+   ochiq boʻlsa, telefon qadam, «Javobni koʻrsatish» va karta javoblarini
+   unga yuboradi (taqdimot orqada qoladi). ── */
 
-export type PultStatus = {
-  title: string;
-  index: number;
-  total: number;
-  answered: number;
-  rosterSize: number;
-  revealed: boolean;
-  connected: boolean;
+export type ClassTestControl = {
+  start: () => void;
+  reveal: () => void;
+  next: () => void;
+  prev: () => void;
+  finish: () => void;
+  save: () => void;
+  close: () => void;
+  /** Bitta javob: `q` — savol raqami (0 yoki yoʻq — joriy / roʻyxatda «keldi»). */
+  receive: (no: number, letter: string | null, q?: number) => void;
 };
 
-let pult: { control: PresentationControl; status: PultStatus } | null = null;
+let classTest: { control: ClassTestControl; status: ClassTestStatus } | null = null;
 
-export function publishPult(control: PresentationControl, status: PultStatus) {
-  const changed = !pult || JSON.stringify(pult.status) !== JSON.stringify(status);
-  pult = { control, status };
+export function publishClassTest(control: ClassTestControl, status: ClassTestStatus) {
+  const changed = !classTest || JSON.stringify(classTest.status) !== JSON.stringify(status);
+  classTest = { control, status };
   if (changed) emit();
 }
 
-export function unpublishPult() {
-  if (pult) {
-    pult = null;
+export function unpublishClassTest() {
+  if (classTest) {
+    classTest = null;
     emit();
   }
 }
 
-export function pultEntry() {
-  return pult;
+export function classTestEntry() {
+  return classTest;
 }
