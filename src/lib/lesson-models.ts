@@ -290,12 +290,22 @@ export function stagePlan(key: string, duration = 45): StagePlanRow[] {
   return model.stages.map((st, i) => ({ code: st.code, name: st.name, minutes: mins[i], goal: st.goal }));
 }
 
-/* ── Sinf holati — AI rejani aynan shu sinfga moslaydi ── */
+/* ── Sinf holati — AI rejani aynan shu sinfga moslaydi ──
+   Dars studiyasi (Topshiriqlar) ham shu tipni oʻqiydi: tekshirish usuli
+   va oʻyin tavsiyasi jihozga qarab tanlanadi. Saqlanishi —
+   `teachers.prefs.classEnv` (server, `actions/class-env.ts`). */
 export type ClassEnvironment = {
   smartboard: boolean;
   projector: boolean;
   movement: boolean;
+  /** Oʻquvchilar darsda telefon/planshetdan foydalana oladi. */
   phones: boolean;
+  /** Printer bor — QR-kartalar va javob varaqlari chop etiladi. */
+  printer: boolean;
+  /** Radio pultlar toʻplami bor. */
+  pult: boolean;
+  /** Sinfda internet bor — onlayn oʻyin va saytlar ochiladi. */
+  internet: boolean;
   studentCount: number | null;
   level: "strong" | "mixed" | "weak" | null;
 };
@@ -305,22 +315,51 @@ export const EMPTY_CLASS_ENV: ClassEnvironment = {
   projector: false,
   movement: false,
   phones: false,
+  printer: false,
+  pult: false,
+  internet: true,
   studentCount: null,
   level: null,
 };
 
+/** Saqlangan (yoki eski brauzer) yozuvni toʻliq shaklga keltiradi —
+    yangi maydon qoʻshilganda eski yozuvlar buzilmaydi. */
+export function normalizeClassEnv(raw: unknown): ClassEnvironment {
+  if (typeof raw !== "object" || raw === null) return EMPTY_CLASS_ENV;
+  const r = raw as Record<string, unknown>;
+  const bool = (k: keyof ClassEnvironment) =>
+    typeof r[k] === "boolean" ? (r[k] as boolean) : (EMPTY_CLASS_ENV[k] as boolean);
+  const count = Math.round(Number(r.studentCount));
+  const level = (["strong", "mixed", "weak"] as const).find((l) => l === r.level) ?? null;
+  return {
+    smartboard: bool("smartboard"),
+    projector: bool("projector"),
+    movement: bool("movement"),
+    phones: bool("phones"),
+    printer: bool("printer"),
+    pult: bool("pult"),
+    internet: bool("internet"),
+    studentCount: count >= 1 && count <= 60 ? count : null,
+    level,
+  };
+}
+
 const LEVEL_UZ = { strong: "kuchli", mixed: "aralash", weak: "qiyinchilik bilan oʻzlashtiradigan" } as const;
 
-function envLines(env: ClassEnvironment): string[] {
+export function envLines(env: ClassEnvironment): string[] {
   const out: string[] = [];
   const tools = [
     env.smartboard && "smartdoska (interaktiv mashqlar mumkin)",
     env.projector && "proyektor (koʻrgazmali materiallar)",
     env.movement && "harakat uchun joy (oʻyinli faoliyatlar mumkin)",
     env.phones && "oʻquvchilarda telefon/planshet (onlayn kviz mumkin)",
+    env.printer && "printer (QR-kartalar va javob varaqlari chop etiladi)",
+    env.pult && "radio pultlar (har oʻquvchi tugma bilan javob beradi)",
   ].filter(Boolean);
   if (tools.length) out.push(`Sinf jihozlari: ${tools.join("; ")}.`);
   else out.push("Sinfda maxsus texnika yoʻq — faqat doska va daftar bilan ishlaydigan faoliyatlar tanla.");
+  if (!env.phones) out.push("Oʻquvchilar darsda telefon ishlatmaydi — telefon talab qiladigan faoliyat tanlama.");
+  if (!env.internet) out.push("Sinfda internet yoʻq — onlayn sayt yoki oʻyinga tayanma.");
   if (env.studentCount) out.push(`Oʻquvchilar soni: ${env.studentCount} — guruh ishlari hajmini shunga moslab.`);
   if (env.level) out.push(`Sinf darajasi: ${LEVEL_UZ[env.level]} — topshiriqlarni tabaqalashtir.`);
   return out;

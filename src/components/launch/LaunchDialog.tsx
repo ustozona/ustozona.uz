@@ -107,7 +107,12 @@ function hasWebSerial(): boolean {
 /** Test tanlangach birinchi ekran — kirish tugmasi aytgan qarorga qarab. */
 function stepAfterSet(intent: LaunchIntent | null, presetMode?: LaunchMode): Step {
   if (intent === "home") return "homework";
-  if (intent === "class") return presetMode === "game" ? "game" : "mode";
+  // Dars studiyasidan usul allaqachon tanlangan boʻlib keladi (ssenariy
+  // bloki) — qogʻoz va karta oʻz qadamidan ochiladi, «Orqaga» usullarga qaytaradi.
+  if (intent === "class") {
+    if (presetMode === "game" || presetMode === "paper" || presetMode === "cards") return presetMode;
+    return "mode";
+  }
   return "where";
 }
 
