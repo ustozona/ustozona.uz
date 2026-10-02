@@ -26,17 +26,17 @@ function selectSnapshot(s: BehaviorState): BehaviorSnapshot {
   };
 }
 
-/** Mount hydration umumiy bootstrap javobidan oʻqiladi (bitta soʻrov). */
-const bootstrapBehavior = bootstrapSlice("behavior");
+/** Mount hydration: fon boʻlaklaridan keyin oʻz alohida soʻrovida keladi
+    (`bootstrap-client.ts` → `behaviorOnce`). */
+const firstFetch = bootstrapSlice("behavior");
 
-/* Boʻlak yiqilsa (pool osilishi → 15 s timeout) alohida amal bilan BIR
-   marta qayta oʻqiladi — u yangi soʻrov, qoʻshni boʻlaklarsiz. Faqat
+/* Yiqilsa (tarmoq, pool osilishi) BIR marta qayta oʻqiladi. Faqat
    oʻqish: ikkinchisi ham yiqilsa xato useHydrateStore'ga oʻtadi va sync
    boshlanmaydi. Aks holda butun sessiya boʻsh ballar bilan qolardi
    (2026-10-02 prod hodisasi). */
 const fetchSlice = () =>
-  bootstrapBehavior().catch((err) => {
-    console.warn("[behavior] bootstrap boʻlagi yiqildi, qayta oʻqilmoqda:", err);
+  firstFetch().catch((err) => {
+    console.warn("[behavior] yuklanmadi, qayta oʻqilmoqda:", err);
     return fetchBehaviorAction();
   });
 

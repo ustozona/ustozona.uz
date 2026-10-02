@@ -3,6 +3,7 @@
 import { fetchDashboardBackgroundAction } from "@/server/actions/bootstrap";
 import { fetchSettingsAction } from "@/server/actions/settings";
 import { fetchGradesAction } from "@/server/actions/grades";
+import { fetchBehaviorAction } from "@/server/actions/behavior";
 import type { DashboardBackground, DashboardPayloads } from "@/lib/sync/bootstrap-types";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -10,7 +11,7 @@ import type { DashboardBackground, DashboardPayloads } from "@/lib/sync/bootstra
 
    Barcha `*ServerSync` komponentlari mount'da shu yerdan oʻz boʻlagini
    soʻraydi. Profil → sinflar → qolgan boʻlaklar tartibida uchta soʻrov:
-   13 ta sekinroq boʻlak profil/sinfni 5–10 soniya ushlab turmasin.
+   12 ta sekinroq boʻlak profil/sinfni 5–10 soniya ushlab turmasin.
    Har bosqich modul darajasida bir marta yuboriladi, barcha isteʼmolchi
    ayni promise'ni kutadi. Serverdagi pool avvalgidek chegaralangan.
 
@@ -29,6 +30,7 @@ import type { DashboardBackground, DashboardPayloads } from "@/lib/sync/bootstra
 let settingsFlight: ReturnType<typeof fetchSettingsAction> | null = null;
 let gradesFlight: ReturnType<typeof fetchGradesAction> | null = null;
 let backgroundFlight: Promise<DashboardBackground> | null = null;
+let behaviorFlight: ReturnType<typeof fetchBehaviorAction> | null = null;
 
 function settingsOnce() {
   settingsFlight ??= fetchSettingsAction();
@@ -43,10 +45,17 @@ function gradesOnce() {
 }
 
 function backgroundOnce() {
-  // Hamma sync mount'da boshlanadi, lekin ogʻir 13 boʻlak sinflarni
+  // Hamma sync mount'da boshlanadi, lekin ogʻir 12 boʻlak sinflarni
   // DB pool'ida navbatga qoʻymasligi uchun avval sinflarni kutadi.
   backgroundFlight ??= gradesOnce().then(fetchDashboardBackgroundAction, fetchDashboardBackgroundAction);
   return backgroundFlight;
+}
+
+function behaviorOnce() {
+  // Xulq oʻz soʻrovida, fon boʻlaklaridan KEYIN: katta javob ular bilan
+  // pool talashmasin (bootstrap-types.ts dagi DashboardBackground izohi).
+  behaviorFlight ??= backgroundOnce().then(fetchBehaviorAction, fetchBehaviorAction);
+  return behaviorFlight;
 }
 
 /**
@@ -65,6 +74,7 @@ export function bootstrapSlice<K extends keyof DashboardPayloads>(
   return async () => {
     if (key === "settings") return settingsOnce() as Promise<DashboardPayloads[K]>;
     if (key === "grades") return gradesOnce() as Promise<DashboardPayloads[K]>;
+    if (key === "behavior") return behaviorOnce() as Promise<DashboardPayloads[K]>;
 
     const background = await backgroundOnce();
     const slice = background[key as keyof DashboardBackground];
