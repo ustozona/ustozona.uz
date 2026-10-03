@@ -9,12 +9,13 @@ import { widgetMeta } from "@/lib/doska/registry";
 import { pinnedTools, useDoskaPrefs } from "@/lib/doska/prefs";
 import { useInkTool } from "@/lib/doska/ink-tool";
 import { BackgroundPicker } from "./BackgroundPicker";
+import { BarActions } from "./BarActions";
 import { BarButton } from "./BarButton";
-import { BarColumn, BarEndColumn } from "./BarEndColumn";
-import { BarGroup, BarIconButton } from "./BarGroup";
+import { BarEndColumn } from "./BarEndColumn";
+import { BarGroup, BarSeparator } from "./BarGroup";
 import { useDockLayout } from "./dock";
 import { ShapePicker } from "./ShapePicker";
-import { IconCursor, IconPen } from "./icons";
+import { IconCursor, IconEraser, IconPen } from "./icons";
 import { ToolCatalog } from "./ToolCatalog";
 import { WIDGET_ICONS } from "./widgets";
 
@@ -24,23 +25,24 @@ import { WIDGET_ICONS } from "./widgets";
    Dizayn: docs/doska-dizayn-tizimi.md §2, docs/doska-referens-koriklari.md
    §4 (referens koʻrinishi).
 
-   Tuzilma — uch ustun, bitta oq idishda:
+   Tuzilma — bitta oq idishda toʻrt boʻlim:
 
-     ┌────┬──────────────────────────────────────────────┬───┐
-     │ ✎  │ Fon · oʻqituvchi qadagan vositalar · Hammasi │ ⋮ │
-     │ ➤  │                                              │ ⌄ │
-     └────┴──────────────────────────────────────────────┴───┘
+     ┌─────────────────┬───────────────────────────┬─────────────┬───┐
+     │ Qalam Oʻchir.   │ Fon · oʻqituvchi qadagan  │ Bekor Qaytar│ ⌄ │
+     │ Tanlash         │ vositalar · Hammasi       │ ‹ 2/3 › Ekran│   │
+     └─────────────────┴───────────────────────────┴─────────────┴───┘
 
-   • Chap ustun — REJIM: qalam yoki tanlash. Qalam bosilganda panel
-     oʻrnini qoʻlyozma paneli (`InkBar`) egallaydi; tanlash — oddiy
-     holat, shuning uchun bu panelda doim faol. Qalam vidjet emas va
-     yashirib boʻlmaydi: yozish doskaning asosiy vazifasi
+   • Birinchi boʻlim — REJIM: Qalam · Oʻchirgʻich · Tanlash, yorliqli.
+     Qalam yoki oʻchirgʻich bosilganda panel oʻrnini qoʻlyozma paneli
+     (`InkBar`) egallaydi; tanlash — oddiy holat, shuning uchun bu
+     panelda doim faol. Yozish doskaning asosiy vazifasi, shuning uchun
+     bu tugmalar vidjet tugmalaridan kichik emas
      (docs/doska-qolyozma-tadqiqot.md §1, §6).
    • Oʻrta — vositalar. Qaysi biri turishini oʻqituvchi «Hammasi» da
      tanlaydi (`lib/doska/prefs.ts`, R132); tartib doim `TOOL_ORDER`.
      Har plitka tepasida ekrandagi nusxalar soni (nuqtalar).
-   • Oʻng ustun — panel menyusi (bekor qilish, qaytadan bajarish, panelni
-     tahrirlash) va yigʻish (`B`) — `BarEndColumn`, qoʻlyozma panelida ham.
+   • «Bekor» / «Qaytar» va ekranlar — `BarActions`, qoʻlyozma panelida ham.
+   • Oxirida yigʻish (`B`) — `BarEndColumn`.
 
    «Tozalash» bu yerda YOʻQ — u asosiy menyuda (`DoskaMenu`). Qoʻshish
    tugmalari qatorida turgan buzuvchi tugma bir notoʻgʻri bosishda butun
@@ -80,28 +82,37 @@ export function WidgetBar({ onHide }: { onHide: () => void }) {
         vertical ? "max-h-full min-h-0" : "max-w-full min-w-0",
       )}
     >
-      <BarColumn vertical={vertical}>
-        {/* Rejim almashtirgich — ikki tugma, bittasi bosilgan. Bu panel
-            koʻrinib turgan paytda rejim doim «tanlash»: qalam bosilsa panel
-            oʻrnini qoʻlyozma paneli egallaydi. */}
-        <BarIconButton
+      {/* Rejim almashtirgich — uch yorliqli tugma, bittasi bosilgan. Bu panel
+          koʻrinib turgan paytda rejim doim «tanlash»: qalam yoki oʻchirgʻich
+          bosilsa panel oʻrnini qoʻlyozma paneli egallaydi. Yorliq va 52 px
+          plitka — vidjet tugmalari bilan bir xil darajada: yozish doskaning
+          asosiy vazifasi, uning tugmasi vidjetdan kichik boʻlmasligi kerak. */}
+      <div role="group" aria-label={tInk("toolbar")} className={cn("flex shrink-0 gap-0.5 p-1", vertical && "flex-col")}>
+        <BarButton
           label={tInk("pen")}
-          shortcut={["P"]}
+          Icon={IconPen}
           aria-pressed={false}
           onClick={() => setInkMode(useInkTool.getState().lastTool)}
-          className="rounded-md"
-        >
-          <IconPen className="size-5" />
-        </BarIconButton>
-        <BarIconButton
+          className="aria-pressed:bg-[var(--doska-ctl-active)] w-20"
+        />
+        <BarButton
+          label={tInk("eraser")}
+          Icon={IconEraser}
+          aria-pressed={false}
+          onClick={() => setInkMode("eraser")}
+          className="aria-pressed:bg-[var(--doska-ctl-active)] w-20"
+        />
+        <BarButton
           label={tInk("select")}
+          Icon={IconCursor}
+          active
           aria-pressed
           onClick={() => setInkMode(null)}
-          className="text-primary hover:text-primary rounded-md bg-[var(--doska-ctl-active)] hover:bg-[var(--doska-ctl-active)]"
-        >
-          <IconCursor className="size-5" />
-        </BarIconButton>
-      </BarColumn>
+          className="aria-pressed:bg-[var(--doska-ctl-active)] w-20"
+        />
+      </div>
+
+      <BarSeparator vertical={vertical} />
 
       {/* ⚠️ Panel oʻqituvchining planshetida ham ochiladi. Sigʻmasa u oʻz
           ustunidan oshmaydi (`max-w-full` / `max-h-full`, ota `min-w-0` /
@@ -140,7 +151,8 @@ export function WidgetBar({ onHide }: { onHide: () => void }) {
         <ToolCatalog onScreen={onScreen} open={catalogOpen} onOpenChange={setCatalogOpen} />
       </div>
 
-      <BarEndColumn vertical={vertical} onHide={onHide} onEditBar={() => setCatalogOpen(true)} />
+      <BarActions vertical={vertical} />
+      <BarEndColumn vertical={vertical} onHide={onHide} />
     </BarGroup>
   );
 }

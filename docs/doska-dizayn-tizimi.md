@@ -168,12 +168,52 @@ kechikishda sichqoncha ustidan oʻtganda tooltip'lar ketma-ket chaqnaydi.
 (DOM element emas) boʻlib uzilardi. Shuning uchun koʻrinish
 `barIconButtonClass` sifatida ham eksport qilingan.
 
-⚠️ Tooltip faqat **global** boshqaruvda (strelkalar, toʻliq ekran,
-menyu, bekor qilish) — ularning ikonasi hamma joyda bir xil maʼnoda.
+⚠️ Tooltip faqat **global** boshqaruvda (strelkalar, menyu) — ularning ikonasi hamma joyda bir xil maʼnoda.
 **Kontekst panelda** (§2.5) nom doim koʻrinadi — `<BarTextButton>`:
 sensorli doskada hover yoʻq, tooltip chiqmaydi (doska-ux-tadqiqot.md R322).
 
-### Joylashuv — referens koʻrinishi (2026-10-02)
+### Joylashuv — yagona dok (2026-10-03)
+
+```
+                                                              [pult] [⋮]
+
+        ┌───────────────┬────────────────────────┬─────────────┬───┐
+        │ Qalam Oʻchir. │ Fon · vositalar · Hamm.│ Bekor Qaytar│ ⌄ │
+[Xabar] │ Tanlash       │                        │ ‹ 2/3 › Ekran│   │
+        └───────────────┴────────────────────────┴─────────────┴───┘
+```
+
+Dars davomida kerak boʻladigan hamma narsa — bitta pastki panelda.
+Sabab: 2026-10-02 joylashuvida boshqaruv beshta orolga sochilgan edi,
+bekor qilish ⋮ menyusida yashiringan (2 bosish, sensorli doskada
+klaviatura yoʻq), qalam esa panelning eng kichik tugmasi edi.
+
+- **Rejim** — Qalam · Oʻchirgʻich · Tanlash, yorliqli 52 px plitkalar
+  (vidjet tugmalari bilan bir daraja). Qalam yoki oʻchirgʻich bosilsa
+  panel oʻrnini qoʻlyozma paneli egallaydi.
+- **«Bekor» / «Qaytar»** — doim koʻrinib turadi, tarix boʻsh boʻlsa xira.
+  Ilgari (2026-10-02) doimiy «↶ ↷» guruhi olib tashlangan edi («Qaytarish»
+  xabari baribir chiqadi); xabar faqat oʻchirishni qaytaradi, yozuv va
+  koʻchirishni emas, shuning uchun tugma qaytarildi.
+- **Ekranlar** — ‹ n / N › va «Ekran» qoʻshish panelning ichida
+  (`BarActions`, qoʻlyozma panelida ham). Ekran bitta boʻlsa strelkalar
+  yashiriladi. Pastki oʻng burchak boʻsh: u yerda koʻpincha operatsion
+  tizimning «faollashtirish» yozuvi turadi.
+- **Tepada** — faqat pult va menyu. Bosh sahifa va toʻliq ekran (`F`)
+  menyuga olindi: ikkalasi kamdan-kam bosiladi, tepa esa poldan ≈ 1,8 m
+  (R319).
+- Vidjetlar tepadagi qatorga tushmaydi (`placement.ts` ← `TOP_CHROME_PX`,
+  `lib/doska/chrome.ts`) — tepa qatori qoldi, shuning uchun oʻzgarmadi.
+- `B` («Boshqaruvni yashirish») panelni va yuqori tugmalarni yashiradi —
+  ekranda faqat «Koʻrsatish» qoladi.
+- ⋮ panel menyusi olib tashlandi: unda faqat «Panelni tahrirlash»
+  qolgan edi, u esa «Hammasi» tugmasi ochadigan oynaning oʻzi.
+
+Keyingi bosqichlar (hali qilinmagan): ikki tomonda qanot (chap va oʻng
+rels bir vaqtda) va doskaning istalgan nuqtasida bosib turish bilan
+ochiladigan aylana menyu — hozircha taklif sifatida koʻrib chiqilgan.
+
+#### Oldingi joylashuv (2026-10-02, tarix uchun)
 
 ```
 [⌂]                                                        [⛶] [⋮]
@@ -183,27 +223,6 @@ sensorli doskada hover yoʻq, tooltip chiqmaydi (doska-ux-tadqiqot.md R322).
 [Qaytarish xabari]│ ➤  │                             │ ⌄ │     [‹ 2/3 › +]
                   └────┴─────────────────────────────┴───┘
 ```
-
-- **Chap tepa** — bosh sahifa; **oʻng tepa** — toʻliq ekran va menyu,
-  har biri alohida kichik idishda.
-- **Pastda markazda** — vidjet paneli (§2); bekor qilish va qaytadan
-  bajarish uning ⋮ menyusida va `Ctrl+Z` / `Ctrl+Y` da. Doimiy
-  «↶ ↷» guruhi olib tashlandi: har oʻchirishdan keyin «Qaytarish»
-  xabari baribir chiqadi.
-- **Oʻng past** — ekranlar.
-- Vidjetlar tepadagi qatorga tushmaydi (`placement.ts` ← `TOP_CHROME_PX`,
-  `lib/doska/chrome.ts`); eski ekranlar bir martalik migratsiya bilan
-  pastga suriladi (`store.ts`, persist `version: 1`).
-- `B` («Boshqaruvni yashirish») panelni, ekranlarni VA burchak
-  tugmalarini yashiradi — ekranda faqat «Koʻrsatish» qoladi.
-- Panelning oxirgi ustuni (⋮ menyu: bekor qilish, qaytadan bajarish;
-  yigʻish) qoʻlyozma panelida ham bor (`BarEndColumn`) — sensorli
-  doskada qalam rejimidan chiqmasdan qaytarish mumkin.
-
-⚠️ Ilgari tepada hech narsa yoʻq edi: 75″ panelning tepasi poldan ≈ 1,8 m,
-bola yetmaydi (doska-ux-tadqiqot.md R319). Foydalanuvchi referens
-joylashuvini tanladi. Tepadagi uchala amal oʻqituvchiniki va kam
-bosiladi; dars davomida bosiladigani (vidjetlar, qalam, ekranlar) pastda.
 
 #### Avvalgi joylashuv (2026-09-25 — 2026-10-01, tarix uchun)
 

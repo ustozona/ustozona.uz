@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { useTranslations } from "next-intl";
 
 import { cn } from "@/lib/utils";
@@ -25,7 +24,7 @@ import { DoskaRemote, requestOpenRemote } from "./remote/DoskaRemote";
 import { DEFAULT_BACKGROUND_ID } from "@/lib/doska/backgrounds";
 import { setLessonTitle, takeLessonHandoff } from "@/lib/doska/lesson-handoff";
 import { requestClassTest } from "@/lib/doska/class-test-request";
-import { IconFullscreen, IconAdd, IconArrowLeft, IconArrowRight, IconChevronUp, IconHome } from "./icons";
+import { IconArrowLeft, IconArrowRight, IconChevronUp } from "./icons";
 
 /* ════════════════════════════════════════════════════════════════════
    DOSKA QOBIGʻI — toʻliq ekran + ustidagi boshqaruv qatlami.
@@ -34,20 +33,22 @@ import { IconFullscreen, IconAdd, IconArrowLeft, IconArrowRight, IconChevronUp, 
    Panel oqimda joy egallasa, doska panel balandligicha kichrayadi va
    vidjetni pastga qoʻyib boʻlmaydi.
 
-   JOYLASHUV (docs/doska-referens-koriklari.md §4 — referens koʻrinishi):
-     chap tepa   — bosh sahifa
-     oʻng tepa   — toʻliq ekran · menyu (har biri alohida idishda)
+   JOYLASHUV (docs/doska-referens-koriklari.md §4; 2026-10-03 da
+   «yagona dok» ga qisqartirildi):
+     oʻng tepa   — pult · menyu (bosh sahifa va toʻliq ekran shu menyuda)
      vidjet paneli — «Panel joyi»ga koʻra: pastda markazda (standart)
-                     yoki chap / oʻng relsada, oʻrtadan pastda; bekor
-                     qilish uning ⋮ menyusida va Ctrl+Z da
+                     yoki chap / oʻng relsada, oʻrtadan pastda. Ichida:
+                     rejim (qalam · oʻchirgʻich · tanlash), vositalar,
+                     «Bekor» / «Qaytar», ekranlar (`BarActions`)
      chap past   — «Qaytarish» xabari
-     oʻng past   — ekranlar (‹ n/N › +)
+     oʻng past   — boʻsh
 
    ⚠️ Ilgari tepada hech narsa yoʻq edi (docs/doska-ux-tadqiqot.md R319:
-   75″ panelning tepasi poldan ≈ 1,8 m, bola yetmaydi). Foydalanuvchi
-   referens joylashuvini tanladi (2026-10-02). Tepadagi uchala amal ham
-   oʻqituvchiniki va kamdan-kam bosiladi; dars davomida bosiladigan
-   hamma narsa (vidjetlar, qalam, ekranlar) pastda qoldi.
+   75″ panelning tepasi poldan ≈ 1,8 m, bola yetmaydi). Tepada oʻqituvchining
+   kamdan-kam amallari qoladi; dars davomida bosiladigan hamma narsa
+   (vidjetlar, qalam, bekor qilish, ekranlar) bitta pastki panelda: ilgari
+   boshqaruv beshta orolga sochilgan edi va oʻqituvchi har amal uchun
+   doska boʻylab yurardi.
 
    USLUB (Sokin / Oʻyinchoq / Doska) — `<html data-doska-style>` va
    sahna shriftlari klasslari shu yerda qoʻyiladi, sahifadan chiqqanda
@@ -62,20 +63,15 @@ import { IconFullscreen, IconAdd, IconArrowLeft, IconArrowRight, IconChevronUp, 
    → kontekst → yuqori tugmalar.
    ════════════════════════════════════════════════════════════════════ */
 export function DoskaShell() {
-  // ⚠️ Butun `deck` ga EMAS, faqat son va oʻringa obuna: deck har chiziq
-  // tugashida va ishlayotgan taymerning har soniyasida yangilanadi. Qobiq
-  // unga obuna boʻlsa butun doska (hamma vidjet, panellar) qayta chizilib,
-  // sensorli doskaning kuchsiz protsessorida qalam ostidagi siyoh
-  // kechikardi — kompyuterda esa bu umuman sezilmaydi.
-  const screenCount = useDoskaStore((s) => s.deck.screens.length);
-  const index = useDoskaStore((s) => s.deck.screens.findIndex((x) => x.id === s.activeScreenId));
-  const addScreen = useDoskaStore((s) => s.addScreen);
-  const setActiveScreen = useDoskaStore((s) => s.setActiveScreen);
+  // ⚠️ Qobiq `deck` ga obuna EMAS: u har chiziq tugashida va ishlayotgan
+  // taymerning har soniyasida yangilanadi. Obuna boʻlsa butun doska (hamma
+  // vidjet, panellar) qayta chizilib, sensorli doskaning kuchsiz
+  // protsessorida qalam ostidagi siyoh kechikardi. Ekranlar sonini panel
+  // oʻzi oʻqiydi (`BarActions`).
   const prefsReady = useDoskaPrefs((s) => s.hydrated);
   const dock = useDoskaPrefs((s) => s.dock);
   // Yozish rejimida vidjet paneli oʻrnini qoʻlyozma paneli egallaydi (InkBar).
   const inking = useInkTool((s) => s.mode !== null);
-  const t = useTranslations("Doska.bar");
 
   /**
    * Panel yigʻilganmi.
@@ -88,12 +84,6 @@ export function DoskaShell() {
   const [barHidden, setBarHidden] = React.useState(false);
   /** Yorliqlar roʻyxati (`K`, menyu) — dars paytidagi holat, saqlanmaydi. */
   const [shortcutsOpen, setShortcutsOpen] = React.useState(false);
-
-  /** Qoʻshni ekranga oʻtish — `id` bosilgan paytda oʻqiladi. */
-  const goTo = (offset: number) => {
-    const target = useDoskaStore.getState().deck.screens[index + offset];
-    if (target) setActiveScreen(target.id);
-  };
 
   // Ekran holati kechiktirilib saqlanadi (store.ts). Sahifa yopilishi
   // yoki tab almashishida kutilayotgan yozuvni darhol tushiramiz —
@@ -146,35 +136,24 @@ export function DoskaShell() {
               panelning sakrashini koʻrardi. */}
           {prefsReady && (
             <>
-              {/* ── Yuqori burchaklar: bosh sahifa · toʻliq ekran, menyu ──
-                  Har biri alohida kichik idishda — bir-biriga bogʻliq
-                  boʻlmagan amallar. «Boshqaruvni yashirish» (`B`) ularni
-                  ham yashiradi: sinfga toza ekran koʻrsatiladi, ekranda
-                  faqat «Koʻrsatish» tugmasi qoladi. */}
+              {/* ── Yuqori oʻng burchak: pult · menyu ──
+                  Bosh sahifa va toʻliq ekran menyuga olindi: ikkalasi
+                  kamdan-kam bosiladi, tepa esa 75″ panelda poldan ≈ 1,8 m
+                  (R319) — bola yetmaydi. Chap tepa boʻsh. «Boshqaruvni
+                  yashirish» (`B`) ularni ham yashiradi: sinfga toza ekran
+                  koʻrsatiladi, ekranda faqat «Koʻrsatish» tugmasi qoladi. */}
               {!barHidden && (
-                <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-2">
+                <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-end gap-2 p-2">
+                  {/* Ustoz pulti — telefon QR bilan ulanadi (docs/ustoz-pulti-spec.md). */}
                   <BarGroup>
-                    <BarIconButton label={t("home")} asChild>
-                      <Link href="/">
-                        <IconHome className="size-5" />
-                      </Link>
-                    </BarIconButton>
+                    <DoskaRemote />
                   </BarGroup>
-
-                  <div className="flex gap-2">
-                    {/* Ustoz pulti — telefon QR bilan ulanadi (docs/ustoz-pulti-spec.md). */}
-                    <BarGroup>
-                      <DoskaRemote />
-                    </BarGroup>
-                    <BarGroup>
-                      <BarIconButton label={t("fullscreen")} shortcut={["F"]} onClick={toggleFullscreen}>
-                        <IconFullscreen className="size-5" />
-                      </BarIconButton>
-                    </BarGroup>
-                    <BarGroup>
-                      <DoskaMenu onShowShortcuts={() => setShortcutsOpen(true)} />
-                    </BarGroup>
-                  </div>
+                  <BarGroup>
+                    <DoskaMenu
+                      onShowShortcuts={() => setShortcutsOpen(true)}
+                      onToggleFullscreen={toggleFullscreen}
+                    />
+                  </BarGroup>
                 </div>
               )}
 
@@ -217,36 +196,12 @@ export function DoskaShell() {
                     ))}
                 </div>
 
-                {/* ── Oʻng: ekranlar ── */}
-                <div className="flex min-w-0 grow basis-0 justify-end">
-                  {!barHidden && (
-                    <BarGroup layer="bar">
-                      <BarIconButton
-                        label={t("prevScreen")}
-                        shortcut={["←"]}
-                        disabled={index <= 0}
-                        onClick={() => goTo(-1)}
-                      >
-                        <IconArrowLeft className="size-5" />
-                      </BarIconButton>
-
-                      <ScreenCounter current={index + 1} total={screenCount} />
-
-                      <BarIconButton
-                        label={t("nextScreen")}
-                        shortcut={["→"]}
-                        disabled={index + 1 >= screenCount}
-                        onClick={() => goTo(1)}
-                      >
-                        <IconArrowRight className="size-5" />
-                      </BarIconButton>
-
-                      <BarIconButton label={t("addScreen")} onClick={addScreen}>
-                        <IconAdd className="size-5" />
-                      </BarIconButton>
-                    </BarGroup>
-                  )}
-                </div>
+                {/* ── Oʻng: boʻsh ──
+                    Ekranlar panelga koʻchdi (`BarActions`). Ustun qoladi —
+                    u markazdagi panelni gorizontal ravishda markazda tutadi;
+                    burchakning oʻzi esa bush: u yerda operatsion tizimning
+                    «faollashtirish» yozuvi turishi mumkin. */}
+                <div className="min-w-0 grow basis-0" />
               </div>
             </>
           )}
@@ -358,19 +313,6 @@ function useNoTranslate() {
  * «keyingi» tugmasi yoʻq edi: oʻqituvchi nechta ekran borligini ham,
  * oldinga qanday oʻtishni ham bilmasdi. Jami son ikkalasini hal qiladi.
  */
-function ScreenCounter({ current, total }: { current: number; total: number }) {
-  const t = useTranslations("Doska.bar");
-  return (
-    <span
-      role="img"
-      aria-label={t("screenNumber", { n: current })}
-      className="text-muted-foreground min-w-12 shrink-0 px-1 text-center text-xs font-medium tabular-nums"
-    >
-      {current} / {total}
-    </span>
-  );
-}
-
 /**
  * `/doska?setId=…` — Dashboard'dagi dars kartasidan «Taqdimotni boshlash»
  * (R278: oʻqituvchi dars paytida turgan joyidan boshlaydi, 6-qaror:
