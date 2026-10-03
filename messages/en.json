@@ -6448,5 +6448,25 @@
     "backToQuestions": "Back to questions",
     "fullscreen": "Full screen",
     "exitFullscreen": "Exit full screen"
+  },
+  "ResultShare": {
+    "title": "Send results to Telegram",
+    "hint": "Parents get only their own child's result and questions to review. You get a class summary and the hardest questions.",
+    "boardTitle": "Send results to Telegram — parents know right away",
+    "toParents": "To parents",
+    "toMe": "Summary to me",
+    "send": "Send",
+    "sending": "Sending…",
+    "teacherSent": "Class summary sent to you",
+    "parentsSent": "Sent to {sent} parents ({reached} students)",
+    "parentsSentEarlier": "Sent to parents",
+    "withoutParents": "{count} students' parents aren't connected to the bot — not sent",
+    "state_already": "These results were already sent",
+    "state_not_linked": "Your Telegram isn't connected to Ustozona — Settings → Telegram",
+    "state_bot": "Telegram isn't configured right now",
+    "state_empty": "No answers yet — nothing to send",
+    "state_failed": "Not sent — try again in a moment",
+    "impersonating": "Parent messages aren't sent in admin mode",
+    "notFound": "Result not found"
   }
 }

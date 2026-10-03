@@ -6326,5 +6326,25 @@
     "backToQuestions": "Savollarga qaytish",
     "fullscreen": "Toʻliq ekran",
     "exitFullscreen": "Ekrandan chiqish"
+  },
+  "ResultShare": {
+    "title": "Natijani Telegramga yuborish",
+    "hint": "Ota-onalarga — faqat oʻz farzandining natijasi va takrorlash kerak boʻlgan savollar. Sizga — sinf xulosasi va eng qiyin savollar.",
+    "boardTitle": "Natijani Telegramga yuboring — ota-onalar darhol biladi",
+    "toParents": "Ota-onalarga",
+    "toMe": "Menga xulosa",
+    "send": "Yuborish",
+    "sending": "Yuborilmoqda…",
+    "teacherSent": "Sizga sinf xulosasi yuborildi",
+    "parentsSent": "{sent} ota-onaga yuborildi ({reached} oʻquvchi)",
+    "parentsSentEarlier": "Ota-onalarga yuborilgan",
+    "withoutParents": "{count} oʻquvchining ota-onasi botga ulanmagan — ularga bormadi",
+    "state_already": "Bu natija allaqachon yuborilgan",
+    "state_not_linked": "Telegramingiz Ustozona'ga ulanmagan — Sozlamalar → Telegram",
+    "state_bot": "Telegram xizmati hozir sozlanmagan",
+    "state_empty": "Hali javob yoʻq — yuboradigan natija yoʻq",
+    "state_failed": "Yuborilmadi — birozdan keyin qayta urinib koʻring",
+    "impersonating": "Administrator rejimida ota-onalarga xabar yuborilmaydi",
+    "notFound": "Natija topilmadi"
   }
 }
