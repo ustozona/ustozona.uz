@@ -13,6 +13,8 @@ import { DoskaCanvas } from "./DoskaCanvas";
 import { DoskaCurtain } from "./DoskaCurtain";
 import { DoskaEmptyHint } from "./DoskaEmptyHint";
 import { WidgetBar } from "./WidgetBar";
+import { EdgeRail, ScreenStrip } from "./DockRails";
+import { DoskaRadialMenu } from "./DoskaRadialMenu";
 import { InkBar } from "./InkBar";
 import { DoskaGuestNote } from "./DoskaGuestNote";
 import { DoskaMenu } from "./DoskaMenu";
@@ -118,7 +120,8 @@ export function DoskaShell() {
     onToggleShortcuts: () => setShortcutsOpen((o) => !o),
   });
 
-  const side = dock !== "bottom";
+  const side = dock === "left" || dock === "right";
+  const both = dock === "both";
 
   return (
     // `delayDuration` 0 emas, 300: boshqaruv zich joylashgan va nol
@@ -179,6 +182,23 @@ export function DoskaShell() {
                 </div>
               )}
 
+              {both && !barHidden && (
+                // «Ikki chetda» — ikkala yon relsa, oʻrtadan pastda (R319).
+                <>
+                  {(["left", "right"] as const).map((edge) => (
+                    <div
+                      key={edge}
+                      className={cn(
+                        "pointer-events-none absolute top-[18%] bottom-16 flex min-h-0 flex-col items-center justify-center",
+                        edge === "left" ? "left-2" : "right-2",
+                      )}
+                    >
+                      <EdgeRail side={edge} onHide={() => setBarHidden(true)} />
+                    </div>
+                  ))}
+                </>
+              )}
+
               <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end gap-2 p-2">
                 {/* ── Chap: «Qaytarish» xabari ── */}
                 <div className="flex min-w-0 grow basis-0 flex-col items-start gap-2">
@@ -191,9 +211,11 @@ export function DoskaShell() {
 
                   {!side &&
                     (barHidden ? (
-                      <DockToggle dock={dock} onShow={() => setBarHidden(false)} />
+                      <DockToggle dock={both ? "bottom" : dock} onShow={() => setBarHidden(false)} />
                     ) : inking ? (
-                      <InkBar onHide={() => setBarHidden(true)} />
+                      <InkBar bare={both} onHide={() => setBarHidden(true)} />
+                    ) : both ? (
+                      <ScreenStrip />
                     ) : (
                       <WidgetBar onHide={() => setBarHidden(true)} />
                     ))}
@@ -209,6 +231,7 @@ export function DoskaShell() {
             </>
           )}
 
+          <DoskaRadialMenu />
           <DoskaShortcuts open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
           <DoskaCurtain />
         </div>

@@ -30,12 +30,52 @@ import { IconAdd, IconArrowLeft, IconArrowRight, IconRedo, IconUndo } from "./ic
    ════════════════════════════════════════════════════════════════════ */
 
 export function BarActions({ vertical }: { vertical: boolean }) {
+  return (
+    <>
+      <BarSeparator vertical={vertical} />
+      <UndoRedoButtons vertical={vertical} />
+      <BarSeparator vertical={vertical} />
+      <ScreenNav vertical={vertical} />
+    </>
+  );
+}
+
+/** «Bekor» / «Qaytar» — yon relsalarda (`EdgeRail`) ham shu tugmalar. */
+export function UndoRedoButtons({ vertical }: { vertical: boolean }) {
   const t = useTranslations("Doska.bar");
 
   const undo = useDoskaStore((s) => s.undo);
   const redo = useDoskaStore((s) => s.redo);
   const canUndo = useDoskaStore((s) => s.past.length > 0);
   const canRedo = useDoskaStore((s) => s.future.length > 0);
+
+  return (
+    <div className={cn("flex shrink-0 items-center gap-0.5 p-1", vertical && "flex-col")}>
+      <BarButton
+        label={t("undoShort")}
+        aria-label={t("undo")}
+        disabled={!canUndo}
+        onClick={undo}
+        className="w-14"
+      >
+        <IconUndo className="size-6" />
+      </BarButton>
+      <BarButton
+        label={t("redoShort")}
+        aria-label={t("redo")}
+        disabled={!canRedo}
+        onClick={redo}
+        className="w-14"
+      >
+        <IconRedo className="size-6" />
+      </BarButton>
+    </div>
+  );
+}
+
+/** Ekranlar: ‹ n / N › va «Ekran» qoʻshish. */
+export function ScreenNav({ vertical }: { vertical: boolean }) {
+  const t = useTranslations("Doska.bar");
 
   // Butun `deck` ga EMAS, faqat son va oʻringa obuna — `DoskaShell` dagi
   // bilan bir xil sabab: deck taymerning har soniyasida yangilanadi.
@@ -53,77 +93,50 @@ export function BarActions({ vertical }: { vertical: boolean }) {
   const many = screenCount > 1;
 
   return (
-    <>
-      <BarSeparator vertical={vertical} />
+    <div
+      role="group"
+      aria-label={t("screensGroup")}
+      className="flex shrink-0 flex-col items-center justify-center gap-1 p-2"
+    >
+      {many && (
+        <div className={cn("flex items-center", vertical && "flex-col")}>
+          <BarIconButton
+            label={t("prevScreen")}
+            shortcut={["←"]}
+            disabled={index <= 0}
+            onClick={() => goTo(-1)}
+            className="rounded-md"
+          >
+            <IconArrowLeft className="size-5" />
+          </BarIconButton>
 
-      <div className={cn("flex shrink-0 items-center gap-0.5 p-1", vertical && "flex-col")}>
-        <BarButton
-          label={t("undoShort")}
-          aria-label={t("undo")}
-          disabled={!canUndo}
-          onClick={undo}
-          className="w-14"
-        >
-          <IconUndo className="size-6" />
-        </BarButton>
-        <BarButton
-          label={t("redoShort")}
-          aria-label={t("redo")}
-          disabled={!canRedo}
-          onClick={redo}
-          className="w-14"
-        >
-          <IconRedo className="size-6" />
-        </BarButton>
-      </div>
+          <span
+            role="img"
+            aria-label={t("screenNumber", { n: index + 1 })}
+            className="text-foreground min-w-12 shrink-0 px-1 text-center text-sm font-semibold tabular-nums"
+          >
+            {index + 1} / {screenCount}
+          </span>
 
-      <BarSeparator vertical={vertical} />
+          <BarIconButton
+            label={t("nextScreen")}
+            shortcut={["→"]}
+            disabled={index + 1 >= screenCount}
+            onClick={() => goTo(1)}
+            className="rounded-md"
+          >
+            <IconArrowRight className="size-5" />
+          </BarIconButton>
+        </div>
+      )}
 
-      <div
-        role="group"
-        aria-label={t("screensGroup")}
-        className={"flex shrink-0 flex-col items-center justify-center gap-1 p-2"}
-      >
-        {many && (
-          <div className={cn("flex items-center", vertical && "flex-col")}>
-            <BarIconButton
-              label={t("prevScreen")}
-              shortcut={["←"]}
-              disabled={index <= 0}
-              onClick={() => goTo(-1)}
-              className="rounded-md"
-            >
-              <IconArrowLeft className="size-5" />
-            </BarIconButton>
-
-            <span
-              role="img"
-              aria-label={t("screenNumber", { n: index + 1 })}
-              className="text-foreground min-w-12 shrink-0 px-1 text-center text-sm font-semibold tabular-nums"
-            >
-              {index + 1} / {screenCount}
-            </span>
-
-            <BarIconButton
-              label={t("nextScreen")}
-              shortcut={["→"]}
-              disabled={index + 1 >= screenCount}
-              onClick={() => goTo(1)}
-              className="rounded-md"
-            >
-              <IconArrowRight className="size-5" />
-            </BarIconButton>
-          </div>
-        )}
-
-        <BarTextButton
-          label={t("addScreenShort")}
-          aria-label={t("addScreen")}
-          icon={<IconAdd className="size-5" />}
-          onClick={addScreen}
-          className="h-9 rounded-md"
-        />
-      </div>
-    </>
+      <BarTextButton
+        label={t("addScreenShort")}
+        aria-label={t("addScreen")}
+        icon={<IconAdd className="size-5" />}
+        onClick={addScreen}
+        className="h-9 rounded-md"
+      />
+    </div>
   );
 }

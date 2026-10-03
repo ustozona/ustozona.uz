@@ -9,7 +9,7 @@ import { iconTintStyle } from "@/lib/doska/tint";
 import type { ClassColor } from "@/lib/class-colors";
 import { SettingsChoices, SettingsSection } from "./SettingsFields";
 import { Digits } from "./widgets/Digits";
-import { IconArrowLeft, IconCheck, IconDockBottom, IconDockLeft, IconDockRight } from "./icons";
+import { IconArrowLeft, IconCheck, IconDockBoth, IconDockBottom, IconDockLeft, IconDockRight } from "./icons";
 
 /* ════════════════════════════════════════════════════════════════════
    KOʻRINISH — uslub va panel joyi (menyu ichidagi boʻlim).
@@ -38,6 +38,7 @@ export function DoskaAppearance({ onBack }: { onBack: () => void }) {
     { value: "left", label: <DockLabel Icon={IconDockLeft} text={t("dockLeft")} />, title: t("dockLeft") },
     { value: "bottom", label: <DockLabel Icon={IconDockBottom} text={t("dockBottom")} />, title: t("dockBottom") },
     { value: "right", label: <DockLabel Icon={IconDockRight} text={t("dockRight")} />, title: t("dockRight") },
+    { value: "both", label: <DockLabel Icon={IconDockBoth} text={t("dockBoth")} />, title: t("dockBoth") },
   ];
 
   // Radio guruhi klaviatura qoidasi: guruhga bitta Tab (tanlangani),
@@ -85,7 +86,7 @@ export function DoskaAppearance({ onBack }: { onBack: () => void }) {
         </SettingsSection>
 
         <SettingsSection label={t("dock")}>
-          <SettingsChoices ariaLabel={t("dock")} value={dock} options={docks} onChange={setDock} />
+          <SettingsChoices ariaLabel={t("dock")} value={dock} options={docks} onChange={setDock} columns={2} />
         </SettingsSection>
       </div>
     </div>

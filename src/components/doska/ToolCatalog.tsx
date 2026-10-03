@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useDoskaStore } from "@/lib/doska/store";
+import { useActiveWidgets, useDoskaStore } from "@/lib/doska/store";
 import { CATEGORY_ORDER, TOOL_ORDER, widgetMeta } from "@/lib/doska/registry";
 import { MAX_PINNED_TOOLS, pinnedTools, useDoskaPrefs } from "@/lib/doska/prefs";
 import { iconTintStyle } from "@/lib/doska/tint";
@@ -32,16 +32,34 @@ import { WIDGET_ICONS } from "./widgets";
    Ikkalasi ≥ 44 px va hoverʼga bogʻliq emas (sensor birinchi, Q3).
    ════════════════════════════════════════════════════════════════════ */
 
+/**
+ * Ekranda shu turdagi nechta vidjet bor — plitka tepasidagi nuqtalar.
+ *
+ * ⚠️ `widgets` ga `?? []` qoʻyilmaydi: har renderda yangi massiv
+ * yaratilib, `useMemo` ni har safar qayta hisoblatardi.
+ */
+export function useToolCounts(): ReadonlyMap<string, number> {
+  const widgets = useActiveWidgets();
+  return React.useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const w of widgets ?? []) counts.set(w.kind, (counts.get(w.kind) ?? 0) + 1);
+    return counts;
+  }, [widgets]);
+}
+
 export function ToolCatalog({
   onScreen,
   open,
   onOpenChange: setOpen,
+  label,
 }: {
   /** Ekrandagi vidjetlar soni, turi boʻyicha. */
   onScreen: ReadonlyMap<string, number>;
   /** Holat panelda: oyna panel menyusidagi «Panelni tahrirlash» dan ham ochiladi. */
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Tugma yorligʻi; berilmasa «Hammasi». Yon relsada — «Vidjetlar». */
+  label?: string;
 }) {
   const { side } = useDockLayout();
   const tools = useDoskaPrefs((s) => s.tools);
@@ -72,7 +90,7 @@ export function ToolCatalog({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <BarButton label={t("open")} Icon={IconCatalog} count={hiddenOnScreen} />
+        <BarButton label={label ?? t("open")} Icon={IconCatalog} count={hiddenOnScreen} />
       </PopoverTrigger>
 
       <PopoverContent

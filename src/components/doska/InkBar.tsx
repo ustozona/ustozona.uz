@@ -84,7 +84,11 @@ const SIZE_KEYS = { 1: "thin", 2: "medium", 3: "thick" } as const;
 /** Qalinlik tugmasidagi nuqta diametri (px) — daraja koʻzga koʻrinsin. */
 const SIZE_DOTS = { 1: 6, 2: 11, 3: 18 } as const;
 
-export function InkBar({ onHide }: { onHide: () => void }) {
+/**
+ * `bare` — «Ikki chetda» joylashuvida: bekor qilish, ekranlar va yigʻish
+ * yon relslarda va pastki qatorda turibdi, takrorlanmaydi.
+ */
+export function InkBar({ onHide, bare = false }: { onHide: () => void; bare?: boolean }) {
   const t = useTranslations("Doska.ink");
   const { orientation } = useDockLayout();
   const vertical = orientation === "vertical";
@@ -332,10 +336,10 @@ export function InkBar({ onHide }: { onHide: () => void }) {
           </>
         )}
 
-        <BarActions vertical={vertical} />
+        {!bare && <BarActions vertical={vertical} />}
       </div>
 
-      <BarEndColumn vertical={vertical} onHide={onHide} />
+      {!bare && <BarEndColumn vertical={vertical} onHide={onHide} />}
     </BarGroup>
   );
 }

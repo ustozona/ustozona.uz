@@ -897,7 +897,14 @@ export function IconKeyboard({ className }: IconProps) {
  * Solarʼda «panel ekranning qaysi chetida» degan ikona yoʻq; uchala
  * variant bitta shakldan, faqat detal joyi farq qiladi.
  */
-function DockGlyph({ className, side }: IconProps & { side: "bottom" | "left" | "right" }) {
+function DockGlyph({ className, side }: IconProps & { side: "bottom" | "left" | "right" | "both" }) {
+  if (side === "both") {
+    return (
+      <svg viewBox="0 0 24 24" className={cn("doska-icon", className)} aria-hidden="true">
+        <g><rect x="2" y="4" width="20" height="16" rx="3.5" opacity=".5"/><rect x="5.5" y="8" width="2.5" height="8" rx="1.25"/><rect x="16" y="8" width="2.5" height="8" rx="1.25"/></g>
+      </svg>
+    );
+  }
   const strip =
     side === "bottom"
       ? { x: 7, y: 15.5, width: 10, height: 2.5 }
@@ -919,6 +926,10 @@ export function IconDockLeft({ className }: IconProps) {
 
 export function IconDockRight({ className }: IconProps) {
   return <DockGlyph className={className} side="right" />;
+}
+
+export function IconDockBoth({ className }: IconProps) {
+  return <DockGlyph className={className} side="both" />;
 }
 
 /* ════════════════════════════════════════════════════════════════════
@@ -1001,6 +1012,7 @@ export const DOSKA_ICONS: { name: string; source: string; Icon: React.ComponentT
   { name: "IconDockBottom", source: "oʻzimiz:panel-past", Icon: IconDockBottom },
   { name: "IconDockLeft", source: "oʻzimiz:panel-chap", Icon: IconDockLeft },
   { name: "IconDockRight", source: "oʻzimiz:panel-oʻng", Icon: IconDockRight },
+  { name: "IconDockBoth", source: "oʻzimiz:panel-ikki-chet", Icon: IconDockBoth },
 ];
 
 /** Telefon (Ustoz pulti) — oʻzimiz chizdik: korpus (massa) va ekran/dinamik (detal). */
