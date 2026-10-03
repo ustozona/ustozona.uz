@@ -5200,7 +5200,8 @@
       "undoShort": "Bekor",
       "redoShort": "Qaytar",
       "screensGroup": "Ekranlar",
-      "addScreenShort": "Ekran"
+      "addScreenShort": "Ekran",
+      "emptyHint": "Yozish uchun «Qalam»ni tanlang yoki paneldan vidjet qoʻshing"
     },
     "guestNote": {
       "text": "Ekran shu brauzerda saqlanadi. <link>Kirsangiz</link> sinf roʻyxatingiz ulanadi.",

@@ -11,6 +11,7 @@ import { useDoskaPrefs, type DockSide } from "@/lib/doska/prefs";
 import { useInkTool } from "@/lib/doska/ink-tool";
 import { DoskaCanvas } from "./DoskaCanvas";
 import { DoskaCurtain } from "./DoskaCurtain";
+import { DoskaEmptyHint } from "./DoskaEmptyHint";
 import { WidgetBar } from "./WidgetBar";
 import { InkBar } from "./InkBar";
 import { DoskaGuestNote } from "./DoskaGuestNote";
@@ -142,6 +143,8 @@ export function DoskaShell() {
                   (R319) — bola yetmaydi. Chap tepa boʻsh. «Boshqaruvni
                   yashirish» (`B`) ularni ham yashiradi: sinfga toza ekran
                   koʻrsatiladi, ekranda faqat «Koʻrsatish» tugmasi qoladi. */}
+              {!barHidden && <DoskaEmptyHint />}
+
               {!barHidden && (
                 <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-end gap-2 p-2">
                   {/* Ustoz pulti — telefon QR bilan ulanadi (docs/ustoz-pulti-spec.md). */}

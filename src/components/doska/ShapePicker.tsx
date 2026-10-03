@@ -16,7 +16,7 @@ import { IconShape } from "./icons";
 
    Toʻqqiz shakl uchun toʻqqizta panel tugmasi qilinmadi: panel allaqachon
    olti tugmali va u sinf ekranining pastida turadi. Shuning uchun bitta
-   tugma + tanlash paneli, `BackgroundPicker` naqshi bilan bir xil.
+   tugma + tanlash paneli.
 
    ⚠️ Namunalar shaklning OʻZ maʼlumotidan chiziladi (`SHAPES`), yaʼni
    har shakl uchun alohida ikona chizilmaydi. Yangi shakl qoʻshish
