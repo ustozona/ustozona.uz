@@ -770,7 +770,7 @@ function FinalScreen({ test, onOpenResults }: { test: ClassTest; onOpenResults?:
       </div>
 
       {/* Saqlangach — natija Telegramga: ota-onalarga va oʻqituvchiga. */}
-      {test.saved && <ShareResults sessionId={test.saved.sessionId} variant="board" />}
+      {test.saved && <ShareResults sessionId={test.saved.sessionId} classId={test.classId} variant="board" />}
     </section>
   );
 }

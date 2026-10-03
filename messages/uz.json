@@ -6181,6 +6181,12 @@
     "doska": {
       "shellHint": "Oʻyinni Topshiriqlar → «Hozir oʻtkazish» orqali boshlang — natija jurnalga tushadi.",
       "homeworkHint": "Topshiriqlar → «Uyga berish»: havola va QR, muddat bilan."
+    },
+    "insight": {
+      "title": "Oxirgi test natijasi",
+      "summary": "«{title}»: sinf {accuracy}%, {students} oʻquvchidan {needHelp} tasi 50% dan past.",
+      "question": "{no}-savol",
+      "use": "AI rejani shu natijaga moslasin (takrorlash, tabaqalashtirish)"
     }
   },
   "Remote": {
@@ -6345,6 +6351,8 @@
     "state_empty": "Hali javob yoʻq — yuboradigan natija yoʻq",
     "state_failed": "Yuborilmadi — birozdan keyin qayta urinib koʻring",
     "impersonating": "Administrator rejimida ota-onalarga xabar yuborilmaydi",
-    "notFound": "Natija topilmadi"
+    "notFound": "Natija topilmadi",
+    "planNext": "Keyingi darsni shu natija bilan rejalash",
+    "planNextHint": "Dars studiyasi ochiladi: AI keyingi dars rejasini shu testdagi qiyin savollarga moslaydi."
   }
 }

@@ -1,4 +1,5 @@
 import { extractJson } from "@/lib/ai-materials";
+import { insightPromptLines, normalizeInsight, type InsightForAi } from "@/lib/class-insight";
 import {
   LESSON_MODELS, envLines, lessonModel, normalizeClassEnv, stagePlan, type ClassEnvironment,
 } from "@/lib/lesson-models";
@@ -44,6 +45,8 @@ export type AiStudioRequest = {
   standards?: { code: string; desc: string }[];
   /** Oldingi dars haqida oʻqituvchi mulohazasi. */
   reflection?: string;
+  /** Sinfning oxirgi test natijasi (`lib/class-insight.ts`) — ismsiz. */
+  insight?: InsightForAi;
   note?: string;
   locale?: string;
 };
@@ -79,6 +82,7 @@ export function normalizeStudioRequest(body: unknown): AiStudioRequest | null {
     env: normalizeClassEnv(body.env),
     standards: standards.length ? standards : undefined,
     reflection: oneLine(body.reflection, 400) || undefined,
+    insight: normalizeInsight(body.insight),
     note: oneLine(body.note, 500) || undefined,
     locale: oneLine(body.locale, 10) || undefined,
   };
@@ -144,6 +148,7 @@ JSON shakli:
     lines.push(`Sinfning ish rejasi:\n${r.plan.trim()}\nJORIY mavzuga tayan, keyingi mavzular materialini oldindan berma.`);
   }
   if (r.reflection) lines.push(`Oldingi dars haqida oʻqituvchi mulohazasi: «${r.reflection}» — kerak boʻlsa boshida qisqa takrorlash.`);
+  if (r.insight) lines.push(...insightPromptLines(r.insight));
   if (r.note) lines.push(`Oʻqituvchining istagi: ${r.note}`);
   return { system, prompt: lines.join("\n") };
 }

@@ -281,6 +281,8 @@ export function useClassTest({
 
   return {
     source,
+    setId,
+    classId,
     plan,
     error,
     phase,

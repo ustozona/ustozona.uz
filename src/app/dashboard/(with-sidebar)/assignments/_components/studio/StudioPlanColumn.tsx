@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { CheckCircle2, Compass, Copy, History, Loader2, RotateCcw, Sparkles, Target, Wand2 } from "lucide-react";
+import { BarChart3, CheckCircle2, Compass, Copy, History, Loader2, RotateCcw, Sparkles, Target, Wand2 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import type { ClassInsight } from "@/lib/class-insight";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,6 +41,8 @@ export type PlanRequest = {
   duration: number;
   objective: string;
   note: string;
+  /** Sinfning oxirgi test natijasini AI rejaga hisobga olsin. */
+  useInsight: boolean;
 };
 
 export function StudioPlanColumn({
@@ -50,6 +54,7 @@ export function StudioPlanColumn({
   defaultDuration,
   standards,
   previousReflection,
+  insight,
   busy,
   onBuild,
   onCancel,
@@ -66,6 +71,8 @@ export function StudioPlanColumn({
   defaultDuration: number;
   standards: { code: string; desc: string }[];
   previousReflection?: string;
+  /** Sinfning oxirgi test natijasi (`classInsightAction`) — yoʻq boʻlsa `null`. */
+  insight: ClassInsight | null;
   busy: boolean;
   onBuild: (req: PlanRequest) => void;
   onCancel: () => void;
@@ -81,6 +88,7 @@ export function StudioPlanColumn({
   const [duration, setDuration] = useState(defaultDuration);
   const [objective, setObjective] = useState("");
   const [note, setNote] = useState("");
+  const [useInsight, setUseInsight] = useState(true);
   const [confirmReset, setConfirmReset] = useState(false);
 
   useEffect(() => {
@@ -185,6 +193,47 @@ export function StudioPlanColumn({
             </section>
           )}
 
+          {/* Maʼlumotga asoslangan rejalash: oxirgi test natijasi AI rejaga. */}
+          {insight && (
+            <section className="flex flex-col gap-2 rounded-lg border border-border bg-muted/40 p-3">
+              <p className="flex items-center gap-1.5 text-label text-muted-foreground">
+                <BarChart3 className="size-3.5" /> {t("insight.title")}
+              </p>
+              <p className="text-caption text-foreground">
+                {t("insight.summary", {
+                  title: insight.title,
+                  accuracy: insight.classAccuracy,
+                  students: insight.students,
+                  needHelp: insight.needHelp,
+                })}
+              </p>
+              {insight.hardest.length > 0 && (
+                <ul className="flex flex-col gap-1">
+                  {insight.hardest.map((h) => (
+                    <li key={h.no} className="flex gap-2 text-caption text-muted-foreground">
+                      <span
+                        className={cn(
+                          "shrink-0 font-mono tabular-nums",
+                          h.accuracy < 40 ? "text-destructive" : "text-warning",
+                        )}
+                      >
+                        {h.accuracy}%
+                      </span>
+                      <span className="line-clamp-2">
+                        {t("insight.question", { no: h.no })}
+                        {h.stem ? ` — ${h.stem}` : ""}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <label className="flex items-center gap-2 text-caption text-foreground">
+                <Checkbox checked={useInsight} onCheckedChange={(v) => setUseInsight(v === true)} />
+                {t("insight.use")}
+              </label>
+            </section>
+          )}
+
           <section className="flex flex-col gap-2">
             <span className="text-label text-muted-foreground">{t("plan.note")}</span>
             <Input
@@ -218,7 +267,7 @@ export function StudioPlanColumn({
               </button>
             </div>
           ) : (
-            <Button className="w-full gap-1.5" onClick={() => onBuild({ ai: true, modelKey, duration: safeDuration, objective, note })}>
+            <Button className="w-full gap-1.5" onClick={() => onBuild({ ai: true, modelKey, duration: safeDuration, objective, note, useInsight })}>
               <Sparkles className="size-4" /> {t("plan.buildAi")}
             </Button>
           )}
@@ -226,7 +275,7 @@ export function StudioPlanColumn({
             variant="outline"
             className="w-full gap-1.5 shadow-none"
             disabled={busy}
-            onClick={() => onBuild({ ai: false, modelKey, duration: safeDuration, objective, note })}
+            onClick={() => onBuild({ ai: false, modelKey, duration: safeDuration, objective, note, useInsight })}
           >
             <Wand2 className="size-4" /> {t("plan.buildTemplate")}
           </Button>

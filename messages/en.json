@@ -6303,6 +6303,12 @@
     "doska": {
       "shellHint": "Start the game via Assignments → Run now — results go to the gradebook.",
       "homeworkHint": "Assignments → Give homework: link and QR, with a due date."
+    },
+    "insight": {
+      "title": "Latest test result",
+      "summary": "“{title}”: class {accuracy}%, {needHelp} of {students} students below 50%.",
+      "question": "Question {no}",
+      "use": "Let AI adapt the plan to this result (review, differentiation)"
     }
   },
   "Remote": {
@@ -6467,6 +6473,8 @@
     "state_empty": "No answers yet — nothing to send",
     "state_failed": "Not sent — try again in a moment",
     "impersonating": "Parent messages aren't sent in admin mode",
-    "notFound": "Result not found"
+    "notFound": "Result not found",
+    "planNext": "Plan the next lesson from this result",
+    "planNextHint": "Lesson Studio opens: AI adapts the next plan to this test's hardest questions."
   }
 }
