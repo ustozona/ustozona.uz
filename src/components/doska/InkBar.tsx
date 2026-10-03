@@ -331,9 +331,10 @@ export function InkBar({ onHide }: { onHide: () => void }) {
             />
           </>
         )}
+
+        <BarActions vertical={vertical} />
       </div>
 
-      <BarActions vertical={vertical} />
       <BarEndColumn vertical={vertical} onHide={onHide} />
     </BarGroup>
   );

@@ -307,13 +307,6 @@ function useNoTranslate() {
 }
 
 /**
- * Ekran hisoblagichi — «2 / 3».
- *
- * Ilgari faqat joriy raqam bor edi (ustida va ostida chiziq bilan) va
- * «keyingi» tugmasi yoʻq edi: oʻqituvchi nechta ekran borligini ham,
- * oldinga qanday oʻtishni ham bilmasdi. Jami son ikkalasini hal qiladi.
- */
-/**
  * `/doska?setId=…` — Dashboard'dagi dars kartasidan «Taqdimotni boshlash»
  * (R278: oʻqituvchi dars paytida turgan joyidan boshlaydi, 6-qaror:
  * proyektor ekrani — Doska).

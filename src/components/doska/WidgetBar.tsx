@@ -32,6 +32,10 @@ import { WIDGET_ICONS } from "./widgets";
      │ Tanlash         │ vositalar · Hammasi       │ ‹ 2/3 › Ekran│   │
      └─────────────────┴───────────────────────────┴─────────────┴───┘
 
+   ⚠️ Rejim, vositalar va amallar BIR aylanadigan qatorda: sigʻmaganda
+   (planshet, yon relsa) hech narsa idishdan chiqib ketmaydi; faqat yigʻish
+   tugmasi doim koʻrinadi.
+
    • Birinchi boʻlim — REJIM: Qalam · Oʻchirgʻich · Tanlash, yorliqli.
      Qalam yoki oʻchirgʻich bosilganda panel oʻrnini qoʻlyozma paneli
      (`InkBar`) egallaydi; tanlash — oddiy holat, shuning uchun bu
@@ -82,37 +86,6 @@ export function WidgetBar({ onHide }: { onHide: () => void }) {
         vertical ? "max-h-full min-h-0" : "max-w-full min-w-0",
       )}
     >
-      {/* Rejim almashtirgich — uch yorliqli tugma, bittasi bosilgan. Bu panel
-          koʻrinib turgan paytda rejim doim «tanlash»: qalam yoki oʻchirgʻich
-          bosilsa panel oʻrnini qoʻlyozma paneli egallaydi. Yorliq va 52 px
-          plitka — vidjet tugmalari bilan bir xil darajada: yozish doskaning
-          asosiy vazifasi, uning tugmasi vidjetdan kichik boʻlmasligi kerak. */}
-      <div role="group" aria-label={tInk("toolbar")} className={cn("flex shrink-0 gap-0.5 p-1", vertical && "flex-col")}>
-        <BarButton
-          label={tInk("pen")}
-          Icon={IconPen}
-          aria-pressed={false}
-          onClick={() => setInkMode(useInkTool.getState().lastTool)}
-          className="aria-pressed:bg-[var(--doska-ctl-active)] w-20"
-        />
-        <BarButton
-          label={tInk("eraser")}
-          Icon={IconEraser}
-          aria-pressed={false}
-          onClick={() => setInkMode("eraser")}
-          className="aria-pressed:bg-[var(--doska-ctl-active)] w-20"
-        />
-        <BarButton
-          label={tInk("select")}
-          Icon={IconCursor}
-          active
-          aria-pressed
-          onClick={() => setInkMode(null)}
-          className="aria-pressed:bg-[var(--doska-ctl-active)] w-20"
-        />
-      </div>
-
-      <BarSeparator vertical={vertical} />
 
       {/* ⚠️ Panel oʻqituvchining planshetida ham ochiladi. Sigʻmasa u oʻz
           ustunidan oshmaydi (`max-w-full` / `max-h-full`, ota `min-w-0` /
@@ -129,6 +102,37 @@ export function WidgetBar({ onHide }: { onHide: () => void }) {
             : "min-w-0 items-center overflow-x-auto overscroll-x-contain py-1.5",
         )}
       >
+        {/* Rejim almashtirgich — uch yorliqli tugma, bittasi bosilgan. Bu panel
+            koʻrinib turgan paytda rejim doim «tanlash»: qalam yoki oʻchirgʻich
+            bosilsa panel oʻrnini qoʻlyozma paneli egallaydi. Yorliq va 52 px
+            plitka — vidjet tugmalari bilan bir xil darajada: yozish doskaning
+            asosiy vazifasi, uning tugmasi vidjetdan kichik boʻlmasligi kerak. */}
+        <div role="group" aria-label={tInk("toolbar")} className={cn("flex shrink-0 gap-0.5 p-1", vertical && "flex-col")}>
+          <BarButton
+            label={tInk("pen")}
+            Icon={IconPen}
+            aria-pressed={false}
+            onClick={() => setInkMode(useInkTool.getState().lastTool)}
+            className="aria-pressed:bg-[var(--doska-ctl-active)] w-20"
+          />
+          <BarButton
+            label={tInk("eraser")}
+            Icon={IconEraser}
+            aria-pressed={false}
+            onClick={() => setInkMode("eraser")}
+            className="aria-pressed:bg-[var(--doska-ctl-active)] w-20"
+          />
+          <BarButton
+            label={tInk("select")}
+            Icon={IconCursor}
+            active
+            aria-pressed
+            onClick={() => setInkMode(null)}
+            className="aria-pressed:bg-[var(--doska-ctl-active)] w-20"
+          />
+        </div>
+
+        <BarSeparator vertical={vertical} />
         {/* «Fon» vosita emas, ekran sozlamasi — u doim panelda, birinchi. */}
         <BackgroundPicker />
 
@@ -149,9 +153,10 @@ export function WidgetBar({ onHide }: { onHide: () => void }) {
         )}
 
         <ToolCatalog onScreen={onScreen} open={catalogOpen} onOpenChange={setCatalogOpen} />
+
+        <BarActions vertical={vertical} />
       </div>
 
-      <BarActions vertical={vertical} />
       <BarEndColumn vertical={vertical} onHide={onHide} />
     </BarGroup>
   );
