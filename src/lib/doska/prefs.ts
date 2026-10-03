@@ -42,7 +42,7 @@ export type DoskaStyle = (typeof DOSKA_STYLES)[number];
  */
 export const DEFAULT_STYLE: DoskaStyle = "sokin";
 
-export const DOCK_SIDES = ["bottom", "left", "right"] as const;
+export const DOCK_SIDES = ["bottom", "left", "right", "both"] as const;
 export type DockSide = (typeof DOCK_SIDES)[number];
 
 /**

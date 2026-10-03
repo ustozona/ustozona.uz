@@ -209,9 +209,23 @@ klaviatura yoʻq), qalam esa panelning eng kichik tugmasi edi.
 - ⋮ panel menyusi olib tashlandi: unda faqat «Panelni tahrirlash»
   qolgan edi, u esa «Hammasi» tugmasi ochadigan oynaning oʻzi.
 
-Keyingi bosqichlar (hali qilinmagan): ikki tomonda qanot (chap va oʻng
-rels bir vaqtda) va doskaning istalgan nuqtasida bosib turish bilan
-ochiladigan aylana menyu — hozircha taklif sifatida koʻrib chiqilgan.
+**«Panel joyi: Ikki chetda»** (`dock: "both"`, `DockRails.tsx`): chap va
+oʻng relsa bir vaqtda. Har relsada rejim, «Bekor» / «Qaytar» va bitta
+«Vidjetlar» tugmasi («Hammasi» oynasi) — oʻqituvchi qaysi chetda tursa,
+oʻsha yerdan oladi. Ekranlar pastda alohida qatorda; qoʻlyozma rejimida
+relslar qoladi, qalam sozlamalari pastda (`InkBar bare`). Narxi:
+qadalgan vositalar qatori yoʻq, vidjet qoʻshish ikki bosish. Vidjet
+joylashuvi ikkala chetni band deb hisoblaydi (`placement.ts`).
+
+**Tezkor menyu** (`DoskaRadialMenu`): boʻsh kanvasni 500 ms bosib turish
+yoki sichqonchaning oʻng tugmasi — bosilgan nuqtada doira: qalam,
+oʻchirgʻich, bekor, qaytar, ekran, oldingi/keyingi. Faqat «tanlash»
+rejimida (qalam bilan ushlab turish — chizish) va faqat boʻsh joyda.
+Panel oʻrnini bosmaydi: yashirin ishora, shuning uchun qoʻshimcha yoʻl.
+
+**Qisqa yorliqlar.** Panel tugmasi 64 px: «Ovoz berish» va «Voqea
+sanogʻi» (va tarjimalari) kesilardi — `poll` va `countdown` yorliqlari
+7 tilda qisqartirildi («Ovoz», «Sanoq»).
 
 #### Oldingi joylashuv (2026-10-02, tarix uchun)
 

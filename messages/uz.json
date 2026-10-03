@@ -2122,11 +2122,11 @@
       },
       "doska-yangi-vidjetlar": {
         "title": "Doskada oʻndan ortiq yangi vidjet: kamera, shovqin, hisob, ovoz berish, guruhlar va boshqalar",
-        "body": "«Kamera» daftar yoki tajribani butun sinfga koʻrsatadi, «Shovqin» sinf ovozini oʻlchaydi, «Hisob» jamoalar ochkosini sanaydi, «Ovoz berish» esa telefonsiz chiqish chiptasi. «Guruhlar» roʻyxatni bir bosishda tasodifiy guruhlarga boʻladi, «Zar» son, harf yoki tanga tashlaydi. Yana: «Stiker», «QR kod», «Video», «Havola», «Sayt», «Karta» va «Sana»."
+        "body": "«Kamera» daftar yoki tajribani butun sinfga koʻrsatadi, «Shovqin» sinf ovozini oʻlchaydi, «Hisob» jamoalar ochkosini sanaydi, «Ovoz» esa telefonsiz chiqish chiptasi. «Guruhlar» roʻyxatni bir bosishda tasodifiy guruhlarga boʻladi, «Zar» son, harf yoki tanga tashlaydi. Yana: «Stiker», «QR kod», «Video», «Havola», «Sayt», «Karta» va «Sana»."
       },
       "doska-darslar-bilan": {
         "title": "Doska darslaringizni biladi: bugungi darslar, qoʻngʻiroq jadvali, davomat va oʻquv kalendari",
-        "body": "«Bugun» vidjeti jadvaldagi darslarni mavzusi bilan chiqaradi, bosqichlarni esa dars rejasi sarlavhalaridan oladi. Soat qoʻngʻiroq jadvalini biladi («3-soat · tugashiga 12 daq»), «Voqea sanogʻi» esa taʼtil va bayramlarni oʻquv kalendaringizdan oladi. Gʻildirak va «Guruhlar» (Pro) sinfga ulansa, bugun kelmaganlar davomatdan oʻzi chiqarib tashlanadi."
+        "body": "«Bugun» vidjeti jadvaldagi darslarni mavzusi bilan chiqaradi, bosqichlarni esa dars rejasi sarlavhalaridan oladi. Soat qoʻngʻiroq jadvalini biladi («3-soat · tugashiga 12 daq»), «Sanoq» esa taʼtil va bayramlarni oʻquv kalendaringizdan oladi. Gʻildirak va «Guruhlar» (Pro) sinfga ulansa, bugun kelmaganlar davomatdan oʻzi chiqarib tashlanadi."
       },
       "doska-tayyor-ekranlar-fonlar": {
         "title": "Tayyor ekranlar va yangi fonlar: dars boshi, guruh ishi, savol-javob, kun rejasi",
@@ -5148,11 +5148,11 @@
       "qr": "QR kod",
       "sticker": "Stiker",
       "groups": "Guruhlar",
-      "poll": "Ovoz berish",
+      "poll": "Ovoz",
       "score": "Hisob",
       "noise": "Shovqin",
       "camera": "Kamera",
-      "countdown": "Voqea sanogʻi",
+      "countdown": "Sanoq",
       "today": "Bugun",
       "video": "Video",
       "link": "Havola",
@@ -5201,6 +5201,8 @@
       "redoShort": "Qaytar",
       "screensGroup": "Ekranlar",
       "addScreenShort": "Ekran",
+      "widgetsButton": "Vidjetlar",
+      "quickMenu": "Tezkor menyu",
       "emptyHint": "Yozish uchun «Qalam»ni tanlang yoki paneldan vidjet qoʻshing"
     },
     "guestNote": {
@@ -5395,7 +5397,8 @@
       "dock": "Panel joyi",
       "dockLeft": "Chapda",
       "dockBottom": "Pastda",
-      "dockRight": "Oʻngda"
+      "dockRight": "Oʻngda",
+      "dockBoth": "Ikki chetda"
     },
     "backgrounds": {
       "chalkboard-green": "Yashil doska",

@@ -36,7 +36,7 @@ function overlaps(a: Rect, b: Rect): boolean {
   );
 }
 
-type Dock = "bottom" | "left" | "right";
+type Dock = "bottom" | "left" | "right" | "both";
 
 /**
  * Vidjetlar uchun maydon — kanvas chetlari va boshqaruv paneli
@@ -44,8 +44,8 @@ type Dock = "bottom" | "left" | "right";
  * chegarada ishlaydi: ikkalasi panel ostiga vidjet qoʻymaydi.
  */
 export function usableArea(canvas: { w: number; h: number }, dock: Dock = "bottom"): Rect {
-  const left = MARGIN + (dock === "left" ? SIDE_RESERVED : 0);
-  const right = MARGIN + (dock === "right" ? SIDE_RESERVED : 0);
+  const left = MARGIN + (dock === "left" || dock === "both" ? SIDE_RESERVED : 0);
+  const right = MARGIN + (dock === "right" || dock === "both" ? SIDE_RESERVED : 0);
   return { x: left, y: TOP_CHROME_PX, w: canvas.w - left - right, h: canvas.h - TOP_CHROME_PX - BOTTOM_RESERVED };
 }
 

@@ -2122,11 +2122,11 @@
       },
       "doska-yangi-vidjetlar": {
         "title": "Doskada onnan aslam jańa vidjet: kamera, shawqım, esap, dawıs beriw, toparlar hám basqalar",
-        "body": "«Kamera» dápter yamasa tájiriybeni pútkil klassqa kórsetedi, «Shawqım» klass dawısın ólsheydi, «Esap» komandalar ochkosın sanaydı, «Dawıs beriw» bolsa telefonsız shıǵıw bileti. «Toparlar» dizimdi bir basıwda tosınnan toparlarǵa bóledi, «Zar» san, hárip yamasa tańga taslaydı. Jáne: «Stiker», «QR kod», «Video», «Siltelme», «Sayt», «Karta» hám «Sáne»."
+        "body": "«Kamera» dápter yamasa tájiriybeni pútkil klassqa kórsetedi, «Shawqım» klass dawısın ólsheydi, «Esap» komandalar ochkosın sanaydı, «Dawıs» bolsa telefonsız shıǵıw bileti. «Toparlar» dizimdi bir basıwda tosınnan toparlarǵa bóledi, «Zar» san, hárip yamasa tańga taslaydı. Jáne: «Stiker», «QR kod», «Video», «Siltelme», «Sayt», «Karta» hám «Sáne»."
       },
       "doska-darslar-bilan": {
         "title": "Doska sabaqlarıńızdı biledi: búgingi sabaqlar, qońıraw kestesi, qatnasıq hám oqıw kalendarı",
-        "body": "«Búgin» vidjeti kestedegi sabaqlardı teması menen shıǵaradı, basqıshlardı bolsa sabaq jobası atamalarınan aladı. Saat qońıraw kestesin biledi («3-saat · tamamlanıwına 12 min»), «Waqıya sanaǵı» bolsa demalıs hám bayramlardı oqıw kalendarıńızdan aladı. Dóńgelek hám «Toparlar» (Pro) klassqa jalǵansa, búgin kelmegenler qatnasıqtan ózi shıǵarıp taslanadı."
+        "body": "«Búgin» vidjeti kestedegi sabaqlardı teması menen shıǵaradı, basqıshlardı bolsa sabaq jobası atamalarınan aladı. Saat qońıraw kestesin biledi («3-saat · tamamlanıwına 12 min»), «Sanaq» bolsa demalıs hám bayramlardı oqıw kalendarıńızdan aladı. Dóńgelek hám «Toparlar» (Pro) klassqa jalǵansa, búgin kelmegenler qatnasıqtan ózi shıǵarıp taslanadı."
       },
       "doska-tayyor-ekranlar-fonlar": {
         "title": "Tayın ekranlar hám jańa fonlar: sabaq bası, topar jumısı, soraw-juwap, kún rejesi",
@@ -5271,11 +5271,11 @@
       "qr": "QR kod",
       "sticker": "Stiker",
       "groups": "Toparlar",
-      "poll": "Dawıs beriw",
+      "poll": "Dawıs",
       "score": "Esap",
       "noise": "Shawqım",
       "camera": "Kamera",
-      "countdown": "Waqıya sanaǵı",
+      "countdown": "Sanaq",
       "today": "Búgin",
       "video": "Video",
       "link": "Siltelme",

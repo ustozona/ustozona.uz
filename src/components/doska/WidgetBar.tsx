@@ -4,18 +4,17 @@ import * as React from "react";
 import { useTranslations } from "next-intl";
 
 import { cn } from "@/lib/utils";
-import { useDoskaStore, useActiveWidgets } from "@/lib/doska/store";
+import { useDoskaStore } from "@/lib/doska/store";
 import { widgetMeta } from "@/lib/doska/registry";
 import { pinnedTools, useDoskaPrefs } from "@/lib/doska/prefs";
-import { useInkTool } from "@/lib/doska/ink-tool";
 import { BarActions } from "./BarActions";
+import { ModeSwitch } from "./ModeSwitch";
 import { BarButton } from "./BarButton";
 import { BarEndColumn } from "./BarEndColumn";
 import { BarGroup, BarSeparator } from "./BarGroup";
 import { useDockLayout } from "./dock";
 import { ShapePicker } from "./ShapePicker";
-import { IconCursor, IconEraser, IconPen } from "./icons";
-import { ToolCatalog } from "./ToolCatalog";
+import { ToolCatalog, useToolCounts } from "./ToolCatalog";
 import { WIDGET_ICONS } from "./widgets";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -55,22 +54,11 @@ import { WIDGET_ICONS } from "./widgets";
 export function WidgetBar({ onHide }: { onHide: () => void }) {
   const addWidget = useDoskaStore((s) => s.addWidget);
   const tools = useDoskaPrefs((s) => s.tools);
-  const widgets = useActiveWidgets();
   const { orientation } = useDockLayout();
   const t = useTranslations("Doska.widgets");
-  const tInk = useTranslations("Doska.ink");
-  const setInkMode = useInkTool((s) => s.setMode);
   const [catalogOpen, setCatalogOpen] = React.useState(false);
 
-  // ⚠️ `widgets` ga `?? []` qoʻyilmaydi: har renderda yangi massiv
-  // yaratilib, quyidagi `useMemo` ni har safar qayta hisoblatardi.
-
-  /** Ekranda shu turdagi nechta vidjet bor — plitka tepasidagi nuqtalar. */
-  const onScreen = React.useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const w of widgets ?? []) counts.set(w.kind, (counts.get(w.kind) ?? 0) + 1);
-    return counts;
-  }, [widgets]);
+  const onScreen = useToolCounts();
 
   const vertical = orientation === "vertical";
   const pinned = pinnedTools(tools);
@@ -101,35 +89,7 @@ export function WidgetBar({ onHide }: { onHide: () => void }) {
             : "min-w-0 items-center overflow-x-auto overscroll-x-contain py-1.5",
         )}
       >
-        {/* Rejim almashtirgich — uch yorliqli tugma, bittasi bosilgan. Bu panel
-            koʻrinib turgan paytda rejim doim «tanlash»: qalam yoki oʻchirgʻich
-            bosilsa panel oʻrnini qoʻlyozma paneli egallaydi. Yorliq va 52 px
-            plitka — vidjet tugmalari bilan bir xil darajada: yozish doskaning
-            asosiy vazifasi, uning tugmasi vidjetdan kichik boʻlmasligi kerak. */}
-        <div role="group" aria-label={tInk("toolbar")} className={cn("flex shrink-0 gap-0.5 p-1", vertical && "flex-col")}>
-          <BarButton
-            label={tInk("pen")}
-            Icon={IconPen}
-            aria-pressed={false}
-            onClick={() => setInkMode(useInkTool.getState().lastTool)}
-            className="aria-pressed:bg-[var(--doska-ctl-active)] w-20"
-          />
-          <BarButton
-            label={tInk("eraser")}
-            Icon={IconEraser}
-            aria-pressed={false}
-            onClick={() => setInkMode("eraser")}
-            className="aria-pressed:bg-[var(--doska-ctl-active)] w-20"
-          />
-          <BarButton
-            label={tInk("select")}
-            Icon={IconCursor}
-            active
-            aria-pressed
-            onClick={() => setInkMode(null)}
-            className="aria-pressed:bg-[var(--doska-ctl-active)] w-20"
-          />
-        </div>
+        <ModeSwitch vertical={vertical} />
 
         <BarSeparator vertical={vertical} />
         {pinned.map((kind) =>

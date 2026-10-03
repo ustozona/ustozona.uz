@@ -32,6 +32,9 @@ const LAYOUTS: Record<DockSide, DockLayout> = {
   left: { orientation: "vertical", side: "right" },
   right: { orientation: "vertical", side: "left" },
   bottom: { orientation: "horizontal", side: "top" },
+  // «Ikki chetda»: relsalar `EdgeRail` ichida oʻz joylashuvini oladi; bu qiymat
+  // pastdagi qator (ekranlar, qoʻlyozma paneli) uchun.
+  both: { orientation: "horizontal", side: "top" },
 };
 
 export function dockLayout(dock: DockSide): DockLayout {
