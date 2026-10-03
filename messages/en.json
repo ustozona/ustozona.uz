@@ -6309,6 +6309,32 @@
       "summary": "“{title}”: class {accuracy}%, {needHelp} of {students} students below 50%.",
       "question": "Question {no}",
       "use": "Let AI adapt the plan to this result (review, differentiation)"
+    },
+    "guide": {
+      "plan": {
+        "title": "Lesson plan",
+        "body": "Pick a model and minutes, then press “Plan and flow with AI” — the rest is built for you."
+      },
+      "flow": {
+        "title": "Lesson scenario",
+        "body": "The plan is ready — you work here now. Open each block and prepare the ones marked “Needs preparing”."
+      },
+      "advice": {
+        "title": "Recommendations",
+        "body": "The selected block is set up here: choose a method and prepare the material in one click."
+      },
+      "start": {
+        "title": "Start the lesson",
+        "body": "Everything is ready. “Start lesson” opens it on the Board and your phone becomes the remote."
+      },
+      "next": "Next step",
+      "close": "Close",
+      "help": "Step-by-step guide"
+    },
+    "focus": {
+      "on": "Focus mode",
+      "onHint": "Focus mode — the whole screen for the columns (Esc to exit)",
+      "off": "Exit focus mode"
     }
   },
   "Remote": {

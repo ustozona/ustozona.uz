@@ -6187,6 +6187,32 @@
       "summary": "«{title}»: sinf {accuracy}%, {students} oʻquvchidan {needHelp} tasi 50% dan past.",
       "question": "{no}-savol",
       "use": "AI rejani shu natijaga moslasin (takrorlash, tabaqalashtirish)"
+    },
+    "guide": {
+      "plan": {
+        "title": "Dars rejasi",
+        "body": "Model va daqiqalarni tanlang, keyin «AI bilan reja va ssenariy» ni bosing — qolgani oʻzi tuziladi."
+      },
+      "flow": {
+        "title": "Dars ssenariysi",
+        "body": "Reja tayyor — endi shu yerda ishlaysiz. Har blokni bosing va «Tayyorlash kerak» boʻlganlarini tayyorlang."
+      },
+      "advice": {
+        "title": "Tavsiyalar",
+        "body": "Tanlangan blok shu yerda sozlanadi: usulni tanlang va bir bosishda material tayyorlang."
+      },
+      "start": {
+        "title": "Darsni boshlash",
+        "body": "Hammasi tayyor. «Darsni boshlash» — dars Doskada ochiladi, telefoningiz pult boʻladi."
+      },
+      "next": "Keyingi qadam",
+      "close": "Yopish",
+      "help": "Qadam-baqadam koʻrsatma"
+    },
+    "focus": {
+      "on": "Fokus rejimi",
+      "onHint": "Fokus rejimi — ustunlarga butun ekran (Esc — chiqish)",
+      "off": "Fokusdan chiqish"
     }
   },
   "Remote": {

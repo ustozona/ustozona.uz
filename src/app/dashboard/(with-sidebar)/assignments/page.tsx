@@ -69,7 +69,7 @@ import {
   makeAssignmentsTourDemoClassData, makeAssignmentsTourDemoClasses, ASSIGNMENTS_TOUR_DEMO_CLASS_ID,
 } from "@/components/tour/assignments-tour-demo";
 import { LessonStudio } from "./_components/studio/LessonStudio";
-import { AssignmentsTopBar, type AssignmentsView } from "./_components/studio/AssignmentsTopBar";
+import { AssignmentsTopBar, ClassChips, ViewToggle, type AssignmentsView } from "./_components/studio/AssignmentsTopBar";
 
 /** Oxirgi tanlangan koʻrinish — faqat shu brauzer uchun qulaylik. */
 const VIEW_KEY = "ustozona-assignments-view";
@@ -501,10 +501,19 @@ export default function AssignmentsPage() {
   const noClass = !effectiveClassId;
   const openRunsCount = runs.length;
 
+  /* Dars studiyasi — ish ustunlariga koʻproq joy: ixcham chekka va oraliq,
+     sinf qatori studiyaning dars qatori bilan BITTA panelda (2026-10-03). */
+  const studioMode = view === "studio" && !isDemoMode && Boolean(selectedClassId);
+
   return (
-    <div className="flex flex-col flex-1 min-w-0 gap-4 p-4 md:p-6 max-lg:min-h-full lg:h-full lg:min-h-0">
+    <div
+      className={cn(
+        "flex flex-col flex-1 min-w-0 max-lg:min-h-full lg:h-full lg:min-h-0",
+        studioMode ? "gap-3 p-3 md:p-4" : "gap-4 p-4 md:p-6",
+      )}
+    >
       <TourDemoBanner tourId="assignments" active={isDemoMode} />
-      {barClasses.length > 0 && (
+      {barClasses.length > 0 && !studioMode && (
         <AssignmentsTopBar
           classes={barClasses}
           selectedId={effectiveClassId}
@@ -521,6 +530,12 @@ export default function AssignmentsPage() {
           onLaunch={(preset) => launchFlow.openLaunch(selectedClassId, preset)}
           onOpenBank={() => setBankOpen(true)}
           onSetsChanged={() => setBankVersion((v) => v + 1)}
+          classChips={
+            barClasses.length > 0 ? (
+              <ClassChips classes={barClasses} selectedId={effectiveClassId} onSelect={handleSelectClass} />
+            ) : undefined
+          }
+          viewToggle={<ViewToggle view={view} onView={changeView} openRuns={openRunsCount} />}
         />
       ) : (
         <div data-tour="assignments-list" className="flex min-w-0 min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card max-lg:min-h-[60svh]">

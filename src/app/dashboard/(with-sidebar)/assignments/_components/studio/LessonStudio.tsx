@@ -1,9 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { BookOpen, ChevronLeft, ChevronRight, Play, Settings2 } from "lucide-react";
+import { useAnimate, useReducedMotion } from "motion/react";
+import { BookOpen, ChevronLeft, ChevronRight, CircleHelp, Maximize, Minimize, Play, Settings2 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Panel } from "@/components/ui/panel";
@@ -44,6 +46,8 @@ import { ClassEnvDialog } from "./ClassEnvDialog";
 import { LessonConductor } from "./LessonConductor";
 import { classInsightAction } from "@/server/actions/result-share";
 import type { ClassInsight } from "@/lib/class-insight";
+import { FlyDot, GuideBubble, Spotlight, useStudioGuide, type FlyPath, type GuideStep } from "./StudioGuide";
+import { useStudioFocus } from "./useStudioFocus";
 
 /* ════════════════════════════════════════════════════════════════════
    DARS STUDIYASI — Topshiriqlar sahifasining asosiy koʻrinishi.
@@ -59,6 +63,11 @@ import type { ClassInsight } from "@/lib/class-insight";
         «tayyor» yoki bir bosishda tayyorlanadi.
      3. Tavsiyalar (oʻng) — tanlangan blok uchun: qaysi usul bu sinfda
         ishlaydi va NEGA, qaysi oʻyin mos, tashqi manbalar.
+
+   Yuqoridagi qator — BITTA panel: sinflar, dars tanlagich, amallar va
+   koʻrinish (avval ikki alohida panel edi). «Fokus rejimi» va
+   qadam-baqadam yoʻl-koʻrsatkich — `useStudioFocus`, `StudioGuide`.
+   Ustunlar matni kattaroq (`.studio-scale`, DESIGN.md §3).
 
    «▶ Darsni boshlash» — dars pulti: bloklar ketma-ket, har biri
    mavjud yoʻl bilan ochiladi (Doska taqdimoti, jonli dars, QR-kartalar,
@@ -78,13 +87,21 @@ type BuilderState = {
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
+/** Ustun oʻrami: yoritish halqasi va ochilish animatsiyasi shu yerda. */
+const COLUMN = "relative flex min-h-0 flex-col lg:h-full";
+
 export function LessonStudio({
   classId,
   onLaunch,
   onOpenBank,
   onSetsChanged,
+  classChips,
+  viewToggle,
 }: {
   classId: string;
+  /** Sinf chiplari va koʻrinish tanlagichi — studiya qatoriga qoʻshiladi. */
+  classChips?: ReactNode;
+  viewToggle?: ReactNode;
   /** Sahifaning oʻtkazish oqimi («Darsda oʻtkazish» oynasi). */
   onLaunch: (preset: LaunchPreset) => void;
   onOpenBank: () => void;
@@ -442,6 +459,89 @@ export function LessonStudio({
   const [envOpen, setEnvOpen] = useState(false);
   const [conductorOpen, setConductorOpen] = useState(false);
 
+  /* ── Yoʻl-koʻrsatkich, fokus rejimi va ustunlar animatsiyasi ──
+     docs/dars-studiyasi-spec.md §9.1. Har qadam oʻz vaqtida, bir marta. */
+  const guide = useStudioGuide();
+  const { offer: offerGuide, replay: replayGuide } = guide;
+  const { focus, toggleFocus } = useStudioFocus();
+  const reduce = useReducedMotion();
+  const [flowScope, animateFlow] = useAnimate<HTMLDivElement>();
+  const [adviceScope, animateAdvice] = useAnimate<HTMLDivElement>();
+  const [spot, setSpot] = useState<Record<"plan" | "flow" | "advice", number>>({ plan: 0, flow: 0, advice: 0 });
+  const [fly, setFly] = useState<FlyPath | null>(null);
+  const pulse = useCallback((step: GuideStep) => {
+    if (step !== "start") setSpot((s) => ({ ...s, [step]: s[step] + 1 }));
+  }, []);
+
+  const hasStudio = Boolean(studio);
+  const readiness = useMemo(() => (studio ? studioReadiness(studio) : null), [studio]);
+  const allReady = Boolean(readiness && readiness.total > 0 && readiness.ready === readiness.total);
+
+  // 1 · reja hali yoʻq — qayerdan boshlashni aytish.
+  useEffect(() => {
+    if (hydrated && lesson && !hasStudio) offerGuide("plan");
+  }, [hydrated, lesson, hasStudio, offerGuide]);
+
+  // 2 · reja ENDI tuzildi (shu darsda yoʻq edi) — ssenariy va tavsiyalar
+  // ustunlari «ochiladi»: koʻtarilib kattalashadi, ssenariy yonib turadi.
+  const lastStudio = useRef<{ lessonId: string | null; has: boolean }>({ lessonId: null, has: false });
+  useEffect(() => {
+    const id = lesson?.id ?? null;
+    const prev = lastStudio.current;
+    lastStudio.current = { lessonId: id, has: hasStudio };
+    if (!hasStudio || prev.has || prev.lessonId !== id) return;
+    if (!reduce) {
+      const from = { opacity: [0.25, 1], y: [28, 0], scale: [0.96, 1] };
+      if (flowScope.current) void animateFlow(flowScope.current, from, { duration: 0.6, ease: [0.2, 0, 0, 1] });
+      if (adviceScope.current) void animateAdvice(adviceScope.current, from, { duration: 0.6, delay: 0.15, ease: [0.2, 0, 0, 1] });
+    }
+    setSpot((s) => ({ ...s, flow: s.flow + 1 }));
+    const timer = window.setTimeout(() => offerGuide("flow"), 700);
+    return () => window.clearTimeout(timer);
+  }, [hasStudio, lesson?.id, reduce, animateFlow, animateAdvice, flowScope, adviceScope, offerGuide]);
+
+  // 4 · hamma blok tayyor — boshlash tugmasini koʻrsatish.
+  useEffect(() => {
+    if (allReady) offerGuide("start");
+  }, [allReady, offerGuide]);
+
+  // 3 · tayyor boʻlmagan blok tanlandi — nuqta tavsiyalar ustuniga «uchadi»
+  // va ustun bir marta yonadi: «endi shu yerda sozlanadi».
+  const selectBlock = useCallback(
+    (id: string) => {
+      setSelectedId(id);
+      const block = blocks.find((b) => b.id === id);
+      if (!block || blockReady(block)) return;
+      const src = document.querySelector(`[data-block-id="${CSS.escape(id)}"]`);
+      const dst = document.querySelector('[data-guide="advice"]');
+      if (src && dst && !reduce && window.matchMedia("(min-width: 1024px)").matches) {
+        const a = src.getBoundingClientRect();
+        const b = dst.getBoundingClientRect();
+        setFly({ key: Date.now(), from: { x: a.right - 28, y: a.top + a.height / 2 }, to: { x: b.left + 32, y: b.top + 30 } });
+        return;
+      }
+      pulse("advice");
+      offerGuide("advice");
+    },
+    [blocks, reduce, pulse, offerGuide],
+  );
+  const onFlyDone = useCallback(() => {
+    setFly(null);
+    pulse("advice");
+    offerGuide("advice");
+  }, [pulse, offerGuide]);
+
+  /** «?» — hozirgi holatga mos qadamni qayta koʻrsatish. */
+  const showGuide = useCallback(
+    (step?: GuideStep) => {
+      const next =
+        step ?? (!studio ? "plan" : allReady ? "start" : selected && !blockReady(selected) ? "advice" : "flow");
+      replayGuide(next);
+      pulse(next);
+    },
+    [studio, allReady, selected, replayGuide, pulse],
+  );
+
   /* ── Boʻsh holatlar ── */
   const [newTopic, setNewTopic] = useState("");
   async function startWithTopic() {
@@ -453,40 +553,84 @@ export function LessonStudio({
     await flushLessonsNow().catch(() => {});
   }
 
+  /* ── Yuqori qator — BITTA panel ──
+     < 2xl: 1-qator sinflar + koʻrinish, 2-qator dars + amallar;
+     2xl+: hammasi bir qatorda. Tartib `order-*` bilan — element bir marta. */
+  const bar = (lessonControls: ReactNode, actions: ReactNode) => (
+    <Panel className="flex h-auto flex-row flex-wrap items-center gap-2 p-2">
+      {classChips && <div className="order-1 flex min-w-0 flex-1 items-center">{classChips}</div>}
+      {viewToggle && <div className="order-2 2xl:order-4">{viewToggle}</div>}
+      <span aria-hidden className="order-3 h-0 basis-full 2xl:hidden" />
+      {lessonControls}
+      {actions}
+      <div className="order-6 flex items-center gap-1 2xl:order-5">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost" size="icon" aria-label={t("guide.help")} onClick={() => showGuide()}>
+              <CircleHelp />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{t("guide.help")}</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant={focus ? "secondary" : "ghost"}
+              size="icon"
+              aria-pressed={focus}
+              aria-label={focus ? t("focus.off") : t("focus.on")}
+              onClick={toggleFocus}
+            >
+              {focus ? <Minimize /> : <Maximize />}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{focus ? t("focus.off") : t("focus.onHint")}</TooltipContent>
+        </Tooltip>
+      </div>
+    </Panel>
+  );
+
   if (!hydrated) {
-    return <Panel className="min-h-[50svh] animate-pulse lg:h-full" />;
+    return (
+      <div className="flex min-h-0 flex-1 flex-col gap-3">
+        {bar(null, null)}
+        <Panel className="min-h-[50svh] flex-1 animate-pulse" />
+      </div>
+    );
   }
 
   if (!lesson) {
     return (
-      <Panel className="lg:h-full">
-        <Empty className="h-full border-0">
-          <EmptyHeader>
-            <EmptyMedia><Illustration name="29" className="h-32 text-black dark:text-white" /></EmptyMedia>
-            <EmptyTitle>{t("noLessonsTitle")}</EmptyTitle>
-            <EmptyDescription>{t("noLessonsDescription")}</EmptyDescription>
-          </EmptyHeader>
-          <EmptyContent>
-            <form
-              className="flex w-full max-w-md gap-2"
-              onSubmit={(e) => {
-                e.preventDefault();
-                void startWithTopic();
-              }}
-            >
-              <Input value={newTopic} onChange={(e) => setNewTopic(e.target.value)} placeholder={t("topicPlaceholder")} maxLength={200} />
-              <Button type="submit" disabled={!newTopic.trim()}>{t("startWithTopic")}</Button>
-            </form>
-            <Button asChild variant="link" className="text-muted-foreground">
-              <a href="/dashboard/lessons">{t("importPlan")}</a>
-            </Button>
-          </EmptyContent>
-        </Empty>
-      </Panel>
+      <div className="flex min-h-0 flex-1 flex-col gap-3">
+        {bar(null, null)}
+        <Panel className="flex-1">
+          <Empty className="h-full border-0">
+            <EmptyHeader>
+              <EmptyMedia><Illustration name="29" className="h-32 text-black dark:text-white" /></EmptyMedia>
+              <EmptyTitle>{t("noLessonsTitle")}</EmptyTitle>
+              <EmptyDescription>{t("noLessonsDescription")}</EmptyDescription>
+            </EmptyHeader>
+            <EmptyContent>
+              <form
+                className="flex w-full max-w-md gap-2"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  void startWithTopic();
+                }}
+              >
+                <Input value={newTopic} onChange={(e) => setNewTopic(e.target.value)} placeholder={t("topicPlaceholder")} maxLength={200} />
+                <Button type="submit" disabled={!newTopic.trim()}>{t("startWithTopic")}</Button>
+              </form>
+              <Button asChild variant="link" className="text-muted-foreground">
+                <a href="/dashboard/lessons">{t("importPlan")}</a>
+              </Button>
+            </EmptyContent>
+          </Empty>
+        </Panel>
+      </div>
     );
   }
 
-  const readiness = studio ? studioReadiness(studio) : null;
   const dateLabel = session
     ? (() => {
         const d = dateKeyToDate(session.date);
@@ -496,10 +640,10 @@ export function LessonStudio({
     : t("noDate");
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-4">
-      {/* Dars tanlagich — ish rejadagi mavzular, oldingi/keyingi. */}
-      <Panel className="flex h-auto flex-row flex-wrap items-center gap-3 p-3">
-        <div className="flex min-w-0 flex-1 items-center gap-2">
+    <div className="flex min-h-0 flex-1 flex-col gap-3">
+      {bar(
+        /* Dars tanlagich — ish rejadagi mavzular, oldingi/keyingi. */
+        <div className="order-4 flex min-w-0 flex-1 items-center gap-1 2xl:order-2 2xl:flex-none">
           <Button
             variant="ghost"
             size="icon"
@@ -510,7 +654,7 @@ export function LessonStudio({
             <ChevronLeft />
           </Button>
           <Select value={lesson.id} onValueChange={(v) => { setLessonId(v); setSelectedId(null); }}>
-            <SelectTrigger className="h-9 min-w-0 flex-1 sm:max-w-md" aria-label={t("pickLesson")}>
+            <SelectTrigger className="h-9 min-w-0 flex-1 sm:max-w-md 2xl:w-80 2xl:flex-none" aria-label={t("pickLesson")}>
               <BookOpen className="size-4 shrink-0 text-muted-foreground" />
               <SelectValue />
             </SelectTrigger>
@@ -532,11 +676,11 @@ export function LessonStudio({
           >
             <ChevronRight />
           </Button>
-          <span className="hidden truncate text-caption text-muted-foreground md:inline">
-            {[dateLabel, cls?.name, subject].filter(Boolean).join(" · ")}
+          <span className="hidden truncate text-caption text-muted-foreground lg:inline 2xl:hidden">
+            {[dateLabel, subject].filter(Boolean).join(" · ")}
           </span>
-        </div>
-        <div className="flex shrink-0 items-center gap-2">
+        </div>,
+        <div className="order-5 flex shrink-0 items-center gap-2 2xl:order-3">
           {readiness && (
             <span className="hidden items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground sm:inline-flex">
               {t("readiness", { ready: readiness.ready, total: readiness.total })}
@@ -546,14 +690,16 @@ export function LessonStudio({
             <Settings2 className="size-4" />
             <span className="hidden sm:inline">{t("envButton")}</span>
           </Button>
-          <Button onClick={startOnDoska} disabled={!studio} className="gap-1.5">
+          <Button data-guide="start" onClick={startOnDoska} disabled={!studio} className="gap-1.5">
             <Play className="size-4" />
             {t("startLesson")}
           </Button>
-        </div>
-      </Panel>
+        </div>,
+      )}
 
-      <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)_minmax(0,1fr)] lg:grid-rows-[minmax(0,1fr)]">
+      <div className="studio-scale grid min-h-0 flex-1 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)_minmax(0,1fr)] lg:grid-rows-[minmax(0,1fr)]">
+        <div data-guide="plan" className={COLUMN}>
+          <Spotlight pulse={spot.plan} />
         <StudioPlanColumn
           lesson={lesson}
           studio={studio}
@@ -578,17 +724,23 @@ export function LessonStudio({
             toast.success(t("toast.copied"));
           }}
         />
+        </div>
+        <div ref={flowScope} data-guide="flow" className={COLUMN}>
+          <Spotlight pulse={spot.flow} />
         <StudioFlowColumn
           studio={studio}
           selectedId={selected?.id ?? null}
           busyBlockId={materialBusy}
           env={hint}
-          onSelect={setSelectedId}
+          onSelect={selectBlock}
           onChange={saveStudio}
           onRun={runBlock}
           onStart={startOnDoska}
           onStartList={() => setConductorOpen(true)}
         />
+        </div>
+        <div ref={adviceScope} data-guide="advice" className={COLUMN}>
+          <Spotlight pulse={spot.advice} />
         <StudioAdviceColumn
           studio={studio}
           block={selected}
@@ -608,7 +760,11 @@ export function LessonStudio({
           onOpenEnv={() => setEnvOpen(true)}
           onOpenUrl={openUrl}
         />
+        </div>
       </div>
+
+      <GuideBubble step={guide.current} onClose={guide.dismiss} onNext={showGuide} />
+      <FlyDot path={fly} onDone={onFlyDone} />
 
       {envOpen && (
         <ClassEnvDialog
