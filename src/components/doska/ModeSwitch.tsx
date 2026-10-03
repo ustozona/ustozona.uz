@@ -24,7 +24,9 @@ export function ModeSwitch({ vertical }: { vertical: boolean }) {
   const mode = useInkTool((s) => s.mode);
   const setMode = useInkTool((s) => s.setMode);
 
-  const pen = mode === "pen" || mode === "marker";
+  // Marker, lazer va lasso ham «yozish» rejimi: «Ikki chetda» da relslar
+  // qoʻlyozma paneli bilan birga turadi va hech bir tugma yonmay qolmasin.
+  const pen = mode !== null && mode !== "eraser";
   const eraser = mode === "eraser";
   const select = mode === null;
   const cls = "aria-pressed:bg-[var(--doska-ctl-active)] w-20";
