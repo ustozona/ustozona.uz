@@ -4,7 +4,8 @@
    docs/ustoz-pulti-spec.md §7.1. Maxsus varaq chop etish shart emas:
    oʻqituvchi Doskada SHABLONNI koʻrsatadi, oʻquvchi oddiy qogʻozga
    ismini va «1) A 2) C …» qilib javoblarini yozadi. Oʻqituvchi telefonda
-   suratga oladi → AI oʻqiydi → ism sinf roʻyxatiga moslanadi → natija
+   suratga oladi (bitta suratda 4 tagacha varaq — `QUICK_MAX_SHEETS`) →
+   AI oʻqiydi → ism sinf roʻyxatiga moslanadi → natija
    koʻrib chiqish roʻyxatiga tushadi (QR-karta va OMR bilan bir yoʻl).
 
    AI faqat MATNNI OʻQIYDI — baholamaydi: toʻgʻri javoblar unga
@@ -24,18 +25,27 @@ export type QuickCheckRead = {
   unsure: number[];
 };
 
+/** Bitta suratdagi eng koʻp varaq soni. Bitta surat — bitta AI krediti,
+    shuning uchun 32 kishilik sinf 8 ta surat (8 kredit) bilan tekshiriladi.
+    Koʻprogʻi kadrga sigʻmaydi: varaq kichrayib qoʻlyozma oʻqilmay qoladi. */
+export const QUICK_MAX_SHEETS = 4;
+
 export function quickCheckPrompt(questionCount: number): { system: string; prompt: string } {
-  const system = `Sen — maktab javob varagʻini oʻquvchi yordamchi. Rasmda oʻquvchi qoʻlda yozgan varaq: tepada ismi (va familiyasi), pastda javoblar «1) A», «2-B», «3. C» yoki jadval koʻrinishida.
+  const system = `Sen — maktab javob varaqlarini oʻquvchi yordamchi. Rasmda 1 dan ${QUICK_MAX_SHEETS} tagacha oʻquvchi varagʻi boʻlishi mumkin (stol ustida yonma-yon terilgan). Har varaqda: tepada oʻquvchining ismi (va familiyasi), pastda javoblar «1) A», «2-B», «3. C» yoki jadval koʻrinishida.
 Vazifa: FAQAT oʻqish. Baholama, toʻgʻri javobni taxmin qilma.
 Javob — FAQAT bitta JSON obyekt, boshqa hech narsa yozma:
-{"name":"varaqdagi ism-familiya aynan yozilganidek","answers":{"1":"A","2":"C"},"unsure":[2]}
+{"sheets":[{"name":"varaqdagi ism-familiya aynan yozilganidek","answers":{"1":"A","2":"C"},"unsure":[2]}]}
 Qoidalar:
+- Har varaq — "sheets" ichida ALOHIDA obyekt. Tartib: chapdan oʻngga, yuqoridan pastga.
+- Bir varaqdagi javobni boshqa varaqqa ARALASHTIRMA: javob qaysi ism yozilgan qogʻozda turgan boʻlsa, oʻsha varaqqa tegishli.
+- Varaqlar ${QUICK_MAX_SHEETS} tadan koʻp boʻlsa — faqat birinchi ${QUICK_MAX_SHEETS} tasini yoz.
 - Savollar 1 dan ${questionCount} gacha. Boshqa raqamlarni tashla.
 - Harf faqat A, B, C yoki D. Kirill «А, В, С, Д» — lotin A, B, C, D. Kichik harf — katta.
 - Savol boʻsh, oʻchirilgan yoki ikki harf yozilgan boʻlsa — "answers" da yozma.
 - Harfni aniq oʻqiy olmasang (masalan B yoki D) — eng ehtimolini yoz va raqamini "unsure" ga qoʻsh.
+- Varaq qisman kadrdan chiqib ketgan boʻlsa — koʻringan qismini oʻqi.
 - Ism oʻqilmasa — "name": "".`;
-  return { system, prompt: `Varaqdagi ism va ${questionCount} ta savol javobini oʻqi.` };
+  return { system, prompt: `Rasmdagi har bir varaqdan ism va ${questionCount} ta savol javobini oʻqi.` };
 }
 
 const CYR_LETTER: Record<string, QuickLetter> = { А: "A", В: "B", С: "C", Д: "D", Б: "B" };
@@ -48,22 +58,10 @@ function letterOf(raw: unknown): QuickLetter | null {
   return CYR_LETTER[s] ?? null;
 }
 
-/** Model javobidan ism va harflar — yumshoq (buzilgan qism tashlanadi). */
-export function parseQuickCheck(raw: string, questionCount: number): QuickCheckRead | null {
-  let s = raw.trim();
-  const fence = s.match(/```(?:json)?\s*([\s\S]*?)```/i);
-  if (fence) s = fence[1].trim();
-  const start = s.indexOf("{");
-  const end = s.lastIndexOf("}");
-  if (start < 0 || end <= start) return null;
-  let json: unknown;
-  try {
-    json = JSON.parse(s.slice(start, end + 1).replace(/,\s*([}\]])/g, "$1"));
-  } catch {
-    return null;
-  }
-  if (typeof json !== "object" || json === null) return null;
-  const obj = json as Record<string, unknown>;
+/** Bitta varaq obyekti → ism va harflar (buzilgan qism tashlanadi). */
+function readSheet(raw: unknown, questionCount: number): QuickCheckRead | null {
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return null;
+  const obj = raw as Record<string, unknown>;
   const answers: Record<number, QuickLetter | null> = {};
   const rawAnswers = obj.answers;
   const entries: [string, unknown][] = Array.isArray(rawAnswers)
@@ -82,6 +80,38 @@ export function parseQuickCheck(raw: string, questionCount: number): QuickCheckR
   const name = typeof obj.name === "string" ? obj.name.replace(/\s+/g, " ").trim().slice(0, 120) : "";
   if (!name && Object.values(answers).every((a) => a === null)) return null;
   return { name, answers, unsure: [...new Set(unsure)] };
+}
+
+/** Model javobidan varaqlar roʻyxati — yumshoq.
+
+    Kutilgan shakl `{"sheets":[…]}`, lekin model baʼzan bitta varaqni
+    oʻrovsiz (`{"name":…}`) yoki yalangʻoch massiv qaytaradi — uchalasi
+    ham qabul qilinadi. Hech narsa oʻqilmasa — boʻsh roʻyxat. */
+export function parseQuickCheck(raw: string, questionCount: number): QuickCheckRead[] {
+  let s = raw.trim();
+  const fence = s.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  if (fence) s = fence[1].trim();
+  const objStart = s.indexOf("{");
+  const arrStart = s.indexOf("[");
+  const isArray = arrStart >= 0 && (objStart < 0 || arrStart < objStart);
+  const start = isArray ? arrStart : objStart;
+  const end = s.lastIndexOf(isArray ? "]" : "}");
+  if (start < 0 || end <= start) return [];
+  let json: unknown;
+  try {
+    json = JSON.parse(s.slice(start, end + 1).replace(/,\s*([}\]])/g, "$1"));
+  } catch {
+    return [];
+  }
+  const list: unknown[] = Array.isArray(json)
+    ? json
+    : typeof json === "object" && json !== null && Array.isArray((json as { sheets?: unknown }).sheets)
+      ? ((json as { sheets: unknown[] }).sheets)
+      : [json];
+  return list
+    .slice(0, QUICK_MAX_SHEETS)
+    .map((x) => readSheet(x, questionCount))
+    .filter((x): x is QuickCheckRead => x !== null);
 }
 
 /* ── Ismni roʻyxatga moslash ─────────────────────────────────────────

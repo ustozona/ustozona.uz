@@ -4310,10 +4310,10 @@
     "quickStep2": "2. Check the sheets",
     "quickHow1": "Write the questions on the board or read them aloud (with a screen — “Show questions on the Board”).",
     "quickHow2": "Each student writes their name and answer letters on any paper: 1) A, 2) C … ({count} questions).",
-    "quickHow3": "Collect the sheets and photograph them with your phone — AI reads them, you review and save to the gradebook. No internet in class? Upload the photos later.",
+    "quickHow3": "Collect the sheets, lay them out 4 at a time side by side (names at the top) and take one photo with your phone — AI reads each sheet separately, you review and save to the gradebook. No internet in class? Upload the photos later.",
     "quickSampleName": "Ali Aliyev",
     "quickShowQuestions": "Show questions on the Board",
-    "quickCredit": "Each sheet photo uses 1 AI credit."
+    "quickCredit": "One photo uses 1 AI credit and reads up to 4 sheets: a class of 32 costs 8 credits."
   },
   "WorkPlan": {
     "title": "Work plan",
