@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   ArrowUpRight,
+  ClipboardPaste,
   DoorOpen,
   Info,
   LayoutGrid,
@@ -52,6 +53,8 @@ import type { DraftQuestion } from "../test/builder/types";
 import { deckDrafts, imageSlideDraft, mcqDraft, templateDrafts, type TemplateId } from "./materials-to-draft";
 import { infographicSvg, mindMapSvg, svgToPng } from "./visuals";
 import { VisualPreview, type VisualResult } from "./VisualPreview";
+import { TextbookSource } from "./TextbookSource";
+import { PasteTestDialog } from "./PasteTestDialog";
 
 /* ════════════════════════════════════════════════════════════════════
    TEZKOR YARATISH — «+ Yaratish» muharririning markazi.
@@ -214,6 +217,9 @@ export function QuickCreatePanel({
   const [prefs, setPrefs] = useState<Prefs>(readPrefs);
   const [note, setNote] = useState("");
   const [noteOpen, setNoteOpen] = useState(false);
+  /** Darslik matni — AI materiali faqat shundan tuziladi (`TextbookSource`). */
+  const [bookText, setBookText] = useState("");
+  const [pasteOpen, setPasteOpen] = useState(false);
   const [busy, setBusy] = useState<AiMaterialKind | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const [visual, setVisual] = useState<VisualResult | null>(null);
@@ -309,6 +315,7 @@ export function QuickCreatePanel({
           count: prefs.count,
           level: prefs.level,
           note: note.trim() || undefined,
+          source: bookText.trim() || undefined,
           locale,
           durationMin: session ? session.endMin - session.startMin : undefined,
         }),
@@ -538,6 +545,7 @@ export function QuickCreatePanel({
               className="min-h-16 rounded-xl bg-muted/40 px-4 py-2 text-sm shadow-none"
             />
           )}
+          <TextbookSource value={bookText} onChange={setBookText} disabled={!!busy} />
         </div>
 
         {/* SHABLONLAR — darhol, AI kerak emas */}
@@ -578,6 +586,9 @@ export function QuickCreatePanel({
           <Button variant="outline" className="w-full justify-start gap-2" onClick={onPickBank}>
             <Library className="size-4" /> {ta("attachFromBank")}
           </Button>
+          <Button variant="outline" className="w-full justify-start gap-2" onClick={() => setPasteOpen(true)}>
+            <ClipboardPaste className="size-4" /> {t("paste.open")}
+          </Button>
           <MaterialKindPicker
             onPick={(kind) => {
               if (kind === "test") onManual("test");
@@ -592,6 +603,25 @@ export function QuickCreatePanel({
         </div>
         {isDraft && <p className="-mt-2 text-caption text-muted-foreground">{t("manualGrading")}</p>}
       </PanelBody>
+
+      {pasteOpen && (
+        <PasteTestDialog
+          onClose={() => setPasteOpen(false)}
+          onImport={(test) => {
+            setPasteOpen(false);
+            onOpenBuilder({
+              questions: test.questions.map(mcqDraft),
+              title: (topicText || t("paste.defaultTitle")).slice(0, 200),
+              firstShape: "mcq",
+            });
+            if (test.missingAnswers.length) {
+              toast.warning(t("paste.missingToast", { count: test.missingAnswers.length }));
+            } else {
+              toast.success(t("paste.done", { count: test.questions.length }));
+            }
+          }}
+        />
+      )}
 
       <VisualPreview
         visual={visual}

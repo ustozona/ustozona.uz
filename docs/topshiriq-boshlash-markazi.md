@@ -394,3 +394,25 @@ kirilgan boʻlsa — Darslar sahifasi, shu sinf VA boʻlim bilan).
 2. Taqdimotni PPTX qilib yuklab olish (internetsiz smartdoska uchun).
 3. Rasm generatsiyasi (hozirgi provayderlar faqat matn beradi) — slaydga
    rasm hozircha qurilmadan yuklanadi.
+
+## Darslikdan va matndan test (2026-10-03)
+
+Qishloq oʻqituvchisining ikki ehtiyoji: material DAVLAT DARSLIGIGA mos
+boʻlsin va tayyor qogʻoz testlarini qayta termaslik.
+
+- **Darslikdan** (`TextbookSource`, «Tezkor yaratish» → AI bilan):
+  darslik matnini joylash yoki sahifani suratga olish
+  (`POST /api/ustozona-ai/read-page` — Gemini matnni aynan koʻchiradi,
+  sahifa boshiga 1 AI krediti, koʻpi bilan 3 sahifa, hech narsa
+  saqlanmaydi). Matn `AiMaterialRequest.source` (≤ 8000 belgi, < 40 belgi
+  eʼtiborga olinmaydi) boʻlib ketadi va prompt AI'ga FAQAT shu matndagi
+  faktlarga tayanishni buyuradi — test, interaktiv dars, taqdimot,
+  aqliy xarita va infografika uchun bir xil.
+- **Matndan test** (`PasteTestDialog`, «Qoʻlda» boʻlimi): tayyor testni
+  nusxalab joylash → `lib/paste-test.ts` savollarga ajratadi (AI SIZ,
+  internetsiz). Taniydi: «1.» / «1)» / «1-savol.», har qatordagi yoki
+  bir qatordagi variantlar (A–E, kirill А В С, rus А Б В Г Д), `*`/`+`
+  yoki «(+)» bilan belgilangan toʻgʻri javob, oxiridagi kalit
+  («Javoblar: 1-B, 2-C», «Ответы», «Answers»). Toʻgʻri javobi topilmagan
+  savol olinadi va oʻqituvchiga aytiladi (muharrirda belgilaydi).
+
