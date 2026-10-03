@@ -352,7 +352,7 @@ export function RunMonitor({
               <RosterList rows={data.roster} gradedTotal={data.gradedTotal} />
 
               {/* Natija Telegramga: ota-onalarga farzandining natijasi, oʻqituvchiga xulosa. */}
-              {run.gradable && data.roster.some((r) => r.answered > 0) && <ShareResults sessionId={sessionId} />}
+              {run.gradable && data.roster.some((r) => r.answered > 0) && <ShareResults sessionId={sessionId} classId={run.classId} />}
 
               {data.anonymous > 0 && <Hint icon={Info}>{t("anonymousNote", { count: data.anonymous })}</Hint>}
 

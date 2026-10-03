@@ -2,7 +2,9 @@
 
 import { z } from "zod";
 import { getSession, requireTeacher } from "@/server/session";
-import { claimShare, finishShare, sessionShareData, shareStatus } from "@/server/dal/assess/result-share";
+import {
+  claimShare, finishShare, latestClassInsight, sessionShareData, shareStatus,
+} from "@/server/dal/assess/result-share";
 import { linkedTelegramIdOf } from "@/server/dal/account-link";
 import { activeChatFor } from "@/server/telegram/bot";
 import { isTelegramBotEnabled } from "@/server/telegram/config";
@@ -116,4 +118,12 @@ export async function shareStatusAction(input: z.infer<typeof statusSchema>) {
     parentsAt: status.test_parents?.at ?? null,
     parents,
   };
+}
+
+const insightSchema = z.object({ classId: z.string().min(1).max(64) });
+
+/** Dars studiyasi: sinfning oxirgi test natijasi (keyingi dars rejasi uchun). */
+export async function classInsightAction(input: z.infer<typeof insightSchema>) {
+  const { classId } = insightSchema.parse(input);
+  return latestClassInsight(classId);
 }

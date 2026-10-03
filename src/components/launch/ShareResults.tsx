@@ -2,7 +2,8 @@
 
 import * as React from "react";
 import { useTranslations } from "next-intl";
-import { Check, LoaderCircle, Send } from "lucide-react";
+import Link from "next/link";
+import { Check, LoaderCircle, Send, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
@@ -26,7 +27,16 @@ type Result = Awaited<ReturnType<typeof shareResultsAction>>;
 type Status = Awaited<ReturnType<typeof shareStatusAction>>;
 type Part = Extract<Result, { ok: true }>["teacher"];
 
-export function ShareResults({ sessionId, variant = "panel" }: { sessionId: string; variant?: "panel" | "board" }) {
+export function ShareResults({
+  sessionId,
+  classId,
+  variant = "panel",
+}: {
+  sessionId: string;
+  /** Berilsa — «Keyingi darsni shu natija bilan rejalash» (Dars studiyasi). */
+  classId?: string;
+  variant?: "panel" | "board";
+}) {
   const t = useTranslations("ResultShare");
   const [parents, setParents] = React.useState(true);
   const [teacher, setTeacher] = React.useState(true);
@@ -93,6 +103,9 @@ export function ShareResults({ sessionId, variant = "panel" }: { sessionId: stri
   }
 
   const nothingLeft = Boolean(parentsDone && teacherDone);
+  /* Natija → keyingi dars: studiya shu sinf bilan ochiladi va oxirgi test
+     natijasini AI rejaga hisobga oladi (docs/natija-keyingi-dars.md). */
+  const planHref = classId ? `/dashboard/assignments?classId=${encodeURIComponent(classId)}` : null;
   const canSend = !busy && !nothingLeft && ((parents && !parentsDone) || (teacher && !teacherDone));
 
   if (variant === "board") {
@@ -120,6 +133,13 @@ export function ShareResults({ sessionId, variant = "panel" }: { sessionId: stri
             {l.text}
           </p>
         ))}
+        {planHref && (
+          // Doskadan chiqmaslik uchun yangi tabda.
+          <a className="ct-btn" href={planHref} target="_blank" rel="noopener">
+            <Wand2 />
+            {t("planNext")}
+          </a>
+        )}
       </div>
     );
   }
@@ -148,6 +168,17 @@ export function ShareResults({ sessionId, variant = "panel" }: { sessionId: stri
           <Button size="sm" className="ml-auto" loading={busy} disabled={!canSend} onClick={() => void send()}>
             {!busy && <Send />}
             {t("send")}
+          </Button>
+        </div>
+      )}
+      {planHref && (
+        <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
+          <p className="min-w-0 flex-1 text-caption text-muted-foreground">{t("planNextHint")}</p>
+          <Button size="sm" variant="outline" className="shadow-none" asChild>
+            <Link href={planHref}>
+              <Wand2 />
+              {t("planNext")}
+            </Link>
           </Button>
         </div>
       )}

@@ -42,6 +42,8 @@ import { StudioFlowColumn } from "./StudioFlowColumn";
 import { StudioAdviceColumn } from "./StudioAdviceColumn";
 import { ClassEnvDialog } from "./ClassEnvDialog";
 import { LessonConductor } from "./LessonConductor";
+import { classInsightAction } from "@/server/actions/result-share";
+import type { ClassInsight } from "@/lib/class-insight";
 
 /* ════════════════════════════════════════════════════════════════════
    DARS STUDIYASI — Topshiriqlar sahifasining asosiy koʻrinishi.
@@ -160,6 +162,20 @@ export function LessonStudio({
   }, [lesson?.standards, standardSets, classId]);
 
   const previousReflection = index > 0 ? sequence[index - 1].reflection : undefined;
+
+  /* Sinfning oxirgi test natijasi — keyingi dars rejasi shunga moslanadi
+     (docs/natija-keyingi-dars.md). Sinf almashsa qayta soʻraladi. */
+  const [insight, setInsight] = useState<{ classId: string; data: ClassInsight | null } | null>(null);
+  useEffect(() => {
+    let alive = true;
+    classInsightAction({ classId })
+      .then((data) => alive && setInsight({ classId, data }))
+      .catch(() => alive && setInsight({ classId, data: null }));
+    return () => {
+      alive = false;
+    };
+  }, [classId]);
+  const classInsight = insight?.classId === classId ? insight.data : null;
   const studentCount = classData?.students.length ?? 0;
 
   /* ── Tanlangan blok ── */
@@ -219,6 +235,17 @@ export function LessonStudio({
           env: { ...env, studentCount: env.studentCount ?? (studentCount || null) },
           standards: lessonStandards,
           reflection: previousReflection,
+          // Ismsiz: sanoq va qiyin savollar (`lib/class-insight.ts`).
+          insight:
+            req.useInsight && classInsight
+              ? {
+                  title: classInsight.title,
+                  classAccuracy: classInsight.classAccuracy,
+                  students: classInsight.students,
+                  needHelp: classInsight.needHelp,
+                  hardest: classInsight.hardest.map((h) => ({ stem: h.stem, accuracy: h.accuracy })),
+                }
+              : undefined,
           note: req.note || undefined,
           locale,
         }),
@@ -536,6 +563,7 @@ export function LessonStudio({
           defaultDuration={defaultDuration}
           standards={lessonStandards}
           previousReflection={previousReflection}
+          insight={classInsight}
           busy={planBusy}
           onBuild={(req) => void buildPlan(req)}
           onCancel={() => abortRef.current?.abort()}

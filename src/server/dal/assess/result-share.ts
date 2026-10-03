@@ -1,6 +1,6 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, gte, inArray } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import {
   activityItems,
@@ -14,6 +14,7 @@ import {
 } from "@/server/db/schema";
 import { requireTeacher } from "@/server/session";
 import { loadOrderedItemIds } from "./results";
+import type { ClassInsight } from "@/lib/class-insight";
 
 /* ════════════════════════════════════════════════════════════════════
    NATIJANI ULASHISH — bitta oʻtkazish (sessiya) natijasi Telegram uchun.
@@ -154,6 +155,38 @@ export async function sessionShareData(sessionId: string): Promise<SessionShareD
     students: [...byStudent.values()].sort((a, b) => b.correct - a.correct || a.name.localeCompare(b.name)),
     hardest,
   };
+}
+
+/** Oxirgi necha kunlik test keyingi dars rejasiga taʼsir qiladi — eskisi
+    endi sinf holatini aks ettirmaydi. */
+const INSIGHT_MAX_AGE_DAYS = 21;
+/** Javobsiz (boshlanib qolgan) sessiyalarni oʻtkazib, shuncha oxirgisini koʻramiz. */
+const INSIGHT_LOOKBACK = 6;
+
+/** Sinfning oxirgi natijali testi — Dars studiyasi uchun (ismsiz sanoq). */
+export async function latestClassInsight(classId: string): Promise<ClassInsight | null> {
+  const teacher = await requireTeacher();
+  const since = new Date(Date.now() - INSIGHT_MAX_AGE_DAYS * 86_400_000);
+  const recent = await db
+    .select({ id: quizSessions.id, at: quizSessions.updatedAt })
+    .from(quizSessions)
+    .where(and(eq(quizSessions.teacherId, teacher.id), eq(quizSessions.classId, classId), gte(quizSessions.updatedAt, since)))
+    .orderBy(desc(quizSessions.updatedAt))
+    .limit(INSIGHT_LOOKBACK);
+  for (const s of recent) {
+    const data = await sessionShareData(s.id);
+    if (!data || data.students.length === 0 || data.questionCount === 0) continue;
+    return {
+      sessionId: s.id,
+      title: data.title,
+      at: s.at.toISOString(),
+      classAccuracy: data.classAccuracy,
+      students: data.students.length,
+      needHelp: data.students.filter((st) => st.total > 0 && st.correct / st.total < 0.5).length,
+      hardest: data.hardest,
+    };
+  }
+  return null;
 }
 
 export type ShareKind = "test_summary" | "test_parents";
