@@ -19,7 +19,7 @@ import { useClassEnv } from "@/hooks/useClassEnv";
 import { flushLessonsNow } from "@/components/sync/LessonsServerSync";
 import { classSessions, flowSequence } from "@/lib/lesson-flow";
 import { isTaught, type Lesson } from "@/lib/lessons-data";
-import { selectModel } from "@/lib/lesson-models";
+import { lessonModel, selectModel } from "@/lib/lesson-models";
 import { subjectLabel } from "@/lib/standards-data";
 import { classStandardIndex } from "@/lib/class-standards";
 import { workPlanFor, workPlanPrompt } from "@/lib/work-plan";
@@ -43,6 +43,7 @@ import { StudioPlanColumn, type PlanRequest } from "./StudioPlanColumn";
 import { StudioFlowColumn } from "./StudioFlowColumn";
 import { StudioAdviceColumn } from "./StudioAdviceColumn";
 import { ClassEnvDialog } from "./ClassEnvDialog";
+import { IshlanmaDialog } from "./IshlanmaDialog";
 import { LessonConductor } from "./LessonConductor";
 import { classInsightAction } from "@/server/actions/result-share";
 import type { ClassInsight } from "@/lib/class-insight";
@@ -457,6 +458,7 @@ export function LessonStudio({
 
   /* ── Oynalar ── */
   const [envOpen, setEnvOpen] = useState(false);
+  const [ishlanmaOpen, setIshlanmaOpen] = useState(false);
   const [conductorOpen, setConductorOpen] = useState(false);
 
   /* ── Yoʻl-koʻrsatkich, fokus rejimi va ustunlar animatsiyasi ──
@@ -716,6 +718,7 @@ export function LessonStudio({
           onChange={saveStudio}
           onOpenEnv={() => setEnvOpen(true)}
           copyFrom={Object.keys(lesson.studioByClass ?? {}).filter((c) => c !== classId)}
+          onIshlanma={() => setIshlanmaOpen(true)}
           onCopyFrom={(fromClassId) => {
             const src = normalizeStudio(lesson.studioByClass?.[fromClassId]);
             if (!src) return;
@@ -765,6 +768,23 @@ export function LessonStudio({
 
       <GuideBubble step={guide.current} onClose={guide.dismiss} onNext={showGuide} />
       <FlyDot path={fly} onDone={onFlyDone} />
+
+      {ishlanmaOpen && studio && (
+        <IshlanmaDialog
+          input={{
+            topic: lesson.title || t("untitledLesson"),
+            subject,
+            className: cls?.name ?? "",
+            dateLabel,
+            modelName: lessonModel(studio.modelKey)?.name ?? "",
+            studio,
+            standards: lessonStandards,
+            env,
+            reflection: lesson.reflection,
+          }}
+          onClose={() => setIshlanmaOpen(false)}
+        />
+      )}
 
       {envOpen && (
         <ClassEnvDialog

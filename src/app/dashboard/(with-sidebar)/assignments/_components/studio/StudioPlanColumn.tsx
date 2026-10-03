@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { BarChart3, CheckCircle2, Compass, Copy, History, Loader2, RotateCcw, Sparkles, Target, Wand2 } from "lucide-react";
+import { BarChart3, CheckCircle2, Compass, Copy, History, Loader2, RotateCcw, Sparkles, Target, Wand2, Printer } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { ClassInsight } from "@/lib/class-insight";
 import { cn } from "@/lib/utils";
@@ -62,6 +62,7 @@ export function StudioPlanColumn({
   onOpenEnv,
   copyFrom,
   onCopyFrom,
+  onIshlanma,
 }: {
   lesson: Lesson;
   studio: LessonStudio | null;
@@ -80,6 +81,8 @@ export function StudioPlanColumn({
   onOpenEnv: () => void;
   copyFrom: string[];
   onCopyFrom: (classId: string) => void;
+  /** Dars ishlanmasi — koʻrish, chop etish, Word (`IshlanmaDialog`). */
+  onIshlanma: () => void;
 }) {
   const t = useTranslations("LessonStudio");
   const classes = useLiveClasses();
@@ -404,6 +407,9 @@ export function StudioPlanColumn({
             <CheckCircle2 className="size-4" /> {t("plan.accept")}
           </Button>
         )}
+        <Button variant="outline" className="w-full gap-1.5 shadow-none" onClick={onIshlanma}>
+          <Printer className="size-4" /> {t("ishlanma.button")}
+        </Button>
         <Button variant="ghost" className="w-full gap-1.5 text-muted-foreground" onClick={() => setConfirmReset(true)}>
           <RotateCcw className="size-4" /> {t("plan.rebuild")}
         </Button>
