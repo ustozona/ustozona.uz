@@ -4188,10 +4188,10 @@
     "quickStep2": "2. Varaqlarni tekshirish",
     "quickHow1": "Savollarni doskaga yozing yoki oʻqib bering (ekran boʻlsa — «Savollarni Doskada koʻrsatish»).",
     "quickHow2": "Oʻquvchi istalgan varaqqa ism-familiyasini va javob harflarini yozadi: 1) A, 2) C … ({count} ta savol).",
-    "quickHow3": "Varaqlarni yigʻib, telefoningizda suratga oling — AI oʻqiydi, siz tekshirib jurnalga yozasiz. Sinfda internet boʻlmasa, suratlarni keyin yuklang.",
+    "quickHow3": "Varaqlarni yigʻib, stolga 4 tadan yonma-yon tering (ismi yuqorida) va telefonda bitta suratga oling — AI har varaqni alohida oʻqiydi, siz tekshirib jurnalga yozasiz. Sinfda internet boʻlmasa, suratlarni keyin yuklang.",
     "quickSampleName": "Aliyev Ali",
     "quickShowQuestions": "Savollarni Doskada koʻrsatish",
-    "quickCredit": "Har bir varaq surati 1 ta AI kreditini oladi."
+    "quickCredit": "Bitta surat — 1 ta AI krediti, unda 4 tagacha varaq oʻqiladi: 32 kishilik sinf — 8 kredit."
   },
   "WorkPlan": {
     "title": "Ish reja",

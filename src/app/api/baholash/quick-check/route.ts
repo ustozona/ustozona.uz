@@ -10,14 +10,20 @@ import { matchStudent, parseQuickCheck, quickCheckPrompt } from "@/lib/quick-che
    POST /api/baholash/quick-check   (multipart: image + setId + classId [+ ticket])
 
    TEZKOR TEKSHIRISH — oʻquvchi oddiy qogʻozga qoʻlda yozgan ism va
-   javoblar surati → oʻqilgan javoblar va roʻyxatdagi oʻquvchi.
+   javoblar surati → har varaq uchun oʻqilgan javoblar va roʻyxatdagi
+   oʻquvchi. Bitta suratda 4 tagacha varaq (`QUICK_MAX_SHEETS`).
    HECH NARSA YOZILMAYDI: natija koʻrib chiqish roʻyxatiga tushadi,
    yozish — mavjud `/api/baholash/scan/apply` (oʻqituvchi tasdiqlagach).
 
    Kimlik `/api/baholash/scan` bilan bir xil: cookie (noutbuk) yoki
    skaner chiptasi (telefon); chiptada test va sinf chiptadan olinadi.
    AI faqat oʻqiydi — toʻgʻri javob unga berilmaydi (`lib/quick-check.ts`).
-   Bitta surat — bitta AI krediti (dars AI yordamchisi bilan umumiy).
+   Bitta surat — bitta AI krediti, varaqlar soniga qaramay (dars AI
+   yordamchisi bilan umumiy). 4 varaqni bitta suratga terish sinfni
+   tekshirish narxini 4 baravar kamaytiradi.
+
+   Javobda `sheets` (yangi) va `read` (birinchi varaq — deploy paytida
+   eski sahifa ochiq qolgan telefon uchun) ikkalasi ham bor.
    ════════════════════════════════════════════════════════════════════ */
 
 export const dynamic = "force-dynamic";
@@ -96,21 +102,23 @@ export async function POST(request: Request) {
     clearTimeout(timer);
   }
 
-  const read = parseQuickCheck(text, plan.questionCount);
-  if (!read) {
-    return fail("unreadable", "Varaqdan javob oʻqilmadi. Varaq toʻliq kadrda, yorugʻ joyda boʻlsin", 422);
+  const reads = parseQuickCheck(text, plan.questionCount);
+  if (!reads.length) {
+    return fail("unreadable", "Varaqdan javob oʻqilmadi. Varaqlar toʻliq kadrda, yorugʻ joyda boʻlsin", 422);
   }
-  const { student } = matchStudent(read.name, plan.roster);
+  const roster = plan.roster;
+  const sheets = reads.map((read) => ({
+    name: read.name,
+    studentId: matchStudent(read.name, roster).student?.id ?? null,
+    answers: read.answers,
+    unsure: read.unsure,
+  }));
   return Response.json(
     {
       ok: true,
-      read: {
-        name: read.name,
-        studentId: student?.id ?? null,
-        answers: read.answers,
-        unsure: read.unsure,
-      },
-      roster: plan.roster,
+      sheets,
+      read: sheets[0],
+      roster,
       questionCount: plan.questionCount,
     },
     { headers: { "Cache-Control": "no-store" } },

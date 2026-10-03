@@ -143,8 +143,9 @@ harflarini yozadi, ustoz varaqlarni telefonda suratga oladi, AI oʻqiydi
 (`/api/baholash/quick-check`), ustoz koʻrib chiqib jurnalga yozadi.
 «Darsda oʻtkazish» oynasida alohida plitka (`LaunchMode = "quick"`),
 kompyuterdagi QR telefonda shu rejimni ochadi (`?mode=quick`). Sinfda
-internet boʻlmasa ham ishlaydi — suratlar keyin yuklanadi. ⚠️ Har surat
-1 AI krediti (`quick-check` route) — free taʼrifda 300/oy.
+internet boʻlmasa ham ishlaydi — suratlar keyin yuklanadi. Bitta surat
+1 AI krediti, unda 4 tagacha varaq oʻqiladi (`QUICK_MAX_SHEETS`): 32
+kishilik sinf — 8 kredit, free taʼrifda (300/oy) ~37 test.
 
 **Oʻyinlar:** Arqon, Poyga — telefonda, test asosida, jurnalga
 (`shellAvailability` sababi bilan); mashq oʻyinlari (Soʻz topish,

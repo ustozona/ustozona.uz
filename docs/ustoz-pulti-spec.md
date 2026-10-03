@@ -132,6 +132,13 @@ Maxsus varaq chop etish shart emas:
    (cookie yoki skaner chiptasi, `/api/baholash/scan` bilan bir qoida).
    AI (Gemini, rasm) FAQAT oʻqiydi: ism va harflar; toʻgʻri javob unga
    berilmaydi, ball serverda. Bitta surat — bitta AI krediti.
+   **Bitta suratda 4 tagacha varaq** (`QUICK_MAX_SHEETS`, 2026-10-03):
+   ustoz varaqlarni stolga yonma-yon teradi, model `{"sheets":[…]}`
+   qaytaradi (chapdan oʻngga, yuqoridan pastga), har varaq roʻyxatga
+   alohida tushadi. 32 kishilik sinf — 8 kredit (oldin 32). Koʻprogʻi
+   kadrga sigʻmaydi — qoʻlyozma kichrayib oʻqilmay qoladi. Javobda eski
+   `read` ham bor (birinchi varaq): deploy paytida ochiq qolgan sahifa
+   buzilmasin.
 4. Ism sinf roʻyxatiga moslanadi (`lib/quick-check.ts`: kirill → lotin,
    apostroflar, qisqartma, 1–2 harf xato). Ikki oʻquvchi deyarli teng mos
    kelsa — tanlanmaydi, oʻqituvchi tanlaydi. AI ishonchsiz harf — sariq.

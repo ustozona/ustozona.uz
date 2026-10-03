@@ -265,30 +265,34 @@ export default function ScanPanel({
   /* ── TEZKOR TEKSHIRISH — qoʻlda yozilgan javob varagʻi ──────────────
      Maxsus varaq shart emas: oʻquvchi oddiy qogʻozga ismini va «1) A …»
      yozadi, AI oʻqiydi (`/api/baholash/quick-check`, faqat oʻqish).
+     Bitta suratda 4 tagacha varaq — har biri roʻyxatga ALOHIDA tushadi.
      Natija OʻSHA roʻyxatga tushadi — tekshirish va kiritish yoʻli bitta.
      AI ishonchsiz harf sariq («tekshiring»), ism topilmasa — qoʻlda. */
+  type QuickRead = { name: string; studentId: string | null; answers: Record<string, string | null>; unsure: number[] };
+
   async function sendQuick(image: Blob): Promise<Outcome> {
     const { status, data } = await post("/api/baholash/quick-check", baseForm(image, "javob.jpg"));
     const body = data as
       | {
           ok: true;
-          read: { name: string; studentId: string | null; answers: Record<string, string | null>; unsure: number[] };
+          sheets?: QuickRead[];
+          read: QuickRead;
           roster: ScanPreview["roster"];
           questionCount: number;
         }
       | { ok: false; message?: string }
       | null;
     if (!okStatus(status) || !body || !body.ok) return failure(status, data, "Varaq oʻqilmadi");
-    const { read } = body;
+    const reads = body.sheets?.length ? body.sheets : [body.read];
     setRoster(body.roster);
-    const unsure = new Set(read.unsure);
-    // `taken` — roʻyxatning ENG SOʻNGGI holatidan (bir partiyada bitta
-    // oʻquvchining ikki varagʻi kelsa ham ushlansin).
+    // `taken` — roʻyxatning ENG SOʻNGGI holatidan va shu suratning oldingi
+    // varaqlaridan: bir oʻquvchining ikki varagʻi kelsa ham ushlansin.
     setSheets((prev) => {
-      const taken = prev.some((sh) => sh.studentId && sh.studentId === read.studentId);
-      return [
-        ...prev,
-        {
+      const next = [...prev];
+      for (const read of reads) {
+        const unsure = new Set(read.unsure);
+        const taken = Boolean(read.studentId) && next.some((sh) => sh.studentId === read.studentId);
+        next.push({
           key: `quick-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
           studentId: taken ? null : read.studentId,
           problems: [
@@ -310,8 +314,9 @@ export default function ScanPanel({
               optionCount: 4,
             };
           }),
-        },
-      ];
+        });
+      }
+      return next;
     });
     return { ok: true };
   }
@@ -529,9 +534,11 @@ export default function ScanPanel({
             </Button>
           </div>
           <p className="text-xs text-muted-foreground">
-            {plan
-              ? "Jonli skanerda varaqni kameraga tutib turing — oʻzi topadi va keyingisiga oʻtaverasiz."
-              : "Bitta suratda 4 tagacha varaq boʻlishi mumkin."}
+            {mode === "quick"
+              ? "4 tagacha varaqni stolga yonma-yon tering (ismi yuqorida) va bitta suratga oling — bitta surat 1 AI krediti."
+              : plan
+                ? "Jonli skanerda varaqni kameraga tutib turing — oʻzi topadi va keyingisiga oʻtaverasiz."
+                : "Bitta suratda 4 tagacha varaq boʻlishi mumkin."}
           </p>
         </div>
       ) : (
@@ -761,7 +768,7 @@ function HandoffBlock({
           {mode === "cards"
             ? "Kamerani sinfga qaratasiz, kartalar savolma-savol oʻqiladi."
             : mode === "quick"
-              ? "Oʻquvchilar yozgan varaqlarni birma-bir suratga olasiz — AI oʻqiydi, siz tekshirasiz."
+              ? "Oʻquvchilar yozgan varaqlarni 4 tadan yonma-yon terib suratga olasiz — AI oʻqiydi, siz tekshirasiz."
               : "Varaqni suratga olasiz, natija shu testga tushadi."}{" "}
           Havola 2 soat amal qiladi.
           Kamera oʻqiy olmasa — telefonni yaqinroq tuting yoki brauzerni
