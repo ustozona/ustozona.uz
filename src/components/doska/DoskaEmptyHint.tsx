@@ -5,13 +5,15 @@ import { useTranslations } from "next-intl";
 import { activeScreenOf, useActiveBackground, useDoskaStore } from "@/lib/doska/store";
 import { backgroundById } from "@/lib/doska/backgrounds";
 import { hasVisibleInk } from "@/lib/doska/ink";
+import { useInkTool } from "@/lib/doska/ink-tool";
 
 /* ════════════════════════════════════════════════════════════════════
    BOʻSH DOSKA YOʻRIGʻI — ekranda hech narsa boʻlmaganda bir qator.
 
    Birinchi ochilishda oʻqituvchi yashil (yoki oq) maydon va pastdagi
    panelni koʻradi; nima qilish kerakligi hech qayerda yozilmagan edi.
-   Vidjet qoʻyilishi yoki birinchi chiziq chizilishi bilan yoʻrigʻ yoʻqoladi.
+   Vidjet qoʻyilishi, birinchi chiziq chizilishi yoki qoʻlyozma rejimiga
+   oʻtilishi bilan yoʻrigʻ yoʻqoladi.
 
    Matn faqat kanvas USTIDA turadi va bosishni toʻsmaydi
    (`pointer-events-none`). Boshqaruv yashirilganda (`B`) chizilmaydi —
@@ -28,8 +30,10 @@ export function DoskaEmptyHint() {
     return s.hydrated && !!screen && screen.widgets.length === 0 && !hasVisibleInk(screen);
   });
   const tone = backgroundById(useActiveBackground()).tone;
+  // Qalam rejimida «Qalamni tanlang» deyish notoʻgʻri — oʻqituvchi allaqachon yozyapti.
+  const inking = useInkTool((s) => s.mode !== null);
 
-  if (!empty) return null;
+  if (!empty || inking) return null;
 
   return (
     <p
