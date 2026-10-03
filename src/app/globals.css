@@ -634,6 +634,42 @@
 .readable-scale.readable-scale-lg {
   --typo-page: 2.986rem;   /* 47.78px — 6-qadam, blog post sarlavhasi */
 }
+
+/* Ish maydoni shkalasi — FAQAT Dars studiyasi ustunlarida (`.studio-scale`,
+   Topshiriqlar → Dars studiyasi). Oʻqituvchi u yerda uzoq ishlaydi: reja,
+   ssenariy va tavsiyalar bir vaqtda koʻrinadi, matn esa standart 12–14px
+   da mayda edi (loyiha egasining talabi, 2026-10-03). Har rol bir
+   pogʻona (~1px) kattalashadi; boshqaruvlar balandligi (36px) va boʻshliq
+   oʻzgarmaydi — faqat matn. `text-sm`/`text-xs` utility'lari ham shu
+   doirada bir pogʻona katta. DESIGN.md §3 «Deviatsiya — studiya». */
+.studio-scale {
+  --typo-tag: 0.75rem;       /* 12px (11) */
+  --typo-label: 0.75rem;     /* 12px (11) */
+  --typo-caption: 0.8125rem; /* 13px (12) */
+  --typo-body: 0.9375rem;    /* 15px (14) */
+  --typo-small: 1rem;        /* 16px (15) */
+  --typo-section: 1.1875rem; /* 19px (18) */
+  --text-xs: 0.8125rem;      /* 13px (12) */
+  --text-sm: 0.9375rem;      /* 15px (14) */
+}
+
+/* Studiya yoʻl-koʻrsatkichi: qolgan vaqt chizigʻi (10 s, `StudioGuide`).
+   Bezak — yopilishni JS taymeri boshqaradi, shuning uchun «kam harakat»
+   rejimida animatsiya oʻchsa ham pufakcha oʻz vaqtida yopiladi. */
+@keyframes studio-guide-countdown {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+.studio-guide-bar {
+  animation: studio-guide-countdown 10s linear forwards;
+}
+
+/* Studiya «Fokus rejimi» (`useStudioFocus`) — Ustozona sarlavhasi
+   yashiriladi, ish ustunlari yuqoriga koʻtariladi. `Header` ga tegilmaydi:
+   atribut faqat rejim davomida <html> da turadi. */
+html[data-studio-focus] [data-slot="sidebar-inset"] > header {
+  display: none;
+}
 /* Telefon varianti pastda, `.blog-prose` qoidalaridan KEYIN — bir xil
    oʻzillikdagi qoida faqat keyin kelsa ustun chiqadi. */
 

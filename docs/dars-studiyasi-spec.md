@@ -209,6 +209,35 @@ roʻyxati va «Tayyor testni tanlash» — ikkalasi shu sinfning tuzilgan
 testlari; «Test banki» (butun test sinfga) va «Test bankidan savollar
 olish» (savollar joriy testga) — nomlari allaqachon farqli.
 
+## 9.1 Ish maydoni, fokus rejimi va yoʻl-koʻrsatkich (2026-10-03)
+
+Loyiha egasining talabi: ustunlar ustida uch qavat (brauzer, Ustozona
+sarlavhasi, studiya qatorlari) joyni yeydi va matn mayda; oʻqituvchi
+uch ustunda nima qilishini qisqa, xalaqitsiz koʻrsatmalardan bilsin.
+
+- **Bitta qator.** Sinflar (`ClassChips`), dars tanlagich, amallar va
+  koʻrinish (`ViewToggle`) — BITTA panelda; 2xl+ da bir qatorda.
+  Studiyada sahifa chekkasi va oraliqlar ham ixcham (p-4 / gap-3).
+- **Kattaroq matn.** Ustunlar `.studio-scale` ostida (DESIGN.md §3).
+- **Fokus rejimi** (`useStudioFocus`, ⛶ tugmasi): brauzer toʻliq ekrani +
+  Ustozona sarlavhasi yashiriladi (`html[data-studio-focus]`) + yon panel
+  yigʻiladi. Esc yoki shu tugma — hammasi avvalgi holatiga qaytadi.
+- **Yoʻl-koʻrsatkich** (`StudioGuide.tsx`). Toʻrt qadam, har biri oʻz
+  vaqtida va BIR MARTA (brauzer xotirasi):
+  1. reja yoʻq → «Dars rejasi» (chap ustun);
+  2. reja endi tuzildi → «Dars ssenariysi» (oʻrta ustun);
+  3. tayyor boʻlmagan blok tanlandi → «Tavsiyalar» (oʻng ustun);
+  4. hamma blok tayyor → «Darsni boshlash» (tugma).
+  Pufakcha yorqin (`bg-info`), 10 soniyada oʻzi yopiladi (sichqoncha
+  ustida taymer toʻxtaydi), fonni qoraytirmaydi va sahifani bloklamaydi.
+  «?» tugmasi — hozirgi qadamni qayta koʻrsatadi, «Keyingi qadam» bilan
+  toʻrttalasini ketma-ket oʻtish mumkin.
+- **Animatsiya.** Reja tuzilgan zahoti ssenariy va tavsiyalar ustunlari
+  pastdan koʻtarilib «ochiladi», ssenariy halqasi ikki marta yonadi.
+  Tayyor boʻlmagan blok bosilsa — nuqta tavsiyalar ustuniga uchadi va
+  ustun bir marta yonadi: «endi shu yerda sozlanadi». Faqat
+  `transform`/`opacity`; «kam harakat» rejimida animatsiyasiz.
+
 ## 10. Keyingi qadamlar
 
 1. Doska «Dars rejimi» (§8) — jamoa bilan kelishib.

@@ -94,6 +94,15 @@ hisoblagich nishoni, kichik avatar initsiali, 16px doiradagi raqam. U yerda
 yozilgan edi). **Boshqa joyda ishlatilmaydi** — roʻyxat yoki kartada 10px
 matn kerak boʻlsa, muammo zichlikda emas, ierarxiyada.
 
+⚠️ **Deviatsiya (2026-10-03) — Dars studiyasi ish maydoni (`.studio-scale`).**
+Topshiriqlar → Dars studiyasining uch ustuni (reja, ssenariy, tavsiyalar)
+ichida har matn roli bir pogʻona katta: `body` 15px, `caption` 13px,
+`tag`/`label` 12px, `title-sm` 16px, `title` 19px; `text-sm`/`text-xs` ham.
+Sabab: oʻqituvchi u yerda uzoq ishlaydi va uch ustunni bir vaqtda oʻqiydi —
+standart 12–14px mayda edi (loyiha egasining talabi). Boshqaruv balandligi
+(36px) va boʻshliq oʻzgarmaydi. Doira — faqat studiya ustunlari
+(`LessonStudio`), boshqa sahifaga tarqatilmaydi.
+
 Rang har doim tokendan (`--foreground` / `--muted-foreground`). Yangi
 oʻlcham kerak boʻlsa avval shu jadvalga (va `globals.css`ga) qoʻshiladi —
 inline `text-[13px]` yozilmaydi — `npm run check:tokens` buni build

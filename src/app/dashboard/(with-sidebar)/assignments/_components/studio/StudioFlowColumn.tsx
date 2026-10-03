@@ -131,6 +131,7 @@ export function StudioFlowColumn({
               return (
                 <div
                   key={block.id}
+                  data-block-id={block.id}
                   className={cn(
                     "list-card group flex items-start gap-2 pr-2",
                     isSelected && "border-foreground/40 bg-muted/40",
