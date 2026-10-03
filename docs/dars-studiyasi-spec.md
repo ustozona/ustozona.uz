@@ -250,6 +250,22 @@ uch ustunda nima qilishini qisqa, xalaqitsiz koʻrsatmalardan bilsin.
   ustun bir marta yonadi: «endi shu yerda sozlanadi». Faqat
   `transform`/`opacity`; «kam harakat» rejimida animatsiyasiz.
 
+## 9.2 Dars ishlanmasi — chop etish va Word (2026-10-03)
+
+Maktabda har dars uchun yozma ishlanma (konspekt) soʻraladi — rahbar va
+inspektor tekshiradi. Reja tuzilgach chap ustun pastida **«Dars
+ishlanmasi (chop etish)»** (`IshlanmaDialog`): hujjat rejadan avtomatik
+yigʻiladi (`lib/lesson-ishlanma.ts`) — maʼlumot jadvali (fan, sinf, sana,
+mavzu, model, davomiylik), maqsad, muvaffaqiyat mezonlari, standartlar,
+jihozlar (sinf pasportidan + ulangan materiallar), «Darsning borishi»
+jadvali (bosqich va vaqt · maqsad · oʻqituvchi · oʻquvchi · usul va
+materiallar), baholash, uy vazifasi, refleksiya va imzo qatori.
+
+- «Chop etish / PDF» — brauzer; faqat hujjat chiqadi (`.a4-print`).
+- «Word'da yuklab olish» — `.doc` (Word HTML), oʻqituvchi tahrirlaydi.
+- Bitta HTML manba, uslublar inline (Word tashqi CSS oʻqimaydi); erkin
+  matn `esc()` dan oʻtadi.
+
 ## 10. Keyingi qadamlar
 
 1. Doska «Dars rejimi» (§8) — jamoa bilan kelishib.
