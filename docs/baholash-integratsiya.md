@@ -386,6 +386,26 @@ tegmaydi. Bu `/play` ishtirokchi tokeni bilan bir xil savdo (§4).
 Telefon sahifasi ataylab yalangʻoch: bitta test, bitta ish, menyu yoʻq
 — chipta boshqa hech narsaga ruxsat bermaydi. `robots: noindex`.
 
+### 8-bis.1 Internet uzilsa — skaner navbati (2026-10-03)
+
+Qishloq maktabida tarmoq dars oʻrtasida uziladi. Ilgari partiyadagi
+bitta surat xato bersa, QOLGANLARI umuman yuborilmas, olingan suratlar
+esa faqat sahifa xotirasida turardi. Endi (`components/scan/scan-queue.ts`):
+
+- partiyadagi har surat alohida: bittasi yiqilsa qolganlari davom etadi;
+- tarmoq/server sabab yuborilmagan surat (soʻrov ketmadi, 401, 408, 5xx)
+  telefonning **IndexedDB** xotirasiga yoziladi — sahifa yopilsa ham
+  qoladi; `online` hodisasida va sahifa qayta ochilganda oʻzi yuboriladi;
+  ekranda «N ta surat internetni kutmoqda · Hozir yuborish»;
+- 401 (skaner havolasi eskirgan) — surat oʻchmaydi: navbat doirasi
+  `setId:classId`, yangi QR ochilsa oʻsha test uchun topiladi;
+- surat oʻzi yaroqsiz boʻlsa (400/404, «varaq oʻqilmadi») yoki kvota
+  tugasa (429) — navbatga tushmaydi, sababi aytiladi;
+- jurnalga hali kiritilmagan koʻrib chiqish roʻyxati (`localStorage`,
+  24 soat) — sahifa yopilib qayta ochilsa tiklanadi; kiritilgach oʻchadi.
+  ⚠️ Unda oʻquvchi ismlari bor — faqat oʻqituvchining oʻz qurilmasida.
+- Navbatda koʻpi bilan 120 surat (telefon xotirasini toʻldirmaslik uchun).
+
 ## 8-ter. Telegram bot yoʻli — NEGA HALI YOʻQ
 
 «Bitta tugma bilan `@uzlessonlabbot` ga oʻtsin, botda hammasi tayyor»

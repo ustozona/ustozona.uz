@@ -1,9 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
-  Camera, Check, IdCard, Info, Loader2, PenLine, ScanLine, Smartphone, Trash2, TriangleAlert,
+  Camera, Check, CloudOff, IdCard, Info, Loader2, PenLine, RefreshCw, ScanLine, Smartphone, Trash2, TriangleAlert,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,9 @@ import { createScanHandoffAction, type ScanHandoff } from "@/server/actions/baho
 import type { ScanPreview, ScanSheet } from "@/server/dal/baholash-scan";
 import LiveScanner, { type LiveScanResult } from "./LiveScanner";
 import CardScanner, { type CardCapture } from "./CardScanner";
+import {
+  isRetryable, listQueued, loadReview, queuePhoto, removeQueued, saveReview, scanScope, type QueuedKind,
+} from "./scan-queue";
 
 /* ════════════════════════════════════════════════════════════════════
    VARAQNI SKANERLASH — qogʻoz testning qaytish yoʻli
@@ -193,64 +196,70 @@ export default function ScanPanel({
       .filter((no): no is number => typeof no === "number")
   );
 
-  async function onFiles(files: FileList | null) {
-    if (!files || files.length === 0) return;
-    setBusy(true);
-    setError(null);
-    setReport(null);
+  /* ── Suratni yuborish — ikki yoʻl, bitta natija shakli ──────────────
+     `retry` — tarmoq yoki server sabab (surat yaxshi): navbatga.
+     Aks holda surat oʻzi yaroqsiz (oʻqilmadi) — xabar beriladi. */
+  type Outcome = { ok: true } | { ok: false; retry: boolean; message: string };
+
+  const okStatus = (status: number | null) => status !== null && status >= 200 && status < 300;
+
+  async function post(url: string, form: FormData): Promise<{ status: number | null; data: unknown }> {
     try {
-      // Suratlar KETMA-KET yuboriladi: dvigatel har rasm uchun sekin
-      // ishlaydi, parallel yuborish telefon tarmogʻida ikkalasini ham
-      // uzaytiradi.
-      for (const file of Array.from(files)) {
-        const image = await downscale(file);
-        const form = new FormData();
-        // Chipta boʻlsa test/sinf SERVERDA chiptadan olinadi — bu
-        // qiymatlar eʼtiborga olinmaydi, lekin bir xil forma ikkala
-        // yoʻlga xizmat qilsin.
-        form.set("setId", setId);
-        form.set("classId", classId);
-        if (ticket) form.set("ticket", ticket);
-        form.set("image", image, "varaq.jpg");
-
-        const res = await fetch("/api/baholash/scan", { method: "POST", body: form });
-        const data = (await res.json().catch(() => null)) as
-          | { ok: true; preview: ScanPreview }
-          | { ok: false; message?: string }
-          | null;
-        if (!res.ok || !data || !data.ok) {
-          throw new Error(
-            (data && "message" in data ? data.message : null) ?? `Varaq oʻqilmadi (${res.status})`
-          );
-        }
-
-        setRoster(data.preview.roster);
-        setWarnings(data.preview.warnings);
-        setSheets((prev) => [
-          ...prev,
-          ...data.preview.sheets.map((s, i) => ({
-            key: `${Date.now()}-${i}-${Math.random().toString(36).slice(2, 8)}`,
-            studentId: s.studentId,
-            problems: s.problems,
-            blocked: s.blocked,
-            alreadyEntered: s.alreadyEntered,
-            answers: s.answers,
-          })),
-        ]);
-        if (data.preview.sheets.length === 0) {
-          setError(
-            "Suratdan varaq oʻqilmadi. Varaq toʻliq kadrga sigʻsin, yorugʻlik " +
-              "yetarli boʻlsin va burchaklardagi qora belgilar koʻrinib tursin."
-          );
-        }
-      }
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Varaq oʻqilmadi");
-    } finally {
-      setBusy(false);
-      // Bir xil faylni qayta tanlash ham `change` hodisasini bersin.
-      if (fileRef.current) fileRef.current.value = "";
+      const res = await fetch(url, { method: "POST", body: form });
+      return { status: res.status, data: await res.json().catch(() => null) };
+    } catch {
+      return { status: null, data: null };
     }
+  }
+
+  function failure(status: number | null, data: unknown, fallback: string): Outcome {
+    const message =
+      status === null
+        ? "Internet yoʻq — surat saqlandi, tarmoq tiklansa oʻzi yuboriladi."
+        : ((data && typeof data === "object" && "message" in data && typeof data.message === "string" ? data.message : null) ??
+          `${fallback} (${status})`);
+    return { ok: false, retry: isRetryable(status), message };
+  }
+
+  function baseForm(image: Blob, name: string): FormData {
+    const form = new FormData();
+    // Chipta boʻlsa test/sinf SERVERDA chiptadan olinadi — bu
+    // qiymatlar eʼtiborga olinmaydi, lekin bir xil forma ikkala
+    // yoʻlga xizmat qilsin.
+    form.set("setId", setId);
+    form.set("classId", classId);
+    if (ticket) form.set("ticket", ticket);
+    form.set("image", image, name);
+    return form;
+  }
+
+  async function sendSheet(image: Blob): Promise<Outcome> {
+    const { status, data } = await post("/api/baholash/scan", baseForm(image, "varaq.jpg"));
+    const body = data as { ok: true; preview: ScanPreview } | { ok: false; message?: string } | null;
+    if (!okStatus(status) || !body || !body.ok) return failure(status, data, "Varaq oʻqilmadi");
+    setRoster(body.preview.roster);
+    setWarnings(body.preview.warnings);
+    setSheets((prev) => [
+      ...prev,
+      ...body.preview.sheets.map((s, i) => ({
+        key: `${Date.now()}-${i}-${Math.random().toString(36).slice(2, 8)}`,
+        studentId: s.studentId,
+        problems: s.problems,
+        blocked: s.blocked,
+        alreadyEntered: s.alreadyEntered,
+        answers: s.answers,
+      })),
+    ]);
+    if (body.preview.sheets.length === 0) {
+      return {
+        ok: false,
+        retry: false,
+        message:
+          "Suratdan varaq oʻqilmadi. Varaq toʻliq kadrga sigʻsin, yorugʻlik " +
+          "yetarli boʻlsin va burchaklardagi qora belgilar koʻrinib tursin.",
+      };
+    }
+    return { ok: true };
   }
 
   /* ── TEZKOR TEKSHIRISH — qoʻlda yozilgan javob varagʻi ──────────────
@@ -258,70 +267,166 @@ export default function ScanPanel({
      yozadi, AI oʻqiydi (`/api/baholash/quick-check`, faqat oʻqish).
      Natija OʻSHA roʻyxatga tushadi — tekshirish va kiritish yoʻli bitta.
      AI ishonchsiz harf sariq («tekshiring»), ism topilmasa — qoʻlda. */
-  async function onQuickFiles(files: FileList | null) {
-    if (!files || files.length === 0) return;
-    setQuickBusy(true);
-    setError(null);
-    setReport(null);
-    try {
-      for (const file of Array.from(files)) {
-        const image = await downscale(file);
-        const form = new FormData();
-        form.set("setId", setId);
-        form.set("classId", classId);
-        if (ticket) form.set("ticket", ticket);
-        form.set("image", image, "javob.jpg");
-        const res = await fetch("/api/baholash/quick-check", { method: "POST", body: form });
-        const data = (await res.json().catch(() => null)) as
-          | {
-              ok: true;
-              read: { name: string; studentId: string | null; answers: Record<string, string | null>; unsure: number[] };
-              roster: ScanPreview["roster"];
-              questionCount: number;
-            }
-          | { ok: false; message?: string }
-          | null;
-        if (!res.ok || !data || !data.ok) {
-          throw new Error((data && "message" in data ? data.message : null) ?? `Varaq oʻqilmadi (${res.status})`);
+  async function sendQuick(image: Blob): Promise<Outcome> {
+    const { status, data } = await post("/api/baholash/quick-check", baseForm(image, "javob.jpg"));
+    const body = data as
+      | {
+          ok: true;
+          read: { name: string; studentId: string | null; answers: Record<string, string | null>; unsure: number[] };
+          roster: ScanPreview["roster"];
+          questionCount: number;
         }
-        const { read } = data;
-        setRoster(data.roster);
-        const unsure = new Set(read.unsure);
-        const taken = sheets.some((sh) => sh.studentId && sh.studentId === read.studentId);
-        setSheets((prev) => [
-          ...prev,
-          {
-            key: `quick-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-            studentId: taken ? null : read.studentId,
-            problems: [
-              ...(read.studentId && !taken
-                ? []
-                : [read.name ? `«${read.name}» roʻyxatdan aniq topilmadi — oʻquvchini tanlang.` : "Ism oʻqilmadi — oʻquvchini tanlang."]),
-              ...(taken ? ["Bu oʻquvchining varagʻi roʻyxatda allaqachon bor."] : []),
-              ...(unsure.size ? ["Sariq belgilangan javoblarni varaq bilan solishtiring."] : []),
-            ],
-            blocked: false,
-            alreadyEntered: false,
-            answers: Array.from({ length: data.questionCount }, (_, i) => {
-              const letter = read.answers[String(i + 1)];
-              return {
-                no: i + 1,
-                letter: letter === "A" || letter === "B" || letter === "C" || letter === "D" ? letter : null,
-                confidence: unsure.has(i + 1) ? 0.4 : 1,
-                gradable: true,
-                optionCount: 4,
-              };
-            }),
-          },
-        ]);
+      | { ok: false; message?: string }
+      | null;
+    if (!okStatus(status) || !body || !body.ok) return failure(status, data, "Varaq oʻqilmadi");
+    const { read } = body;
+    setRoster(body.roster);
+    const unsure = new Set(read.unsure);
+    // `taken` — roʻyxatning ENG SOʻNGGI holatidan (bir partiyada bitta
+    // oʻquvchining ikki varagʻi kelsa ham ushlansin).
+    setSheets((prev) => {
+      const taken = prev.some((sh) => sh.studentId && sh.studentId === read.studentId);
+      return [
+        ...prev,
+        {
+          key: `quick-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          studentId: taken ? null : read.studentId,
+          problems: [
+            ...(read.studentId && !taken
+              ? []
+              : [read.name ? `«${read.name}» roʻyxatdan aniq topilmadi — oʻquvchini tanlang.` : "Ism oʻqilmadi — oʻquvchini tanlang."]),
+            ...(taken ? ["Bu oʻquvchining varagʻi roʻyxatda allaqachon bor."] : []),
+            ...(unsure.size ? ["Sariq belgilangan javoblarni varaq bilan solishtiring."] : []),
+          ],
+          blocked: false,
+          alreadyEntered: false,
+          answers: Array.from({ length: body.questionCount }, (_, i) => {
+            const letter = read.answers[String(i + 1)];
+            return {
+              no: i + 1,
+              letter: letter === "A" || letter === "B" || letter === "C" || letter === "D" ? letter : null,
+              confidence: unsure.has(i + 1) ? 0.4 : 1,
+              gradable: true,
+              optionCount: 4,
+            };
+          }),
+        },
+      ];
+    });
+    return { ok: true };
+  }
+
+  const send = (kind: QueuedKind, image: Blob) => (kind === "quick" ? sendQuick(image) : sendSheet(image));
+
+  /* ── Navbat (internet uzilsa) — `scan-queue.ts` ── */
+  const scope = scanScope(setId, classId);
+  const [queued, setQueued] = useState(0);
+  const [flushing, setFlushing] = useState(false);
+  const flushingRef = useRef(false);
+
+  async function refreshQueued() {
+    setQueued((await listQueued(scope)).length);
+  }
+
+  /** Navbatdagi suratlarni yuborish. Tarmoq hali yoʻq boʻlsa — toʻxtaydi. */
+  async function flushQueue() {
+    if (flushingRef.current) return;
+    flushingRef.current = true;
+    setFlushing(true);
+    try {
+      for (const item of await listQueued(scope)) {
+        const r = await send(item.kind, item.blob);
+        if (r.ok) {
+          await removeQueued(item.id);
+          continue;
+        }
+        setError(r.message);
+        if (r.retry) break; // hali tarmoq yoʻq yoki havola eskirgan — keyinroq
+        await removeQueued(item.id); // surat oʻzi yaroqsiz — navbatda qolmasin
       }
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Varaq oʻqilmadi");
     } finally {
-      setQuickBusy(false);
-      if (quickRef.current) quickRef.current.value = "";
+      flushingRef.current = false;
+      setFlushing(false);
+      await refreshQueued();
     }
   }
+
+  /** Bir partiya surat. Bittasi yiqilsa QOLGANLARI toʻxtamaydi. */
+  async function processFiles(kind: QueuedKind, files: FileList | null) {
+    if (!files || files.length === 0) return;
+    const setFlag = kind === "quick" ? setQuickBusy : setBusy;
+    setFlag(true);
+    setError(null);
+    setReport(null);
+    const errors: string[] = [];
+    let waiting = 0;
+    try {
+      // Suratlar KETMA-KET yuboriladi: dvigatel har rasm uchun sekin
+      // ishlaydi, parallel yuborish telefon tarmogʻida ikkalasini ham
+      // uzaytiradi.
+      for (const file of Array.from(files)) {
+        let image: Blob;
+        try {
+          image = await downscale(file);
+        } catch {
+          errors.push("Surat ochilmadi — boshqa surat tanlang.");
+          continue;
+        }
+        const r = await send(kind, image);
+        if (r.ok) continue;
+        if (r.retry && (await queuePhoto(scope, kind, image))) {
+          waiting++;
+          continue;
+        }
+        errors.push(r.message);
+      }
+    } finally {
+      setFlag(false);
+      // Bir xil faylni qayta tanlash ham `change` hodisasini bersin.
+      const input = kind === "quick" ? quickRef.current : fileRef.current;
+      if (input) input.value = "";
+      await refreshQueued();
+    }
+    const unique = [...new Set(errors)];
+    if (unique.length) setError(unique.join(" "));
+    else if (waiting) setError(null);
+  }
+
+  const onFiles = (files: FileList | null) => processFiles("sheet", files);
+  const onQuickFiles = (files: FileList | null) => processFiles("quick", files);
+
+  // Navbat soni va koʻrib chiqilayotgan roʻyxat — sahifa ochilganda tiklanadi;
+  // tarmoq qaytganda navbat oʻzi yuboriladi.
+  const flushRef = useRef(flushQueue);
+  useEffect(() => {
+    flushRef.current = flushQueue;
+  });
+  const [reviewReady, setReviewReady] = useState(false);
+  const [restored, setRestored] = useState(false);
+  useEffect(() => {
+    const saved = loadReview<{ sheets: PendingSheet[]; roster: ScanPreview["roster"] }>(scope);
+    if (saved?.sheets.length) {
+      setSheets(saved.sheets);
+      setRoster(saved.roster);
+      setRestored(true);
+    }
+    setReviewReady(true);
+    let alive = true;
+    void listQueued(scope).then((items) => {
+      if (!alive) return;
+      setQueued(items.length);
+      if (items.length && navigator.onLine) void flushRef.current();
+    });
+    const onOnline = () => void flushRef.current();
+    window.addEventListener("online", onOnline);
+    return () => {
+      alive = false;
+      window.removeEventListener("online", onOnline);
+    };
+  }, [scope]);
+  useEffect(() => {
+    if (reviewReady) saveReview(scope, sheets.length ? { sheets, roster } : null);
+  }, [reviewReady, scope, sheets, roster]);
 
   /** Kiritishga tayyor varaqlar — oʻquvchisi bor va toʻsilmagan. */
   const ready = sheets.filter((s) => s.studentId && !s.blocked && !s.alreadyEntered);
@@ -459,6 +564,25 @@ export default function ScanPanel({
         className="hidden"
         onChange={(e) => onFiles(e.target.files)}
       />
+
+      {/* Internet uzilganda yuborilmagan suratlar — telefon xotirasida. */}
+      {queued > 0 && (
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-warning/40 bg-warning/10 px-4 py-3 text-sm text-foreground">
+          <CloudOff className="size-4 shrink-0 text-warning" />
+          <span className="min-w-0 flex-1">
+            {queued} ta surat internetni kutmoqda — tarmoq tiklansa oʻzi yuboriladi, sahifa yopilsa ham saqlanadi.
+          </span>
+          <Button size="sm" variant="outline" className="shadow-none" disabled={flushing} onClick={() => void flushQueue()}>
+            {flushing ? <Loader2 className="size-3.5 animate-spin" /> : <RefreshCw className="size-3.5" />}
+            Hozir yuborish
+          </Button>
+        </div>
+      )}
+      {restored && sheets.length > 0 && (
+        <p className="text-caption text-muted-foreground">
+          Oldingi tekshiruv tiklandi — jurnalga hali kiritilmagan varaqlar saqlangan edi.
+        </p>
+      )}
 
       {warnings.map((w) => (
         <Note key={w} tone="warn">
