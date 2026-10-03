@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { screenHasLocked, useDoskaStore } from "@/lib/doska/store";
 import { downloadScreenPng, exportFileName } from "@/lib/doska/export";
 import { DoskaAppearance } from "./DoskaAppearance";
+import { DoskaBackgrounds } from "./DoskaBackgrounds";
 import { DoskaTemplates } from "./DoskaTemplates";
 import { MenuItem, MenuPopover } from "./MenuPopover";
 import { playBell } from "./sounds";
@@ -23,6 +24,7 @@ import {
   IconImageDownload,
   IconKeyboard,
   IconFullscreen,
+  IconBackground,
   IconCopy,
   IconArrowLeft,
   IconCatalog,
@@ -33,7 +35,7 @@ import {
    `MenuPopover`.
 
    Tuzilma: sarlavha + holat belgisi → sinf eʼtibori (parda, qoʻngʻiroq)
-   → «Koʻrinish» (uslub, panel joyi — menyu ichida ochiladi), toʻliq
+   → «Fon» va «Koʻrinish» (uslub, panel joyi — menyu ichida ochiladi), toʻliq
    ekran, yorliqlar → ekran amallari → pastda taklif kartochkasi.
 
    Parda va qoʻngʻiroq klaviaturada `1` va `2`, lekin asosiy qurilma
@@ -89,7 +91,7 @@ export function DoskaMenu({
   const tm = useTranslations("Doska.menu");
   const [open, setOpen] = React.useState(false);
   /** Menyu ichidagi boʻlim. Yopilganda doim bosh roʻyxatga qaytadi. */
-  const [view, setView] = React.useState<"main" | "appearance" | "templates">("main");
+  const [view, setView] = React.useState<"main" | "appearance" | "backgrounds" | "templates">("main");
   const [exporting, setExporting] = React.useState<"idle" | "busy" | "failed">("idle");
 
   const saveImage = async () => {
@@ -130,6 +132,8 @@ export function DoskaMenu({
     >
       {view === "appearance" ? (
         <DoskaAppearance onBack={() => setView("main")} />
+      ) : view === "backgrounds" ? (
+        <DoskaBackgrounds onBack={() => setView("main")} />
       ) : view === "templates" ? (
         <DoskaTemplates
           onBack={() => setView("main")}
@@ -168,6 +172,9 @@ export function DoskaMenu({
 
         {/* ── Koʻrinish ── */}
         <div className="border-b py-1">
+          <MenuItem Icon={IconBackground} next onClick={() => setView("backgrounds")}>
+            {t("background")}
+          </MenuItem>
           <MenuItem Icon={IconPalette} next onClick={() => setView("appearance")}>
             {tm("appearance")}
           </MenuItem>

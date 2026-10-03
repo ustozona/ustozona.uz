@@ -23,7 +23,7 @@ import { iconTintStyle } from "@/lib/doska/tint";
  * Nuqtalar qatori joyi doim band (koʻrinmasa ham), aks holda vidjet
  * ekranga qoʻyilganda qator sakraydi.
  *
- * Alohida faylda — `WidgetBar`, `ShapePicker`, `BackgroundPicker`,
+ * Alohida faylda — `WidgetBar`, `ShapePicker`,
  * «Hammasi» va qoʻlyozma paneli ishlatadi; bitta faylda boʻlsa aylanma
  * import chiqadi.
  */

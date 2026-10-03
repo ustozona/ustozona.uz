@@ -178,7 +178,7 @@ sensorli doskada hover yoʻq, tooltip chiqmaydi (doska-ux-tadqiqot.md R322).
                                                               [pult] [⋮]
 
         ┌───────────────┬────────────────────────┬─────────────┬───┐
-        │ Qalam Oʻchir. │ Fon · vositalar · Hamm.│ Bekor Qaytar│ ⌄ │
+        │ Qalam Oʻchir. │ vositalar · Hammasi │ Bekor Qaytar│ ⌄ │
 [Xabar] │ Tanlash       │                        │ ‹ 2/3 › Ekran│   │
         └───────────────┴────────────────────────┴─────────────┴───┘
 ```
@@ -246,7 +246,7 @@ Tepada hech narsa yoʻq: 75″ interaktiv panelning tepasi poldan ≈ 1,8 m
 **«Panel joyi»** (menyu → «Koʻrinish») faqat vidjet panelini koʻchiradi:
 bekor qilish chap pastda, ekranlar va menyu oʻng pastda qoladi. Yon
 relsa interaktiv panelda oʻqituvchi yonida turib ishlashi uchun — qoʻli
-mazmunni yopmaydi. Paneldan ochiladigan oynalar («Shakl», «Fon»,
+mazmunni yopmaydi. Paneldan ochiladigan oynalar («Shakl»,
 «Hammasi») panel tomonidan ochiladi: pastki panelda tepaga, chap
 relsada oʻngga (`dock.ts`).
 
@@ -270,7 +270,7 @@ holatda ham chiqadi.
 
 - **Chap ustun — rejim:** qalam (qoʻlyozma paneli ochiladi) va tanlash
   (oddiy holat — bu panelda doim faol, och brend plitka).
-- **Oʻrta — vositalar:** birinchi «Fon», oxirida «Hammasi».
+- **Oʻrta — vositalar:** oxirida «Hammasi».
 - **Oʻng ustun:** ⋮ panel menyusi (Bekor qilish · Qaytadan bajarish ·
   Panelni tahrirlash → «Hammasi» oynasi) va yigʻish (`B`).
 
@@ -284,7 +284,9 @@ oynasidagi qadash belgisi bilan (R132). Tartib esa doim `TOOL_ORDER`
 (`registry.ts`): qadalgan vosita oxiriga emas, oʻz joyiga tushadi.
 Tuzmagan oʻqituvchi standart panelni koʻradi — bugungi panel bilan bir
 xil; keyin qoʻshilgan yangi vosita unga oʻzi chiqadi (`tools: null`).
-«Fon» vosita emas, ekran sozlamasi — u doim panelda.
+«Fon» vosita emas, ekran sozlamasi — u panelda emas, menyuda («Fon»,
+«Koʻrinish» yonida; 2026-10-03). Boʻsh ekranda bir qatorli yoʻrigʻ
+chiqadi (`DoskaEmptyHint`): vidjet yoki chiziq paydo boʻlishi bilan yoʻqoladi.
 
 ### Vosita tugmasi
 

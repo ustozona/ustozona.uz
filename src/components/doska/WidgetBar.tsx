@@ -8,7 +8,6 @@ import { useDoskaStore, useActiveWidgets } from "@/lib/doska/store";
 import { widgetMeta } from "@/lib/doska/registry";
 import { pinnedTools, useDoskaPrefs } from "@/lib/doska/prefs";
 import { useInkTool } from "@/lib/doska/ink-tool";
-import { BackgroundPicker } from "./BackgroundPicker";
 import { BarActions } from "./BarActions";
 import { BarButton } from "./BarButton";
 import { BarEndColumn } from "./BarEndColumn";
@@ -28,7 +27,7 @@ import { WIDGET_ICONS } from "./widgets";
    Tuzilma — bitta oq idishda toʻrt boʻlim:
 
      ┌─────────────────┬───────────────────────────┬─────────────┬───┐
-     │ Qalam Oʻchir.   │ Fon · oʻqituvchi qadagan  │ Bekor Qaytar│ ⌄ │
+     │ Qalam Oʻchir.   │ oʻqituvchi qadagan        │ Bekor Qaytar│ ⌄ │
      │ Tanlash         │ vositalar · Hammasi       │ ‹ 2/3 › Ekran│   │
      └─────────────────┴───────────────────────────┴─────────────┴───┘
 
@@ -133,9 +132,6 @@ export function WidgetBar({ onHide }: { onHide: () => void }) {
         </div>
 
         <BarSeparator vertical={vertical} />
-        {/* «Fon» vosita emas, ekran sozlamasi — u doim panelda, birinchi. */}
-        <BackgroundPicker />
-
         {pinned.map((kind) =>
           // Shakl bitta emas, toʻqqiz figura qoʻyadi — oʻz tanlash paneli bor.
           kind === "shape.v1" ? (
