@@ -167,10 +167,23 @@ Gemini bilan cheklanadi — boshqa model rasmsiz javob toʻqimasin).
   havolasi. Ilova uni brauzerda ochadi — brauzerda kirish shart emas.
   Ilova tomoni (LessonLab repo, `mobile/`) — Skaner boʻlimida
   «Doska pulti».
+- **Ilovaning oʻz kamerasi (3.8)** — Skaner → «QR-kartalar» / «Pult»
+  brauzer ochmaydi: ilova Doska kanaliga oʻzi ulanadi va sinf testini
+  boshqaradi, kartalarni oʻz kamerasi bilan oʻqiydi.
+  - `GET /api/mobile/v1/remote` endi `live: {topic, realtime, expiresAt}`
+    ham qaytaradi (eski ilova uni eʼtiborsiz qoldiradi);
+  - `POST /api/mobile/v1/remote/roster {setId, classId}` — karta raqami
+    → ism; egalik Bearer sessiyadagi oʻqituvchidan tekshiriladi, faqat
+    `no` va `name` qaytadi;
+  - xabarlar shu hujjatdagi protokol (`remote-protocol.ts`) — ilova
+    `hello`, `cards`/`pult`, `test`, `card` yuboradi;
+  - aniqlagich `src/lib/cards/detect.ts` ning Dart nusxasi; moslik
+    etalon kadrlar bilan tekshiriladi (`scripts/gen-card-app-fixtures.ts`
+    → `mobile/test/fixtures/cards/`). ⛔ Aniqlagich yoki lugʻat
+    oʻzgarsa — ilovani ham.
 
 ## 10. Keyingi bosqichlar
 
 1. ~~**Kartani savolga bogʻlash**~~ — bajarildi: sinf testi
    (`sinf-testi-spec.md`).
-2. **Ilova ichida native kamera** — QR-karta skanerini WebView'siz,
-   ilovaning oʻz kamerasi bilan (hozir brauzer sahifasi).
+2. ~~**Ilova ichida native kamera**~~ — bajarildi (§9, ilova 3.8).
