@@ -119,6 +119,19 @@ export function PresentationWidget({ widget }: { widget: DoskaWidget }) {
       .catch(() => {});
   }, [autoLive, live, setId, autoClassId, widget.id, patch]);
 
+  /* Dars rejimi: QR-karta / radio pult tekshiruvi bloki — ekranga
+     kelinganda sinf testi sahnasi BIR MARTA oʻzi ochiladi
+     (`lesson-handoff.ts`). Bayroq darhol oʻchiriladi: sahifa yangilansa
+     yoki ekranga qaytilsa sahna qayta ochilib ketmasin. */
+  const autoClassTest = widget.state.autoClassTest as "cards" | "pult" | undefined;
+  const classTestStarted = React.useRef(false);
+  React.useEffect(() => {
+    if (!autoClassTest || !setId || !autoClassId || classTestStarted.current) return;
+    classTestStarted.current = true;
+    patch(widget.id, { autoClassTest: null });
+    requestClassTest({ source: autoClassTest, setId, classId: autoClassId });
+  }, [autoClassTest, setId, autoClassId, widget.id, patch]);
+
   if (!setId) {
     return (
       <SetPicker onPick={(id) => patch(widget.id, { setId: id, index: 0, revealed: false })} />

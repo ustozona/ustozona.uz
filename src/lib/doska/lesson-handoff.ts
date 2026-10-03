@@ -90,11 +90,25 @@ function blockScreen(
       const autoLive =
         (block.kind === "check" && block.method === "live" && live) ||
         ((block.kind === "warmup" || block.kind === "exit") && live);
+      /* QR-karta / radio pult tekshiruvi — ekranga kelinganda SINF TESTI
+         sahnasi oʻzi ochiladi (docs/sinf-testi-spec.md). Bir martalik
+         bayroq: vidjet uni darhol oʻchiradi. */
+      const autoClassTest =
+        block.kind === "check" && (block.method === "cards" || block.method === "pult")
+          ? block.method
+          : null;
       return {
         widgets: [
           {
             kind: "presentation.v1",
-            initial: { setId: block.setId, index: 0, revealed: false, classId: ctx.classId, ...(autoLive ? { autoLive: true } : {}) },
+            initial: {
+              setId: block.setId,
+              index: 0,
+              revealed: false,
+              classId: ctx.classId,
+              ...(autoLive ? { autoLive: true } : {}),
+              ...(autoClassTest ? { autoClassTest } : {}),
+            },
             at: full,
           },
         ],
