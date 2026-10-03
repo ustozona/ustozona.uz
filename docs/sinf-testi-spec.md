@@ -48,6 +48,13 @@ Boshqaruv uch joydan, hammasi Doskaning bitta amaliga tushadi:
    tanlanadi.
 4. **Topshiriqlar** → «Pult» rejimi (`useLaunchFlow` → `PultRunner`). Endi u
    ham shu sahnada ochiladi.
+5. **Dars rejimi** (Dars studiyasi → «▶ Darsni boshlash»). Tekshiruv
+   blokida usul «QR-kartalar» yoki «Pult» boʻlsa, Doskada
+   shu ekranga yetilganda sahna **oʻzi ochiladi**. Bayroq `autoClassTest`
+   (`lesson-handoff.ts`) bir martalik: vidjet uni darhol oʻchiradi, shuning
+   uchun sahifa yangilansa yoki ekranga qaytilsa sahna qayta ochilmaydi.
+   Doska faqat faol ekran vidjetlarini chizadi, shuning uchun boshqa
+   ekranlardagi testlar oldindan ochilib ketmaydi.
 
 Sahnani `DoskaRemote` chizadi, chunki ustoz pulti kanali ham u yerda.
 Ochish soʻrovi `lib/doska/class-test-request.ts` orqali beriladi.
