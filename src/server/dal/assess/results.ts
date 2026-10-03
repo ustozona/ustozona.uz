@@ -28,7 +28,8 @@ import {
    ~50k javobdan oshganda koʻriladi).
    ════════════════════════════════════════════════════════════════════ */
 
-async function loadOrderedItemIds(setId: string): Promise<string[]> {
+/** Toʻplamdagi baholanadigan elementlar — varaq va jurnal tartibida. */
+export async function loadOrderedItemIds(setId: string): Promise<string[]> {
   const [set] = await db.select().from(activitySets).where(eq(activitySets.id, setId));
   if (!set) return [];
   const activityIds = set.items.map((i) => i.activityId);

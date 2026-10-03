@@ -37,6 +37,7 @@ import {
 } from "@/lib/class-test";
 import type { ClassTest } from "./useClassTest";
 import { BOARD_FONT_CLASS } from "./board-font";
+import { ShareResults } from "@/components/launch/ShareResults";
 
 /* ════════════════════════════════════════════════════════════════════
    SINF TESTI SAHNASI — proyektor / aqlli doska (docs/sinf-testi-spec.md).
@@ -767,6 +768,9 @@ function FinalScreen({ test, onOpenResults }: { test: ClassTest; onOpenResults?:
           </>
         )}
       </div>
+
+      {/* Saqlangach — natija Telegramga: ota-onalarga va oʻqituvchiga. */}
+      {test.saved && <ShareResults sessionId={test.saved.sessionId} variant="board" />}
     </section>
   );
 }

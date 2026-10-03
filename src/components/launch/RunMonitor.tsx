@@ -48,6 +48,7 @@ import { JoinShare } from "./JoinShare";
 import { OpenAnswersReview } from "./OpenAnswersReview";
 import { RUN_KIND_META } from "./launch-modes";
 import { formatDue } from "./format";
+import { ShareResults } from "./ShareResults";
 
 /* ════════════════════════════════════════════════════════════════════
    NATIJA EKRANI — bitta oʻtkazishning hammasi bitta joyda.
@@ -349,6 +350,9 @@ export function RunMonitor({
               )}
 
               <RosterList rows={data.roster} gradedTotal={data.gradedTotal} />
+
+              {/* Natija Telegramga: ota-onalarga farzandining natijasi, oʻqituvchiga xulosa. */}
+              {run.gradable && data.roster.some((r) => r.answered > 0) && <ShareResults sessionId={sessionId} />}
 
               {data.anonymous > 0 && <Hint icon={Info}>{t("anonymousNote", { count: data.anonymous })}</Hint>}
 
