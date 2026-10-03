@@ -433,9 +433,9 @@ export default function ScanPanel({
         <HandoffBlock
           setId={setId}
           classId={classId}
-          mode={mode === "cards" ? "cards" : "sheets"}
-          onPickFile={() => fileRef.current?.click()}
-          busy={busy}
+          mode={mode}
+          onPickFile={() => (mode === "quick" ? quickRef : fileRef).current?.click()}
+          busy={mode === "quick" ? quickBusy : busy}
         />
       )}
 
@@ -571,7 +571,7 @@ function HandoffBlock({
 }: {
   setId: string;
   classId: string;
-  mode: "sheets" | "cards";
+  mode: "sheets" | "cards" | "quick";
   onPickFile: () => void;
   busy: boolean;
 }) {
@@ -636,7 +636,9 @@ function HandoffBlock({
           Sahifa telefonda ochiladi — tizimga kirish shart emas.{" "}
           {mode === "cards"
             ? "Kamerani sinfga qaratasiz, kartalar savolma-savol oʻqiladi."
-            : "Varaqni suratga olasiz, natija shu testga tushadi."}{" "}
+            : mode === "quick"
+              ? "Oʻquvchilar yozgan varaqlarni birma-bir suratga olasiz — AI oʻqiydi, siz tekshirasiz."
+              : "Varaqni suratga olasiz, natija shu testga tushadi."}{" "}
           Havola 2 soat amal qiladi.
           Kamera oʻqiy olmasa — telefonni yaqinroq tuting yoki brauzerni
           kattalashtiring (Ctrl/⌘ va +).

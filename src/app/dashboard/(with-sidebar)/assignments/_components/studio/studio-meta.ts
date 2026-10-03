@@ -12,8 +12,7 @@ import {
   RadioReceiver,
   Smartphone,
   Users,
-  type LucideIcon,
-} from "lucide-react";
+  type LucideIcon, PenLine } from "lucide-react";
 import type { ClassColor } from "@/lib/class-colors";
 import type { CheckMethod, StudioBlockKind } from "@/lib/lesson-studio";
 import { LAUNCH_MODES } from "@/components/launch/launch-modes";
@@ -44,5 +43,6 @@ export const METHOD_META: Record<CheckMethod, { icon: LucideIcon; color: ClassCo
   cards: { icon: IdCard, color: LAUNCH_MODES.cards.color },
   pult: { icon: RadioReceiver, color: LAUNCH_MODES.pult.color },
   paper: { icon: FileText, color: LAUNCH_MODES.paper.color },
+  quick: { icon: PenLine, color: LAUNCH_MODES.quick.color },
   oral: { icon: Hand, color: "gray" },
 };

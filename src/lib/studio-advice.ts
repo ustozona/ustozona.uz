@@ -39,7 +39,10 @@ export type AdviceReason =
   | "shellMismatch"
   | "wholeClassScreen"
   | "ownContent"
-  | "noInternet";
+  | "noInternet"
+  | "printOnce"
+  | "anyPaper"
+  | "scanLater";
 
 export function envHint(env: ClassEnvironment): StudioEnvHint {
   return { phones: env.phones, screen: env.smartboard || env.projector, printer: env.printer, pult: env.pult };
@@ -59,9 +62,12 @@ export function adviseMethods(env: ClassEnvironment, mcqCount: number | null): M
       reasons: !h.phones ? ["noPhones"] : !h.screen ? ["noScreen"] : ["phonesAndScreen", "graded"],
     },
     {
+      /* Karta BIR MARTA chop etiladi va yil boʻyi ishlatiladi — maktabda
+         printer boʻlmasa ham tuman markazida chop ettirish mumkin. Shu
+         sabab printersiz sinfda toʻsilmaydi, faqat «bir marta» deyiladi. */
       method: "cards",
-      fit: !h.printer || noMcq ? "blocked" : h.phones ? "ok" : "best",
-      reasons: !h.printer ? ["needsPrinter"] : noMcq ? ["needsMcq"] : ["printerOk", "graded"],
+      fit: noMcq ? "blocked" : !h.printer ? "ok" : h.phones ? "ok" : "best",
+      reasons: noMcq ? ["needsMcq"] : !h.printer ? ["printOnce", "graded"] : ["printerOk", "graded"],
     },
     {
       method: "pult",
@@ -77,6 +83,14 @@ export function adviseMethods(env: ClassEnvironment, mcqCount: number | null): M
       method: "selfpaced",
       fit: !h.phones ? "blocked" : "ok",
       reasons: !h.phones ? ["noPhones"] : ["phonesOnly", "graded"],
+    },
+    {
+      /* Tezkor tekshirish — oddiy daftar varagʻi + ustoz telefoni. Telefon
+         ham, printer ham boʻlmagan sinfda ENG MOS baholanadigan yoʻl.
+         Internet darsda shart emas: suratlar keyin yuklanadi. */
+      method: "quick",
+      fit: noMcq ? "blocked" : !h.phones && !h.printer ? "best" : "ok",
+      reasons: noMcq ? ["needsMcq"] : env.internet ? ["anyPaper", "graded"] : ["anyPaper", "scanLater"],
     },
     { method: "oral", fit: "ok", reasons: ["alwaysWorks", "notGraded"] },
   ];

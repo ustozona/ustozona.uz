@@ -417,7 +417,8 @@ export function LessonStudio({
           const m = block.method ?? "live";
           if (m === "live" && hint.phones && hint.screen) return openDoska(block.setId, true);
           if (m === "oral") return openDoska(block.setId, false);
-          const mode = m === "cards" ? "cards" : m === "paper" ? "paper" : m === "pult" ? "pult" : m === "selfpaced" ? "selfpaced" : undefined;
+          const mode =
+            m === "cards" || m === "paper" || m === "pult" || m === "selfpaced" || m === "quick" ? m : undefined;
           return onLaunch({ setId: block.setId, title, intent: "class", mode });
         }
         default:

@@ -35,9 +35,10 @@ export default async function ScannerPage({
 }) {
   const { ticket } = await params;
   // `?mode=cards` — Topshiriqlardagi «QR-kartalar» dan: karta skaneri
-  // asosiy tugma boʻladi. Faqat koʻrinish tanlovi, ruxsat chiptada.
+  // asosiy tugma boʻladi; `?mode=quick` — tezkor tekshirish (qoʻlda
+  // yozilgan varaq). Faqat koʻrinish tanlovi, ruxsat chiptada.
   const query = searchParams ? await searchParams : undefined;
-  const mode = query?.mode === "cards" ? "cards" : "sheets";
+  const mode = query?.mode === "cards" ? "cards" : query?.mode === "quick" ? "quick" : "sheets";
   const parsed = verifyScanTicket(ticket);
 
   if (!parsed) {
@@ -54,8 +55,9 @@ export default async function ScannerPage({
 
   /* Dvigatel faqat VARAQ surati uchun kerak. QR-karta skaneri brauzerda
      ishlaydi (`lib/cards/detect.ts`) va javob `applyOmrScan` ga
-     dvigatelsiz yoziladi — karta rejimini bu tekshiruv toʻsmasin. */
-  if (mode !== "cards" && !isConfigured()) {
+     dvigatelsiz yoziladi — karta rejimini bu tekshiruv toʻsmasin.
+     Tezkor tekshirishni ham: u rasmni AI bilan oʻqiydi. */
+  if (mode === "sheets" && !isConfigured()) {
     return (
       <Shell>
         <h1 className="text-xl font-semibold">Skaner ulanmagan</h1>
@@ -88,7 +90,7 @@ export default async function ScannerPage({
     <Shell>
       <div className="flex flex-col gap-1">
         <Badge variant="outline" className="w-fit text-muted-foreground">
-          {mode === "cards" ? "QR-kartalar" : "Qogʻoz test"}
+          {mode === "cards" ? "QR-kartalar" : mode === "quick" ? "Tezkor tekshirish" : "Qogʻoz test"}
         </Badge>
         <h1 className="text-xl font-semibold">{plan.title}</h1>
         <p className="text-sm text-muted-foreground">

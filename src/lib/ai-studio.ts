@@ -113,6 +113,7 @@ const METHOD_GUIDE = `"check" bloki uchun "method" (javob yigʻish usuli) — si
 - "cards" — QR-kartalar: oʻquvchi kartani koʻtaradi, ustoz telefoni skanerlaydi (printer kerak, telefon kerak emas);
 - "pult" — radio pult (pult toʻplami kerak);
 - "paper" — qogʻoz varaq, ustoz telefoni skanerlaydi (printer kerak);
+- "quick" — tezkor: oʻquvchi istalgan varaqqa ismi va javob harflarini yozadi, ustoz telefonda suratga oladi (printer ham, oʻquvchi telefoni ham kerak emas — texnikasiz sinf uchun eng mos);
 - "oral" — texnikasiz: qoʻl koʻtarish, doskada yechish.`;
 
 export function buildStudioPrompt(r: AiStudioRequest): { system: string; prompt: string } {

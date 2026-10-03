@@ -38,7 +38,10 @@ export type StudioBlockKind = (typeof STUDIO_BLOCK_KINDS)[number];
 
 /** Darsda javob yigʻish usuli. `oral` — texnikasiz (qoʻl koʻtarish,
     doskada yechish): har sinfda ishlaydi, jurnalga avtomatik tushmaydi. */
-export const CHECK_METHODS = ["cards", "pult", "paper", "live", "selfpaced", "oral"] as const;
+/* `quick` — tezkor tekshirish: oʻquvchi istalgan varaqqa javob harflarini
+   yozadi, ustoz telefonda suratga oladi, AI oʻqiydi. Printer ham, oʻquvchi
+   telefoni ham kerak emas — texnikasiz sinfning baholanadigan yoʻli. */
+export const CHECK_METHODS = ["cards", "pult", "paper", "live", "selfpaced", "quick", "oral"] as const;
 export type CheckMethod = (typeof CHECK_METHODS)[number];
 
 /** Baholanadigan oʻyin qobiqlari (`lib/baholash-shells.ts`). */
@@ -145,7 +148,8 @@ export function defaultCheckMethod(env: StudioEnvHint): CheckMethod {
   if (env.printer) return "cards";
   if (env.pult) return "pult";
   if (env.phones) return "selfpaced";
-  return "oral";
+  // Texnikasiz sinf: ogʻzaki emas — baholanadigan tezkor tekshirish.
+  return "quick";
 }
 
 function block(kind: StudioBlockKind, extra: Partial<StudioBlock> = {}): StudioBlock {
