@@ -26,6 +26,8 @@ export type LaunchSetInfo = {
   hasSlides: boolean;
   /** LessonLab dvigateli (PDF varaq, OMR) sozlanganmi — qogʻoz yoʻli uchun. */
   engineReady: boolean;
+  /** Rasm oʻqiydigan AI sozlanganmi — tezkor tekshirish (qoʻlda yozilgan varaq). */
+  quickReady: boolean;
   /** Oʻyin qobiqlari serveri manzili berilganmi. */
   gamesReady: boolean;
 };
@@ -41,6 +43,7 @@ export type LaunchMode =
   | "game"
   | "selfpaced"
   | "paper"
+  | "quick"
   | "cards"
   | "pult"
   | "homework";

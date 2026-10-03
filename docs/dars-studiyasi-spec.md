@@ -128,11 +128,23 @@ havola turadi, mazmun mavjud jadvallarda.
 | Usul | Kerak | Eng mos qachon |
 |---|---|---|
 | Jonli dars | telefon + ekran | ikkalasi bor |
-| QR-kartalar | printer, variantli savol | telefon yoʻq |
+| QR-kartalar | variantli savol; kartalar BIR MARTA chop etiladi | printer bor, telefon yoʻq (printersiz — «mos», bloklanmaydi) |
 | Pult | pult toʻplami | pult bor |
-| Qogʻoz + skaner | printer | — |
+| Qogʻoz + skaner | printer (har test uchun varaq) | — |
 | Mustaqil test | telefon | — |
+| **Tezkor (daftar varagʻi)** | variantli savol + ustoz telefoni | telefon ham, printer ham yoʻq — texnikasiz sinfning standart usuli |
 | Ogʻzaki | hech narsa | doim «mos», jurnalga avtomatik tushmaydi |
+
+**Tezkor tekshirish (2026-10-03).** Qishloq sinfida koʻpincha na printer,
+na oʻquvchi telefoni boʻladi — ilgari bunday sinfga faqat «ogʻzaki»
+(baholanmaydigan) usul tavsiya qilinardi. Endi standart usul — tezkor:
+savol doskada yoki ovoz bilan, oʻquvchi istalgan varaqqa ismi va javob
+harflarini yozadi, ustoz varaqlarni telefonda suratga oladi, AI oʻqiydi
+(`/api/baholash/quick-check`), ustoz koʻrib chiqib jurnalga yozadi.
+«Darsda oʻtkazish» oynasida alohida plitka (`LaunchMode = "quick"`),
+kompyuterdagi QR telefonda shu rejimni ochadi (`?mode=quick`). Sinfda
+internet boʻlmasa ham ishlaydi — suratlar keyin yuklanadi. ⚠️ Har surat
+1 AI krediti (`quick-check` route) — free taʼrifda 300/oy.
 
 **Oʻyinlar:** Arqon, Poyga — telefonda, test asosida, jurnalga
 (`shellAvailability` sababi bilan); mashq oʻyinlari (Soʻz topish,

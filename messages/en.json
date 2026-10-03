@@ -4302,7 +4302,18 @@
     "llFailed": "Couldn’t transfer — try again later.",
     "llDetails": "What didn’t transfer — {count}",
     "llConflict": "Conflict",
-    "llSkippedLabel": "Skipped"
+    "llSkippedLabel": "Skipped",
+    "mode_quick": "Quick (any paper)",
+    "mode_quickHint": "No printer needed — students write on any paper, you take photos",
+    "quickMissing": "The photo-reading AI isn't connected yet — quick check won't work",
+    "quickStep1": "1. In class",
+    "quickStep2": "2. Check the sheets",
+    "quickHow1": "Write the questions on the board or read them aloud (with a screen — “Show questions on the Board”).",
+    "quickHow2": "Each student writes their name and answer letters on any paper: 1) A, 2) C … ({count} questions).",
+    "quickHow3": "Collect the sheets and photograph them with your phone — AI reads them, you review and save to the gradebook. No internet in class? Upload the photos later.",
+    "quickSampleName": "Ali Aliyev",
+    "quickShowQuestions": "Show questions on the Board",
+    "quickCredit": "Each sheet photo uses 1 AI credit."
   },
   "WorkPlan": {
     "title": "Work plan",
@@ -6095,7 +6106,8 @@
       "cards": "QR cards",
       "pult": "Clickers",
       "paper": "Paper + scanner",
-      "oral": "Oral (no tech)"
+      "oral": "Oral (no tech)",
+      "quick": "Quick (any paper)"
     },
     "fit": {
       "best": "Best fit",
@@ -6119,7 +6131,10 @@
       "shellMismatch": "Doesn't fit this test — reason below",
       "wholeClassScreen": "Whole class plays on the smartboard",
       "ownContent": "Uses its own word bank — practice, not graded",
-      "noInternet": "No internet in this classroom"
+      "noInternet": "No internet in this classroom",
+      "printOnce": "Printed once (a print shop works too) — used all year",
+      "anyPaper": "Any paper and the teacher's phone are enough",
+      "scanLater": "No internet needed in class — upload photos later"
     },
     "game": {
       "arqon": "Tug of war",

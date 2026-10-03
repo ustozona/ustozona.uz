@@ -21,6 +21,7 @@ import { isSessionPastDue } from "@/lib/assess/session-due";
 import { firstAttemptTotals, type AttemptRow } from "@/lib/assess/first-attempt";
 import { findShell, shellAvailability } from "@/lib/baholash-shells";
 import { isConfigured, isGamesConfigured } from "@/server/lessonlab/baholash";
+import { configuredProviders } from "@/server/ai/providers";
 import type {
   LaunchSetInfo,
   PublishRunResult,
@@ -180,6 +181,8 @@ export async function launchSetInfo(setId: string): Promise<LaunchSetInfo> {
     mcqCount: summary.countByShape.mcq ?? 0,
     hasSlides: (summary.countByShape.slide ?? 0) > 0,
     engineReady: isConfigured(),
+    // Tezkor tekshirish rasmni Gemini bilan oʻqiydi (`/api/baholash/quick-check`).
+    quickReady: configuredProviders().includes("gemini"),
     gamesReady: isGamesConfigured(),
   };
 }

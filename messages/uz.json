@@ -4180,7 +4180,18 @@
     "llFailed": "Koʻchirib boʻlmadi — keyinroq qayta urinib koʻring.",
     "llDetails": "Nima oʻtmadi — {count} ta",
     "llConflict": "Nizo",
-    "llSkippedLabel": "Oʻtkazildi"
+    "llSkippedLabel": "Oʻtkazildi",
+    "mode_quick": "Tezkor (daftar varagʻi)",
+    "mode_quickHint": "Printer kerak emas — oʻquvchi istalgan varaqqa yozadi, siz suratga olasiz",
+    "quickMissing": "Rasm oʻqiydigan AI hali ulanmagan — tezkor tekshirish ishlamaydi",
+    "quickStep1": "1. Darsda",
+    "quickStep2": "2. Varaqlarni tekshirish",
+    "quickHow1": "Savollarni doskaga yozing yoki oʻqib bering (ekran boʻlsa — «Savollarni Doskada koʻrsatish»).",
+    "quickHow2": "Oʻquvchi istalgan varaqqa ism-familiyasini va javob harflarini yozadi: 1) A, 2) C … ({count} ta savol).",
+    "quickHow3": "Varaqlarni yigʻib, telefoningizda suratga oling — AI oʻqiydi, siz tekshirib jurnalga yozasiz. Sinfda internet boʻlmasa, suratlarni keyin yuklang.",
+    "quickSampleName": "Aliyev Ali",
+    "quickShowQuestions": "Savollarni Doskada koʻrsatish",
+    "quickCredit": "Har bir varaq surati 1 ta AI kreditini oladi."
   },
   "WorkPlan": {
     "title": "Ish reja",
@@ -5981,7 +5992,8 @@
       "cards": "QR-kartalar",
       "pult": "Pult",
       "paper": "Qogʻoz + skaner",
-      "oral": "Ogʻzaki (texnikasiz)"
+      "oral": "Ogʻzaki (texnikasiz)",
+      "quick": "Tezkor (daftar varagʻi)"
     },
     "fit": {
       "best": "Eng mos",
@@ -6005,7 +6017,10 @@
       "shellMismatch": "Bu testga mos emas — sababi pastda",
       "wholeClassScreen": "Butun sinf smartdoskada oʻynaydi",
       "ownContent": "Oʻz soʻz bazasi bilan — mashq, jurnalga tushmaydi",
-      "noInternet": "Sinfda internet yoʻq"
+      "noInternet": "Sinfda internet yoʻq",
+      "printOnce": "Bir marta chop etiladi (tuman markazida ham boʻladi) — yil boʻyi ishlatiladi",
+      "anyPaper": "Istalgan varaq va ustoz telefoni yetarli",
+      "scanLater": "Darsda internet shart emas — suratlarni keyin yuklaysiz"
     },
     "game": {
       "arqon": "Arqon tortish",

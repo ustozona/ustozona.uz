@@ -26,8 +26,9 @@ const schema = z.object({
   classId: z.string().min(1),
   /** `cards` — telefonda QR-karta skaneri asosiy tugma boʻladi
       (Topshiriqlar → «QR-kartalar»). Chiptaga kirmaydi: bu faqat
-      koʻrinish tanlovi, ruxsat emas. */
-  mode: z.enum(["sheets", "cards"]).optional(),
+      koʻrinish tanlovi, ruxsat emas. `quick` — tezkor tekshirish
+      (qoʻlda yozilgan varaq) asosiy tugma. */
+  mode: z.enum(["sheets", "cards", "quick"]).optional(),
 });
 
 export type ScanHandoff = {
@@ -62,7 +63,8 @@ export async function createScanHandoffAction(
   const host = h.get("x-forwarded-host") ?? h.get("host") ?? "";
   const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
   const url =
-    `${proto}://${host}/baholash/skaner/${ticket}` + (parsed.mode === "cards" ? "?mode=cards" : "");
+    `${proto}://${host}/baholash/skaner/${ticket}` +
+    (parsed.mode === "cards" || parsed.mode === "quick" ? `?mode=${parsed.mode}` : "");
 
   /* NEGA BU YERDA TELEGRAM TUGMASI YOʻQ
 

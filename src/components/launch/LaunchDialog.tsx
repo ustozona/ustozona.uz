@@ -88,7 +88,7 @@ export type LaunchPreset = {
   dueDate?: string;
 };
 
-type Step = "set" | "where" | "mode" | "preflight" | "game" | "homework" | "paper" | "cards";
+type Step = "set" | "where" | "mode" | "preflight" | "game" | "homework" | "paper" | "quick" | "cards";
 
 /** Baholanmaydigan oʻyinlar — oʻz savollari bilan, «mashq». */
 const PRACTICE_GAMES: GameFile[] = ["xotira", "krossvord", "so-z-topish", "qaysi-katta"];
@@ -108,9 +108,9 @@ function hasWebSerial(): boolean {
 function stepAfterSet(intent: LaunchIntent | null, presetMode?: LaunchMode): Step {
   if (intent === "home") return "homework";
   // Dars studiyasidan usul allaqachon tanlangan boʻlib keladi (ssenariy
-  // bloki) — qogʻoz va karta oʻz qadamidan ochiladi, «Orqaga» usullarga qaytaradi.
+  // bloki) — qogʻoz, tezkor va karta oʻz qadamidan ochiladi, «Orqaga» usullarga qaytaradi.
   if (intent === "class") {
-    if (presetMode === "game" || presetMode === "paper" || presetMode === "cards") return presetMode;
+    if (presetMode === "game" || presetMode === "paper" || presetMode === "quick" || presetMode === "cards") return presetMode;
     return "mode";
   }
   return "where";
@@ -277,6 +277,7 @@ export function LaunchDialog({
     switch (step) {
       case "game":
       case "paper":
+      case "quick":
       case "cards":
       case "preflight":
         return "mode";
@@ -311,7 +312,8 @@ export function LaunchDialog({
     step === "set" || step === "where"
       ? ClipboardCheck
       : LAUNCH_INTENTS[step === "homework" ? "home" : "class"].icon;
-  const needsInfo = step === "game" || step === "homework" || step === "paper" || step === "cards" || step === "preflight";
+  const needsInfo =
+    step === "game" || step === "homework" || step === "paper" || step === "quick" || step === "cards" || step === "preflight";
 
   return (
     <Dialog open onOpenChange={(v) => !v && onClose()}>
@@ -414,6 +416,16 @@ export function LaunchDialog({
               setId={setId}
               classId={classId}
               onShowOnBoard={() => openDoska(false, step === "cards" ? "cards" : undefined)}
+              onApplied={(sessionId) => onOfflineApplied?.(sessionId)}
+            />
+          )}
+
+          {step === "quick" && info && setId && classId && (
+            <QuickStep
+              info={info}
+              setId={setId}
+              classId={classId}
+              onShowOnBoard={() => openDoska(false)}
               onApplied={(sessionId) => onOfflineApplied?.(sessionId)}
             />
           )}
@@ -742,7 +754,7 @@ function ModeStep({
             <h3 className="text-label text-muted-foreground">{t(`group_${group.id}`)}</h3>
             <p className="text-caption text-muted-foreground">{t(`group_${group.id}Hint`)}</p>
           </div>
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className={cn("grid gap-3", group.modes.length > 3 ? "sm:grid-cols-2" : "sm:grid-cols-3")}>
             {group.modes.map((mode) => {
               const reason = blockedReason(mode);
               return (
@@ -1091,6 +1103,64 @@ function DuePicker({ value, onChange }: { value: string; onChange: (key: string)
 /* ════════════════════════════════════════════════════════════════════
    QOGʻOZ TEST · QR-KARTALAR
    ════════════════════════════════════════════════════════════════════ */
+
+/** Tezkor tekshirish — maxsus varaq chop etilmaydi. Oʻquvchi istalgan
+    qogʻozga ismi va javob harflarini yozadi, ustoz telefonda suratga
+    oladi, AI oʻqiydi; natija qogʻoz testdagi kabi koʻrib chiqilib
+    jurnalga yoziladi (`ScanPanel` → `/api/baholash/quick-check`).
+    Printer ham, oʻquvchi telefoni ham kerak emas — texnikasiz sinf. */
+function QuickStep({
+  info,
+  setId,
+  classId,
+  onShowOnBoard,
+  onApplied,
+}: {
+  info: LaunchSetInfo;
+  setId: string;
+  classId: string;
+  onShowOnBoard: () => void;
+  onApplied: (sessionId: string) => void;
+}) {
+  const t = useTranslations("LaunchHub");
+  if (!info.quickReady) {
+    return <p className="text-sm text-muted-foreground">{t("quickMissing")}</p>;
+  }
+  const steps = [t("quickHow1"), t("quickHow2", { count: info.mcqCount }), t("quickHow3")];
+  return (
+    <div className="flex flex-col gap-5">
+      <section className="flex flex-col gap-3">
+        <h3 className="text-sm font-semibold text-foreground">{t("quickStep1")}</h3>
+        <ol className="flex flex-col gap-2">
+          {steps.map((line, i) => (
+            <li key={i} className="flex gap-3 text-sm text-muted-foreground">
+              <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-foreground">
+                {i + 1}
+              </span>
+              <span className="pt-0.5">{line}</span>
+            </li>
+          ))}
+        </ol>
+        {/* Namuna — oʻquvchi varagʻi qanday koʻrinishi kerak. */}
+        <div className="rounded-lg border border-dashed border-border bg-muted/30 px-4 py-3 font-mono text-sm text-foreground">
+          <p>{t("quickSampleName")}</p>
+          <p className="text-muted-foreground">1) A&nbsp;&nbsp;2) C&nbsp;&nbsp;3) B&nbsp;&nbsp;4) D …</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" className="shadow-none" onClick={onShowOnBoard}>
+            <MonitorPlay />
+            {t("quickShowQuestions")}
+          </Button>
+        </div>
+        <p className="text-caption text-muted-foreground">{t("quickCredit")}</p>
+      </section>
+      <section className="flex flex-col gap-3">
+        <h3 className="text-sm font-semibold text-foreground">{t("quickStep2")}</h3>
+        <ScanPanel setId={setId} classId={classId} mode="quick" onApplied={(report) => onApplied(report.sessionId)} />
+      </section>
+    </div>
+  );
+}
 
 function OfflineStep({
   kind,
