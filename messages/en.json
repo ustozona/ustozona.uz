@@ -4427,6 +4427,33 @@
       "uploading": "Adding…",
       "renderFailed": "Couldn’t draw the picture — please try again",
       "uploadFailed": "The picture wasn’t saved — please try again"
+    },
+    "source": {
+      "title": "From the textbook",
+      "photo": "Photograph a page",
+      "paste": "Paste text",
+      "hint": "Photograph a textbook page or paste its text — the test and material will be built only from it.",
+      "placeholder": "Topic text from the textbook…",
+      "clear": "Clear",
+      "reading": "Reading page {page}…",
+      "read": "Page text added — please review it",
+      "maxPages": "At most {count} pages at a time",
+      "unreadable": "No text was read — retake the photo straight and in good light",
+      "badPhoto": "The photo didn't open — use JPEG/PNG up to 4 MB"
+    },
+    "paste": {
+      "open": "Test from text (paste a ready test)",
+      "title": "Test from text",
+      "hint": "Copy and paste a ready test (Word, handbook, Telegram) — questions are split automatically. No AI is used.",
+      "placeholder": "1. Question text\nA) option\n*B) correct option\nC) option\nD) option\n\nOr at the end: Answers: 1-B, 2-C …",
+      "found": "{count} questions found",
+      "missing": "No correct answer marked: {list} — mark it in the editor",
+      "skipped": "{count} fragments didn't look like questions and were skipped",
+      "cancel": "Cancel",
+      "import": "Turn into a test ({count})",
+      "defaultTitle": "Test from text",
+      "missingToast": "Mark the correct answer in {count} questions",
+      "done": "{count} questions are in the editor — review and save"
     }
   },
   "AssignmentsPage": {

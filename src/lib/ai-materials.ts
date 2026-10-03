@@ -45,6 +45,9 @@ export type AiMaterialRequest = {
   locale?: string;
   /** Dars davomiyligi (daqiqa) — interaktiv dars hajmi shunga moslanadi. */
   durationMin?: number;
+  /** Darslik matni (joylangan yoki sahifa suratidan oʻqilgan) — material
+      FAQAT shu matndagi faktlarga tayanadi (davlat darsligidan chetga chiqmasin). */
+  source?: string;
 };
 
 export type AiMcq = { q: string; options: string[]; answer: number };
@@ -118,7 +121,23 @@ export function normalizeMaterialRequest(body: unknown): AiMaterialRequest | nul
     note: oneLine(body.note, NOTE_MAX) || undefined,
     locale: oneLine(body.locale, 10) || undefined,
     durationMin: duration >= 10 && duration <= 180 ? duration : undefined,
+    source: sourceText(body.source),
   };
+}
+
+/** Darslik matni — qatorlar saqlanadi, ortiqcha boʻshliq qisqaradi. */
+export const SOURCE_MAX = 8000;
+function sourceText(raw: unknown): string | undefined {
+  if (typeof raw !== "string") return undefined;
+  const v = raw
+    .replace(/\r\n?/g, "\n")
+    .split("\n")
+    .map((l) => l.replace(/[\t ]+/g, " ").trim())
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim()
+    .slice(0, SOURCE_MAX);
+  return v.length >= 40 ? v : undefined;
 }
 
 /* ── PROMPT ────────────────────────────────────────────────────────── */
@@ -220,6 +239,13 @@ ${taskFor(r)}`;
     );
   }
   if (r.note) lines.push(`Oʻqituvchining istagi: ${r.note}`);
+  if (r.source) {
+    lines.push(
+      `MANBA — darslikdan olingan matn (oʻqituvchi berdi):\n"""\n${r.source}\n"""\n` +
+        "Savol, javob va slayd mazmunini FAQAT shu matndagi faktlarga asosla. Matnda yoʻq fakt, raqam yoki nomni qoʻshma. " +
+        "Matn tilini va atamalarini saqla. Mavzu nomi — faqat yoʻnalish uchun.",
+    );
+  }
   return { system, prompt: lines.join("\n") };
 }
 

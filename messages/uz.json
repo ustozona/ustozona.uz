@@ -4305,6 +4305,33 @@
       "uploading": "Qoʻshilmoqda…",
       "renderFailed": "Rasmni chizib boʻlmadi — qayta urinib koʻring",
       "uploadFailed": "Rasm saqlanmadi — qayta urinib koʻring"
+    },
+    "source": {
+      "title": "Darslikdan",
+      "photo": "Sahifani suratga olish",
+      "paste": "Matnni joylash",
+      "hint": "Darslik sahifasini suratga oling yoki matnini joylang — test va material faqat shu matndan tuziladi.",
+      "placeholder": "Darslikdagi mavzu matni…",
+      "clear": "Tozalash",
+      "reading": "{page}-sahifa oʻqilmoqda…",
+      "read": "Sahifa matni qoʻshildi — tekshirib chiqing",
+      "maxPages": "Bir marta koʻpi bilan {count} ta sahifa",
+      "unreadable": "Sahifadan matn oʻqilmadi — yorugʻroq joyda, toʻgʻri tutib qayta oling",
+      "badPhoto": "Surat ochilmadi — JPEG/PNG, 4 MB gacha boʻlsin"
+    },
+    "paste": {
+      "open": "Matndan test (tayyor testni joylash)",
+      "title": "Matndan test",
+      "hint": "Tayyor testni (Word, qoʻllanma, Telegram) nusxalab joylang — savollar oʻzi ajratiladi. AI ishlatilmaydi.",
+      "placeholder": "1. Savol matni\nA) variant\n*B) toʻgʻri variant\nC) variant\nD) variant\n\nYoki oxirida: Javoblar: 1-B, 2-C …",
+      "found": "{count} ta savol topildi",
+      "missing": "Toʻgʻri javob belgilanmagan: {list} — muharrirda belgilaysiz",
+      "skipped": "{count} ta boʻlak test savoliga oʻxshamadi va tashlandi",
+      "cancel": "Bekor qilish",
+      "import": "Testga aylantirish ({count})",
+      "defaultTitle": "Matndan test",
+      "missingToast": "{count} ta savolda toʻgʻri javobni belgilang",
+      "done": "{count} ta savol muharrirga tushdi — tekshirib saqlang"
     }
   },
   "AssignmentsPage": {
