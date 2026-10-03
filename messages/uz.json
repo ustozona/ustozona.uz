@@ -5196,7 +5196,11 @@
       "menu": "Menyu",
       "proFeature": "Pullik imkoniyat",
       "barMenu": "Panel menyusi",
-      "editBar": "Panelni tahrirlash"
+      "editBar": "Panelni tahrirlash",
+      "undoShort": "Bekor",
+      "redoShort": "Qaytar",
+      "screensGroup": "Ekranlar",
+      "addScreenShort": "Ekran"
     },
     "guestNote": {
       "text": "Ekran shu brauzerda saqlanadi. <link>Kirsangiz</link> sinf roʻyxatingiz ulanadi.",

@@ -22,6 +22,7 @@ import {
   IconArrowRight,
   IconImageDownload,
   IconKeyboard,
+  IconFullscreen,
   IconCopy,
   IconArrowLeft,
   IconCatalog,
@@ -32,8 +33,8 @@ import {
    `MenuPopover`.
 
    Tuzilma: sarlavha + holat belgisi → sinf eʼtibori (parda, qoʻngʻiroq)
-   → «Koʻrinish» (uslub, panel joyi — menyu ichida ochiladi) → ekran
-   amallari → pastda taklif kartochkasi.
+   → «Koʻrinish» (uslub, panel joyi — menyu ichida ochiladi), toʻliq
+   ekran, yorliqlar → ekran amallari → pastda taklif kartochkasi.
 
    Parda va qoʻngʻiroq klaviaturada `1` va `2`, lekin asosiy qurilma
    sensorli doska — shuning uchun ular menyuda ham bor (tugmasiz amal
@@ -62,7 +63,13 @@ import {
    holatda emas: oʻchirilgan tugma sababini tushuntirmaydi
    (docs/design-system.md modal qoidasi).
    ════════════════════════════════════════════════════════════════════ */
-export function DoskaMenu({ onShowShortcuts }: { onShowShortcuts: () => void }) {
+export function DoskaMenu({
+  onShowShortcuts,
+  onToggleFullscreen,
+}: {
+  onShowShortcuts: () => void;
+  onToggleFullscreen: () => void;
+}) {
   // Butun `deck` ga emas: u har chiziqda va taymerning har soniyasida yangilanadi.
   const title = useDoskaStore((s) => s.deck.title);
   const screenCount = useDoskaStore((s) => s.deck.screens.length);
@@ -163,6 +170,9 @@ export function DoskaMenu({ onShowShortcuts }: { onShowShortcuts: () => void }) 
         <div className="border-b py-1">
           <MenuItem Icon={IconPalette} next onClick={() => setView("appearance")}>
             {tm("appearance")}
+          </MenuItem>
+          <MenuItem Icon={IconFullscreen} shortcut="F" onClick={run(onToggleFullscreen)}>
+            {t("fullscreen")}
           </MenuItem>
           <MenuItem Icon={IconKeyboard} shortcut="K" onClick={run(onShowShortcuts)}>
             {tm("shortcuts")}

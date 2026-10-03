@@ -26,6 +26,7 @@ import {
   type InkSize,
 } from "@/lib/doska/ink";
 import { BarButton } from "./BarButton";
+import { BarActions } from "./BarActions";
 import { BarEndColumn } from "./BarEndColumn";
 import { BarGroup, BarSeparator, BarTextButton } from "./BarGroup";
 import { useDockLayout } from "./dock";
@@ -73,8 +74,8 @@ import {
 
    Nishonlar ≥ 44 px (R321) — rang va qalinlik tugmalari ham.
 
-   Oxirida — vidjet panelidagi bilan bir xil ustun (`BarEndColumn`):
-   ⋮ menyusida bekor qilish va qaytadan bajarish, ostida yigʻish. Sensorli
+   Oxirida — vidjet panelidagi bilan bir xil boʻlim (`BarActions`):
+   «Bekor» / «Qaytar» va ekranlar; undan keyin yigʻish (`BarEndColumn`). Sensorli
    doskada klaviatura yoʻq — notoʻgʻri chiziqni qaytarish va ekranni
    tozalab koʻrsatish ham qalam rejimidan chiqmasdan boʻlishi kerak.
    ════════════════════════════════════════════════════════════════════ */
@@ -330,6 +331,8 @@ export function InkBar({ onHide }: { onHide: () => void }) {
             />
           </>
         )}
+
+        <BarActions vertical={vertical} />
       </div>
 
       <BarEndColumn vertical={vertical} onHide={onHide} />
